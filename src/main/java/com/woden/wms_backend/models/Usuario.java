@@ -1,81 +1,68 @@
 package com.woden.wms_backend.models;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Usuario")
+@Table(name = "Usuario", schema = "dbo")
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private static int id;
-     @Column(nullable = false, unique = true)
-    private long identificacion;
+    @Column(name = "Id")
+    private Integer id;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "Identificacion")
+    private Long identificacion;
+
+    @Column(name = "Nombres")
     private String nombres;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "Apellidos")
     private String apellidos;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "NombreUsuario")
     private String nombreUsuario;
 
-    @Column(nullable = false, columnDefinition = "NVARCHAR(1000)")
+    @Column(name = "Clave")
     private String clave;
 
-    @Column(name = "fechaNacimiento")
-    private Date fechaNacimiento;
+    @Column(name = "FechaNacimiento")
+    private LocalDate fechaNacimiento;
 
-    @Column(length = 50)
+    @Column(name = "Correo")
     private String correo;
 
-    @Column(nullable = false)
-    private int cargoId;
+    @Column(name = "CargoId")
+    private Integer cargoId;
 
-    private int areaId;
+    @Column(name = "AreaId")
+    private Integer AreaId;
 
-    private int temaId;
+    @Column(name = "TemaId")
+    private Integer temaId;
 
-    @Column(nullable = false)
+    @Column(name = "FechaCreacion")
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "FechaUltimoAcceso")
     private LocalDateTime fechaUltimoAcceso;
 
-    @Column(length = 15)
+    @Column(name = "Ip")
     private String ip;
 
-    private int sedeId;
+    @Column(name = "SedeId")
+    private Integer sedeId;
 
-    @Column(nullable = false)
-    private boolean activo;
+    @Column(name = "Activo")
+    private Boolean activo;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(2000)")
-    private String claveHash;
-    // private static long identificacion;
-    // private static String nombres;
-    // private static String apellidos;
-    // private static String nombreUsuario;
-    // private static String clave;
-    // private static String fechaNacimiento;
-    // private static String correo;
-    // private static int cargoId;
-    // private static String cargo;
-    // private static int areaId;
-    // private static String area;
-    // private static String fechaCreacion;
-    // private static String fechaUltimoAcceso;
-    // private static String ip;
-    // private static int sedeId;
-    // private static int activo;
+    // @Column(name = "clave_hash")
+    // private String claveHash;
 }

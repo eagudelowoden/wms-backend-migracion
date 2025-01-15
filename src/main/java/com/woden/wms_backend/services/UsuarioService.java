@@ -45,9 +45,38 @@ public class UsuarioService {
         return false;
     }
 
-    public boolean validateCredentials(String nombreUsuario, String claveHash) {
+    public boolean validateCredentials(String nombreUsuario, String clave) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
-        return usuarioOpt.isPresent() && usuarioOpt.get().getClaveHash().equals(claveHash);
+        
+        if (usuarioOpt.isEmpty()) {
+            return false; // Usuario no encontrado
+        }
+    
+        Usuario usuario = usuarioOpt.get();
+        
+        // Manejo de valores nulos
+        if (usuario.getClave() == null || clave == null) {
+            return false; // Contraseña inválida
+        }
+    
+        return usuario.getClave().equals(clave);  // Comparación con el campo 'clave'
+    }
+
+    public boolean validateCredentials1(String nombreUsuario, String clave) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+
+        if (usuarioOpt.isPresent() && usuarioOpt.get().getClave().equals(clave)) {
+            return true;
+        }
+    
+        return false;
+    }
+    
+    
+    
+    
+    public List<Usuario> getUserActive() {
+        return usuarioRepository.findByActivoTrue();
     }
 
 }

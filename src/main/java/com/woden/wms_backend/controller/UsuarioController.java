@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.woden.wms_backend.models.LoginRequest;
 import com.woden.wms_backend.models.Usuario;
 import com.woden.wms_backend.services.UsuarioService;
 
@@ -38,19 +40,46 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerUsuarioPorId(@PathVariable int id) {
+    public ResponseEntity<Usuario> obtenerUsuarioPorId(@PathVariable Integer id) {
         Optional<Usuario> usuario = usuarioService.getUserById(id);
-        return usuario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return usuario.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> iniciarSesion(@RequestParam String nombreUsuario, @RequestParam String claveHash) {
-        boolean valido = usuarioService.validateCredentials(nombreUsuario, claveHash);
-        if (valido) {
-            return ResponseEntity.ok("Inicio de sesión exitoso");
+public ResponseEntity<String> iniciarSesion(@RequestBody LoginRequest loginRequest) {
+    if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() == null) {
+        return ResponseEntity.badRequest().body("Nombre de usuario o contraseña no proporcionados");
+    }
+
+    System.out.println("Nombre de usuario: " + loginRequest.getNombreUsuario());
+    System.out.println("Contraseña: " + loginRequest.getClave());
+
+    // Validar credenciales
+    boolean valido = usuarioService.validateCredentials1(loginRequest.getNombreUsuario(),
+            loginRequest.getClave());
+
+    if (!valido) {
+        return ResponseEntity.status(401).body("Credenciales incorrectas o usuario no encontrado");
+    }
+
+    // Respuesta exitosa
+    return ResponseEntity.ok("Inicio de sesión exitoso");
+}
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuarioLogicamente(@PathVariable int id) {
+        boolean eliminado = usuarioService.deleteUser(id);
+        if (eliminado) {
+            return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(401).body("Credenciales incorrectas");
+            return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/activos")
+    public List<Usuario> getUsersActive() {
+        return usuarioService.getUserActive();
     }
 
 }
