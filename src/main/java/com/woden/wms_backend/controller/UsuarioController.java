@@ -1,6 +1,8 @@
 package com.woden.wms_backend.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,25 +49,25 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-public ResponseEntity<String> iniciarSesion(@RequestBody LoginRequest loginRequest) {
+public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody LoginRequest loginRequest) {
+    Map<String, String> response = new HashMap<>();
+
     if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() == null) {
-        return ResponseEntity.badRequest().body("Nombre de usuario o contraseña no proporcionados");
+        response.put("message", "Nombre de usuario o contraseña no proporcionados");
+        return ResponseEntity.badRequest().body(response);
     }
 
-    System.out.println("Nombre de usuario: " + loginRequest.getNombreUsuario());
-    System.out.println("Contraseña: " + loginRequest.getClave());
-
-    // Validar credenciales
-    boolean valido = usuarioService.validateCredentials1(loginRequest.getNombreUsuario(),
-            loginRequest.getClave());
+    boolean valido = usuarioService.validateCredentials1(loginRequest.getNombreUsuario(), loginRequest.getClave());
 
     if (!valido) {
-        return ResponseEntity.status(401).body("Credenciales incorrectas o usuario no encontrado");
+        response.put("message", "Credenciales incorrectas o usuario no encontrado");
+        return ResponseEntity.status(401).body(response);
     }
 
-    // Respuesta exitosa
-    return ResponseEntity.ok("Inicio de sesión exitoso");
+    response.put("message", "Inicio de sesión exitoso");
+    return ResponseEntity.ok(response);
 }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuarioLogicamente(@PathVariable int id) {
