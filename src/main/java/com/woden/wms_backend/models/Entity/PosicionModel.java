@@ -15,5 +15,5 @@ public class PosicionModel {
     private int id;
     private int numero;
     private int codigoSapId;
-    private int activo;
+    private Boolean activo;
 }

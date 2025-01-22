@@ -1,5 +1,7 @@
 package com.woden.wms_backend.models.Entity;
 
+import com.woden.wms_backend.models.Activable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,28 +11,59 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "CodigoSap", schema = "dbo")
-public class CodigoSapModel {
+public class CodigoSapModel implements Activable{
     @Id
     @Column(name = "Id")
     private int id;
+    @Column(name = "Codigo")
     private String codigo;
+    @Column(name = "Descripcion")
     private String descripcion;
-    private int familiaId,modeloId,proveedorId;
+    @Column(name = "FamiliaId")
     private String familia;
-    private int tipoId,tipoEquipoId,areaId;
-    private String tipo;
-    private int validacion,validacionMac;
-    private String direccion,direccionMac;
+    @Column(name = "TipoId")
+    private Integer tipoId;
+    @Column(name = "Validacion")
+    private Integer validacion;
+    @Column(name = "Direccion")
+    private String direccion;
+    @Column(name = "Largos")
     private String largos;
-    private int recorte,recorteMac;
-    private int reingreso;
-    private int clasificacionId;
-    private String clasificacion;
-    private int numSerial;
-    private int valor;
-    private int activo;
-    private int asignar, asignarFa;
+    @Column(name = "Recorte")
+    private Integer recorte;
+    @Column(name = "Reingreso")
+    private Integer reingreso;
+    @Column(name = "ClasificacionId")
+    private Integer clasificacionId;
+    @Column(name = "NumSerial")
+    private Integer numSerial;
+    @Column(name = "Valor")
+    private Integer valor;
+    @Column(name = "Activo")
+    private Boolean activo;
+    @Column(name = "idTipoLectura")
+    private String tipo;
+    @Column(name = "tipoEquipoId")
+    private Integer tipoEquipoId;
+    @Column(name = "areaId")
+    private Integer areaId;
+    @Column(name = "modeloId")
+    private Integer modeloId;
+    @Column(name = "proveedorId")
+    private Integer proveedorId;
+    @Column(name = "validacionMac")
+    private Integer validacionMac;
+    @Column(name = "direccionMac")
+    private String direccionMac;
+    @Column(name = "recorteMac")
+    private Integer recorteMac;
+    @Column(name = "AsignacionFalla")
+    private Integer asignarFa;
+    @Column(name = "multimodelo")
+    private Integer multimodelo;
+    @Column(name = "cantidadCaja")
+    private Integer cantidadCaja;
+    @Column(name = "AsignacionAcc")
+    private Integer asignar;
     private String largosMac,largosSerial3,largosSerial4,largosSerial5;
-    private int multimodelo;
-    private int cantidadCaja;
 }

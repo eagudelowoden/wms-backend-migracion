@@ -3,6 +3,8 @@ package com.woden.wms_backend.models.WmsWdGeneral;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.woden.wms_backend.models.Activable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,7 +14,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "Usuario", schema = "dbo")
-public class UsuarioModel {
+public class UsuarioModel implements Activable{    
 
     @Id
     @Column(name = "Id")
@@ -45,8 +47,8 @@ public class UsuarioModel {
     @Column(name = "AreaId")
     private Integer AreaId;
 
-    @Column(name = "TemaId")
-    private Integer temaId;
+    // @Column(name = "TemaId")
+    // private Integer temaId;
 
     @Column(name = "FechaCreacion")
     private LocalDateTime fechaCreacion;

@@ -79,5 +79,4 @@ public class UsuarioController {
     public List<UsuarioModel> getUsersActive() {
         return usuarioService.getUserActive();
     }
-
 }
