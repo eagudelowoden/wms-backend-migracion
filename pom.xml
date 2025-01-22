@@ -88,6 +88,25 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.hibernate.tool</groupId>
+				<artifactId>hibernate-tools-maven</artifactId>
+				<version>5.6.0.Final</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.microsoft.sqlserver</groupId>
+						<artifactId>mssql-jdbc</artifactId>
+						<version>9.4.0.jre11</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<revengFile>${project.basedir}/src/main/resources/hibernate.reveng.xml</revengFile>
+					<packageName>com.yourpackage.model</packageName>
+					<configurationFile>${project.basedir}/src/main/resources/hibernate.cfg.xml</configurationFile>
+					<templatePath>${project.basedir}/src/main/resources/templates/</templatePath>
+					<outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

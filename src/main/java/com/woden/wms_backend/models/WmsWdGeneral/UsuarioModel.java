@@ -1,4 +1,4 @@
-package com.woden.wms_backend.models;
+package com.woden.wms_backend.models.WmsWdGeneral;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "Usuario", schema = "dbo")
-public class Usuario {
+public class UsuarioModel {
 
     @Id
     @Column(name = "Id")

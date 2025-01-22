@@ -1,43 +1,41 @@
-package com.woden.wms_backend.services;
+package com.woden.wms_backend.services.WmsWdGeneral;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.woden.wms_backend.models.Usuario;
-import com.woden.wms_backend.repository.UsuarioRepository;
+import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
+import com.woden.wms_backend.repositories.WmsWdGeneral.UsuarioRepository;;
 
 @Service
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
-    @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario saveUser(Usuario usuario) {
+    public UsuarioModel saveUser(UsuarioModel usuario) {
         return usuarioRepository.save(usuario);
     }
 
-    public List<Usuario> getAll() {
+    public List<UsuarioModel> getAll() {
         return usuarioRepository.findAll();
     }
 
-    public Optional<Usuario> getUserById(int id) {
+    public Optional<UsuarioModel> getUserById(int id) {
         return usuarioRepository.findById(id);
     }
 
-    public Optional<Usuario> getUserByNameUser(String nombreUsuario) {
+    public Optional<UsuarioModel> getUserByNameUser(String nombreUsuario) {
         return usuarioRepository.findByNombreUsuario(nombreUsuario);
     }
 
     public boolean deleteUser(int id) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+        Optional<UsuarioModel> usuarioOpt = usuarioRepository.findById(id);
         if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
+            UsuarioModel usuario = usuarioOpt.get();
             usuario.setActivo(false); // Cambiar estado a inactivo
             usuarioRepository.save(usuario); // Guardar el cambio en la base de datos
             return true;
@@ -46,13 +44,13 @@ public class UsuarioService {
     }
 
     public boolean validateCredentials(String nombreUsuario, String clave) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<UsuarioModel> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
         
         if (usuarioOpt.isEmpty()) {
             return false; // Usuario no encontrado
         }
     
-        Usuario usuario = usuarioOpt.get();
+        UsuarioModel usuario = usuarioOpt.get();
         
         // Manejo de valores nulos
         if (usuario.getClave() == null || clave == null) {
@@ -63,7 +61,7 @@ public class UsuarioService {
     }
 
     public boolean validateCredentials1(String nombreUsuario, String clave) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<UsuarioModel> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
 
         if (usuarioOpt.isPresent() && usuarioOpt.get().getClave().equals(clave)) {
             return true;
@@ -75,7 +73,7 @@ public class UsuarioService {
     
     
     
-    public List<Usuario> getUserActive() {
+    public List<UsuarioModel> getUserActive() {
         return usuarioRepository.findByActivoTrue();
     }
 
