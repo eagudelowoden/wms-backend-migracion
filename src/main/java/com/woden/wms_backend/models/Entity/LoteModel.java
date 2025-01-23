@@ -8,12 +8,12 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Posicion", schema = "dbo")
-public class PosicionModel {
+@Table(name = "Lote", schema = "dbo")
+public class LoteModel {
     @Id
     @Column(name = "Id")
-    private int id;
-    private String numero;
-    private int codigoSapId;
+    private Integer Id;
+    private String nombre;
+    private String descripcion;
     private Boolean activo;
 }

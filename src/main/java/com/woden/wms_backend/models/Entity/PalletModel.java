@@ -32,7 +32,7 @@ public class PalletModel {
     private String fechaModifica;
     private int estadoInventario;
     private int activo;
-    private int loteId;
+    private Integer loteId;
     private int multimodelo;
     private int cantidadCaja;
 }
