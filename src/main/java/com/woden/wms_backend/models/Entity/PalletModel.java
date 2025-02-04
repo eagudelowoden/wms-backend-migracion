@@ -13,26 +13,30 @@ public class PalletModel {
     @Id
     @Column(name = "Id")
     private int id;
+    @Column(name = "Numero")
     private String numero;
+    @Column(name = "PosicionId")
     private int posicionId;
-    private String posicion;
+    @Column(name = "CodigoSapId")
     private int codigoSapId;
-    private String codigoSap;
-    private String descripcion;
+    @Column(name = "TipologiaId")
     private int tipologiaId;
-    private String tipologia;
+    @Column(name = "OrigenId")
     private int origenId;
-    private String origen;
+    @Column(name = "DestinoId")
     private int destinoId;
-    private String destino;
+    @Column(name = "UsuarioId")
     private int usuarioId;
-    private String usuario;
+    @Column(name = "Fecha")
     private String fecha;
+    @Column(name = "UsuarioIdModifica")
     private int usuarioIdModifica;
+    @Column(name = "FechaModifica")
     private String fechaModifica;
+    @Column(name = "EstadoInventario")
     private int estadoInventario;
+    @Column(name = "Activo")
     private int activo;
+    @Column(name = "loteId")
     private Integer loteId;
-    private int multimodelo;
-    private int cantidadCaja;
 }

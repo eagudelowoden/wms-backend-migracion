@@ -66,4 +66,5 @@ public class CodigoSapModel implements Activable{
     @Column(name = "AsignacionAcc")
     private Integer asignar;
     private String largosMac,largosSerial3,largosSerial4,largosSerial5;
+
 }
