@@ -54,12 +54,26 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        boolean valido = usuarioService.validateCredentials1(loginRequest.getNombreUsuario(), loginRequest.getClave());
+        // boolean valido =
+        // usuarioService.validateCredentials1(loginRequest.getNombreUsuario(),
+        // loginRequest.getClave());
 
-        if (!valido) {
+        // if (!valido) {
+        // response.put("message", "Credenciales incorrectas o usuario no encontrado");
+        // return ResponseEntity.status(401).body(response);
+        // }
+
+        Optional<UsuarioModel> usuarioOpt = usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
+
+        if (usuarioOpt.isEmpty() || !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
             response.put("message", "Credenciales incorrectas o usuario no encontrado");
             return ResponseEntity.status(401).body(response);
         }
+
+        UsuarioModel usuario = usuarioOpt.get();
+
+        response.put("message", "Inicio de sesión exitoso");
+        response.put("usuarioId", usuario.getId().toString()); // Enviar el ID del usuario
 
         response.put("message", "Inicio de sesión exitoso");
         return ResponseEntity.ok(response);
