@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
-import com.woden.wms_backend.dto.ClienteDTO;
 import com.woden.wms_backend.models.WmsWdGeneral.ClienteModel;
 import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 
@@ -22,15 +21,6 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         this.clienteService = service;
     }
 
-    // @GetMapping("/list/{usuarioId}")
-    // public List<ClienteDTO> getListClient(@PathVariable int usuarioId) {
-    //     return clienteService.getListClient(usuarioId);
-    // }
-
-    // @GetMapping("/id/{nombre}")
-    // public int getIdClient(@PathVariable String nombre) {
-    //     return clienteService.getIdClient(nombre);
-    // }
     @GetMapping("/list/{usuarioId}")
     public List<String> getListClient(@PathVariable int usuarioId) {
         return clienteService.getListClient(usuarioId);

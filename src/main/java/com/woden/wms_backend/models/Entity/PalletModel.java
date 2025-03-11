@@ -2,6 +2,8 @@ package com.woden.wms_backend.models.Entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -11,6 +13,7 @@ import lombok.Data;
 @Table(name = "Pallet", schema = "dbo")
 public class PalletModel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id")
     private int id;
     @Column(name = "Numero")

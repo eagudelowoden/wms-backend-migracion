@@ -1,11 +1,9 @@
 package com.woden.wms_backend.services.WmsWdGeneral;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.woden.wms_backend.dto.ClienteDTO;
 import com.woden.wms_backend.models.WmsWdGeneral.ClienteModel;
 import com.woden.wms_backend.repositories.WmsWdGeneral.ClienteRepository;
 import com.woden.wms_backend.services.BaseService;
