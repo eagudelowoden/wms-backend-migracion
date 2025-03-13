@@ -1,5 +1,6 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,12 +30,19 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     private IngresoService ingresoService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createIngreso(@RequestBody IngresoModel  ingreso) {
+    public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
         try {
             ingresoService.createIngreso(ingreso);
-            return ResponseEntity.ok("Ingreso registrado correctamente.");
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Ingreso registrado correctamente.");
+
+            return ResponseEntity.ok(response); // ✅ Devuelve application/json
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error al registrar el ingreso: " + e.getMessage());
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al registrar el ingreso: " + e.getMessage());
+
+            return ResponseEntity.status(500).body(response);
         }
     }
 

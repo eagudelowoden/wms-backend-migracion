@@ -28,7 +28,7 @@ public class IngresoModel {
     private Integer palletIdAlmacen;
     private Integer palletIdEmpaque;
     private Integer cajaEmpaqueId;
-    private Integer cajaDespachoId;
+    // private Integer cajaDespachoId;
     private Integer estadoId;
     private Integer tipoOrigenId;
     private Integer origenId;

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.models.LoginRequest;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
+import com.woden.wms_backend.security.JwtUtil;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioService;
 
 @RestController
@@ -45,37 +47,62 @@ public class UsuarioController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // @PostMapping("/login")
+    // public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody
+    // LoginRequest loginRequest) {
+    // Map<String, String> response = new HashMap<>();
+
+    // if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() ==
+    // null) {
+    // response.put("message", "Nombre de usuario o contraseña no proporcionados");
+    // return ResponseEntity.badRequest().body(response);
+    // }
+
+    // Optional<UsuarioModel> usuarioOpt =
+    // usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
+
+    // if (usuarioOpt.isEmpty() ||
+    // !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
+    // response.put("message", "Credenciales incorrectas o usuario no encontrado");
+    // return ResponseEntity.status(401).body(response);
+    // }
+
+    // UsuarioModel usuario = usuarioOpt.get();
+
+    // response.put("message", "Inicio de sesión exitoso");
+    // response.put("usuarioId", usuario.getId().toString()); // Enviar el ID del
+    // usuario
+
+    // response.put("message", "Inicio de sesión exitoso");
+    // return ResponseEntity.ok(response);
+    // }
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody LoginRequest loginRequest) {
         Map<String, String> response = new HashMap<>();
 
         if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() == null) {
-            response.put("message", "Nombre de usuario o contraseña no proporcionados");
+            response.put("message", "Faltan credenciales");
             return ResponseEntity.badRequest().body(response);
         }
-
-        // boolean valido =
-        // usuarioService.validateCredentials1(loginRequest.getNombreUsuario(),
-        // loginRequest.getClave());
-
-        // if (!valido) {
-        // response.put("message", "Credenciales incorrectas o usuario no encontrado");
-        // return ResponseEntity.status(401).body(response);
-        // }
 
         Optional<UsuarioModel> usuarioOpt = usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
 
         if (usuarioOpt.isEmpty() || !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
-            response.put("message", "Credenciales incorrectas o usuario no encontrado");
+            response.put("message", "Credenciales incorrectas");
             return ResponseEntity.status(401).body(response);
         }
 
         UsuarioModel usuario = usuarioOpt.get();
+        String token = jwtUtil.generateToken(usuario.getNombreUsuario());
 
+        response.put("token", token);
+        response.put("usuarioId", usuario.getId().toString());
         response.put("message", "Inicio de sesión exitoso");
-        response.put("usuarioId", usuario.getId().toString()); // Enviar el ID del usuario
 
-        response.put("message", "Inicio de sesión exitoso");
         return ResponseEntity.ok(response);
     }
 
