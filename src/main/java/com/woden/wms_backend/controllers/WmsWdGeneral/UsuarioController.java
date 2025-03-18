@@ -19,6 +19,7 @@ import com.woden.wms_backend.models.LoginRequest;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
 import com.woden.wms_backend.security.JwtUtil;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioService;
+import com.woden.wms_backend.util.EncryptUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -80,6 +81,55 @@ public class UsuarioController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    EncryptUtil encryptUtil;
+
+    // @PostMapping("/login")
+    // public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody
+    // LoginRequest loginRequest) {
+    // Map<String, String> response = new HashMap<>();
+
+    // System.out.println("Clave: " + loginRequest.getClave());
+
+    // if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() ==
+    // null) {
+    // response.put("message", "Faltan credenciales");
+    // return ResponseEntity.badRequest().body(response);
+    // }
+
+    // Optional<UsuarioModel> usuarioOpt =
+    // usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
+
+    // if (usuarioOpt.isEmpty() ||
+    // !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
+    // response.put("message", "Credenciales incorrectas");
+    // return ResponseEntity.status(401).body(response);
+    // }
+
+    // UsuarioModel usuario = usuarioOpt.get();
+
+    // String claveEncriptada = encryptUtil.encode(loginRequest.getClave());
+    // System.out.println("Clave: " + loginRequest.getClave());
+    // System.out.println("Clave encriptada: " + claveEncriptada);
+
+    // if (!usuario.getClave().equals(claveEncriptada)) {
+    // response.put("message", "Contraseña incorrecta");
+    // return ResponseEntity.status(401).body(response);
+    // }
+
+    // System.out.println("Nombre de usuario: " + loginRequest.getNombreUsuario());
+    // System.out.println("Clave: " + loginRequest.getClave());
+    // System.out.println("Clave encriptada: " + claveEncriptada);
+
+    // String token = jwtUtil.generateToken(usuario.getNombreUsuario());
+
+    // response.put("token", token);
+    // response.put("usuarioId", usuario.getId().toString());
+    // response.put("message", "Inicio de sesión exitoso");
+
+    // return ResponseEntity.ok(response);
+    // }
+
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody LoginRequest loginRequest) {
         Map<String, String> response = new HashMap<>();
@@ -91,12 +141,24 @@ public class UsuarioController {
 
         Optional<UsuarioModel> usuarioOpt = usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
 
-        if (usuarioOpt.isEmpty() || !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
+        if (usuarioOpt.isEmpty()) {
             response.put("message", "Credenciales incorrectas");
             return ResponseEntity.status(401).body(response);
         }
 
         UsuarioModel usuario = usuarioOpt.get();
+
+        // Encriptar la contraseña proporcionada por el usuario
+        String claveEncriptada = encryptUtil.encode(loginRequest.getClave());
+
+        // Comparar la contraseña encriptada almacenada con la contraseña encriptada
+        // proporcionada
+        if (!usuario.getClave().equals(claveEncriptada)) {
+            response.put("message", "Contraseña incorrecta");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        // Generar el token JWT
         String token = jwtUtil.generateToken(usuario.getNombreUsuario());
 
         response.put("token", token);

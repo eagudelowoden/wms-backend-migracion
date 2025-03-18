@@ -3,10 +3,12 @@ package com.woden.wms_backend.services.WmsWdGeneral;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
-import com.woden.wms_backend.repositories.WmsWdGeneral.UsuarioRepository;;
+import com.woden.wms_backend.repositories.WmsWdGeneral.UsuarioRepository;
+import com.woden.wms_backend.util.EncryptUtil;;
 
 @Service
 public class UsuarioService {
@@ -16,7 +18,13 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    @Autowired
+    private EncryptUtil encryptUtil;
+
     public UsuarioModel saveUser(UsuarioModel usuario) {
+
+        String claveEncriptada = encryptUtil.encode(usuario.getClave());
+        usuario.setClave(claveEncriptada);
         return usuarioRepository.save(usuario);
     }
 
@@ -45,19 +53,20 @@ public class UsuarioService {
 
     public boolean validateCredentials(String nombreUsuario, String clave) {
         Optional<UsuarioModel> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
-        
+
         if (usuarioOpt.isEmpty()) {
             return false; // Usuario no encontrado
         }
-    
+
         UsuarioModel usuario = usuarioOpt.get();
-        
+
         // Manejo de valores nulos
         if (usuario.getClave() == null || clave == null) {
+            System.out.println("Clave:" + usuario.getClave()); // Imprimir en consola
             return false; // Contraseña inválida
         }
-    
-        return usuario.getClave().equals(clave);  // Comparación con el campo 'clave'
+
+        return usuario.getClave().equals(clave); // Comparación con el campo 'clave'
     }
 
     public boolean validateCredentials1(String nombreUsuario, String clave) {
@@ -66,13 +75,10 @@ public class UsuarioService {
         if (usuarioOpt.isPresent() && usuarioOpt.get().getClave().equals(clave)) {
             return true;
         }
-    
+
         return false;
     }
-    
-    
-    
-    
+
     public List<UsuarioModel> getUserActive() {
         return usuarioRepository.findByActivoTrue();
     }

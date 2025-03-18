@@ -14,42 +14,54 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface IngresoRepository extends BaseRepository<IngresoModel, Integer> {
   @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_InsertEntry :serial, :mac, :serial3, :serial4, :serial5, :codigoSapId, :palletId, :estadoId, " +
-            ":tipoOrigenId, :origenId, :tipologiaId, :nivelId, :tramite, :documento, :guia, :caja, :falla, :tecnicoCliente, " +
-            ":prealertaId, :cruce, :novedad, :garantiaFabricante, :usuarioId, :observaciones, :estadoCliente, :loteId, " +
-            ":cajaIngresoId, :modeloId", nativeQuery = true)
-    void insertIngreso(
-        @Param("serial") String serial,
-        @Param("mac") String mac,
-        @Param("serial3") String serial3,
-        @Param("serial4") String serial4,
-        @Param("serial5") String serial5,
-        @Param("codigoSapId") Integer codigoSapId,
-        @Param("palletId") Integer palletId,
-        @Param("estadoId") Integer estadoId,
-        @Param("tipoOrigenId") Integer tipoOrigenId,
-        @Param("origenId") Integer origenId,
-        @Param("tipologiaId") Integer tipologiaId,
-        @Param("nivelId") Integer nivelId,
-        @Param("tramite") String tramite,
-        @Param("documento") String documento,
-        @Param("guia") String guia,
-        @Param("caja") Integer caja,
-        @Param("falla") String falla,
-        @Param("tecnicoCliente") String tecnicoCliente,
-        @Param("prealertaId") Integer prealertaId,
-        @Param("cruce") Integer cruce,
-        @Param("novedad") String novedad,
-        @Param("garantiaFabricante") Integer garantiaFabricante,
-        @Param("usuarioId") Integer usuarioId,
-        @Param("observaciones") String observaciones,
-        @Param("estadoCliente") String estadoCliente,
-        @Param("loteId") Integer loteId,
-        @Param("cajaIngresoId") Integer cajaIngresoId,
-        @Param("modeloId") Integer modeloId
-    );
+  @Transactional
+  @Query(value = "EXEC pa_InsertEntry :serial, :mac, :serial3, :serial4, :serial5, :codigoSapId, :palletId, :estadoId, "
+      +
+      ":tipoOrigenId, :origenId, :tipologiaId, :nivelId, :tramite, :documento, :guia, :caja, :falla, :tecnicoCliente, "
+      +
+      ":prealertaId, :cruce, :novedad, :garantiaFabricante, :usuarioId, :observaciones, :estadoCliente, :loteId, " +
+      ":cajaIngresoId, :modeloId", nativeQuery = true)
+  void insertIngreso(
+      @Param("serial") String serial,
+      @Param("mac") String mac,
+      @Param("serial3") String serial3,
+      @Param("serial4") String serial4,
+      @Param("serial5") String serial5,
+      @Param("codigoSapId") Integer codigoSapId,
+      @Param("palletId") Integer palletId,
+      @Param("estadoId") Integer estadoId,
+      @Param("tipoOrigenId") Integer tipoOrigenId,
+      @Param("origenId") Integer origenId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("nivelId") Integer nivelId,
+      @Param("tramite") String tramite,
+      @Param("documento") String documento,
+      @Param("guia") String guia,
+      @Param("caja") Integer caja,
+      @Param("falla") String falla,
+      @Param("tecnicoCliente") String tecnicoCliente,
+      @Param("prealertaId") Integer prealertaId,
+      @Param("cruce") Integer cruce,
+      @Param("novedad") String novedad,
+      @Param("garantiaFabricante") Integer garantiaFabricante,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("observaciones") String observaciones,
+      @Param("estadoCliente") String estadoCliente,
+      @Param("loteId") Integer loteId,
+      @Param("cajaIngresoId") Integer cajaIngresoId,
+      @Param("modeloId") Integer modeloId);
 
-    @Query(value = "EXEC pa_SearchEntryReingreso :palletId", nativeQuery = true)
-    List<Object[]> searchEntryReingreso(@Param("palletId") Integer palletId);
+  @Query(value = "EXEC pa_SearchEntryReingreso :palletId", nativeQuery = true)
+  List<Object[]> searchEntryReingreso(@Param("palletId") Integer palletId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_SendEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :opcion, :filas OUT", nativeQuery = true)
+  void sendIngreso(
+      @Param("estadoId") Integer estadoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("palletId") Integer palletId,
+      @Param("opcion") Integer opcion,
+      @Param("filas") Integer filas);
 }

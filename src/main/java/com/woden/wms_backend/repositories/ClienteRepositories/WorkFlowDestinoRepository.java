@@ -1,0 +1,20 @@
+package com.woden.wms_backend.repositories.ClienteRepositories;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.woden.wms_backend.models.Entity.WorkFlowDestinoModel;
+import com.woden.wms_backend.repositories.BaseRepository;
+
+@Repository
+public interface WorkFlowDestinoRepository extends BaseRepository<WorkFlowDestinoModel, Integer> {
+
+    @Query(value = "EXEC pa_GetIdWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
+    Integer getIdDestino(
+        @Param("origen") String origen,
+        @Param("opcion") String opcion,
+        @Param("descripcion") String descripcion,
+        @Param("tipologiaId") int tipologiaId
+    );
+}

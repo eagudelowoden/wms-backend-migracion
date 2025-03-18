@@ -69,4 +69,14 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       return pallet;
     }).collect(Collectors.toList());
   }
+
+  public void cerrarPallet(Integer palletId, Integer destinoId, Integer tipologiaId, Integer posicionId,
+      Integer estado) {
+    Integer filas = 0; // OUT simbólico
+    palletRepository.sendPallet(destinoId, tipologiaId, posicionId, estado, palletId, filas);
+  }
+
+  public Integer getCount(Integer palletId, String tabla) {
+    return palletRepository.getCountPallet(palletId, tabla);
+  }
 }

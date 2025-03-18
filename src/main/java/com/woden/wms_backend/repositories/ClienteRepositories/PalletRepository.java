@@ -31,4 +31,22 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("numero") String numero,
       @Param("destino") String destino,
       @Param("usuarioId") int usuarioId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_SendPallet :destinoId, :tipologiaId, :posicionId, :estado, :palletId, :filas OUT", nativeQuery = true)
+  void sendPallet(
+      @Param("destinoId") Integer destinoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("posicionId") Integer posicionId,
+      @Param("estado") Integer estado,
+      @Param("palletId") Integer palletId,
+      @Param("filas") Integer filas);
+
+  @Query(value = "EXEC pa_GetCountPallet :palletId, :tabla", nativeQuery = true)
+  Integer getCountPallet(
+      @Param("palletId") Integer palletId,
+      @Param("tabla") String tabla);
+
+
 }

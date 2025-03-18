@@ -75,4 +75,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  public void cerrarIngreso(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId,
+      Integer opcion) {
+    Integer filas = 0; // aquí el OUT lo usamos de forma simbólica
+    ingresoRepository.sendIngreso(estadoId, tipologiaId, usuarioId, palletId, opcion, filas);
+  }
 }
