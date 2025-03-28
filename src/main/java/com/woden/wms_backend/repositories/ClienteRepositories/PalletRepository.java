@@ -32,6 +32,9 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("destino") String destino,
       @Param("usuarioId") int usuarioId);
 
+  @Query(value = "EXEC pa_SearchTransitPallet :numero", nativeQuery = true)
+  List<Object[]> searchTransitPallet(@Param("numero") String numero);
+
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_SendPallet :destinoId, :tipologiaId, :posicionId, :estado, :palletId, :filas OUT", nativeQuery = true)
@@ -48,5 +51,29 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("palletId") Integer palletId,
       @Param("tabla") String tabla);
 
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_DeletePallet :palletId", nativeQuery = true)
+  void deletePallet(@Param("palletId") Integer palletId);
 
+  @Query(value = "EXEC pa_GetBoxPallet :palletId, :tabla", nativeQuery = true)
+  int getBoxCount(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
+
+  @Query(value = "EXEC pa_GetCountPallet :palletId, :tabla", nativeQuery = true)
+  int getCountEntries(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateBatchPalletEntry :loteId, :usuarioIdMovimiento, :palletId, :filas OUT", nativeQuery = true)
+  void updateBatchPallet(
+      @Param("palletId") int palletId,
+      @Param("loteId") int loteId,
+      @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
+      @Param("filas") int filas);
+
+  @Query(value = "EXEC pa_SearchReceivePallet :numero, :destino, :tipo", nativeQuery = true)
+  List<Object[]> searchReceivePallet(
+      @Param("numero") String numero,
+      @Param("destino") String destino,
+      @Param("tipo") String tipo); 
 }

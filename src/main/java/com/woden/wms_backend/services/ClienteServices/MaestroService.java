@@ -28,4 +28,14 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
                 .map(r -> (String) r[0]) // extrae el código del resultado
                 .collect(Collectors.toList());
     }
+
+    public int getIdMaster(String codigo, String tipo) {
+        Integer id = maestroRepository.getIdMaster(codigo, tipo);
+        return id != null ? id : 0;
+    }
+
+    public List<String> getListByTipo(String tipo) {
+        return maestroRepository.getListByTipo(tipo);
+    }
+
 }

@@ -1,7 +1,10 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,4 +40,19 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         return maestroService.getByTipoMaestroId(tipoMaestroId);
     }
 
+    @GetMapping("/id")
+    public ResponseEntity<Map<String, Integer>> getIdMaster(
+            @RequestParam String codigo,
+            @RequestParam String tipo) {
+        int id = maestroService.getIdMaster(codigo, tipo);
+        Map<String, Integer> response = new HashMap<>();
+        response.put("id", id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<String>> getListByTipo(@PathVariable String tipo) {
+        List<String> maestros = maestroService.getListByTipo(tipo);
+        return ResponseEntity.ok(maestros);
+    }
 }

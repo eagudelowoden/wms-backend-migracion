@@ -19,4 +19,13 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
             @Param("desc2") String desc2,
             @Param("desc3") String desc3,
             @Param("desc4") String desc4);
+
+    @Query(value = "EXEC pa_GetIdMaster :codigo, :tipo", nativeQuery = true)
+    Integer getIdMaster(@Param("codigo") String codigo, @Param("tipo") String tipo);
+
+    @Query(value = "EXEC pa_GetListMaster :tipo", nativeQuery = true)
+    List<String> getListByTipo(@Param("tipo") String tipo);
+
+    @Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo", nativeQuery = true)
+    Integer  getIdByCodigo(@Param("codigo") String codigo);
 }

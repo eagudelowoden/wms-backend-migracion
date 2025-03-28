@@ -15,31 +15,31 @@ public class PalletModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id")
-    private int id;
+    private Integer id;
     @Column(name = "Numero")
     private String numero;
     @Column(name = "PosicionId")
-    private int posicionId;
+    private Integer posicionId;
     @Column(name = "CodigoSapId")
-    private int codigoSapId;
+    private Integer codigoSapId;
     @Column(name = "TipologiaId")
-    private int tipologiaId;
+    private Integer tipologiaId;
     @Column(name = "OrigenId")
-    private int origenId;
+    private Integer origenId;
     @Column(name = "DestinoId")
-    private int destinoId;
+    private Integer destinoId;
     @Column(name = "UsuarioId")
-    private int usuarioId;
+    private Integer usuarioId;
     @Column(name = "Fecha")
     private String fecha;
     @Column(name = "UsuarioIdModifica")
-    private int usuarioIdModifica;
+    private Integer usuarioIdModifica;
     @Column(name = "FechaModifica")
     private String fechaModifica;
     @Column(name = "EstadoInventario")
-    private int estadoInventario;
+    private Integer estadoInventario;
     @Column(name = "Activo")
-    private int activo;
+    private Integer activo;
     @Column(name = "loteId")
     private Integer loteId;
 }

@@ -10,4 +10,5 @@ import com.woden.wms_backend.services.BaseService;
 public class IlegibleService extends BaseService<IlegibleModel, Integer> {
     public IlegibleService(IlegibleRepository ilegibleRepository) {
     }
+
 }

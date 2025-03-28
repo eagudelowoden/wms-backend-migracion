@@ -15,6 +15,7 @@ public class MaestroModel {
     @Column(name = "Id")
     private int id;
     private int tipoMaestroId;
+    @Column(name = "Codigo")
     private String codigo;
     private String descripcion;
     private int activo;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.services.BaseService;
 
 @Service
@@ -19,6 +20,8 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
 
     @Autowired
     private CodigoSapRepository codigoSapRepository;
+    @Autowired
+    private MaestroRepository maestroRepository;
 
     public List<Map<String, String>> getListDescriptionSapCode() {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCode();
@@ -60,5 +63,17 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         }
 
         return formattedResults;
+    }
+
+    public int getIdByCodigo(String codigo) {
+        return codigoSapRepository.getIdByCodigo(codigo); // usa @Query
+    }
+
+    public String getIdSerial(String tipo) {
+        return maestroRepository.getIdByCodigo(tipo).toString();
+    }
+
+    public String getIdNoSerial(String tipo) {
+        return maestroRepository.getIdByCodigo(tipo).toString();
     }
 }

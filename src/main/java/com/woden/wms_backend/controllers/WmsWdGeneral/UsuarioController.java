@@ -48,87 +48,11 @@ public class UsuarioController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // @PostMapping("/login")
-    // public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody
-    // LoginRequest loginRequest) {
-    // Map<String, String> response = new HashMap<>();
-
-    // if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() ==
-    // null) {
-    // response.put("message", "Nombre de usuario o contraseña no proporcionados");
-    // return ResponseEntity.badRequest().body(response);
-    // }
-
-    // Optional<UsuarioModel> usuarioOpt =
-    // usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
-
-    // if (usuarioOpt.isEmpty() ||
-    // !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
-    // response.put("message", "Credenciales incorrectas o usuario no encontrado");
-    // return ResponseEntity.status(401).body(response);
-    // }
-
-    // UsuarioModel usuario = usuarioOpt.get();
-
-    // response.put("message", "Inicio de sesión exitoso");
-    // response.put("usuarioId", usuario.getId().toString()); // Enviar el ID del
-    // usuario
-
-    // response.put("message", "Inicio de sesión exitoso");
-    // return ResponseEntity.ok(response);
-    // }
-
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
     EncryptUtil encryptUtil;
-
-    // @PostMapping("/login")
-    // public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody
-    // LoginRequest loginRequest) {
-    // Map<String, String> response = new HashMap<>();
-
-    // System.out.println("Clave: " + loginRequest.getClave());
-
-    // if (loginRequest.getNombreUsuario() == null || loginRequest.getClave() ==
-    // null) {
-    // response.put("message", "Faltan credenciales");
-    // return ResponseEntity.badRequest().body(response);
-    // }
-
-    // Optional<UsuarioModel> usuarioOpt =
-    // usuarioService.getUserByNameUser(loginRequest.getNombreUsuario());
-
-    // if (usuarioOpt.isEmpty() ||
-    // !usuarioOpt.get().getClave().equals(loginRequest.getClave())) {
-    // response.put("message", "Credenciales incorrectas");
-    // return ResponseEntity.status(401).body(response);
-    // }
-
-    // UsuarioModel usuario = usuarioOpt.get();
-
-    // String claveEncriptada = encryptUtil.encode(loginRequest.getClave());
-    // System.out.println("Clave: " + loginRequest.getClave());
-    // System.out.println("Clave encriptada: " + claveEncriptada);
-
-    // if (!usuario.getClave().equals(claveEncriptada)) {
-    // response.put("message", "Contraseña incorrecta");
-    // return ResponseEntity.status(401).body(response);
-    // }
-
-    // System.out.println("Nombre de usuario: " + loginRequest.getNombreUsuario());
-    // System.out.println("Clave: " + loginRequest.getClave());
-    // System.out.println("Clave encriptada: " + claveEncriptada);
-
-    // String token = jwtUtil.generateToken(usuario.getNombreUsuario());
-
-    // response.put("token", token);
-    // response.put("usuarioId", usuario.getId().toString());
-    // response.put("message", "Inicio de sesión exitoso");
-
-    // return ResponseEntity.ok(response);
-    // }
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> iniciarSesion(@RequestBody LoginRequest loginRequest) {

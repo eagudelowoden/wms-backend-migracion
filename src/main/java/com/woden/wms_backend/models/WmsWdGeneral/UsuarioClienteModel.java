@@ -1,4 +1,4 @@
-package com.woden.wms_backend.models.Entity;
+package com.woden.wms_backend.models.WmsWdGeneral;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

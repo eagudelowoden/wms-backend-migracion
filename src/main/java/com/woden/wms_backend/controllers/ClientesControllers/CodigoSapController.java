@@ -1,5 +1,6 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,5 +39,23 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
     @GetMapping("/list/noserial/{id}")
     public ResponseEntity<List<Map<String, String>>> getListDescriptionSapCodeNoSerial(@PathVariable int id) {
         return ResponseEntity.ok(codigoSapService.getListDescriptionSapCodeNoSerial(id));
+    }
+
+    @GetMapping("/id/{codigo}")
+    public ResponseEntity<Map<String, Integer>> getIdByCodigoSap(@PathVariable String codigo) {
+        int id = codigoSapService.getIdByCodigo(codigo);
+        Map<String, Integer> response = new HashMap<>();
+        response.put("id", id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/idSerial/{tipo}")
+    public String getIdSerial(@PathVariable String tipo) {
+        return codigoSapService.getIdSerial(tipo);
+    }
+
+    @GetMapping("/idNoSerial/{tipo}")
+    public String getIdNoSerial(@PathVariable String tipo) {
+        return codigoSapService.getIdNoSerial(tipo);
     }
 }

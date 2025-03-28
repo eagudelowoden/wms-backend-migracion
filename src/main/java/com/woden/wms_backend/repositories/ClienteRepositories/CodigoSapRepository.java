@@ -18,4 +18,8 @@ public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Inte
 
   @Query(value = "EXEC pa_GetListDescriptionSapCodeNoSerial :id", nativeQuery = true)
   List<Object[]> getListDescriptionSapCodeNoSerial(@Param("id") int id);
+
+  @Query(value = "EXEC pa_GetIdSapCode :codigo", nativeQuery = true)
+  int getIdByCodigo(@Param("codigo") String codigo);
+
 }
