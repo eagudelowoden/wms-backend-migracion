@@ -9,9 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
+import com.woden.wms_backend.dto.CodigoSapModelDTO;
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.services.ClienteServices.CodigoSapService;
 
@@ -57,5 +59,21 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
     @GetMapping("/idNoSerial/{tipo}")
     public String getIdNoSerial(@PathVariable String tipo) {
         return codigoSapService.getIdNoSerial(tipo);
+    }
+
+    @GetMapping("/getIdComboPallet")
+    public ResponseEntity<Map<String, Integer>> getIdComboPallet(
+            @RequestParam String codigo,
+            @RequestParam String descripcion) {
+        Map<String, Integer> response = new HashMap<>();
+        int id = codigoSapService.getIdComboPallet(codigo, descripcion);
+        response.put("id", id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/getModel/{codigo}")
+    public ResponseEntity<CodigoSapModelDTO> obtenerCodigoSap(@PathVariable String codigo) {
+        CodigoSapModelDTO model = codigoSapService.obtenerModeloPorCodigo(codigo);
+        return model != null ? ResponseEntity.ok(model) : ResponseEntity.notFound().build();
     }
 }

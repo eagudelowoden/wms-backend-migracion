@@ -23,6 +23,6 @@ public class UsuarioSysModel {
   @Column(name = "Perfil_Id")
   private Integer perfilId;
 
-  @Column(name = "Identificacion")
-  private Long identificacion;
+  // @Column(name = "Identificacion")
+  // private Long Identificacion;
 }

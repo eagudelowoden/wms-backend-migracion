@@ -20,16 +20,22 @@ public class PalletModel {
     private String numero;
     @Column(name = "PosicionId")
     private Integer posicionId;
+    private String posicion;
     @Column(name = "CodigoSapId")
     private Integer codigoSapId;
+    private String codigoSap;
+    private String descripcion;
     @Column(name = "TipologiaId")
     private Integer tipologiaId;
+    private String tipologia;
     @Column(name = "OrigenId")
     private Integer origenId;
+    private String origen;
     @Column(name = "DestinoId")
     private Integer destinoId;
     @Column(name = "UsuarioId")
     private Integer usuarioId;
+    private String usuario;
     @Column(name = "Fecha")
     private String fecha;
     @Column(name = "UsuarioIdModifica")
@@ -39,7 +45,9 @@ public class PalletModel {
     @Column(name = "EstadoInventario")
     private Integer estadoInventario;
     @Column(name = "Activo")
-    private Integer activo;
+    private Boolean activo;
     @Column(name = "loteId")
     private Integer loteId;
+    private Boolean multimodelo;
+    private Integer cantidadCaja;
 }

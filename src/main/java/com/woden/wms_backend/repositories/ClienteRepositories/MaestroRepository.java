@@ -3,6 +3,7 @@ package com.woden.wms_backend.repositories.ClienteRepositories;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -21,11 +22,21 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
             @Param("desc4") String desc4);
 
     @Query(value = "EXEC pa_GetIdMaster :codigo, :tipo", nativeQuery = true)
-    Integer getIdMaster(@Param("codigo") String codigo, @Param("tipo") String tipo);
+    List<Integer> getIdMaster(@Param("codigo") String codigo, @Param("tipo") String tipo);
 
     @Query(value = "EXEC pa_GetListMaster :tipo", nativeQuery = true)
     List<String> getListByTipo(@Param("tipo") String tipo);
 
     @Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo", nativeQuery = true)
-    Integer  getIdByCodigo(@Param("codigo") String codigo);
+    Integer getIdByCodigo(@Param("codigo") String codigo);
+
+    @Query(value = "EXEC pa_GetOriginsMaster :tipo", nativeQuery = true)
+    List<String> getOrigenes(@Param("tipo") String tipo);
+
+    @Query(value = "EXEC pa_GetFamilyNumberPallet :codigoSap", nativeQuery = true)
+    int getFamilyNumberPallet(@Param("codigoSap") String codigoSap);
+
+    @Query(value = "EXEC pa_AddCountPalletFamily :value, :familyId :filas OUT", nativeQuery = true)
+    int addCountPalletFamily(@Param("value") String value, @Param("familyId") int familyId,
+            @Param("filas") Integer filas);
 }

@@ -39,17 +39,26 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     @Autowired
     private IngresoService ingresoService;
 
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet) {
+    @PostMapping("/create/{clienteId}")
+    public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet, @PathVariable int clienteId) {
         Map<String, String> response = new HashMap<>();
         try {
-            palletService.createPallet(pallet);
+            palletService.createPallet(pallet, clienteId);
             response.put("message", "Pallet creado exitosamente.");
             return ResponseEntity.ok(response); // Devuelve un JSON en lugar de un String
         } catch (Exception e) {
             response.put("error", "Error al crear el pallet: " + e.getMessage());
             return ResponseEntity.status(500).body(response);
         }
+    }
+
+    @GetMapping("/getModel/{id}")
+    public ResponseEntity<?> getPalletById(@PathVariable int id) {
+        PalletModel pallet = palletService.getModel(id);
+        if (pallet == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pallet no encontrado");
+        }
+        return ResponseEntity.ok(pallet);
     }
 
     @GetMapping("/transito")
@@ -65,6 +74,15 @@ public class PalletController extends BaseController<PalletModel, Integer> {
             @RequestParam String destino,
             @RequestParam int usuarioId) {
         List<PalletDTO> pallets = palletService.searchEntry(numero, destino, usuarioId);
+        return ResponseEntity.ok(pallets);
+    }
+
+    @GetMapping("/searchAccesory")
+    public ResponseEntity<List<PalletDTO>> searchAccesory(
+            @RequestParam String numero,
+            @RequestParam String destino,
+            @RequestParam int usuarioId) {
+        List<PalletDTO> pallets = palletService.searchAccesory(numero, destino, usuarioId);
         return ResponseEntity.ok(pallets);
     }
 
@@ -147,5 +165,15 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
         List<Map<String, Object>> pallets = palletService.searchReceivePallet(numero, destino, tipo);
         return ResponseEntity.ok(pallets);
+    }
+
+    @DeleteMapping("/deleteAccesory/{palletId}/{cantidad}/{codigoSapId}")
+    public ResponseEntity<String> eliminarAccesorio(
+            @PathVariable int palletId,
+            @PathVariable int cantidad,
+            @PathVariable int codigoSapId) {
+        boolean eliminado = palletService.eliminarAccesorio(palletId, cantidad, codigoSapId);
+        return eliminado ? ResponseEntity.ok("Accesorio eliminado correctamente.")
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se pudo eliminar el accesorio.");
     }
 }

@@ -40,12 +40,12 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         return maestroService.getByTipoMaestroId(tipoMaestroId);
     }
 
-    @GetMapping("/id")
-    public ResponseEntity<Map<String, Integer>> getIdMaster(
+    @GetMapping("/getId")
+    public ResponseEntity<Map<String, List<Integer>>> getIdMaster(
             @RequestParam String codigo,
             @RequestParam String tipo) {
-        int id = maestroService.getIdMaster(codigo, tipo);
-        Map<String, Integer> response = new HashMap<>();
+        List<Integer> id = maestroService.getIdMaster(codigo, tipo);
+        Map<String, List<Integer>> response = new HashMap<>();
         response.put("id", id);
         return ResponseEntity.ok(response);
     }
@@ -54,5 +54,11 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     public ResponseEntity<List<String>> getListByTipo(@PathVariable String tipo) {
         List<String> maestros = maestroService.getListByTipo(tipo);
         return ResponseEntity.ok(maestros);
+    }
+
+    @GetMapping("/origenes/{tipo}")
+    public ResponseEntity<List<String>> getOrigenes(@PathVariable String tipo) {
+        List<String> origenes = maestroService.obtenerOrigenes(tipo);
+        return ResponseEntity.ok(origenes);
     }
 }

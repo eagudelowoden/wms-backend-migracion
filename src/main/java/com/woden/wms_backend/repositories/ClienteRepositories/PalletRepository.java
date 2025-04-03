@@ -13,6 +13,10 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
+
+  @Query(value = "EXEC pa_GetModelPallet :id", nativeQuery = true)
+  List<Object[]> getPalletById(@Param("id") int id);
+
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_InsertPallet :numero, :posicionId, :codigoSapId, :tipologiaId, :origenId, :destinoId, :usuarioId, :loteId", nativeQuery = true)
@@ -28,6 +32,12 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
   @Query(value = "EXEC pa_SearchEntryPallet :numero, :destino, :usuarioId", nativeQuery = true)
   List<Object[]> searchEntry(
+      @Param("numero") String numero,
+      @Param("destino") String destino,
+      @Param("usuarioId") int usuarioId);
+
+  @Query(value = "EXEC pa_SearchAccesoryPallet :numero, :destino, :usuarioId", nativeQuery = true)
+  List<Object[]> searchAccesory(
       @Param("numero") String numero,
       @Param("destino") String destino,
       @Param("usuarioId") int usuarioId);
@@ -75,5 +85,11 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   List<Object[]> searchReceivePallet(
       @Param("numero") String numero,
       @Param("destino") String destino,
-      @Param("tipo") String tipo); 
+      @Param("tipo") String tipo);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
+  int eliminarAccesorio(@Param("palletId") int palletId, @Param("cantidad") int cantidad,
+      @Param("codigoSapId") int codigoSapId);
 }

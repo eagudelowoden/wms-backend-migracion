@@ -1,0 +1,29 @@
+package com.woden.wms_backend.controllers.WmsWdGeneral;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.woden.wms_backend.services.WmsWdGeneral.ClienteDataAccessService;
+
+@RestController
+@RequestMapping("/api/clientes-data-access")
+public class ClienteDataAccessController {
+
+  @Autowired
+  private ClienteDataAccessService clienteService;
+
+  @GetMapping("/tipo-origen/{id}")
+  public ResponseEntity<Map<String, Integer>> getTipoOrigen(@PathVariable Integer id) {
+    int tipoOrigen = clienteService.getTipoOrigenValue(id);
+    Map<String, Integer> response = new HashMap<>();
+    response.put("id", tipoOrigen);
+    return ResponseEntity.ok(response);
+  }
+}

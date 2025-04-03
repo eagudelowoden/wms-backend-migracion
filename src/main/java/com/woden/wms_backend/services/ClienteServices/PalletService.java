@@ -17,9 +17,12 @@ import com.woden.wms_backend.dto.AbrirPalletDTO;
 import com.woden.wms_backend.dto.ConfirmarPalletDTO;
 import com.woden.wms_backend.dto.PalletDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
+import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 
 @Service
 public class PalletService extends BaseService<PalletModel, Integer> {
@@ -29,27 +32,55 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private PalletRepository palletRepository;
   @Autowired
   private IngresoRepository ingresoRepository;
+  @Autowired
+  private CodigoSapRepository codigoSapRepository;
+  @Autowired
+  private MaestroRepository maestroRepository;
+  @Autowired
+  private ClienteService clienteService;
 
-  // @Transactional
-  // @Transactional(propagation = Propagation.REQUIRED)
-  // public void createPallet(PalletModel p) {
-  // logger.info("Insertando pallet con datos: {}", p);
-  // Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
-  // palletRepository.insertPallet(
-  // p.getNumero(),
-  // p.getPosicionId(),
-  // p.getCodigoSapId(),
-  // p.getTipologiaId(),
-  // p.getOrigenId(),
-  // p.getDestinoId(),
-  // p.getUsuarioId(),
-  // loteId);
-  // logger.info("Pallet insertado correctamente en la base de datos.");
-  // }
+  public PalletModel getModel(int id) {
+    List<Object[]> results = palletRepository.getPalletById(id);
+
+    if (results.isEmpty()) {
+      return null;
+    }
+
+    Object[] row = results.get(0);
+    PalletModel pallet = new PalletModel();
+
+    pallet.setId((Integer) row[0]);
+    pallet.setNumero((String) row[1]);
+    pallet.setPosicionId((Integer) row[2]);
+    pallet.setPosicion((String) row[3]);
+    pallet.setTipologiaId((Integer) row[4]);
+    pallet.setTipologia((String) row[5]);
+    pallet.setCodigoSapId((Integer) row[6]);
+    pallet.setCodigoSap((String) row[7]);
+    pallet.setDescripcion((String) row[8]);
+    pallet.setOrigenId((Integer) row[9]);
+    pallet.setOrigen((String) row[10]);
+    pallet.setDestinoId((Integer) row[11]);
+    pallet.setActivo((Boolean) row[12]);
+    pallet.setUsuario((String) row[13]);
+    pallet.setLoteId((Integer) row[14]);
+    pallet.setFecha((String) row[15]);
+    pallet.setMultimodelo((Boolean) row[16]);
+    pallet.setCantidadCaja((Integer) row[17]);
+
+    return pallet;
+  }
+
   @Transactional(propagation = Propagation.REQUIRED)
-  public void createPallet(PalletModel p) {
+  public void createPallet(PalletModel p, int clienteId) {
     try {
       logger.info("Insertando pallet con datos: {}", p);
+
+      // Obtener el valor de KitIngresoON para el cliente
+      Boolean kitEntryON = clienteService.getKitIngresoValue(clienteId);
+      logger.info("Valor de KitIngresoON para cliente {}: {}", clienteId, kitEntryON);
+
+      // Insertar el pallet
       Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
       palletRepository.insertPallet(
           p.getNumero(),
@@ -60,10 +91,23 @@ public class PalletService extends BaseService<PalletModel, Integer> {
           p.getDestinoId(),
           p.getUsuarioId(),
           loteId);
+
       logger.info("Pallet insertado correctamente en la base de datos.");
+
+      // Si KitIngresoON está activo, actualizar la cantidad en la familia
+      if (Boolean.TRUE.equals(kitEntryON)) {
+        String codigoSap = p.getCodigoSapId().toString();
+        int familyId = codigoSapRepository.getFamilyId(codigoSap);
+        String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
+
+        int filas = 0; // OUT simbólico
+        maestroRepository.addCountPalletFamily(newFamilyNumber, familyId, filas);
+        logger.info("Actualizada la cantidad de la familia para código SAP: {}", codigoSap);
+      }
+
     } catch (Exception e) {
       logger.error("Error al insertar el pallet: ", e);
-      throw e; // Relanzar la excepción para ver más detalles en la respuesta HTTP
+      throw e; // Relanzar la excepción para manejo en el controlador
     }
   }
 
@@ -74,7 +118,22 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       PalletDTO pallet = new PalletDTO();
       pallet.setId((Integer) obj[0]);
       pallet.setNumero((String) obj[1]);
-      pallet.setCodigo((String) obj[2]);
+      pallet.setCodigoSap((String) obj[2]);
+      pallet.setCantidad((Integer) obj[3]); // Cantidad no está en PalletModel, pero sí en el DTO
+      pallet.setTipologia((String) obj[4]);
+      pallet.setLote((String) obj[5]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
+  public List<PalletDTO> searchAccesory(String numero, String destino, int usuarioId) {
+    List<Object[]> results = palletRepository.searchEntry(numero, destino, usuarioId);
+
+    return results.stream().map(obj -> {
+      PalletDTO pallet = new PalletDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCodigoSap((String) obj[2]);
       pallet.setCantidad((Integer) obj[3]); // Cantidad no está en PalletModel, pero sí en el DTO
       pallet.setTipologia((String) obj[4]);
       pallet.setLote((String) obj[5]);
@@ -159,5 +218,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallets.add(pallet);
     }
     return pallets;
+  }
+
+  public boolean eliminarAccesorio(int palletId, int cantidad, int codigoSapId) {
+    int result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
+    return result > 0;
   }
 }

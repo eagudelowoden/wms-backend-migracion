@@ -9,6 +9,9 @@ import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.services.BaseService;
 
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
+
 @Service
 public class MaestroService extends BaseService<MaestroModel, Integer> {
 
@@ -29,13 +32,23 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
                 .collect(Collectors.toList());
     }
 
-    public int getIdMaster(String codigo, String tipo) {
-        Integer id = maestroRepository.getIdMaster(codigo, tipo);
-        return id != null ? id : 0;
+    public List<Integer> getIdMaster(String codigo, String tipo) {
+        return maestroRepository.getIdMaster(codigo, tipo);
     }
 
     public List<String> getListByTipo(String tipo) {
         return maestroRepository.getListByTipo(tipo);
     }
 
+    public List<String> obtenerOrigenes(String tipo) {
+        return maestroRepository.getOrigenes(tipo);
+    }
+
+    public int getFamilyNumberPallet(String codigoSap) {
+        return maestroRepository.getFamilyNumberPallet(codigoSap);
+    }
+
+    public int addCountPalletFamily(int familyId, String value, int filas) {
+        return maestroRepository.addCountPalletFamily(value, familyId, filas);
+    }
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.dto.CodigoSapModelDTO;
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
@@ -75,5 +76,13 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
 
     public String getIdNoSerial(String tipo) {
         return maestroRepository.getIdByCodigo(tipo).toString();
+    }
+
+    public int getIdComboPallet(String codigo, String descripcion) {
+        return codigoSapRepository.getIdComboPallet(codigo, descripcion);
+    }
+
+    public CodigoSapModelDTO obtenerModeloPorCodigo(String codigo) {
+        return codigoSapRepository.getModelByCodigo(codigo);
     }
 }

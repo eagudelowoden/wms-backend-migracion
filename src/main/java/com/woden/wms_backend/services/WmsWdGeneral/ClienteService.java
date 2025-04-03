@@ -16,12 +16,16 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
     public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
     }
-    
+
     public List<String> getListClient(int usuarioId) {
         return clienteRepository.getListClient(usuarioId);
     }
 
     public int getIdClient(String nombre) {
         return clienteRepository.getIdClient(nombre);
+    }
+
+    public Boolean getKitIngresoValue(int id) {
+        return clienteRepository.getKitIngresoON(id);
     }
 }

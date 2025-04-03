@@ -20,11 +20,15 @@ public class CodigoSapModel implements Activable{
     @Column(name = "Descripcion")
     private String descripcion;
     @Column(name = "FamiliaId")
+    private String familiaId;
+    @Column(name = "Familia")
     private String familia;
     @Column(name = "TipoId")
     private Integer tipoId;
+    @Column(name = "Tipo")
+    private String tipo;
     @Column(name = "Validacion")
-    private Integer validacion;
+    private Boolean validacion;
     @Column(name = "Direccion")
     private String direccion;
     @Column(name = "Largos")
@@ -37,20 +41,17 @@ public class CodigoSapModel implements Activable{
     private Integer clasificacionId;
     @Column(name = "NumSerial")
     private Integer numSerial;
-    @Column(name = "Valor")
-    private Integer valor;
-    @Column(name = "Activo")
-    private Boolean activo;
-    @Column(name = "idTipoLectura")
-    private String tipo;
-    @Column(name = "tipoEquipoId")
-    private Integer tipoEquipoId;
-    @Column(name = "areaId")
-    private Integer areaId;
-    @Column(name = "modeloId")
-    private Integer modeloId;
-    @Column(name = "proveedorId")
-    private Integer proveedorId;
+    @Column(name = "AsignacionAcc")
+    private Integer asignar;
+    @Column(name = "LargosMac")
+    private String largosMac;
+    @Column(name = "LargosSerial3")
+    private String largosSerial3;
+    @Column(name = "LargosSerial4")
+    private String largosSerial4; 
+    @Column(name = "LargosSerial5")
+    private String largosSerial5;
+    private String clasificacion;
     @Column(name = "validacionMac")
     private Integer validacionMac;
     @Column(name = "direccionMac")
@@ -63,8 +64,17 @@ public class CodigoSapModel implements Activable{
     private Integer multimodelo;
     @Column(name = "cantidadCaja")
     private Integer cantidadCaja;
-    @Column(name = "AsignacionAcc")
-    private Integer asignar;
-    private String largosMac,largosSerial3,largosSerial4,largosSerial5;
+    @Column(name = "Valor")
+    private Integer valor;
+    @Column(name = "tipoEquipoId")
+    private Integer tipoEquipoId;
+    @Column(name = "areaId")
+    private Integer areaId;
+    @Column(name = "modeloId")
+    private Integer modeloId;
+    @Column(name = "proveedorId")
+    private Integer proveedorId;
+    @Column(name = "Activo")
+    private Boolean activo;
 
 }
