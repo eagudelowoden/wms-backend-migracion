@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
@@ -21,11 +22,11 @@ public class CodigoSapModel implements Activable{
     private String descripcion;
     @Column(name = "FamiliaId")
     private String familiaId;
-    @Column(name = "Familia")
+    @Transient
     private String familia;
     @Column(name = "TipoId")
     private Integer tipoId;
-    @Column(name = "Tipo")
+    @Transient
     private String tipo;
     @Column(name = "Validacion")
     private Boolean validacion;
@@ -51,6 +52,7 @@ public class CodigoSapModel implements Activable{
     private String largosSerial4; 
     @Column(name = "LargosSerial5")
     private String largosSerial5;
+    @Transient
     private String clasificacion;
     @Column(name = "validacionMac")
     private Integer validacionMac;

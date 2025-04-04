@@ -127,14 +127,14 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   public List<PalletDTO> searchAccesory(String numero, String destino, int usuarioId) {
-    List<Object[]> results = palletRepository.searchEntry(numero, destino, usuarioId);
+    List<Object[]> results = palletRepository.searchAccesory(numero, destino, usuarioId);
 
     return results.stream().map(obj -> {
       PalletDTO pallet = new PalletDTO();
       pallet.setId((Integer) obj[0]);
       pallet.setNumero((String) obj[1]);
       pallet.setCodigoSap((String) obj[2]);
-      pallet.setCantidad((Integer) obj[3]); // Cantidad no está en PalletModel, pero sí en el DTO
+      pallet.setCantidad((Integer) obj[3]);
       pallet.setTipologia((String) obj[4]);
       pallet.setLote((String) obj[5]);
       return pallet;
