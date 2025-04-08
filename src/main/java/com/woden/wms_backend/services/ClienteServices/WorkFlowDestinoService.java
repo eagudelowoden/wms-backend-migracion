@@ -1,9 +1,11 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.dto.DestinoDTO;
 import com.woden.wms_backend.repositories.ClienteRepositories.WorkFlowDestinoRepository;
 
 @Service
@@ -15,8 +17,8 @@ public class WorkFlowDestinoService {
         this.repository = repository;
     }
 
-    public Integer obtenerDestinoId(String origen, String opcion, String descripcion, int tipologiaId) {
-        return repository.getIdDestino(origen, opcion, descripcion, tipologiaId);
+    public List<Integer> obtenerDestinoId(String opcion, String origen, String descripcion, int tipologiaId) {
+        return repository.getIdDestino(opcion, origen, descripcion, tipologiaId);
     }
 
     public List<String> getNombresDestinos(String opcion, String origen, String descripcion, int tipologiaId) {

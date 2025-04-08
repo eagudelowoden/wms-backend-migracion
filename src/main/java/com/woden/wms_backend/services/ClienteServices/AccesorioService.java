@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.dto.AccesorioSearchDTO;
+import com.woden.wms_backend.dto.CerrarPalletDTO;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.AccesorioRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
 
 import jakarta.transaction.Transactional;
@@ -21,6 +23,8 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
   @Autowired
   private AccesorioRepository accesorioRepository;
+  @Autowired
+  private PalletRepository palletRepository;
 
   @Transactional
   public void guardarAccesorios(List<AccesorioModel> accesorios) {
@@ -43,21 +47,32 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
   }
 
   public List<AccesorioSearchDTO> buscarAccesoriosPorPallet(int palletId) {
-        List<Object[]> resultados = accesorioRepository.buscarPorPalletId(palletId);
-        List<AccesorioSearchDTO> accesorios = new ArrayList<>();
+    List<Object[]> resultados = accesorioRepository.buscarPorPalletId(palletId);
+    List<AccesorioSearchDTO> accesorios = new ArrayList<>();
 
-        for (Object[] fila : resultados) {
-            AccesorioSearchDTO dto = new AccesorioSearchDTO();
-            dto.setCodigo((String) fila[0]);
-            dto.setDescripcion((String) fila[1]);
-            dto.setTipoAccesorio((String) fila[2]);
-            dto.setOrigen((String) fila[3]);
-            dto.setDocumento((String) fila[4]);
-            dto.setGuia((String) fila[5]);
-            dto.setCaja(fila[6] != null ? fila[6].toString() : null);
-            accesorios.add(dto);
-        }
-
-        return accesorios;
+    for (Object[] fila : resultados) {
+      AccesorioSearchDTO dto = new AccesorioSearchDTO();
+      dto.setCodigo((String) fila[0]);
+      dto.setDescripcion((String) fila[1]);
+      dto.setTipoAccesorio((String) fila[2]);
+      dto.setOrigen((String) fila[3]);
+      dto.setDocumento((String) fila[4]);
+      dto.setGuia((String) fila[5]);
+      dto.setCaja(fila[6] != null ? fila[6].toString() : null);
+      accesorios.add(dto);
     }
+
+    return accesorios;
+  }
+
+  public int eliminarAccesorio(int palletId, int cantidad, int codigoSapId) {
+    return accesorioRepository.deleteAccesorio(palletId, cantidad, codigoSapId);
+  }
+
+  public boolean cerrarPalletAccesorio(CerrarPalletDTO dto) {
+    int filas = 0; // OUT simbólico
+    accesorioRepository.sendAccesory(dto.getPalletId(), dto.getDestinoId(), filas);
+    palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    return true;
+  }
 }

@@ -12,17 +12,17 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface WorkFlowDestinoRepository extends BaseRepository<WorkFlowDestinoModel, Integer> {
 
-    @Query(value = "EXEC pa_GetIdWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
-    Integer getIdDestino(
-            @Param("origen") String origen,
-            @Param("opcion") String opcion,
-            @Param("descripcion") String descripcion,
-            @Param("tipologiaId") int tipologiaId);
+  @Query(value = "EXEC pa_GetIdWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
+  List<Integer> getIdDestino(
+      @Param("opcion") String opcion,
+      @Param("origen") String origen,
+      @Param("descripcion") String descripcion,
+      @Param("tipologiaId") int tipologiaId);
 
-    @Query(value = "EXEC pa_GetNameWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
-    List<String> listarDestinosWorkflow(
-            @Param("opcion") String opcion,
-            @Param("origen") String origen,
-            @Param("descripcion") String descripcion,
-            @Param("tipologiaId") int tipologiaId);
+  @Query(value = "EXEC pa_GetNameWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
+  List<String> listarDestinosWorkflow(
+      @Param("opcion") String opcion,
+      @Param("origen") String origen,
+      @Param("descripcion") String descripcion,
+      @Param("tipologiaId") int tipologiaId);
 }

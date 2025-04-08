@@ -69,9 +69,6 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_GetBoxPallet :palletId, :tabla", nativeQuery = true)
   int getBoxCount(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
 
-  @Query(value = "EXEC pa_GetCountPallet :palletId, :tabla", nativeQuery = true)
-  int getCountEntries(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
-
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_UpdateBatchPalletEntry :loteId, :usuarioIdMovimiento, :palletId, :filas OUT", nativeQuery = true)
@@ -92,4 +89,5 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
   int eliminarAccesorio(@Param("palletId") int palletId, @Param("cantidad") int cantidad,
       @Param("codigoSapId") int codigoSapId);
+
 }

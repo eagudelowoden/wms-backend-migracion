@@ -17,6 +17,7 @@ import com.woden.wms_backend.dto.AbrirPalletDTO;
 import com.woden.wms_backend.dto.ConfirmarPalletDTO;
 import com.woden.wms_backend.dto.PalletDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
+import com.woden.wms_backend.repositories.ClienteRepositories.AccesorioRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
@@ -32,6 +33,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private PalletRepository palletRepository;
   @Autowired
   private IngresoRepository ingresoRepository;
+  @Autowired
+  private AccesorioRepository accesorioRepository;
   @Autowired
   private CodigoSapRepository codigoSapRepository;
   @Autowired
@@ -170,11 +173,20 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return palletRepository.getCountPallet(palletId, tabla);
   }
 
-  public boolean deletePallet(Integer palletId, String tipoEquipo) {
-    String tabla = tipoEquipo.equalsIgnoreCase("Serializable") ? "INGRESO" : "ACCESORIO";
+  public boolean deletePallet(Integer palletId, String tipoEquipo, String tipo) {
+    String tabla = getTablaDesdeTipo(tipoEquipo, tipo);
+    String estado = getEstadoDesdeTipo(tipoEquipo, tipo);
 
-    int cajas = palletRepository.getBoxCount(palletId, tabla);
-    int registros = palletRepository.getCountEntries(palletId, tabla);
+    int cajas = 0;
+    try {
+      if (estado != null) {
+        cajas = palletRepository.getBoxCount(palletId, estado); // Usa el estado para validar dependencias en cajas
+      }
+    } catch (Exception e) {
+      cajas = 0; // En caso de fallo en el procedimiento almacenado
+    }
+
+    int registros = palletRepository.getCountPallet(palletId, tabla);
 
     if (cajas > 0 || registros > 0) {
       return false; // ❌ No eliminar, tiene dependencias
@@ -182,6 +194,54 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     palletRepository.deletePallet(palletId); // ✅ Procedimiento de eliminación
     return true;
+  }
+
+  private String getTablaDesdeTipo(String tipoEquipo, String tipo) {
+    if ("serializable".equalsIgnoreCase(tipoEquipo)) {
+      switch (tipo.toLowerCase()) {
+        case "ingreso":
+          return "INGRESO";
+        case "accesorio":
+          return "ACCESORIO";
+        case "partes":
+          return "PARTES";
+        default:
+          throw new IllegalArgumentException("Tipo no válido para equipo serializable: " + tipo);
+      }
+    } else {
+      switch (tipo.toLowerCase()) {
+        case "accesorio":
+          return "ACCESORIO";
+        case "empaque":
+          return "EMPAQUE";
+        case "despacho":
+          return "DESPACHO";
+        case "ingreso":
+          return "INGRESO";
+        default:
+          throw new IllegalArgumentException("Tipo no válido para equipo no serializable: " + tipo);
+      }
+    }
+  }
+
+  private String getEstadoDesdeTipo(String tipoEquipo, String tipo) {
+    if ("serializable".equalsIgnoreCase(tipoEquipo)) {
+      if ("ingreso".equalsIgnoreCase(tipo))
+        return "Ingreso";
+      // Los otros tipos serializables no tienen lógica de conteo en pa_GetBoxPallet
+      return null;
+    } else {
+      switch (tipo.toLowerCase()) {
+        case "empaque":
+          return "Empaque";
+        case "despacho":
+          return "Despacho";
+        case "ingreso":
+          return "Ingreso";
+        default:
+          return null;
+      }
+    }
   }
 
   public boolean confirmarPalletTransito(ConfirmarPalletDTO dto) {
@@ -224,4 +284,5 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     int result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
     return result > 0;
   }
+
 }

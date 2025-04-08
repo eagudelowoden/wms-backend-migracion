@@ -1,6 +1,8 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.woden.wms_backend.dto.DestinoDTO;
 import com.woden.wms_backend.dto.WorkFlowDestinoDTO;
 import com.woden.wms_backend.services.ClienteServices.WorkFlowDestinoService;
 
@@ -24,13 +27,14 @@ public class WorkFlowDestinoController {
   }
 
   @PostMapping("/destino")
-  public ResponseEntity<Integer> obtenerDestino(@RequestBody WorkFlowDestinoDTO dto) {
-    Integer destinoId = service.obtenerDestinoId(
-        dto.getOrigen(),
+  public ResponseEntity<List<Integer>> obtenerDestinos(@RequestBody WorkFlowDestinoDTO dto) {
+    List<Integer> destinos = service.obtenerDestinoId(
         dto.getOpcion(),
+        dto.getOrigen(),
         dto.getDescripcion(),
         dto.getTipologiaId());
-    return ResponseEntity.ok(destinoId != null ? destinoId : 0);
+    System.out.println("🔍 DESTINOS ENCONTRADOS: " + destinos.size());
+    return ResponseEntity.ok(destinos);
   }
 
   @GetMapping("/listar-destinos")

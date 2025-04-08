@@ -34,4 +34,19 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
 
   @Query(value = "{call pa_SearchAccesory(:palletId)}", nativeQuery = true)
   List<Object[]> buscarPorPalletId(@Param("palletId") int palletId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
+  int deleteAccesorio(@Param("palletId") int palletId,
+      @Param("cantidad") int cantidad,
+      @Param("codigoSapId") int codigoSapId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_SendAccesory :palletId, :destinoId, :filas OUT", nativeQuery = true)
+  void sendAccesory(
+      @Param("palletId") Integer palletId,
+      @Param("destinoId") Integer destinoId,
+      @Param("filas") Integer filas);
 }

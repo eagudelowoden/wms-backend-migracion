@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.AbrirPalletDTO;
-import com.woden.wms_backend.dto.CerrarCompletoDTO;
+import com.woden.wms_backend.dto.CerrarIngresoDTO;
 import com.woden.wms_backend.dto.ConfirmarPalletDTO;
 import com.woden.wms_backend.dto.CountPalletDTO;
 import com.woden.wms_backend.dto.PalletDTO;
@@ -40,7 +40,8 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     private IngresoService ingresoService;
 
     @PostMapping("/create/{clienteId}")
-    public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet, @PathVariable int clienteId) {
+    public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet,
+            @PathVariable int clienteId) {
         Map<String, String> response = new HashMap<>();
         try {
             palletService.createPallet(pallet, clienteId);
@@ -95,7 +96,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     }
 
     @PostMapping("/cerrar")
-    public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarCompletoDTO dto) {
+    public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
         Map<String, String> response = new HashMap<>();
         try {
             ingresoService.cerrarIngreso(dto.getPalletId(), dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(),
@@ -114,9 +115,10 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     @DeleteMapping("/eliminar/{palletId}")
     public ResponseEntity<Map<String, String>> eliminarPallet(
             @PathVariable Integer palletId,
-            @RequestParam("tipoEquipo") String tipoEquipo) {
+            @RequestParam String tipoEquipo,
+            @RequestParam String tipo) {
 
-        boolean eliminado = palletService.deletePallet(palletId, tipoEquipo);
+        boolean eliminado = palletService.deletePallet(palletId, tipoEquipo, tipo);
         Map<String, String> response = new HashMap<>();
 
         if (eliminado) {
