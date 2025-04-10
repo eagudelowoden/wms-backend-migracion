@@ -20,7 +20,6 @@ import com.woden.wms_backend.dto.AccesorioSearchDTO;
 import com.woden.wms_backend.dto.CerrarPalletDTO;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.services.ClienteServices.AccesorioService;
-import com.woden.wms_backend.services.ClienteServices.PalletService;
 
 @RestController
 @RequestMapping("api/accesorio")
@@ -32,9 +31,6 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
 
     @Autowired
     private AccesorioService accesorioService;
-    @Autowired
-    private PalletService palletService;
-
     @PostMapping("/createAccesory")
     public ResponseEntity<Map<String, String>> guardarAccesorios(@RequestBody List<AccesorioModel> accesorios) {
         accesorioService.guardarAccesorios(accesorios);

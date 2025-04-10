@@ -25,12 +25,13 @@ import com.woden.wms_backend.util.EncryptUtil;
 @RequestMapping("/api/users")
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
 
+    @Autowired
+    private final UsuarioService usuarioService;
     @GetMapping
     public List<UsuarioModel> getAll() {
         return usuarioService.getAll();
@@ -83,7 +84,7 @@ public class UsuarioController {
         }
 
         // Generar el token JWT
-        String token = jwtUtil.generateToken(usuario.getNombreUsuario());
+        String token = jwtUtil.generateToken(usuario.getNombreUsuario(), "WmsWdGeneral", "WmsWdGeneral", 0);
 
         response.put("token", token);
         response.put("usuarioId", usuario.getId().toString());
@@ -106,4 +107,6 @@ public class UsuarioController {
     public List<UsuarioModel> getUsersActive() {
         return usuarioService.getUserActive();
     }
+
+    
 }

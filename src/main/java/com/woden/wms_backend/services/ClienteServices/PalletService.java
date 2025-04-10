@@ -17,7 +17,6 @@ import com.woden.wms_backend.dto.AbrirPalletDTO;
 import com.woden.wms_backend.dto.ConfirmarPalletDTO;
 import com.woden.wms_backend.dto.PalletDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.repositories.ClienteRepositories.AccesorioRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
@@ -33,8 +32,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private PalletRepository palletRepository;
   @Autowired
   private IngresoRepository ingresoRepository;
-  @Autowired
-  private AccesorioRepository accesorioRepository;
   @Autowired
   private CodigoSapRepository codigoSapRepository;
   @Autowired

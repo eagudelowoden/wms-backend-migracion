@@ -9,9 +9,6 @@ import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.services.BaseService;
 
-import jakarta.persistence.ParameterMode;
-import jakarta.persistence.StoredProcedureQuery;
-
 @Service
 public class MaestroService extends BaseService<MaestroModel, Integer> {
 
