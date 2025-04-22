@@ -39,12 +39,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     @Autowired
     private IngresoService ingresoService;
 
-    @PostMapping("/create/{clienteId}")
+    @PostMapping("/create/{kitEntryOn}")
     public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet,
-            @PathVariable int clienteId) {
+            @PathVariable Boolean kitEntryOn) {
         Map<String, String> response = new HashMap<>();
         try {
-            palletService.createPallet(pallet, clienteId);
+            palletService.createPallet(pallet, kitEntryOn);
             response.put("message", "Pallet creado exitosamente.");
             return ResponseEntity.ok(response); // Devuelve un JSON en lugar de un String
         } catch (Exception e) {

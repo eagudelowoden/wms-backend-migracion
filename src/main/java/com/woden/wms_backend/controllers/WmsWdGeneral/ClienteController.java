@@ -125,6 +125,12 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         return ResponseEntity.ok(new DatabaseInfo(currentDb, connectionUrl));
     }
 
+    
+    @GetMapping("/kitIngresoON/{id}")
+    public Boolean getKitIngresoON(@PathVariable int id) {
+        return clienteService.getKitIngresoValue(id);
+    }
+
     public static class DatabaseInfo {
         private final String databaseName;
         private final String connectionUrl;

@@ -22,7 +22,6 @@ import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
-import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 
 @Service
 public class PalletService extends BaseService<PalletModel, Integer> {
@@ -36,8 +35,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private CodigoSapRepository codigoSapRepository;
   @Autowired
   private MaestroRepository maestroRepository;
-  @Autowired
-  private ClienteService clienteService;
 
   public PalletModel getModel(int id) {
     List<Object[]> results = palletRepository.getPalletById(id);
@@ -72,13 +69,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public void createPallet(PalletModel p, int clienteId) {
+  public void createPallet(PalletModel p, Boolean kitEntryOn) {
     try {
       logger.info("Insertando pallet con datos: {}", p);
-
-      // Obtener el valor de KitIngresoON para el cliente
-      Boolean kitEntryON = clienteService.getKitIngresoValue(clienteId);
-      logger.info("Valor de KitIngresoON para cliente {}: {}", clienteId, kitEntryON);
 
       // Insertar el pallet
       Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
@@ -95,7 +88,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       logger.info("Pallet insertado correctamente en la base de datos.");
 
       // Si KitIngresoON está activo, actualizar la cantidad en la familia
-      if (Boolean.TRUE.equals(kitEntryON)) {
+      if (kitEntryOn) {
         String codigoSap = p.getCodigoSapId().toString();
         int familyId = codigoSapRepository.getFamilyId(codigoSap);
         String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
@@ -119,9 +112,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setId((Integer) obj[0]);
       pallet.setNumero((String) obj[1]);
       pallet.setCodigoSap((String) obj[2]);
-      pallet.setCantidad((Integer) obj[3]); // Cantidad no está en PalletModel, pero sí en el DTO
-      pallet.setTipologia((String) obj[4]);
-      pallet.setLote((String) obj[5]);
+      pallet.setDescripcion((String) obj[3]);
+      pallet.setCantidad((Integer) obj[4]); // Cantidad no está en PalletModel, pero sí en el DTO
+      pallet.setTipologia((String) obj[5]);
+      pallet.setLote((String) obj[6]);
       return pallet;
     }).collect(Collectors.toList());
   }
