@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
+import com.woden.wms_backend.dto.ModeloDTO;
 import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.services.ClienteServices.MaestroService;
 
 @RestController
-@RequestMapping("/api/maestros")
+@RequestMapping("/client/maestros")
 public class MaestroController extends BaseController<MaestroModel, Integer> {
 
     private final MaestroService maestroService;
@@ -60,5 +61,11 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     public ResponseEntity<List<String>> getOrigenes(@PathVariable String tipo) {
         List<String> origenes = maestroService.obtenerOrigenes(tipo);
         return ResponseEntity.ok(origenes);
+    }
+
+    @GetMapping("/getModelos/{codigoSap}")
+    public ResponseEntity<List<ModeloDTO>> getModelMaster(@PathVariable String codigoSap) {
+        List<ModeloDTO> results = maestroService.getModelMaster(codigoSap);
+        return ResponseEntity.ok(results);
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.services.WmsWdGeneral.PerfilPermisoService;
 
 @RestController
-@RequestMapping("/api/perfilpermiso")
+@RequestMapping("/general/perfilpermiso")
 public class PerfilPermisoController{
   private final PerfilPermisoService perfilPermisoService;
 

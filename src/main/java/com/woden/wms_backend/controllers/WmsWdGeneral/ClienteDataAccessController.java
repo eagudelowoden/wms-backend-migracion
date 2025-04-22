@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.services.WmsWdGeneral.ClienteDataAccessService;
 
 @RestController
-@RequestMapping("/api/clientes-data-access")
+@RequestMapping("/general/clientes-data-access")
 public class ClienteDataAccessController {
 
   @Autowired

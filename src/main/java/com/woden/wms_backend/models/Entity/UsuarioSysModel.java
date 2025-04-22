@@ -14,15 +14,12 @@ public class UsuarioSysModel {
   @Column(name = "Id")
   private Integer id;
 
-  @Column(name = "Nombres") // Nombre exacto de columna en BD
+  @Column(name = "Nombres")
   private String nombres;
 
-  @Column(name = "Nombre_Usuario") // Nombre exacto de columna en BD
-  private String nombreUsuario; // Cambiado a camelCase en Java
+  @Column(name = "Nombre_Usuario")
+  private String nombreUsuario; 
 
   @Column(name = "Perfil_Id")
   private Integer perfilId;
-
-  // @Column(name = "Identificacion")
-  // private Long Identificacion;
 }

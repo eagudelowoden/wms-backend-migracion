@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.dto.ModeloDTO;
 import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -47,5 +48,14 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
 
     public int addCountPalletFamily(int familyId, String value, int filas) {
         return maestroRepository.addCountPalletFamily(value, familyId, filas);
+    }
+
+    public List<ModeloDTO> getModelMaster(String codigoSap) {
+        List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
+        return results.stream().map(obj -> {
+            ModeloDTO modelo = new ModeloDTO();
+            modelo.setModelo((String) obj[0]);
+            return modelo;
+        }).collect(Collectors.toList());
     }
 }

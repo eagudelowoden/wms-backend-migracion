@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioClientePerfilService;
 
 @RestController
-@RequestMapping("/api/usuarioclienteperfil")
+@RequestMapping("/general/usuarioclienteperfil")
 public class UsuarioClientePerfilController {
 
     @Autowired

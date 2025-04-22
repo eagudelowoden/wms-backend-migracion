@@ -14,7 +14,7 @@ import com.woden.wms_backend.services.WmsWdGeneral.ClienteDataAccessService;
 import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/general")
 public class DataBaseController {
 
   private final DynamicDataSourceConfig dynamicDataSourceConfig;

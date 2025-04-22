@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioClienteService;
 
 @RestController
-@RequestMapping("/api/usuariocliente")
+@RequestMapping("/general/usuariocliente")
 public class UsuarioClienteController {
 
   private final UsuarioClienteService usuarioClienteService;

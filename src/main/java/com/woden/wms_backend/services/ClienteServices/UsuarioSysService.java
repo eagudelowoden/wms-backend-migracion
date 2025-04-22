@@ -13,6 +13,6 @@ public class UsuarioSysService {
   private UsuarioSysRepository usuarioSysRepository;
 
   public UsuarioSysModel getUsuarioById(int id) {
-    return usuarioSysRepository.findByIdCustom(id);
+    return usuarioSysRepository.findByIdUsuarioSys(id);
   }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioTipoOrigenService;
 
 @RestController
-@RequestMapping("/api/usuario-tipo-origen")
+@RequestMapping("/general/usuario-tipo-origen")
 public class UsuarioTipoOrigenController {
 
   @Autowired

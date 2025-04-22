@@ -9,12 +9,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "Usuario", schema = "dbo")
-public class UsuarioModel implements Activable{    
+public class UsuarioModel implements Activable {
 
     @Id
     @Column(name = "Id")
@@ -36,7 +37,7 @@ public class UsuarioModel implements Activable{
     private String clave;
 
     @Column(name = "FechaNacimiento")
-    private LocalDate fechaNacimiento;
+    private String fechaNacimiento;
 
     @Column(name = "Correo")
     private String correo;
@@ -47,14 +48,14 @@ public class UsuarioModel implements Activable{
     @Column(name = "AreaId")
     private Integer AreaId;
 
-    // @Column(name = "TemaId")
-    // private Integer temaId;
+    @Column(name = "TemaId")
+    private Integer temaId;
 
     @Column(name = "FechaCreacion")
-    private LocalDateTime fechaCreacion;
+    private String fechaCreacion;
 
     @Column(name = "FechaUltimoAcceso")
-    private LocalDateTime fechaUltimoAcceso;
+    private String fechaUltimoAcceso;
 
     @Column(name = "Ip")
     private String ip;
@@ -65,6 +66,11 @@ public class UsuarioModel implements Activable{
     @Column(name = "Activo")
     private Boolean activo;
 
-    // @Column(name = "clave_hash")
-    // private String claveHash;
+    @Transient
+    private String Cargo;
+    @Transient
+    private String Area;
+    
+    @Column(name = "clave_hash")
+    private String claveHash;
 }

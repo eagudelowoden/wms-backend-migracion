@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.models.LoginRequest;
@@ -22,9 +24,8 @@ import com.woden.wms_backend.services.WmsWdGeneral.UsuarioService;
 import com.woden.wms_backend.util.EncryptUtil;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/general/users")
 public class UsuarioController {
-
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
@@ -32,6 +33,7 @@ public class UsuarioController {
 
     @Autowired
     private final UsuarioService usuarioService;
+
     @GetMapping
     public List<UsuarioModel> getAll() {
         return usuarioService.getAll();
@@ -108,5 +110,21 @@ public class UsuarioController {
         return usuarioService.getUserActive();
     }
 
-    
+    @GetMapping("/getModel")
+    public ResponseEntity<?> getModelUsuario(
+            @RequestParam String nombreUsuario,
+            @RequestParam String clave) {
+
+        // 🔐 Encriptar la clave para que coincida con la de la base de datos
+        String claveEncriptada = encryptUtil.encode(clave);
+
+        UsuarioModel usuario = usuarioService.getModel(nombreUsuario, claveEncriptada);
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+
+        return ResponseEntity.ok(usuario);
+    }
+
 }

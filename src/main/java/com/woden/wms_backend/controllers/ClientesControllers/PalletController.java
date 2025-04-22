@@ -28,7 +28,7 @@ import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
 
 @RestController
-@RequestMapping("/api/pallets")
+@RequestMapping("/client/pallets")
 public class PalletController extends BaseController<PalletModel, Integer> {
     public PalletController(PalletService service) {
         super(service);

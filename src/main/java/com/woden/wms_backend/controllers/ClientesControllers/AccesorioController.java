@@ -22,7 +22,7 @@ import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.services.ClienteServices.AccesorioService;
 
 @RestController
-@RequestMapping("api/accesorio")
+@RequestMapping("/client/accesorio")
 public class AccesorioController extends BaseController<AccesorioModel, Integer> {
 
     public AccesorioController(AccesorioService service) {

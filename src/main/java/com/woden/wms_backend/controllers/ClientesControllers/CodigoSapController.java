@@ -18,7 +18,7 @@ import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.services.ClienteServices.CodigoSapService;
 
 @RestController
-@RequestMapping("/api/codigosap")
+@RequestMapping("/client/codigosap")
 public class CodigoSapController extends BaseController<CodigoSapModel, Integer> {
 
     public CodigoSapController(CodigoSapService service) {
@@ -52,12 +52,12 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
     }
 
     @GetMapping("/idSerial/{tipo}")
-    public String getIdSerial(@PathVariable String tipo) {
+    public Integer getIdSerial(@PathVariable String tipo) {
         return codigoSapService.getIdSerial(tipo);
     }
 
     @GetMapping("/idNoSerial/{tipo}")
-    public String getIdNoSerial(@PathVariable String tipo) {
+    public Integer getIdNoSerial(@PathVariable String tipo) {
         return codigoSapService.getIdNoSerial(tipo);
     }
 

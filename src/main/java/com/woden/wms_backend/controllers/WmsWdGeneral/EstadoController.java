@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.services.WmsWdGeneral.EstadoService;
 
 @RestController
-@RequestMapping("/api/estado")
+@RequestMapping("/general/estado")
 public class EstadoController {
 
   private final EstadoService estadoService;

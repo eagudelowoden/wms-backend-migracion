@@ -70,12 +70,12 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         return codigoSapRepository.getIdByCodigo(codigo); // usa @Query
     }
 
-    public String getIdSerial(String tipo) {
-        return maestroRepository.getIdByCodigo(tipo).toString();
+    public Integer getIdSerial(String tipo) {
+        return maestroRepository.getIdByCodigo(tipo, 12);
     }
 
-    public String getIdNoSerial(String tipo) {
-        return maestroRepository.getIdByCodigo(tipo).toString();
+    public Integer getIdNoSerial(String tipo) {
+        return maestroRepository.getIdByCodigo(tipo, 12);
     }
 
     public int getIdComboPallet(String codigo, String descripcion) {

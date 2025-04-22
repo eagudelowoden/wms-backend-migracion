@@ -143,7 +143,7 @@ public class ClientDatabaseContext {
       HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
       String uri = request.getRequestURI();
       // Excluir endpoints específicos
-      return uri.contains("/current-connections") || uri.contains("/switch-client");
+      return uri.startsWith("/general/");
     }
     return false;
   }

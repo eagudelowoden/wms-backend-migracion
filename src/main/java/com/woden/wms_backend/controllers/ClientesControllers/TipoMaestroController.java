@@ -8,7 +8,7 @@ import com.woden.wms_backend.models.Entity.TipoMaestroModel;
 import com.woden.wms_backend.services.ClienteServices.TipoMaestroService;
 
 @RestController
-@RequestMapping("/api/tipoMaestro")
+@RequestMapping("/client/tipoMaestro")
 public class TipoMaestroController extends BaseController<TipoMaestroModel, Integer> {
     public TipoMaestroController(TipoMaestroService service) {
         super(service);

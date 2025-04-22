@@ -8,7 +8,7 @@ import com.woden.wms_backend.models.Entity.UsuarioSysModel;
 import com.woden.wms_backend.services.ClienteServices.UsuarioSysService;
 
 @RestController
-@RequestMapping("/api/usuariossys")
+@RequestMapping("/client/usuariosys")
 public class UsuarioSysController {
 
   @Autowired

@@ -11,5 +11,5 @@ import com.woden.wms_backend.models.Entity.UsuarioSysModel;
 public interface UsuarioSysRepository extends JpaRepository<UsuarioSysModel, Integer> {
 
   @Query(value = "SELECT id, nombres, nombre_usuario, perfil_id FROM UsuarioSys WHERE id = :id", nativeQuery = true)
-  UsuarioSysModel findByIdCustom(@Param("id") int id);
+  UsuarioSysModel findByIdUsuarioSys(@Param("id") int id);
 }

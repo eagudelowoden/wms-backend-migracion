@@ -27,7 +27,7 @@ import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 import io.jsonwebtoken.Claims;
 
 @RestController
-@RequestMapping("/api/clientes")
+@RequestMapping("/general/clientes")
 public class ClienteController extends BaseController<ClienteModel, Integer> {
     private final ClienteService clienteService;
     @Autowired
@@ -44,38 +44,15 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
     }
 
     // Endpoint para obtener el ID del cliente por nombre
-    @GetMapping("/id/{nombre}")
+    @GetMapping("/getId/{nombre}")
     public Integer getIdClient(@PathVariable String nombre) {
         return clienteService.getIdClient(nombre);
     }
 
-    // @PostMapping("/switch-client")
-    // public ResponseEntity<?> switchClient(@RequestBody ClientSwitchRequest
-    // request) {
-    // // Validar que el usuario tenga acceso a este cliente
-    // ClienteModel client = clienteService.getById(request.getClientId());
-
-    // System.out.println("Switching to client: " + client.getNombre() + ", DB: " +
-    // client.getDbase() + ", ID: "
-    // + client.getId());
-    // // Obtener autenticación actual
-    // Authentication authentication =
-    // SecurityContextHolder.getContext().getAuthentication();
-
-    // // Generar nuevo token con la BD del cliente
-    // String newToken = jwtUtil.generateToken(
-    // authentication.getName(),
-    // client.getNombre(),
-    // client.getDbase(),
-    // client.getId());
-
-    // Claims claims = jwtUtil.extractAllClaims(newToken);
-    // System.out.println("Token claims: " + claims);
-    // Map<String, String> response = new HashMap<>();
-    // response.put("token", newToken);
-    // response.put("clientDb", client.getNombre());
-    // return ResponseEntity.ok(response);
-    // }
+    @GetMapping("/getClienteById/{id}")
+    public ClienteModel getIdClientByDbase(@PathVariable Integer id) {
+        return clienteService.getById(id);
+    }
 
     @PostMapping("/switch-client")
     public ResponseEntity<?> switchClient(@RequestBody ClientSwitchRequest request) {

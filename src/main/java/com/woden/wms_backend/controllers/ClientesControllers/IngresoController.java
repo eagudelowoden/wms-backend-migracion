@@ -25,7 +25,7 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
 
 @RestController
-@RequestMapping("/api/ingresos")
+@RequestMapping("/client/ingresos")
 public class IngresoController extends BaseController<IngresoModel, Integer> {
 
     public IngresoController(IngresoService service) {

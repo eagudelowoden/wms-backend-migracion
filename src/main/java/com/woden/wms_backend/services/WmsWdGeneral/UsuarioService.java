@@ -83,4 +83,30 @@ public class UsuarioService {
         return usuarioRepository.findByActivoTrue();
     }
 
+    public UsuarioModel getModel(String nombreUsuario, String clave) {
+        List<Object[]> results = usuarioRepository.getModelUser(nombreUsuario, clave);
+
+        if (results.isEmpty())
+            return null;
+
+        Object[] row = results.get(0);
+
+        UsuarioModel usuario = new UsuarioModel();
+        usuario.setId((Integer) row[0]);
+        usuario.setIdentificacion((Long) row[1]);
+        usuario.setNombres((String) row[2]);
+        usuario.setApellidos((String) row[3]);
+        usuario.setNombreUsuario((String) row[4]);
+        usuario.setClave((String) row[5]);
+        usuario.setFechaCreacion(row[6] != null ? row[6].toString() : null);
+        usuario.setIp((String) row[7]);
+        usuario.setActivo((Boolean) row[8]);
+        usuario.setFechaUltimoAcceso(row[9] != null ? row[9].toString() : null);
+        usuario.setCorreo((String) row[11]);
+        usuario.setFechaNacimiento(row[12] != null ? row[11].toString() : null);
+        usuario.setTemaId((Integer) row[13]); // O temaId según tu lógica
+        usuario.setCargo((String) row[14]);
+        usuario.setArea((String) row[15]);
+        return usuario;
+    }
 }

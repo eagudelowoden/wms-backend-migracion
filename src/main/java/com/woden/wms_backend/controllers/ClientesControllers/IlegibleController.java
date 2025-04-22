@@ -8,7 +8,7 @@ import com.woden.wms_backend.models.Entity.IlegibleModel;
 import com.woden.wms_backend.services.ClienteServices.IlegibleService;
 
 @RestController
-@RequestMapping("/api/ilegible")
+@RequestMapping("/client/ilegible")
 public class IlegibleController extends BaseController<IlegibleModel, Integer> {
 
     public IlegibleController(IlegibleService service) {
