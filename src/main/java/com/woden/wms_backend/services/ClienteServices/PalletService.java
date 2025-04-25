@@ -106,7 +106,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public List<PalletDTO> searchEntry(String numero, String destino, int usuarioId) {
     List<Object[]> results = palletRepository.searchEntry(numero, destino, usuarioId);
-
     return results.stream().map(obj -> {
       PalletDTO pallet = new PalletDTO();
       pallet.setId((Integer) obj[0]);
@@ -156,7 +155,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public void cerrarPallet(Integer palletId, Integer destinoId, Integer tipologiaId, Integer posicionId,
       Integer estado) {
-    Integer filas = 0; // OUT simbólico
+    Integer filas = 0;
     palletRepository.sendPallet(destinoId, tipologiaId, posicionId, estado, palletId, filas);
   }
 

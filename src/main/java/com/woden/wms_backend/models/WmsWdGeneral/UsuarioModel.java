@@ -1,8 +1,5 @@
 package com.woden.wms_backend.models.WmsWdGeneral;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 import com.woden.wms_backend.models.Activable;
 
 import jakarta.persistence.Column;

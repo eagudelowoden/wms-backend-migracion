@@ -131,9 +131,17 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     }
 
     @PostMapping("/confirmar-transito")
-    public ResponseEntity<String> confirmarPallet(@RequestBody ConfirmarPalletDTO dto) {
-        palletService.confirmarPalletTransito(dto);
-        return ResponseEntity.ok("✅ Pallet confirmado correctamente.");
+    public ResponseEntity<Map<String, String>> confirmarPallet(@RequestBody ConfirmarPalletDTO dto) {
+        boolean success =palletService.confirmarPalletTransito(dto);
+        Map<String, String> response = new HashMap<>();
+
+        if (success) {
+            response.put("message", "Pallet confirmado correctamente.");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "No se pudo confirmar el pallet.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/abrir-transito")
