@@ -44,7 +44,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
       @Param("prealertaId") Integer prealertaId,
       @Param("cruce") Integer cruce,
       @Param("novedad") String novedad,
-      @Param("garantiaFabricante") Boolean garantiaFabricante,
+      @Param("garantiaFabricante") Integer garantiaFabricante,
       @Param("usuarioId") Integer usuarioId,
       @Param("observaciones") String observaciones,
       @Param("estadoCliente") String estadoCliente,

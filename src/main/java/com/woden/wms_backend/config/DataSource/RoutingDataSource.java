@@ -28,10 +28,6 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
   @Override
   protected Object determineCurrentLookupKey() {
     String clientDb = ClientDatabaseContext.getCurrentClientDb();
-    System.out.println("RoutingDataSource - clientDb: " + clientDb);
-    System.out.println("RoutingDataSource - clientName: " + ClientDatabaseContext.getCurrentClientName());
-    System.out.println("RoutingDataSource - clientId: " + ClientDatabaseContext.getCurrentClientId());
-    System.out.println("RoutingDataSource - isUsingGeneralDb: " + ClientDatabaseContext.isUsingGeneralDb());
 
     System.out.println("clientDb: " + clientDb);
     if (clientDb != null && !targetDataSources.containsKey(clientDb)) {
