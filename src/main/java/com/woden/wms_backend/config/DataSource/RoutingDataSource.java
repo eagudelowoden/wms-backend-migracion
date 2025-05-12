@@ -48,6 +48,7 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
     return clientDb;
   }
 
+  @SuppressWarnings("null")
   private DataSource createDataSource(String databaseName) {
     HikariConfig config = new HikariConfig();
     String baseUrl = env.getProperty("spring.datasource.url")

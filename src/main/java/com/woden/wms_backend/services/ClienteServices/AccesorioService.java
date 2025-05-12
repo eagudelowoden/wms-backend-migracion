@@ -65,7 +65,7 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     return accesorios;
   }
 
-  public int eliminarAccesorio(int palletId, int cantidad, int codigoSapId) {
+  public int eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
     return accesorioRepository.deleteAccesorio(palletId, cantidad, codigoSapId);
   }
 

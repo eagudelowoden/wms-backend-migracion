@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -72,8 +73,13 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
     }
 
     @GetMapping("/getModel/{codigo}")
-    public ResponseEntity<CodigoSapModelDTO> obtenerCodigoSap(@PathVariable String codigo) {
+    public ResponseEntity<?> obtenerCodigoSap(@PathVariable String codigo) {
         CodigoSapModelDTO model = codigoSapService.obtenerModeloPorCodigo(codigo);
-        return model != null ? ResponseEntity.ok(model) : ResponseEntity.notFound().build();
+        if (model == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Codigo Sap no encontrado");
+        }
+        Map<String, CodigoSapModelDTO> response = new HashMap<>();
+        response.put("codigosap", model);
+        return ResponseEntity.ok(response);
     }
 }

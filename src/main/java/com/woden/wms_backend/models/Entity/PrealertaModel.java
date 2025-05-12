@@ -12,18 +12,18 @@ import lombok.Data;
 public class PrealertaModel {
     @Id
     @Column(name = "Id")
-    private int id;
+    private Integer id;
     private String nombre;
-    private int tipoOrigenId;
+    private Integer tipoOrigenId;
     private String tipoOrigen;
-    private int origenId;
+    private Integer origenId;
     private String origen;
     private String guia;
-    private int usuarioId;
-    private int activo;
+    private Integer usuarioId;
+    private Integer activo;
     private String fecha;
-    private int idResponsable;
+    private Integer idResponsable;
     private String estado;
-    private int idResponsableRecogida;
-    private int tipologiaId;
+    private Integer idResponsableRecogida;
+    private Integer tipologiaId;
 }

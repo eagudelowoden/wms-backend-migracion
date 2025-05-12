@@ -12,23 +12,23 @@ import lombok.Data;
 public class PrealertaSerialModel {
     @Id
     @Column(name = "Id")
-    private int id;
-    private int prealertaId;
+    private Integer id;
+    private Integer prealertaId;
     private String serial;
     private String mac;
     private String codigoSap;
     private String descripcion;
-    private int cantidad;
-    private int caja;
+    private Integer cantidad;
+    private Integer caja;
     private String falla;
     private String tecnicoCliente;
     private String pedido;
     private String tramite;
     private String novedad;
-    private int garantia;
-    private int recogida;
+    private Boolean garantia;
+    private Byte recogida;
     private String tipo;
-    private int cantidad_recogida;
-    private int en_recogida;
-    private int loteId;
+    private Integer cantidad_recogida;
+    private Integer en_recogida;
+    private Integer loteId;
 }

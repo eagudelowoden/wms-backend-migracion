@@ -47,9 +47,9 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
 
     @DeleteMapping("/eliminarAccesorio")
     public ResponseEntity<Integer> eliminarAccesorio(
-            @RequestParam int palletId,
-            @RequestParam int cantidad,
-            @RequestParam int codigoSapId) {
+            @RequestParam Integer palletId,
+            @RequestParam Integer cantidad,
+            @RequestParam Integer codigoSapId) {
         int status = accesorioService.eliminarAccesorio(palletId, cantidad, codigoSapId);
         return ResponseEntity.ok(status);
     }

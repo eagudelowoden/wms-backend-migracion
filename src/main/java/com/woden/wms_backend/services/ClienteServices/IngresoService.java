@@ -15,7 +15,10 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.IlegibleRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.util.TypeMapper;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -56,6 +59,54 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         ingreso.getLoteId(),
         ingreso.getCajaIngresoId(),
         ingreso.getModeloId());
+  }
+
+  public IngresoModel getModelIngreso(String serial) {
+    List<Object[]> results = ingresoRepository.searchIngreso(serial);
+
+    if (results.isEmpty()) {
+      return null;
+    }
+
+    Object[] obj = results.get(0);
+    IngresoModel ingreso = new IngresoModel();
+    ingreso.setId((Integer) obj[0]);
+    ingreso.setSerial((String) obj[1]);
+    ingreso.setMac((String) obj[2]);
+    ingreso.setSerial3((String) obj[3]);
+    ingreso.setSerial4((String) obj[4]);
+    ingreso.setCodigoSap((String) obj[5]);
+    ingreso.setCodigoSapId((Integer) obj[6]);
+    ingreso.setDescripcion((String) obj[7]);
+    ingreso.setEstado((String) obj[8]);
+    ingreso.setEstadoId((Integer) obj[9]);
+    ingreso.setUsuario((String) obj[10]);
+    ingreso.setCajaEmpaqueId((Integer) obj[11]);
+    ingreso.setCajaEmpaque((String) obj[12]);
+    ingreso.setCajaDespacho((Integer) obj[13]);
+    ingreso.setPallet((String) obj[14]);
+    ingreso.setPalletId((Integer) obj[15]);
+    ingreso.setPosicion((String) obj[13]);
+    ingreso.setNivel((String) obj[17]);
+    ingreso.setNivelId((Integer) obj[18]);
+    ingreso.setTipoOrigenId((Integer) obj[19]);
+    ingreso.setOrigenId((Integer) obj[20]);
+    ingreso.setTipologiaId((Integer) obj[21]);
+    ingreso.setTipologia((String) obj[22]);
+    ingreso.setPalletIdIngreso((Integer) obj[23]);
+    ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
+    ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[25]));
+    ingreso.setFalla((String) obj[26]);
+    ingreso.setLoteId((Integer) obj[27]);
+    ingreso.setPalletIdEmpaque((Integer) obj[28]);
+    ingreso.setLote((String) obj[29]);
+    ingreso.setSmartCardId((Integer) obj[30]);
+    ingreso.setSmartCard((String) obj[31]);
+    ingreso.setCajaIngresoId((Integer) obj[32]);
+    ingreso.setCajaIngreso((String) obj[33]);
+    ingreso.setModeloId((Integer) obj[34]);
+    ingreso.setModelo((String) obj[35]);
+    return ingreso;
   }
 
   public List<IngresoDTO> searchEntryReingreso(int palletId) {
@@ -164,5 +215,23 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     int status = ilegibleRepository.insertIlegible(serial, mac, 0, fechaActual);
 
     return (status == 1) ? serial : null;
+  }
+
+  public String getSerialByMac(String mac) {
+    List<Object[]> results = ingresoRepository.getSerialByMac(mac);
+    return (results.size() > 0) ? (String) results.get(0)[0] : null;
+  }
+
+  @PersistenceContext
+  private EntityManager entityManager;
+
+  public Integer getReingresos(String serial) {
+    Integer results = ingresoRepository.getReingresos(serial);
+    return results;
+  }
+
+  public Integer getProactiveRepair(String serial) {
+    Integer results = ingresoRepository.getProactiveRepair(serial, 0);
+    return results;
   }
 }

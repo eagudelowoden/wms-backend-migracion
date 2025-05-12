@@ -15,4 +15,14 @@ public class ClienteDataAccessService {
     Boolean result = clienteRepository.getTipoOrigenValue(id);
     return result != null ? (result ? 1 : 0) : null;
   }
+
+  public Integer getBaseIngresoON(int id) {
+    Boolean result = clienteRepository.getBaseIngresoON(id);
+    return result != null ? (result ? 1 : 0) : null;
+  }
+
+  public Integer getBaseNoDisponibleON(int id) {
+    Boolean result = clienteRepository.getBaseNoDisponibleON(id);
+    return result != null ? (result ? 1 : 0) : null;
+  }
 }

@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.woden.wms_backend.dto.CodigoSapModelDTO;
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.repositories.BaseRepository;
 
@@ -28,7 +27,7 @@ public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Inte
   int getIdComboPallet(@Param("codigo") String codigo, @Param("descripcion") String descripcion);
 
   @Query(value = "EXEC pa_GetModelSapCode :codigo", nativeQuery = true)
-  CodigoSapModelDTO getModelByCodigo(@Param("codigo") String codigo);
+  List<Object[]> getModelByCodigo(@Param("codigo") String codigo);
 
   @Query(value = "EXEC pa_GetFamilyId :codigoSap", nativeQuery = true)
   int getFamilyId(@Param("codigoSap") String codigoSap);

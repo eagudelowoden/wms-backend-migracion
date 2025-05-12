@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,11 +20,11 @@ import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.util.TypeMapper;
 
 @Service
 public class PalletService extends BaseService<PalletModel, Integer> {
 
-  private static final Logger logger = LoggerFactory.getLogger(PalletService.class);
   @Autowired
   private PalletRepository palletRepository;
   @Autowired
@@ -58,11 +56,11 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     pallet.setOrigenId((Integer) row[9]);
     pallet.setOrigen((String) row[10]);
     pallet.setDestinoId((Integer) row[11]);
-    pallet.setActivo((Boolean) row[12]);
+    pallet.setActivo(TypeMapper.toBoolean(row[12]));
     pallet.setUsuario((String) row[13]);
     pallet.setLoteId((Integer) row[14]);
     pallet.setFecha((String) row[15]);
-    pallet.setMultimodelo((Boolean) row[16]);
+    pallet.setMultimodelo(TypeMapper.toBoolean(row[16]));
     pallet.setCantidadCaja((Integer) row[17]);
 
     return pallet;
@@ -71,7 +69,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   @Transactional(propagation = Propagation.REQUIRED)
   public void createPallet(PalletModel p, Boolean kitEntryOn) {
     try {
-      logger.info("Insertando pallet con datos: {}", p);
 
       // Insertar el pallet
       Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
@@ -85,7 +82,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
           p.getUsuarioId(),
           loteId);
 
-      logger.info("Pallet insertado correctamente en la base de datos.");
 
       // Si KitIngresoON está activo, actualizar la cantidad en la familia
       if (kitEntryOn) {
@@ -95,11 +91,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
         int filas = 0; // OUT simbólico
         maestroRepository.addCountPalletFamily(newFamilyNumber, familyId, filas);
-        logger.info("Actualizada la cantidad de la familia para código SAP: {}", codigoSap);
       }
 
     } catch (Exception e) {
-      logger.error("Error al insertar el pallet: ", e);
       throw e; // Relanzar la excepción para manejo en el controlador
     }
   }
@@ -270,8 +264,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return pallets;
   }
 
-  public boolean eliminarAccesorio(int palletId, int cantidad, int codigoSapId) {
-    int result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
+  public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
+    Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
     return result > 0;
   }
 

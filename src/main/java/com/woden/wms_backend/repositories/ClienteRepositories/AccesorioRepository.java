@@ -38,9 +38,9 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
-  int deleteAccesorio(@Param("palletId") int palletId,
-      @Param("cantidad") int cantidad,
-      @Param("codigoSapId") int codigoSapId);
+  Integer deleteAccesorio(@Param("palletId") Integer palletId,
+      @Param("cantidad") Integer cantidad,
+      @Param("codigoSapId") Integer codigoSapId);
 
   @Modifying
   @Transactional

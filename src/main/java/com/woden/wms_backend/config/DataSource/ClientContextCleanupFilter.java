@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class ClientContextCleanupFilter extends OncePerRequestFilter {
 
+  @SuppressWarnings("null")
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
@@ -25,7 +26,7 @@ public class ClientContextCleanupFilter extends OncePerRequestFilter {
     } finally {
       // Limpiar el contexto del cliente después de que se complete la solicitud
       ClientDatabaseContext.clear();
-      System.out.println("ClientContextCleanupFilter - Contexto del cliente limpiado");
+      // System.out.println("ClientContextCleanupFilter - Contexto del cliente limpiado");clientDb
     }
   }
 }

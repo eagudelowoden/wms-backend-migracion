@@ -18,7 +18,7 @@ public class CodigoSapModelDTO {
   private Boolean validacion; // BIT -> Boolean
   private String direccion;
   private String largos;
-  private Byte recorte; // TINYINT -> Byte
+  private Boolean recorte; // TINYINT -> Byte
   private Integer reingreso; // BIT -> Boolean
   private Integer numSerial;
   private Boolean asignacionAcc; // BIT -> Boolean
@@ -29,7 +29,7 @@ public class CodigoSapModelDTO {
   private String clasificacion;
   private Boolean validacionMac; // BIT -> Boolean
   private String direccionMac;
-  private Byte recorteMac; // TINYINT -> Byte
+  private Boolean recorteMac; // TINYINT -> Byte
   private Boolean asignacionFalla; // BIT -> Boolean
   private Boolean multimodelo; // BIT -> Boolean
   private Integer cantidadCaja;

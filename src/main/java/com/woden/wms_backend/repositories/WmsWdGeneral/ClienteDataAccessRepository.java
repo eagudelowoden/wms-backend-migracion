@@ -12,4 +12,10 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Query(value = "SELECT tipoOrigenUsuarioON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getTipoOrigenValue(@Param("id") int id);
+
+  @Query(value = "SELECT BaseIngresoON FROM Cliente WHERE Id = :id ", nativeQuery = true)
+  Boolean getBaseIngresoON(@Param("id") int id);
+
+  @Query(value = "SELECT BaseNoDisponibleON FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Boolean getBaseNoDisponibleON(@Param("id") int id);
 }

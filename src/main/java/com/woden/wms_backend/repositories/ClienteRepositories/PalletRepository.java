@@ -87,7 +87,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
-  int eliminarAccesorio(@Param("palletId") int palletId, @Param("cantidad") int cantidad,
-      @Param("codigoSapId") int codigoSapId);
+  Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
+      @Param("codigoSapId") Integer codigoSapId);
 
 }

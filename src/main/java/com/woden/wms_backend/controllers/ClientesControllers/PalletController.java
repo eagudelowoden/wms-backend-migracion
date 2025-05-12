@@ -179,9 +179,9 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
     @DeleteMapping("/deleteAccesory/{palletId}/{cantidad}/{codigoSapId}")
     public ResponseEntity<String> eliminarAccesorio(
-            @PathVariable int palletId,
-            @PathVariable int cantidad,
-            @PathVariable int codigoSapId) {
+            @PathVariable Integer palletId,
+            @PathVariable Integer cantidad,
+            @PathVariable Integer codigoSapId) {
         boolean eliminado = palletService.eliminarAccesorio(palletId, cantidad, codigoSapId);
         return eliminado ? ResponseEntity.ok("Accesorio eliminado correctamente.")
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se pudo eliminar el accesorio.");

@@ -27,4 +27,11 @@ public class LoteService extends BaseService<LoteModel, Integer> {
         }).collect(Collectors.toList());        
     }
 
+    public Integer getIdByLote(String lote) {
+        return loteRepository.getIdByLote(lote);
+    }
+
+    public String getBatchName(Integer id) {
+        return loteRepository.getBatchName(id);
+    }
 }

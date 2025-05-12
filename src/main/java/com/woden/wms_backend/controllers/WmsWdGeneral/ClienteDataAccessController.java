@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.services.WmsWdGeneral.ClienteDataAccessService;
 
+
 @RestController
 @RequestMapping("/general/clientes-data-access")
 public class ClienteDataAccessController {
@@ -26,4 +27,16 @@ public class ClienteDataAccessController {
     response.put("id", tipoOrigen);
     return ResponseEntity.ok(response);
   }
+
+  @GetMapping("BaseIngresoOn/{id}")
+  public ResponseEntity<Integer> getBaseIngresoOn(@PathVariable Integer id) {
+    Integer baseIngresoOn = clienteService.getBaseIngresoON(id);
+    return ResponseEntity.ok(baseIngresoOn);
+  }
+
+  @GetMapping("BaseNoDisponibleOn/{id}")
+  public ResponseEntity<Integer> getBaseNoDisponibleOn(@PathVariable Integer id) {
+    Integer baseNoDisponibleOn = clienteService.getBaseNoDisponibleON(id);
+    return ResponseEntity.ok(baseNoDisponibleOn);
+  }  
 }

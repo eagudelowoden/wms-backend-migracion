@@ -28,65 +28,93 @@ import com.woden.wms_backend.services.ClienteServices.IngresoService;
 @RequestMapping("/client/ingresos")
 public class IngresoController extends BaseController<IngresoModel, Integer> {
 
-    public IngresoController(IngresoService service) {
-        super(service);
+  public IngresoController(IngresoService service) {
+    super(service);
+  }
+
+  @Autowired
+  private IngresoService ingresoService;
+
+  @PostMapping("/create")
+  public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
+    try {
+      ingresoService.createIngreso(ingreso);
+
+      Map<String, String> response = new HashMap<>();
+      response.put("message", "Ingreso registrado correctamente.");
+
+      return ResponseEntity.ok(response); // ✅ Devuelve application/json
+    } catch (Exception e) {
+      Map<String, String> response = new HashMap<>();
+      response.put("error", "Error al registrar el ingreso: " + e.getMessage());
+
+      return ResponseEntity.status(500).body(response);
     }
+  }
 
-    @Autowired
-    private IngresoService ingresoService;
+  @GetMapping("/searchIngreso/{palletId}")
+  public ResponseEntity<List<IngresoDTO>> searchEntryReingreso(@PathVariable Integer palletId) {
+    List<IngresoDTO> results = ingresoService.searchEntryReingreso(palletId);
+    return ResponseEntity.ok(results);
+  }
 
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
-        try {
-            ingresoService.createIngreso(ingreso);
+  @GetMapping("/transito/{palletId}")
+  public List<IngresoTransitoDTO> getIngresosTransitoByPallet(@PathVariable Integer palletId) {
+    return ingresoService.getIngresoTransitByPalletId(palletId);
+  }
 
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Ingreso registrado correctamente.");
+  @PostMapping("/regularizacion/sap")
+  public ResponseEntity<Map<String, String>> regularizarSap(@RequestBody RegularizarSapDTO dto) {
+    ingresoService.regularizarSap(dto.getSerial(), dto.getCodigoSapId(), dto.getUsuarioIdMovimiento());
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "SAP actualizado correctamente");
+    return ResponseEntity.ok(response);
+  }
 
-            return ResponseEntity.ok(response); // ✅ Devuelve application/json
-        } catch (Exception e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("error", "Error al registrar el ingreso: " + e.getMessage());
+  @PostMapping("/regularizacion-lote-serial")
+  public ResponseEntity<Map<String, String>> regularizarLoteSerial(@RequestBody RegularizarLoteSerialDTO dto) {
+    ingresoService.regularizarLoteSerial(dto.getSerial(), dto.getLoteId(), dto.getUsuarioIdMovimiento());
 
-            return ResponseEntity.status(500).body(response);
-        }
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "Lote del serial actualizado correctamente");
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/generar-ilegible")
+  public ResponseEntity<?> generarIngresoIlegible(@RequestBody IngresoIlegibleDTO ingresoDTO,
+      @RequestParam String cliente,
+      @RequestParam Integer usuarioId) {
+    String serialGenerado = ingresoService.generarIngresoIlegible(ingresoDTO, cliente, usuarioId);
+    return (serialGenerado != null)
+        ? ResponseEntity.ok().body(Map.of("serial", serialGenerado))
+        : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ingreso");
+  }
+
+  @GetMapping("/getModelSerial/{serial}")
+  public ResponseEntity<IngresoModel> getModelSerial(@PathVariable String serial) {
+    IngresoModel ingreso = ingresoService.getModelIngreso(serial);
+    if (ingreso != null) {
+      return ResponseEntity.ok(ingreso);
+    } else {
+      return ResponseEntity.noContent().build(); // 204 No Content
     }
+  }
 
-    @GetMapping("/searchIngreso/{palletId}")
-    public ResponseEntity<List<IngresoDTO>> searchEntryReingreso(@PathVariable Integer palletId) {
-        List<IngresoDTO> results = ingresoService.searchEntryReingreso(palletId);
-        return ResponseEntity.ok(results);
-    }
+  @GetMapping("/getSerialByMac/{mac}")
+  public String getSerialByMac(@PathVariable String mac) {
+    String serial = ingresoService.getSerialByMac(mac);
+    return serial;
+  }
 
-    @GetMapping("/transito/{palletId}")
-    public List<IngresoTransitoDTO> getIngresosTransitoByPallet(@PathVariable Integer palletId) {
-        return ingresoService.getIngresoTransitByPalletId(palletId);
-    }
+  @GetMapping("/getReingresos/{serial}")
+  public Integer getReingresos(@PathVariable String serial) {
+    Integer reingresos = ingresoService.getReingresos(serial);
+    return reingresos;
+  }
 
-    @PostMapping("/regularizacion/sap")
-    public ResponseEntity<Map<String, String>> regularizarSap(@RequestBody RegularizarSapDTO dto) {
-        ingresoService.regularizarSap(dto.getSerial(), dto.getCodigoSapId(), dto.getUsuarioIdMovimiento());
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "SAP actualizado correctamente");
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/regularizacion-lote-serial")
-    public ResponseEntity<Map<String, String>> regularizarLoteSerial(@RequestBody RegularizarLoteSerialDTO dto) {
-        ingresoService.regularizarLoteSerial(dto.getSerial(), dto.getLoteId(), dto.getUsuarioIdMovimiento());
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Lote del serial actualizado correctamente");
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/generar-ilegible")
-    public ResponseEntity<?> generarIngresoIlegible(@RequestBody IngresoIlegibleDTO ingresoDTO,
-            @RequestParam String cliente,
-            @RequestParam Integer usuarioId) {
-        String serialGenerado = ingresoService.generarIngresoIlegible(ingresoDTO, cliente, usuarioId);
-        return (serialGenerado != null)
-                ? ResponseEntity.ok().body(Map.of("serial", serialGenerado))
-                : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ingreso");
-    }
+  @GetMapping("/getProactiveRepair/{serial}")
+  public Integer getProactiveRepair(@PathVariable String serial) {
+    Integer proactiveRepair = ingresoService.getProactiveRepair(serial);
+    return proactiveRepair;
+  }
 }

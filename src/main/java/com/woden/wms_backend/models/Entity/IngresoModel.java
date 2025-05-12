@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
@@ -22,8 +23,16 @@ public class IngresoModel {
     private String serial4;
     private String serial5;
     private String smartCard;
-    private Integer codigoSapId;
+    private Integer codigoSapId;    
+    @Transient // ❌ No está en la BD
+    private String codigoSap;
+    @Transient // ❌ No está en la BD
+    private String descripcion;
     private Integer palletId;
+    @Transient // ❌ No está en la BD
+    private String pallet;
+    @Transient // ❌ No está en la BD
+    private String posicion;
     private Integer palletIdIngreso;
     private Integer palletIdAlmacen;
     private Integer palletIdEmpaque;
@@ -43,7 +52,7 @@ public class IngresoModel {
     private Integer prealertaId;
     private Integer cruce;
     private String novedad;
-    private Integer garantiaFabricante;
+    private Boolean garantiaFabricante;
     private Integer garantiaWoden;
     private String observaciones;
     private Integer usuarioId;
@@ -58,66 +67,22 @@ public class IngresoModel {
     private Integer loteId;
     private Integer smartCardId;
     private Integer cajaIngresoId;
+    private String cajaIngreso;
     private String numeroSmartcard;
     private Integer modeloId;
     private Integer fallaCosmeticaId;
     private Integer fallaFuncionalId;
     private String fecha;
-    // private String mac;
-    // private String serial3;
-    // private String serial4;
-    // private String serial5;
-    // private String smartCard;
-    // private int codigoSapId;
-    // // private String codigoSap;
-    // // private String descripcion;
-    // private int palletId;
-    // private String pallet;
-    // private String posicion;
-    // private int palletIdIngreso;
-    // private int palletIdAlmacen;
-    // private int palletIdEmpaque;
-    // private int cajaEmpaqueId;
-    // // private String cajaEmpaque;
-    // private int cajaDespachoId;
-    // // private int cajaDespacho;
-    // private int estadoId;
-    // private String estado;
-    // private int tipoOrigenId;
-    // private int origenId;
-    // private int tipologiaId;
-    // private String tipologia;
-    // private int nivelId;
-    // private int nivel;
-    // private String tramite;
-    // private String documento;
-    // private String guia;
-    // private int caja;
-    // private String falla;
-    // private String tecnicoCliente;
-    // private int prealertaId;
-    // private int cruce;
-    // private String novedad;
-    // private int garantiaFabricante;
-    // private int garantiaWoden;
-    // private int observacionesId;
-    // private String observaciones;
-    // private int usuarioId;
-    // private String usuario;
-    // private String fecha;
-    // private String bodega;
-    // private String estadoCliente;
-    // private int usuarioIdMovimiento;
-    // private String fechaMovimiento;
-    // private int reingreso;
-    // private int loteId;
-    // private int smartCardId;
-    // private String lote;
-    // private int cajaIngresoId;
-    // // private String cajaIngreso;
-    // private String numeroSmartcard;
-    // private String modelo;
-    // private int modeloId;
-    // private int fallaCosmeticaId;
-    // private int fallaFuncionalId;
+    @Transient // ❌ No está en la BD
+    private String cajaEmpaque;
+    @Transient
+    private String estado;
+    @Transient
+    private String tipologia;
+    @Transient
+    private String nivel;
+    private String usuario;
+    private Integer cajaDespacho;
+    private String Lote;
+    private String modelo;
 }
