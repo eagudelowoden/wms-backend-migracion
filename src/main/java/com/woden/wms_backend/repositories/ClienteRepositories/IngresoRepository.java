@@ -52,6 +52,10 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
       @Param("cajaIngresoId") Integer cajaIngresoId,
       @Param("modeloId") Integer modeloId);
 
+  @Modifying
+  @Query(value = "EXEC pa_DeleteEntry :serial", nativeQuery = true)
+  void eliminarIngresos(@Param("serial") String serial);
+
   @Query(value = "EXEC pa_GetModelEntry :serial", nativeQuery = true)
   List<Object[]> searchIngreso(@Param("serial") String serial);
 
@@ -75,7 +79,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_UpdateSapCodeEntry :codigoSapId, :usuarioIdMovimiento, :serial, :filas OUT", nativeQuery = true)
-  void updateSapCode(
+  Integer updateSapCode(
       @Param("codigoSapId") int codigoSapId,
       @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
       @Param("serial") String serial,
@@ -99,4 +103,12 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
   @Query(value = "EXEC pa_GetProactiveRepair :serial, :filas OUT", nativeQuery = true)
   Integer getProactiveRepair(@Param("serial") String serial, @Param("filas") Integer filas);
 
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateSapCodeEntry :codigoSapId, :usuarioIdMovimiento, :serial, :filas OUT", nativeQuery = true)
+  Integer updateBatchPallet(
+      @Param("codigoSapId") int codigoSapId,
+      @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
+      @Param("loteId") String serial,
+      @Param("filas") int filas);
 }

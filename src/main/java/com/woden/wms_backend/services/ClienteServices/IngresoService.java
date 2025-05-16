@@ -57,7 +57,17 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         ingreso.getEstadoCliente(),
         ingreso.getLoteId(),
         ingreso.getCajaIngresoId(),
-        ingreso.getModeloId() == 0 ? null : ingreso.getModeloId());
+        ingreso.getModeloId());
+  }
+  @Transactional
+  public int eliminarIngresos(List<String> seriales) {
+    int count = 0;
+    for (String serial : seriales) {
+      ingresoRepository.eliminarIngresos(serial);
+      count++;
+      }
+
+  return count > 0 ? 1 : 0;
   }
 
   public IngresoModel getModelIngreso(String serial) {
@@ -94,7 +104,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setTipologia((String) obj[22]);
     ingreso.setPalletIdIngreso((Integer) obj[23]);
     ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
-    ingreso.setGarantiaFabricante(Integer.parseInt(obj[25].toString()));
+    ingreso.setGarantiaFabricante((Integer) obj[25]);
     ingreso.setFalla((String) obj[26]);
     ingreso.setLoteId((Integer) obj[27]);
     ingreso.setPalletIdEmpaque((Integer) obj[28]);
@@ -231,6 +241,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public Integer getProactiveRepair(String serial) {
     Integer results = ingresoRepository.getProactiveRepair(serial, 0);
+    return results;
+  }
+
+  public Integer UpdateSapCode(int codigoSapId, int usuarioIdMovimiento, String serial) {
+    Integer results = ingresoRepository.updateSapCode(codigoSapId, usuarioIdMovimiento, serial, 0);
     return results;
   }
 }

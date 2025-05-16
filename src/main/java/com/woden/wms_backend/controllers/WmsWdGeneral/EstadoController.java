@@ -28,4 +28,10 @@ public class EstadoController {
     response.put("id", id);
     return ResponseEntity.ok(response);
   }
+
+  @GetMapping("/getNameState/{id}")
+  public ResponseEntity<String> getNameEstado(@PathVariable int id) {
+    String name = estadoService.getNameById(id);
+    return ResponseEntity.ok(name);
+  }
 }

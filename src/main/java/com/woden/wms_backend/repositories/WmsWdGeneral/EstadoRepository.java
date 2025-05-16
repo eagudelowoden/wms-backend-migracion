@@ -12,4 +12,7 @@ public interface EstadoRepository extends JpaRepository<EstadoModel, Integer> {
 
     @Query(value = "EXEC pa_GetIdState :nombre", nativeQuery = true)
     Integer getIdByNombre(@Param("nombre") String nombre);
+
+    @Query(value = "EXEC pa_GetNameState :id", nativeQuery = true)
+    String getNameById(@Param("id") int id);
 }

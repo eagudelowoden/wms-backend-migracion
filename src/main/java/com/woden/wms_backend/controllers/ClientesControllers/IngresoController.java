@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +22,10 @@ import com.woden.wms_backend.dto.IngresoIlegibleDTO;
 import com.woden.wms_backend.dto.IngresoTransitoDTO;
 import com.woden.wms_backend.dto.RegularizarLoteSerialDTO;
 import com.woden.wms_backend.dto.RegularizarSapDTO;
+import com.woden.wms_backend.dto.RegularizarSapSerialIngresoDTO;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
+import com.woden.wms_backend.services.ClienteServices.ZplService;
 
 @RestController
 @RequestMapping("/client/ingresos")
@@ -34,6 +37,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @Autowired
   private IngresoService ingresoService;
+  private ZplService zplService;
 
   @PostMapping("/create")
   public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
@@ -50,6 +54,12 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
       return ResponseEntity.status(500).body(response);
     }
+  }
+
+  @DeleteMapping("/eliminarIngresos")
+  public ResponseEntity<Integer> eliminarIngresos(@RequestBody List<String> seriales) {
+    int status = ingresoService.eliminarIngresos(seriales);
+    return ResponseEntity.ok(status);
   }
 
   @GetMapping("/searchIngreso/{palletId}")
@@ -71,7 +81,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/regularizacion-lote-serial")
+  @PostMapping("/regularizacion/lote")
   public ResponseEntity<Map<String, String>> regularizarLoteSerial(@RequestBody RegularizarLoteSerialDTO dto) {
     ingresoService.regularizarLoteSerial(dto.getSerial(), dto.getLoteId(), dto.getUsuarioIdMovimiento());
 
@@ -116,5 +126,21 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public Integer getProactiveRepair(@PathVariable String serial) {
     Integer proactiveRepair = ingresoService.getProactiveRepair(serial);
     return proactiveRepair;
+  }
+
+  @PostMapping("/updateSapCodeEntry")
+  public ResponseEntity<Integer> updateSapCodeEntry(@RequestBody RegularizarSapSerialIngresoDTO dto) {
+    return ResponseEntity
+        .ok(ingresoService.UpdateSapCode(dto.getCodigoSapId(), dto.getUsuarioIdMovimiento(), dto.getSerial()));
+  }
+
+  @PostMapping("/imprimirHabladores")
+  public ResponseEntity<String> imprimirHabladores(@RequestBody List<IngresoModel> serialesSeleccionados) {
+    try {
+      String zplGenerado = zplService.generarZpl(serialesSeleccionados);
+      return ResponseEntity.ok(zplGenerado);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ZPL: " + e.getMessage());
+    }
   }
 }

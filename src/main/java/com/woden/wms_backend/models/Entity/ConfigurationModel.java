@@ -1,5 +1,8 @@
 package com.woden.wms_backend.models.Entity;
 
+import lombok.Data;
+
+@Data
 public class ConfigurationModel {
     public static String baseDatos;
     public static String ip;

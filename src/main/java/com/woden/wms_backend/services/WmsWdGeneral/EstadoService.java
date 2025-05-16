@@ -17,4 +17,8 @@ public class EstadoService extends BaseService<EstadoModel, Integer> {
   public Integer getIdByNombre(String nombre) {
     return estadoRepository.getIdByNombre(nombre);
   }
+
+  public String getNameById(int id) {
+    return estadoRepository.getNameById(id);
+  }
 }
