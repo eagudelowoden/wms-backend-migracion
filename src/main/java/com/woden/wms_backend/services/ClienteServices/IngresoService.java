@@ -57,7 +57,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         ingreso.getEstadoCliente(),
         ingreso.getLoteId(),
         ingreso.getCajaIngresoId(),
-        ingreso.getModeloId());
+        ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null);
   }
   @Transactional
   public int eliminarIngresos(List<String> seriales) {
