@@ -32,6 +32,7 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
     private final ClienteService clienteService;
     @Autowired
     private JwtUtil jwtUtil;
+    private DynamicDataSourceConfig dynamicDataSourceConfig;
 
     public ClienteController(ClienteService service) {
         super(service);
@@ -98,7 +99,6 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
 
         // Activar la conexión a la base de datos del cliente si no existe
         try {
-            DynamicDataSourceConfig dynamicDataSourceConfig = new DynamicDataSourceConfig();
             // System.out.println("Activando conexión a la BD del cliente: " + client.getDbase());
             // Si tienes acceso a DynamicDataSourceConfig, inicializa la conexión
             dynamicDataSourceConfig.initializeClientDataSource(client.getDbase());
