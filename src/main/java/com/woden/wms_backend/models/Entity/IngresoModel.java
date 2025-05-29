@@ -52,7 +52,7 @@ public class IngresoModel {
     private Integer prealertaId;
     private Integer cruce;
     private String novedad;
-    private Integer garantiaFabricante;
+    private Boolean garantiaFabricante;
     private Integer garantiaWoden;
     private String observaciones;
     private Integer usuarioId;

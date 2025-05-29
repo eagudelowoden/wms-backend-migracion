@@ -1,10 +1,12 @@
 package com.woden.wms_backend.services.WmsWdGeneral;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.dto.clientDTO.UsuarioTipoOrigenDTO;
 import com.woden.wms_backend.repositories.WmsWdGeneral.UsuarioTipoOrigenRepository;
 
 @Service
@@ -17,8 +19,14 @@ public class UsuarioTipoOrigenService {
     this.usuarioTipoOrigenRepository = usuarioTipoOrigenRepository;
   }
 
+  public List<UsuarioTipoOrigenDTO> getListAssigned(int usuarioId, int clienteId) {
+    List<Object[]> results = usuarioTipoOrigenRepository.getListAssigned(usuarioId, clienteId);
 
-  public List<String> getListAssigned(int usuarioId, int clienteId) {
-    return usuarioTipoOrigenRepository.getListAssigned(usuarioId, clienteId);
+    return results.stream().map(obj -> {
+      UsuarioTipoOrigenDTO usuarioTipoOrigen = new UsuarioTipoOrigenDTO();
+      usuarioTipoOrigen.setId((Integer) obj[0]);
+      usuarioTipoOrigen.setCodigo((String) obj[1]);
+      return usuarioTipoOrigen;
+    }).collect(Collectors.toList());
   }
 }

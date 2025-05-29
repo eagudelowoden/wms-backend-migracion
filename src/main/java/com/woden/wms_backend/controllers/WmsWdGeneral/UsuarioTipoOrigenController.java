@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.woden.wms_backend.dto.clientDTO.UsuarioTipoOrigenDTO;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioTipoOrigenService;
 
 @RestController
@@ -19,8 +20,9 @@ public class UsuarioTipoOrigenController {
   private UsuarioTipoOrigenService usuarioTipoOrigenService;
 
   @GetMapping("/{usuarioId}/{clienteId}")
-  public ResponseEntity<List<String>> getListAssigned(@PathVariable int usuarioId, @PathVariable int clienteId) {
-    List<String> tipoOrigenes = usuarioTipoOrigenService.getListAssigned(usuarioId, clienteId);
+  public ResponseEntity<List<UsuarioTipoOrigenDTO>> getListAssigned(@PathVariable int usuarioId, @PathVariable int clienteId) {
+    List<UsuarioTipoOrigenDTO> tipoOrigenes = usuarioTipoOrigenService.getListAssigned(usuarioId, clienteId);
+    System.out.println("tipoOrigenes: " + tipoOrigenes);
     return ResponseEntity.ok(tipoOrigenes);
   }
 }

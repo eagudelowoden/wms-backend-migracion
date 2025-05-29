@@ -15,6 +15,7 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.IlegibleRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.util.TypeMapper;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -104,7 +105,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setTipologia((String) obj[22]);
     ingreso.setPalletIdIngreso((Integer) obj[23]);
     ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
-    ingreso.setGarantiaFabricante((Integer) obj[25]);
+    ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[25]));
     ingreso.setFalla((String) obj[26]);
     ingreso.setLoteId((Integer) obj[27]);
     ingreso.setPalletIdEmpaque((Integer) obj[28]);
