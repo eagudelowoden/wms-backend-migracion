@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class CountPalletDTO {
   private Integer palletId;
-  private String tabla; // "INGRESO", "ACCESORIO", etc.
+  private String tabla; 
 }

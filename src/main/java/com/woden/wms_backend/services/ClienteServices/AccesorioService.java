@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.dto.AccesorioSearchDTO;
-import com.woden.wms_backend.dto.CerrarPalletDTO;
+import com.woden.wms_backend.dto.SendPalletDTO;
+import com.woden.wms_backend.dto.clientDTO.SendAccesoryDTO;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.AccesorioRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
@@ -69,10 +70,14 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     return accesorioRepository.deleteAccesorio(palletId, cantidad, codigoSapId);
   }
 
-  public boolean cerrarPalletAccesorio(CerrarPalletDTO dto) {
+  public boolean cerrarPalletAccesorio(SendPalletDTO dto) {
     int filas = 0; // OUT simbólico
     accesorioRepository.sendAccesory(dto.getPalletId(), dto.getDestinoId(), filas);
     palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
     return true;
+  }
+
+  public void sendAccesory(SendAccesoryDTO dto){
+    accesorioRepository.sendAccesory(dto.getPalletId(), dto.getEstadoId(), 0);
   }
 }

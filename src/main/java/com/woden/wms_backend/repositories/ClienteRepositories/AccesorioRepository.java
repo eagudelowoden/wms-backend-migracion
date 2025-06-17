@@ -44,9 +44,9 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_SendAccesory :palletId, :destinoId, :filas OUT", nativeQuery = true)
+  @Query(value = "EXEC pa_SendAccesory :palletId, :estadoId, :filas OUT", nativeQuery = true)
   void sendAccesory(
       @Param("palletId") Integer palletId,
-      @Param("destinoId") Integer destinoId,
+      @Param("estadoId") Integer estadoId,
       @Param("filas") Integer filas);
 }

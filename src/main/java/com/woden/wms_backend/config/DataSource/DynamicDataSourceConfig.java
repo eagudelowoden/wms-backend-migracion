@@ -151,7 +151,7 @@ public class DynamicDataSourceConfig {
     LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
     em.setDataSource(dataSource());
     em.setPackagesToScan("com.woden.wms_backend.models.WmsWdGeneral",
-        "com.woden.wms_backend.models.Entity");
+        "com.woden.wms_backend.models.Entity", "com.woden.wms_backend.models.WmsWdAplicaciones");
 
     HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
     em.setJpaVendorAdapter(vendorAdapter);
@@ -183,7 +183,6 @@ public class DynamicDataSourceConfig {
     HikariDataSource ds = dataSourceMap.get(dataSourceName);
 
     if (ds != null) {
-      // status.put("status", ds.isClosed() ? "INACTIVE" : "ACTIVE");
       status.put("status", ds.isClosed() ? "INACTIVE" : "READY");
       status.put("poolName", ds.getPoolName());
       status.put("activeConnections", String.valueOf(ds.getHikariPoolMXBean().getActiveConnections()));

@@ -3,9 +3,12 @@ package com.woden.wms_backend.services.WmsWdGeneral;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.controllers.ClientesControllers.IngresoController;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
 import com.woden.wms_backend.repositories.WmsWdGeneral.UsuarioRepository;
 import com.woden.wms_backend.util.EncryptUtil;
@@ -14,6 +17,7 @@ import com.woden.wms_backend.util.TypeMapper;;
 @Service
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
+    private static final Logger log = LoggerFactory.getLogger(IngresoController.class);
 
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
@@ -53,6 +57,7 @@ public class UsuarioService {
     }
 
     public boolean validateCredentials(String nombreUsuario, String clave) {
+        long start = System.currentTimeMillis();
         Optional<UsuarioModel> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
 
         if (usuarioOpt.isEmpty()) {
@@ -64,9 +69,13 @@ public class UsuarioService {
         // Manejo de valores nulos
         if (usuario.getClave() == null || clave == null) {
             System.out.println("Clave:" + usuario.getClave()); // Imprimir en consola
+            long end = System.currentTimeMillis();
+            log.info("Tiempo total en servicio: {} ms", (end - start));
             return false; // Contraseña inválida
         }
 
+        long end = System.currentTimeMillis();
+        log.info("Tiempo total en servicio: {} ms", (end - start));
         return usuario.getClave().equals(clave); // Comparación con el campo 'clave'
     }
 

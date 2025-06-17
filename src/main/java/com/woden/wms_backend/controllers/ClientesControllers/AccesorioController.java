@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.AccesorioSearchDTO;
-import com.woden.wms_backend.dto.CerrarPalletDTO;
+import com.woden.wms_backend.dto.SendPalletDTO;
+import com.woden.wms_backend.dto.clientDTO.SendAccesoryDTO;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.services.ClienteServices.AccesorioService;
 
@@ -31,6 +33,7 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
 
     @Autowired
     private AccesorioService accesorioService;
+
     @PostMapping("/createAccesory")
     public ResponseEntity<Map<String, String>> guardarAccesorios(@RequestBody List<AccesorioModel> accesorios) {
         accesorioService.guardarAccesorios(accesorios);
@@ -55,15 +58,9 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
     @PostMapping("/cerrar-accesorio")
-    public ResponseEntity<Map<String, String>> cerrarPalletAccesorio(@RequestBody CerrarPalletDTO dto) {
+    public ResponseEntity<Map<String, String>> cerrarPalletAccesorio(@RequestBody SendPalletDTO dto) {
         Map<String, String> response = new HashMap<>();
-        System.out.println("Cerrar accesorio - PalletId: " + dto);
         response.put("message", "Pallet cerrado correctamente");
-        System.out.println("Cerrar accesorio - PalletId: " + dto.getPalletId()
-                + ", Estado: " + dto.getEstado()
-                + ", DestinoId: " + dto.getDestinoId()
-                + ", TipologiaId: " + dto.getTipologiaId()
-                + ", PosicionId: " + dto.getPosicionId());
         try {
             accesorioService.cerrarPalletAccesorio(dto);
 
@@ -79,6 +76,17 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         } catch (Exception e) {
             response.put("message", "Error al cerrar el pallet: " + e.getMessage());
             return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PostMapping("/sendAccesory")
+    public ResponseEntity<?> sendAccesory(@RequestBody SendAccesoryDTO dto) {
+        try {
+            accesorioService.sendAccesory(dto);
+            return ResponseEntity.ok(Map.of("message", "Pallet almacenado correctamente."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al almacenar pallet: " + e.getMessage()));
         }
     }
 }

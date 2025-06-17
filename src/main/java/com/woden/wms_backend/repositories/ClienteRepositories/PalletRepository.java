@@ -90,4 +90,19 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
       @Param("codigoSapId") Integer codigoSapId);
 
+  @Query(value = "EXEC pa_SearchStoragePallet :numero, :tipo, :tipoAccesorio", nativeQuery = true)
+  List<Object[]> searchStoragePallet(@Param("numero") String numero, @Param("tipo") String tipo,
+      @Param("tipoAccesorio") String tipoAccesorio);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdatePositionPallet :palletId, :posicionId, :filas OUT", nativeQuery = true)
+  void updatePosition(@Param("palletId") Integer palletId,
+      @Param("posicionId") Integer posicionId, @Param("filas") Integer filas);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateTipologyPallet :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
+  void updateTipologia(@Param("palletId") Integer palletId,
+      @Param("tipologiaId") Integer tipologiaId, @Param("filas") Integer filas);
 }

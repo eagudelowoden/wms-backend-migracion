@@ -12,4 +12,5 @@ public class PalletDTO {
   private String tipologia;
   private String lote;
   private Boolean kitIngreso;
+  private String origen;
 }

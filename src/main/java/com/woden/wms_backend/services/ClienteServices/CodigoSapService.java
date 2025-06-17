@@ -92,9 +92,10 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
 
         Object[] row = results.get(0);
         // for (int i = 0; i < row.length; i++) {
-        //     Object value = row[i];
-        //     System.out.println("Posición " + i + ": tipo=" + (value != null ? value.getClass().getName() : "null")
-        //             + ", valor=" + value);
+        // Object value = row[i];
+        // System.out.println("Posición " + i + ": tipo=" + (value != null ?
+        // value.getClass().getName() : "null")
+        // + ", valor=" + value);
         // }
         CodigoSapModelDTO codigoSap = new CodigoSapModelDTO();
 

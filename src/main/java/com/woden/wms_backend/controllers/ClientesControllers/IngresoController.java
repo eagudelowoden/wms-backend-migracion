@@ -23,6 +23,8 @@ import com.woden.wms_backend.dto.IngresoTransitoDTO;
 import com.woden.wms_backend.dto.RegularizarLoteSerialDTO;
 import com.woden.wms_backend.dto.RegularizarSapDTO;
 import com.woden.wms_backend.dto.RegularizarSapSerialIngresoDTO;
+import com.woden.wms_backend.dto.clientDTO.SendIngresoDTO;
+import com.woden.wms_backend.dto.clientDTO.SendStorageEntryDTO;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.ZplService;
@@ -39,20 +41,48 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   private IngresoService ingresoService;
   private ZplService zplService;
 
+  // @PostMapping("/create")
+  // public ResponseEntity<Map<String, String>> createIngreso(@RequestBody
+  // IngresoModel ingreso) {
+  // try {
+  // ingresoService.createIngreso(ingreso);
+
+  // Map<String, String> response = new HashMap<>();
+  // response.put("message", "Ingreso registrado correctamente.");
+
+  // return ResponseEntity.ok(response); // ✅ Devuelve application/json
+  // } catch (Exception e) {
+  // Map<String, String> response = new HashMap<>();
+  // response.put("error", "Error al registrar el ingreso: " + e.getMessage());
+
+  // return ResponseEntity.status(500).body(response);
+  // }
+  // }
+
   @PostMapping("/create")
   public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
+    Map<String, String> response = new HashMap<>();
     try {
-      ingresoService.createIngreso(ingreso);
+      String resultado = ingresoService.createIngresoCallable(ingreso);
 
-      Map<String, String> response = new HashMap<>();
-      response.put("message", "Ingreso registrado correctamente.");
+      if (resultado == null) {
+        response.put("message", "Ingreso registrado correctamente.");
+        return ResponseEntity.ok(response);
+      }
 
-      return ResponseEntity.ok(response); // ✅ Devuelve application/json
+      // Analizar mensaje de error para identificar el campo específico
+      String mensaje = switch (resultado) {
+        case "1001" -> "Serial duplicado.";
+        case "1002" -> "MAC duplicada.";
+        default -> "Error al registrar ingreso: " + resultado;
+      };
+
+      response.put("error", mensaje);
+      return ResponseEntity.badRequest().body(response);
+
     } catch (Exception e) {
-      Map<String, String> response = new HashMap<>();
-      response.put("error", "Error al registrar el ingreso: " + e.getMessage());
-
-      return ResponseEntity.status(500).body(response);
+      response.put("error", "Error interno: " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
   }
 
@@ -143,4 +173,30 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ZPL: " + e.getMessage());
     }
   }
+
+  @PostMapping("/sendStorageEntry")
+  public ResponseEntity<?> sendStorageEntry(@RequestBody SendStorageEntryDTO request) {
+    try {
+      ingresoService.SendStorageEntry(request.getPalletId(), request.getEstadoId(), request.getTipologiaId(),
+          request.getUsuarioId());
+      return ResponseEntity.ok(Map.of("message", "Pallet almacenado correctamente."));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Error al almacenar pallet: " + e.getMessage()));
+    }
+  }
+
+  @PostMapping("/sendEntry")
+  public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
+    ingresoService.sendEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0);
+    return ResponseEntity.ok(Map.of("message", "Ingreso enviado correctamente."));
+  }
+
+  @PostMapping("/updateTipologiaEntry")
+  public void updateTipologia(@RequestBody Map<String, Integer> requestBody) {
+    Integer palletId = requestBody.get("palletId");
+    Integer tipologiaId = requestBody.get("tipologiaId");
+    ingresoService.updateTipologia(palletId, tipologiaId);
+  }
+
 }

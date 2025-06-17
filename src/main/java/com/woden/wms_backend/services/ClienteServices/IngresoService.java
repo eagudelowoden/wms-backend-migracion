@@ -1,16 +1,28 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.controllers.ClientesControllers.IngresoController;
+import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
 import com.woden.wms_backend.dto.IngresoDTO;
 import com.woden.wms_backend.dto.IngresoIlegibleDTO;
 import com.woden.wms_backend.dto.IngresoTransitoDTO;
+import com.woden.wms_backend.dto.clientDTO.IngresoModelDTO;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.IlegibleRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
@@ -27,51 +39,179 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private IngresoRepository ingresoRepository;
   private IlegibleRepository ilegibleRepository;
   private ConsecutiveService consecutiveService;
+  private static final Logger log = LoggerFactory.getLogger(IngresoController.class);
 
   @Transactional
   public void createIngreso(IngresoModel ingreso) {
-    ingresoRepository.insertIngreso(
-        ingreso.getSerial(),
-        ingreso.getMac(),
-        ingreso.getSerial3(),
-        ingreso.getSerial4(),
-        ingreso.getSerial5(),
-        ingreso.getCodigoSapId(),
-        ingreso.getPalletId(),
-        ingreso.getEstadoId(),
-        ingreso.getTipoOrigenId(),
-        ingreso.getOrigenId(),
-        ingreso.getTipologiaId(),
-        ingreso.getNivelId(),
-        ingreso.getTramite(),
-        ingreso.getDocumento(),
-        ingreso.getGuia(),
-        ingreso.getCaja(),
-        ingreso.getFalla(),
-        ingreso.getTecnicoCliente(),
-        ingreso.getPrealertaId(),
-        ingreso.getCruce(),
-        ingreso.getNovedad(),
-        ingreso.getGarantiaFabricante(),
-        ingreso.getUsuarioId(),
-        ingreso.getObservaciones(),
-        ingreso.getEstadoCliente(),
-        ingreso.getLoteId(),
-        ingreso.getCajaIngresoId(),
-        ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null);
+    try {
+      Integer result = ingresoRepository.insertIngreso(
+          ingreso.getSerial(),
+          ingreso.getMac(),
+          ingreso.getSerial3(),
+          ingreso.getSerial4(),
+          ingreso.getSerial5(),
+          ingreso.getCodigoSapId(),
+          ingreso.getPalletId(),
+          ingreso.getEstadoId(),
+          ingreso.getTipoOrigenId(),
+          ingreso.getOrigenId(),
+          ingreso.getTipologiaId(),
+          ingreso.getNivelId(),
+          ingreso.getTramite(),
+          ingreso.getDocumento(),
+          ingreso.getGuia(),
+          ingreso.getCaja(),
+          ingreso.getFalla(),
+          ingreso.getTecnicoCliente(),
+          ingreso.getPrealertaId(),
+          ingreso.getCruce(),
+          ingreso.getNovedad(),
+          ingreso.getGarantiaFabricante(),
+          ingreso.getUsuarioId(),
+          ingreso.getObservaciones(),
+          ingreso.getEstadoCliente(),
+          ingreso.getLoteId(),
+          ingreso.getCajaIngresoId(),
+          ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null);
+      logger.info("Guardado correctamente");
+      System.out.println(result);
+    } catch (Exception e) {
+      logger.error("Error al insertar ingreso: {}", e.getMessage());
+    }
   }
+
+  @Autowired
+  private DataSource dataSource;
+
+  public String createIngresoCallable(IngresoModel ingreso) {
+    try (Connection conn = dataSource.getConnection()) {
+      CallableStatement stmt = conn.prepareCall(
+          "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+
+      // Parámetros de entrada (mismos en orden que el SP)
+      stmt.setString(1, ingreso.getSerial());
+      stmt.setString(2, ingreso.getMac());
+      stmt.setString(3, ingreso.getSerial3());
+      stmt.setString(4, ingreso.getSerial4());
+      stmt.setString(5, ingreso.getSerial5());
+      stmt.setObject(6, ingreso.getCodigoSapId(), Types.INTEGER);
+      stmt.setObject(7, ingreso.getPalletId(), Types.INTEGER);
+      stmt.setObject(8, ingreso.getEstadoId(), Types.INTEGER);
+      stmt.setObject(9, ingreso.getTipoOrigenId(), Types.INTEGER);
+      stmt.setObject(10, ingreso.getOrigenId(), Types.INTEGER);
+      stmt.setObject(11, ingreso.getTipologiaId(), Types.INTEGER);
+      stmt.setObject(12, ingreso.getNivelId(), Types.INTEGER);
+      stmt.setString(13, ingreso.getTramite());
+      stmt.setString(14, ingreso.getDocumento());
+      stmt.setString(15, ingreso.getGuia());
+      stmt.setObject(16, ingreso.getCaja(), Types.INTEGER);
+      stmt.setString(17, ingreso.getFalla());
+      stmt.setString(18, ingreso.getTecnicoCliente());
+      stmt.setObject(19, ingreso.getPrealertaId(), Types.INTEGER);
+      stmt.setObject(20, ingreso.getCruce(), Types.INTEGER);
+      stmt.setString(21, ingreso.getNovedad());
+      stmt.setObject(22, ingreso.getGarantiaFabricante(), Types.BIT);
+      stmt.setObject(23, ingreso.getUsuarioId(), Types.INTEGER);
+      stmt.setString(24, ingreso.getObservaciones());
+      stmt.setString(25, ingreso.getEstadoCliente());
+      stmt.setObject(26, ingreso.getLoteId(), Types.INTEGER);
+      stmt.setObject(27, ingreso.getCajaIngresoId(), Types.INTEGER);
+      stmt.setObject(28, ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null, Types.INTEGER);
+
+      // Parametro de salida (retorno del SP: OK, ERROR_SERIE, ERROR_MAC, etc)
+      stmt.registerOutParameter(29, Types.INTEGER);
+      stmt.registerOutParameter(30, Types.VARCHAR);
+
+      stmt.execute();
+
+      Integer codigo = stmt.getInt(29);
+      String mensaje = stmt.getString(30);
+
+      stmt.close();
+      conn.close();
+
+      if (codigo == 0)
+        return null; // éxito
+      return mensaje != null ? mensaje : "Error desconocido";
+
+    } catch (SQLException e) {
+      return "EXCEPCION: " + e.getMessage();
+    }
+  }
+
   @Transactional
   public int eliminarIngresos(List<String> seriales) {
     int count = 0;
     for (String serial : seriales) {
       ingresoRepository.eliminarIngresos(serial);
       count++;
-      }
+    }
 
-  return count > 0 ? 1 : 0;
+    return count > 0 ? 1 : 0;
   }
 
+  private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
+
   public IngresoModel getModelIngreso(String serial) {
+    try {
+      List<Object[]> results = ingresoRepository.searchIngreso(serial);
+      logger.info("resultado: ", results);
+      if (results.isEmpty()) {
+        return null;
+      }
+
+      Object[] obj = results.get(0);
+      IngresoModel ingreso = new IngresoModel();
+      ingreso.setId((Integer) obj[0]);
+      ingreso.setSerial((String) obj[1]);
+      ingreso.setMac((String) obj[2]);
+      ingreso.setSerial3((String) obj[3]);
+      ingreso.setSerial4((String) obj[4]);
+      ingreso.setCodigoSap((String) obj[5]);
+      ingreso.setCodigoSapId((Integer) obj[6]);
+      ingreso.setDescripcion((String) obj[7]);
+      ingreso.setEstado((String) obj[8]);
+      ingreso.setEstadoId((Integer) obj[9]);
+      ingreso.setUsuario((String) obj[10]);
+      ingreso.setCajaEmpaqueId((Integer) obj[11]);
+      ingreso.setCajaEmpaque((String) obj[12]);
+      ingreso.setCajaDespacho((Integer) obj[13]);
+      ingreso.setPallet((String) obj[14]);
+      ingreso.setPalletId((Integer) obj[15]);
+      ingreso.setPosicion((String) obj[13]);
+      ingreso.setNivel((String) obj[17]);
+      ingreso.setNivelId((Integer) obj[18]);
+      ingreso.setTipoOrigenId((Integer) obj[19]);
+      ingreso.setOrigenId((Integer) obj[20]);
+      ingreso.setTipologiaId((Integer) obj[21]);
+      ingreso.setTipologia((String) obj[22]);
+      ingreso.setPalletIdIngreso((Integer) obj[23]);
+      ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
+      ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[25]));
+      ingreso.setFalla((String) obj[26]);
+      ingreso.setLoteId((Integer) obj[27]);
+      ingreso.setPalletIdEmpaque((Integer) obj[28]);
+      ingreso.setLote((String) obj[29]);
+      ingreso.setSmartCardId((Integer) obj[30]);
+      ingreso.setSmartCard((String) obj[31]);
+      ingreso.setCajaIngresoId((Integer) obj[32]);
+      ingreso.setCajaIngreso((String) obj[33]);
+      ingreso.setModeloId((Integer) obj[34]);
+      ingreso.setModelo((String) obj[35]);
+      logger.info("Guardado correctamente");
+      System.out.println("Guardado");
+      logger.warn("No se encontraron ingresos para el serial: {}", serial);
+
+      return ingreso;
+    } catch (Exception e) {
+      logger.error("Error: {}", e.getMessage());
+      logger.error("Error: ", e);
+      logger.error("Error al obtener el ingreso para serial {}: {}", serial, e.getMessage(), e);
+      throw new RuntimeException("Error al ejecutar procedimiento: " + e.getMessage(), e);
+    }
+  }
+
+  public IngresoModelDTO getModelIngresoV3(String serial) {
     List<Object[]> results = ingresoRepository.searchIngreso(serial);
 
     if (results.isEmpty()) {
@@ -79,45 +219,42 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
 
     Object[] obj = results.get(0);
-    IngresoModel ingreso = new IngresoModel();
+    log.info("Tiempo en ejecutar SP: {} ms", obj[1]);
+    IngresoModelDTO ingreso = new IngresoModelDTO();
     ingreso.setId((Integer) obj[0]);
     ingreso.setSerial((String) obj[1]);
     ingreso.setMac((String) obj[2]);
     ingreso.setSerial3((String) obj[3]);
     ingreso.setSerial4((String) obj[4]);
     ingreso.setCodigoSap((String) obj[5]);
-    ingreso.setCodigoSapId((Integer) obj[6]);
-    ingreso.setDescripcion((String) obj[7]);
-    ingreso.setEstado((String) obj[8]);
-    ingreso.setEstadoId((Integer) obj[9]);
-    ingreso.setUsuario((String) obj[10]);
-    ingreso.setCajaEmpaqueId((Integer) obj[11]);
-    ingreso.setCajaEmpaque((String) obj[12]);
-    ingreso.setCajaDespacho((Integer) obj[13]);
-    ingreso.setPallet((String) obj[14]);
-    ingreso.setPalletId((Integer) obj[15]);
-    ingreso.setPosicion((String) obj[13]);
-    ingreso.setNivel((String) obj[17]);
-    ingreso.setNivelId((Integer) obj[18]);
-    ingreso.setTipoOrigenId((Integer) obj[19]);
-    ingreso.setOrigenId((Integer) obj[20]);
-    ingreso.setTipologiaId((Integer) obj[21]);
-    ingreso.setTipologia((String) obj[22]);
-    ingreso.setPalletIdIngreso((Integer) obj[23]);
-    ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
-    ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[25]));
-    ingreso.setFalla((String) obj[26]);
-    ingreso.setLoteId((Integer) obj[27]);
-    ingreso.setPalletIdEmpaque((Integer) obj[28]);
-    ingreso.setLote((String) obj[29]);
-    ingreso.setSmartCardId((Integer) obj[30]);
-    ingreso.setSmartCard((String) obj[31]);
-    ingreso.setCajaIngresoId((Integer) obj[32]);
-    ingreso.setCajaIngreso((String) obj[33]);
-    ingreso.setModeloId((Integer) obj[34]);
-    ingreso.setModelo((String) obj[35]);
+    ingreso.setDescripcion((String) obj[6]);
+    ingreso.setNombreUsuario((String) obj[7]);
+    ingreso.setTipoOrigenId((Integer) obj[8]);
+    ingreso.setTipologia((String) obj[9]);
+    ingreso.setFecha(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
+    ingreso.setLote((String) obj[11]);
+    // long end = System.currentTimeMillis();
+    // log.info("Tiempo en mapear a modelo: {} ms", (end - afterQuery));
+    // log.info("Tiempo total en servicio: {} ms", (end - start));
+
+    log.info("Tiempo en ejecutar SP: {} ms", obj[1]);
     return ingreso;
+    // try {
+
+    // } catch (Exception e) {
+    // long end = System.currentTimeMillis();
+    // // log.info("Tiempo total en servicio: {} ms", (end - start));
+    // return null;
+    // }
   }
+
+  // public String getModelIngresoV2(String serial) {
+  // long start = System.currentTimeMillis();
+  // String ingreso = ingresoRepository.searchIngresoV2(serial);
+  // long end = System.currentTimeMillis();
+  // log.info("Tiempo total en servicio V2: {} ms", (end - start));
+  // return ingreso;
+  // }
 
   public List<IngresoDTO> searchEntryReingreso(int palletId) {
     List<Object[]> results = ingresoRepository.searchEntryReingreso(palletId);
@@ -142,9 +279,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public void cerrarIngreso(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId,
+  public void sendEntry(Integer estadoId, Integer tipologiaId, Integer usuarioId, Integer palletId,
       Integer opcion) {
-    Integer filas = 0; // aquí el OUT lo usamos de forma simbólica
+    Integer filas = 0;
     ingresoRepository.sendIngreso(estadoId, tipologiaId, usuarioId, palletId, opcion, filas);
   }
 
@@ -248,5 +385,14 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public Integer UpdateSapCode(int codigoSapId, int usuarioIdMovimiento, String serial) {
     Integer results = ingresoRepository.updateSapCode(codigoSapId, usuarioIdMovimiento, serial, 0);
     return results;
+  }
+
+  public void SendStorageEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
+    Integer filas = 0; // aquí el OUT lo usamos de forma simbólica
+    ingresoRepository.SendStorageEntry(estadoId, tipologiaId, usuarioId, palletId, filas);
+  }
+
+  public void updateTipologia(Integer palletId, Integer tipologiaId) {
+    ingresoRepository.updateTipologyEntry(palletId, tipologiaId, 0);
   }
 }

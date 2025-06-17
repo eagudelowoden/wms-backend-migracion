@@ -3,7 +3,7 @@ package com.woden.wms_backend.dto;
 import lombok.Data;
 
 @Data
-public class CerrarPalletDTO {
+public class SendPalletDTO {
   private Integer palletId;
   private Integer destinoId;
   private Integer tipologiaId;

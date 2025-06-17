@@ -22,7 +22,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
       ":prealertaId, :cruce, :novedad, :garantiaFabricante, :usuarioId, :observaciones, :estadoCliente, :loteId, "
       +
       ":cajaIngresoId, :modeloId", nativeQuery = true)
-  void insertIngreso(
+  Integer insertIngreso(
       @Param("serial") String serial,
       @Param("mac") String mac,
       @Param("serial3") String serial3,
@@ -58,6 +58,12 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
   @Query(value = "EXEC pa_GetModelEntry :serial", nativeQuery = true)
   List<Object[]> searchIngreso(@Param("serial") String serial);
+
+  // @Query(value = "EXEC pa_GetModelEntryV2 :serial", nativeQuery = true)
+  // String searchIngresoV2(@Param("serial") String serial);
+
+  @Query(value = "SELECT top(1) id FROM Ingreso where serial = :serial", nativeQuery = true)
+  List<Object[]> searchIngresoPrueba(@Param("serial") String serial);
 
   @Query(value = "EXEC pa_SearchEntryReingreso :palletId", nativeQuery = true)
   List<Object[]> searchEntryReingreso(@Param("palletId") Integer palletId);
@@ -111,4 +117,22 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
       @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
       @Param("loteId") String serial,
       @Param("filas") int filas);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_SendStorageEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :opcion, :filas OUT", nativeQuery = true)
+  void SendStorageEntry(
+      @Param("estadoId") Integer estadoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("palletId") Integer palletId,
+      @Param("filas") Integer filas);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateTipologyEntry :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
+  void updateTipologyEntry(
+      @Param("palletId") Integer palletId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("filas") Integer filas);
 }
