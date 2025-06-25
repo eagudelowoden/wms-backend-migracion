@@ -105,4 +105,21 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_UpdateTipologyPallet :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
   void updateTipologia(@Param("palletId") Integer palletId,
       @Param("tipologiaId") Integer tipologiaId, @Param("filas") Integer filas);
+
+  @Query(value = "EXEC pa_SearchStorageGroupPalletAccesory :numero, :tipoAccesorio", nativeQuery = true)
+  List<Object[]> searchStorageGroupPalletAccesory(@Param("numero") String numero,
+      @Param("tipoAccesorio") String tipoAccesorio);
+
+  @Query(value = "EXEC pa_SearchStorageGroupPalletAccesoryCreated :numero, :tipoAccesorio", nativeQuery = true)
+  List<Object[]> searchStorageGroupPalletAccesoryCreated(@Param("numero") String numero,
+      @Param("tipoAccesorio") String tipoAccesorio);
+
+  @Query(value = "EXEC pa_SearchStorageGroupPallet :numero, :tipoEquipo", nativeQuery = true)
+  List<Object[]> searchStorageGroupPallet(@Param("numero") String numero,
+      @Param("tipoEquipo") String tipoEquipo);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UnifyPallet :palletId", nativeQuery = true)
+  Integer unifyPallet(@Param("palletId") Integer palletId);
 }

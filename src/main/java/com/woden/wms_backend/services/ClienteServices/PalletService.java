@@ -159,25 +159,28 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   public boolean deletePallet(Integer palletId, String tipoEquipo, String tipo) {
-    String tabla = getTablaDesdeTipo(tipoEquipo, tipo);
-    String estado = getEstadoDesdeTipo(tipoEquipo, tipo);
-
-    int cajas = 0;
-    try {
-      if (estado != null) {
-        cajas = palletRepository.getBoxCount(palletId, estado); // Usa el estado para validar dependencias en cajas
+    if (!tipoEquipo.equals("") && !tipo.equals("")) {
+      String estado = null;
+      String tabla = null;
+      tabla = getTablaDesdeTipo(tipoEquipo, tipo);
+      estado = getEstadoDesdeTipo(tipoEquipo, tipo);
+      int cajas = 0;
+      try {
+        if (estado != null) {
+          cajas = palletRepository.getBoxCount(palletId, estado); // Usa el estado para validar dependencias en cajas
+        }
+      } catch (Exception e) {
+        cajas = 0; // En caso de fallo en el procedimiento almacenado
       }
-    } catch (Exception e) {
-      cajas = 0; // En caso de fallo en el procedimiento almacenado
+
+      int registros = palletRepository.getCountPallet(palletId, tabla);
+
+      if (cajas > 0 || registros > 0) {
+        return false; // ❌ No eliminar, tiene dependencias
+      }
     }
 
-    int registros = palletRepository.getCountPallet(palletId, tabla);
-
-    if (cajas > 0 || registros > 0) {
-      return false; // ❌ No eliminar, tiene dependencias
-    }
-
-    palletRepository.deletePallet(palletId); // ✅ Procedimiento de eliminación
+    palletRepository.deletePallet(palletId);
     return true;
   }
 
@@ -295,5 +298,55 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public void updateTipologia(Integer palletId, Integer tipologiaId) {
     palletRepository.updateTipologia(palletId, tipologiaId, 0);
+  }
+
+  public List<PalletStorageDTO> searchStorageGroupPalletAccesory(String numero, String tipoAccesorio) {
+    List<Object[]> results = palletRepository.searchStorageGroupPalletAccesory(numero, tipoAccesorio);
+    return results.stream().map(obj -> {
+      PalletStorageDTO pallet = new PalletStorageDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCantidad((Integer) obj[2]);
+      pallet.setCodigoSap((String) obj[3]);
+      pallet.setTipologia((String) obj[4]);
+      pallet.setPosicion((String) obj[5]);
+      pallet.setOrigen((String) obj[6]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
+  public List<PalletStorageDTO> searchStorageGroupPalletAccesoryCreated(String numero, String tipoAccesorio) {
+    List<Object[]> results = palletRepository.searchStorageGroupPalletAccesoryCreated(numero, tipoAccesorio);
+    return results.stream().map(obj -> {
+      PalletStorageDTO pallet = new PalletStorageDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCantidad((Integer) obj[2]);
+      pallet.setCodigoSap((String) obj[3]);
+      pallet.setTipologia((String) obj[4]);
+      pallet.setPosicion((String) obj[5]);
+      pallet.setOrigen((String) obj[6]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
+  public List<PalletStorageDTO> searchStorageGroupPallet(String numero, String tipoEquipo) {
+    List<Object[]> results = palletRepository.searchStorageGroupPallet(numero, tipoEquipo);
+    return results.stream().map(obj -> {
+      PalletStorageDTO pallet = new PalletStorageDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCantidad((Integer) obj[2]);
+      pallet.setCodigoSap((String) obj[3]);
+      pallet.setTipologia((String) obj[4]);
+      pallet.setPosicion((String) obj[5]);
+      pallet.setOrigen((String) obj[6]);
+      pallet.setLote((String) obj[7]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
+  public void unifyPallet(List<Integer> palletId) {
+    palletId.forEach(id -> palletRepository.unifyPallet(id));
   }
 }

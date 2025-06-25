@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.dto.AccesorioSearchDTO;
 import com.woden.wms_backend.dto.SendPalletDTO;
+import com.woden.wms_backend.dto.clientDTO.AccesorioSeparateDTO;
 import com.woden.wms_backend.dto.clientDTO.SendAccesoryDTO;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.AccesorioRepository;
@@ -77,7 +78,33 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     return true;
   }
 
-  public void sendAccesory(SendAccesoryDTO dto){
+  public void sendAccesory(SendAccesoryDTO dto) {
     accesorioRepository.sendAccesory(dto.getPalletId(), dto.getEstadoId(), 0);
+  }
+
+  public void unificarAccesorio(Integer palletIdDestino, List<Integer> palletIds) {
+    for (Integer palletId : palletIds) {
+      accesorioRepository.unifyAccesory(palletIdDestino, palletId);
+    }
+  }
+
+  public void updatePalletAccesory(List<Integer> accesoriosId, Integer palletId) {
+    accesoriosId.forEach(accesorioId -> accesorioRepository.updatePalletAccesory(accesorioId, palletId));
+  }
+
+  public List<AccesorioSeparateDTO> searchSeparatePalletAccesory(Integer cantidad, Integer palletId) {
+    List<Object[]> resultados = accesorioRepository.searchSeparatePalletAccesory(cantidad, palletId);
+    List<AccesorioSeparateDTO> accesorios = new ArrayList<>();
+
+    for (Object[] fila : resultados) {
+      AccesorioSeparateDTO dto = new AccesorioSeparateDTO();
+      dto.setId((Integer) fila[0]);
+      dto.setCodigo((String) fila[1]);
+      dto.setDescripcion((String) fila[2]);
+      dto.setTipologia((String) fila[3]);
+      accesorios.add(dto);
+    }
+
+    return accesorios;
   }
 }

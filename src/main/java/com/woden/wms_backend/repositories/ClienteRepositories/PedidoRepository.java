@@ -1,8 +1,5 @@
 package com.woden.wms_backend.repositories.ClienteRepositories;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.woden.wms_backend.models.Entity.PedidoModel;

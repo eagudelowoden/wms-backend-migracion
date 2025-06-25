@@ -1,5 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +17,6 @@ import com.woden.wms_backend.services.ClienteServices.PrealertaSerialService;
 public class PrealertaSerialController {
   @Autowired
   private PrealertaSerialService prealertaSerialService;
-
-
 
   @GetMapping("/getModelPrealertaSerial/{id}/{serial}")
   public ResponseEntity<PrealertaSerialModel> getPrealertaSerial(@PathVariable Integer id,
@@ -35,5 +35,11 @@ public class PrealertaSerialController {
       @PathVariable String tipo) {
     int total = prealertaSerialService.countRegister(prealertaId, recogidaOn, tipo);
     return ResponseEntity.ok(total);
+  }
+
+  @GetMapping("/searchPrealertSerial/{palletId}")
+  public ResponseEntity<List<PrealertaSerialModel>> searchPrealertSerial(@PathVariable Integer palletId) {
+    List<PrealertaSerialModel> results = prealertaSerialService.searchPrealertSerial(palletId);
+    return ResponseEntity.ok(results);
   }
 }

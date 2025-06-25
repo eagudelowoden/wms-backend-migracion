@@ -24,7 +24,7 @@ public class PedidoController extends BaseController<PedidoModel, Integer> {
 
   private final PedidoService pedidoService;
 
-  @GetMapping("/search")
+  @GetMapping("/searchPedidos")
   public ResponseEntity<List<PedidoDTO>> searchPedidos(
       @RequestParam String cliente,
       @RequestParam(defaultValue = "0") Integer id) {

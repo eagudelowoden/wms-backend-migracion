@@ -24,7 +24,7 @@ public class PedidoService extends BaseService<PedidoModel, Integer> {
     String baseDatos = ClientDatabaseContext.getCurrentClientDb();
     StringBuilder sql = new StringBuilder();
     sql.append("SELECT p.id, cs.codigo AS producto, cs.descripcion, p.cantidad, r.id AS remitenteId ")
-        .append("FROM Pedido p ")
+        .append("FROM WmsWdAplicaciones.dbo.Pedido p ")
         .append("INNER JOIN ").append(baseDatos).append(".dbo.CodigoSap cs ON p.productoId = cs.id ")
         .append("INNER JOIN WmsWdgeneral.dbo.usuario r ON p.remitenteId = r.id ")
         .append("INNER JOIN WmsWdgeneral.dbo.cliente c ON p.clienteId = c.id ")
@@ -44,5 +44,9 @@ public class PedidoService extends BaseService<PedidoModel, Integer> {
         rs.getString("descripcion"),
         rs.getInt("cantidad"),
         rs.getInt("remitenteId")));
+  }
+
+  public void sendPedido(PedidoModel pedido) {
+    
   }
 }

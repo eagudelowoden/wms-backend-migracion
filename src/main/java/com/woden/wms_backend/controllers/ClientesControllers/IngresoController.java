@@ -199,4 +199,34 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     ingresoService.updateTipologia(palletId, tipologiaId);
   }
 
+  @PostMapping("/unifyEntry")
+  public ResponseEntity<?> unifyEntry(@RequestBody Map<String, Object> requestBody) {
+    try {
+      Integer palletIdDestino = (Integer) requestBody.get("palletIdDestino");
+      Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
+      Integer usuarioId = (Integer) requestBody.get("usuarioId");
+      List<?> palletIdsRaw = (List<?>) requestBody.get("palletIds");
+      List<Integer> palletIds = palletIdsRaw.stream()
+          .map(obj -> (obj instanceof Integer) ? (Integer) obj : Integer.parseInt(obj.toString()))
+          .toList();
+      ingresoService.unifyEntry(palletIdDestino, tipologiaId, usuarioId, palletIds);
+      return ResponseEntity.ok(Map.of("message", "Ingreso unificado correctamente."));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Error al unificar ingreso: " + e.getMessage()));
+    }
+  }
+
+  @PostMapping("/updatePalletEntry")
+  public ResponseEntity<?> updatePalletEntry(@RequestBody Map<String, Object> requestBody){
+      Integer palletId = (Integer) requestBody.get("palletId");
+      Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
+      List<?> serialesRaw = (List<?>) requestBody.get("seriales");
+      List<String> seriales = serialesRaw.stream()
+          .map(Object::toString)
+          .toList();
+      
+      ingresoService.updatePalletEntry(palletId, usuarioIdMovimiento, seriales);
+      return ResponseEntity.ok(Map.of("message", "Ingreso actualizado."));
+  }
 }

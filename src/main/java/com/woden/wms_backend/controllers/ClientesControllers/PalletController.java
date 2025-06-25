@@ -117,8 +117,8 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     @DeleteMapping("/eliminar/{palletId}")
     public ResponseEntity<Map<String, String>> eliminarPallet(
             @PathVariable Integer palletId,
-            @RequestParam String tipoEquipo,
-            @RequestParam String tipo) {
+            @RequestParam(required = false) String tipoEquipo,
+            @RequestParam(required = false) String tipo) {
 
         boolean eliminado = palletService.deletePallet(palletId, tipoEquipo, tipo);
         Map<String, String> response = new HashMap<>();
@@ -235,4 +235,34 @@ public class PalletController extends BaseController<PalletModel, Integer> {
         Integer tipologiaId = requestBody.get("tipologiaId");
         palletService.updateTipologia(palletId, tipologiaId);
     }
+
+    @GetMapping("/searchStorageGroupPalletAccesory")
+    public ResponseEntity<List<PalletStorageDTO>> searchStorageGroupPalletAccesory(
+            @RequestParam String numero,
+            @RequestParam String tipoAccesorio) {
+        List<PalletStorageDTO> pallets = palletService.searchStorageGroupPalletAccesory(numero, tipoAccesorio);
+        return ResponseEntity.ok(pallets);
+    }
+
+    @GetMapping("/searchStorageGroupPalletAccesoryCreated")
+    public ResponseEntity<List<PalletStorageDTO>> searchStorageGroupPalletAccesoryCreated(
+            @RequestParam String numero,
+            @RequestParam String tipoAccesorio) {
+        List<PalletStorageDTO> pallets = palletService.searchStorageGroupPalletAccesoryCreated(numero, tipoAccesorio);
+        return ResponseEntity.ok(pallets);
+    }
+
+    @GetMapping("/searchStorageGroupPallet")
+    public ResponseEntity<List<PalletStorageDTO>> searchStorageGroupPallet(@RequestParam String numero,
+            @RequestParam String tipoEquipo) {
+        List<PalletStorageDTO> pallets = palletService.searchStorageGroupPallet(numero, tipoEquipo);
+        return ResponseEntity.ok(pallets);
+    }
+
+    @PostMapping("/unifyPallets")
+    public ResponseEntity<Map<String, String>> unifyPallet(@RequestBody List<Integer> palletIds) {
+        palletService.unifyPallet(palletIds);
+        return ResponseEntity.ok(Map.of("message", "Pallets unificados correctamente"));
+    }
+
 }

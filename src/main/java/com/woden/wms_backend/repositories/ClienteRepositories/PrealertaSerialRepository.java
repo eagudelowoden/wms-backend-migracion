@@ -25,4 +25,11 @@ public interface PrealertaSerialRepository extends BaseRepository<PrealertaSeria
 
   @Query(value = "SELECT SUM(cantidad_recogida) FROM PrealertaSerial WHERE prealertaId = :prealertaId AND tipo = 'No_Serializable'", nativeQuery = true)
   Integer getTotalByPrealertNoSerializable(@Param("prealertaId") Integer prealertaId);
+
+  // @Query(value = "EXEC pa_SearchPrealertSerial :prealertId", nativeQuery =
+  // true)
+  @Query(value = "select id,serial,codigosap,tramite,pedido,caja,falla,tecnicoCliente,novedad,garantia,isnull(recogida,0) recogida,mac,loteId from PrealertaSerial \r\n"
+      + //
+      "where prealertaId = :prealertId", nativeQuery = true)
+  List<Object[]> searchPrealertSerial(@Param("prealertId") Integer prealertId);
 }

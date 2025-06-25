@@ -155,13 +155,25 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public IngresoModel getModelIngreso(String serial) {
     try {
       List<Object[]> results = ingresoRepository.searchIngreso(serial);
-      logger.info("resultado: ", results);
       if (results.isEmpty()) {
         return null;
       }
 
       Object[] obj = results.get(0);
       IngresoModel ingreso = new IngresoModel();
+      // ingreso.setId((Integer) obj[0]);
+      // ingreso.setSerial((String) obj[1]);
+      // ingreso.setMac((String) obj[2]);
+      // ingreso.setSerial3((String) obj[3]);
+      // ingreso.setSerial4((String) obj[4]);
+      // ingreso.setCodigoSap((String) obj[5]);
+      // ingreso.setDescripcion((String) obj[6]);
+      // ingreso.setUsuario((String) obj[7]);
+      // ingreso.setTipoOrigenId((Integer) obj[8]);
+      // ingreso.setTipologia((String) obj[9]);
+      // ingreso.setFecha(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
+      // ingreso.setLote((String) obj[11]);
+
       ingreso.setId((Integer) obj[0]);
       ingreso.setSerial((String) obj[1]);
       ingreso.setMac((String) obj[2]);
@@ -198,9 +210,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setCajaIngreso((String) obj[33]);
       ingreso.setModeloId((Integer) obj[34]);
       ingreso.setModelo((String) obj[35]);
-      logger.info("Guardado correctamente");
-      System.out.println("Guardado");
-      logger.warn("No se encontraron ingresos para el serial: {}", serial);
 
       return ingreso;
     } catch (Exception e) {
@@ -394,5 +403,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateTipologia(Integer palletId, Integer tipologiaId) {
     ingresoRepository.updateTipologyEntry(palletId, tipologiaId, 0);
+  }
+
+  public void unifyEntry(Integer palletIdDestino, Integer tipologiaId, Integer usuarioId, List<Integer> palletId) {
+    palletId.forEach(id -> ingresoRepository.unifyEntry(palletIdDestino, tipologiaId, usuarioId, id));
+  }
+
+  public void updatePalletEntry(Integer palletId, Integer usuarioIdMovimiento, List<String> seriales){
+    seriales.forEach(serial -> ingresoRepository.updatePalletEntry(palletId, usuarioIdMovimiento, serial));
   }
 }

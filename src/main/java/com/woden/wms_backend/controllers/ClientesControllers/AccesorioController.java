@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.AccesorioSearchDTO;
 import com.woden.wms_backend.dto.SendPalletDTO;
+import com.woden.wms_backend.dto.clientDTO.AccesorioSeparateDTO;
 import com.woden.wms_backend.dto.clientDTO.SendAccesoryDTO;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.services.ClienteServices.AccesorioService;
@@ -88,5 +89,39 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al almacenar pallet: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/unifyAccesory")
+    public ResponseEntity<?> unifyAccesory(@RequestBody Map<String, Object> dto) {
+        try {
+            Integer palletIdDestino = (Integer) dto.get("palletIdDestino");
+            List<Integer> palletIds = ((List<?>) dto.get("palletIds")).stream()
+                    .map(obj -> (obj instanceof Integer) ? (Integer) obj : Integer.parseInt(obj.toString()))
+                    .toList();
+            accesorioService.unificarAccesorio(palletIdDestino, palletIds);
+            return ResponseEntity.ok(Map.of("message", "Accesorio unificado correctamente."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al unificar accesorio: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/updatePalletAccesory")
+    public ResponseEntity<?> updatePalletAccesory(@RequestBody Map<String, Object> requestBody) {
+        Integer palletId = (Integer) requestBody.get("palletId");
+        List<?> accesoriosRaw = (List<?>) requestBody.get("accesoriosId");
+        List<Integer> accesoriosId = accesoriosRaw.stream()
+                .map(obj -> (obj instanceof Integer) ? (Integer) obj : Integer.parseInt(obj.toString()))
+                .toList();
+
+        accesorioService.updatePalletAccesory(accesoriosId, palletId);
+        return ResponseEntity.ok(Map.of("message", "Accesorio actualizado."));
+    }
+
+    @GetMapping("/searchSeparatePalletAccesory")
+    public ResponseEntity<List<AccesorioSeparateDTO>> searchSeparatePalletAccesory(@RequestParam Integer cantidad,
+            @RequestParam Integer palletId) {
+        List<AccesorioSeparateDTO> lista = accesorioService.searchSeparatePalletAccesory(cantidad, palletId);
+        return ResponseEntity.ok(lista);
     }
 }
