@@ -32,6 +32,7 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
     private final ClienteService clienteService;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
     private DynamicDataSourceConfig dynamicDataSourceConfig;
 
     public ClienteController(ClienteService service) {
@@ -64,8 +65,9 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
             return ResponseEntity.badRequest().body("Cliente no encontrado");
         }
 
-        // System.out.println("Switching to client: " + client.getNombre() + ", DB: " + client.getDbase() + ", ID: "
-        //         + client.getId());
+        // System.out.println("Switching to client: " + client.getNombre() + ", DB: " +
+        // client.getDbase() + ", ID: "
+        // + client.getId());
 
         // Obtener autenticación actual
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -88,23 +90,21 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
 
         // Verificar que el token contenga la información correcta
         // try {
-        //     Claims claims = jwtUtil.extractAllClaims(newToken);
-        //     // System.out.println("Token claims: " + claims);
-        //     // System.out.println("  clientName: " + claims.get("clientName"));
-        //     // System.out.println("  dbName: " + claims.get("dbName"));
-        //     // System.out.println("  clientId: " + claims.get("clientId"));
+        // Claims claims = jwtUtil.extractAllClaims(newToken);
+        // // System.out.println("Token claims: " + claims);
+        // // System.out.println(" clientName: " + claims.get("clientName"));
+        // // System.out.println(" dbName: " + claims.get("dbName"));
+        // // System.out.println(" clientId: " + claims.get("clientId"));
         // } catch (Exception e) {
-        //     System.out.println("Error al extraer claims del token: " + e.getMessage());
+        // System.out.println("Error al extraer claims del token: " + e.getMessage());
         // }
 
-        // Activar la conexión a la base de datos del cliente si no existe
         try {
-            // System.out.println("Activando conexión a la BD del cliente: " + client.getDbase());
-            // Si tienes acceso a DynamicDataSourceConfig, inicializa la conexión
+            // System.out.println("Activando conexión a la BD del cliente: " +
+            // client.getDbase());
             dynamicDataSourceConfig.initializeClientDataSource(client.getDbase());
         } catch (Exception e) {
             System.out.println("Error al activar conexión: " + e.getMessage());
-            // No fallamos aquí, seguimos con el switch
         }
 
         Map<String, String> response = new HashMap<>();
@@ -125,7 +125,6 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         return ResponseEntity.ok(new DatabaseInfo(currentDb, connectionUrl));
     }
 
-    
     @GetMapping("/kitIngresoON/{id}")
     public Boolean getKitIngresoON(@PathVariable int id) {
         return clienteService.getKitIngresoValue(id);
