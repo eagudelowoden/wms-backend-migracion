@@ -153,9 +153,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @GetMapping("/getProactiveRepair/{serial}")
-  public Integer getProactiveRepair(@PathVariable String serial) {
+  public ResponseEntity<Integer> getProactiveRepair(@PathVariable String serial) {
     Integer proactiveRepair = ingresoService.getProactiveRepair(serial);
-    return proactiveRepair;
+    return ResponseEntity.ok(proactiveRepair);
   }
 
   @PostMapping("/updateSapCodeEntry")
@@ -218,15 +218,105 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @PostMapping("/updatePalletEntry")
-  public ResponseEntity<?> updatePalletEntry(@RequestBody Map<String, Object> requestBody){
-      Integer palletId = (Integer) requestBody.get("palletId");
-      Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
-      List<?> serialesRaw = (List<?>) requestBody.get("seriales");
-      List<String> seriales = serialesRaw.stream()
-          .map(Object::toString)
-          .toList();
-      
-      ingresoService.updatePalletEntry(palletId, usuarioIdMovimiento, seriales);
-      return ResponseEntity.ok(Map.of("message", "Ingreso actualizado."));
+  public ResponseEntity<?> updatePalletEntry(@RequestBody Map<String, Object> requestBody) {
+    Integer palletId = (Integer) requestBody.get("palletId");
+    Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
+    List<?> serialesRaw = (List<?>) requestBody.get("seriales");
+    List<String> seriales = serialesRaw.stream()
+        .map(Object::toString)
+        .toList();
+
+    ingresoService.updatePalletEntry(palletId, usuarioIdMovimiento, seriales);
+    return ResponseEntity.ok(1);
+  }
+
+  @PostMapping("/updatePalletAndTipologyEntry")
+  public ResponseEntity<?> updatePalletAndTipologyEntry(@RequestBody Map<String, Object> requestBody) {
+    Integer palletId = (Integer) requestBody.get("palletId");
+    Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
+    Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
+    Integer estadoId = (Integer) requestBody.get("estadoId");
+    List<?> serialesRaw = (List<?>) requestBody.get("seriales");
+    List<String> seriales = serialesRaw.stream()
+        .map(Object::toString)
+        .toList();
+
+    ingresoService.updatePalletAndTipologyEntry(palletId, tipologiaId, usuarioIdMovimiento, estadoId, seriales);
+    return ResponseEntity.ok(1);
+  }
+
+  @GetMapping("/getLevelEntry")
+  public ResponseEntity<List<String>> getLevelEntry(@RequestParam String serial) {
+    List<String> nivel = ingresoService.getLevelEntry(serial);
+    return ResponseEntity.ok(nivel);
+  }
+
+  @PostMapping("/updateStateAllEntry")
+  public ResponseEntity<?> updateStateAllEntry(@RequestBody List<Map<String, Object>> requestList) {
+    try {
+      for (Map<String, Object> requestBody : requestList) {
+        Integer estadoId = (Integer) requestBody.get("estadoId");
+        Integer usuarioId = (Integer) requestBody.get("usuarioIdMovimiento");
+        String serial = (String) requestBody.get("serial");
+
+        ingresoService.updateStateAllEntry(estadoId, usuarioId, serial);
+      }
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/searchDiagnosticEntry")
+  public ResponseEntity<?> searchDiagnosticEntry(
+      @RequestParam String estadoFinal,
+      @RequestParam String perfil,
+      @RequestParam Integer usuarioId) {
+    List<Map<String, String>> diagnosticEntries = ingresoService.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
+    return ResponseEntity.ok(diagnosticEntries);
+  }
+
+  @GetMapping("/searchDelivery")
+  public ResponseEntity<?> searchDeliveryEntry(@RequestParam String serial) {
+    List<String> deliveryEntries = ingresoService.searchDeliveryEntry(serial);
+    if (deliveryEntries != null) {
+      return ResponseEntity.ok(deliveryEntries);
+    } else {
+      return ResponseEntity.noContent().build(); // 204 No Content
+    }
+  }
+
+  @PostMapping("/updateLevel")
+  public ResponseEntity<?> updateLevel(@RequestBody Map<String, Integer> requestBody) {
+    Integer levelId = requestBody.get("levelId");
+    Integer palletId = requestBody.get("palletId");
+
+    ingresoService.updateLevel(levelId, palletId);
+    return ResponseEntity.ok(Map.of("message", "Nivel actualizado correctamente."));
+  }
+
+  @PostMapping("/updateStateEntryNotUsuario")
+  public ResponseEntity<?> updateStateEntryNotUsuario(@RequestBody Map<String, Object> requestBody) {
+    Integer estadoId = (Integer) requestBody.get("estadoId");
+    Integer palletId = (Integer) requestBody.get("palletId");
+    Integer fecha = (Integer) requestBody.get("fecha");
+    List<?> serialRaw = (List<?>) requestBody.get("serial");
+    List<String> serial = serialRaw.stream().map(Object::toString).toList();
+
+    for (String s : serial) {
+      ingresoService.updateStateEntryNotUsuario(estadoId, palletId, fecha, s);
+    }
+    return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente."));
+  }
+
+  @GetMapping("/updateChangeStateEntry")
+  public ResponseEntity<?> updateChangeStateEntry(@RequestBody Map<String, Object> requestBody) {
+    String serial1 = (String) requestBody.get("serial1");
+    String serial2 = (String) requestBody.get("serial2");
+    String mac = (String) requestBody.get("mac");
+    Integer estadoId = (Integer) requestBody.get("estadoId");
+
+    ingresoService.updateChangedEntry(serial1, serial2, mac, estadoId);
+    return ResponseEntity.ok(Map.of("message", "Estado cambiado correctamente."));
   }
 }

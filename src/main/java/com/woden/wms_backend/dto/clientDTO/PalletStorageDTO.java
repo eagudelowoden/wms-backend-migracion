@@ -8,6 +8,7 @@ public class PalletStorageDTO {
   private String numero;
   private Integer cantidad;
   private String codigoSap;
+  private String descripcion;
   private String origen;
   private String tipologia;
   private String lote;

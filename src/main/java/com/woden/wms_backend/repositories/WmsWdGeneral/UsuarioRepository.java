@@ -18,4 +18,8 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
 
     @Query(value = "EXEC pa_GetModelUser :nombreUsuario, :clave", nativeQuery = true)
     List<Object[]> getModelUser(@Param("nombreUsuario") String nombreUsuario, @Param("clave") String clave);
+
+    @Query(value = "EXEC pa_GetListUser :idCliente, :tipoPerfil", nativeQuery = true)
+    List<Object[]> getListUser(@Param("idCliente") Integer idCliente, @Param("tipoPerfil") String tipoPerfil);
+    
 }

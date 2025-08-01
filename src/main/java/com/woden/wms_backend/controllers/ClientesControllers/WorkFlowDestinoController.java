@@ -13,7 +13,7 @@ import com.woden.wms_backend.dto.WorkFlowDestinoDTO;
 import com.woden.wms_backend.services.ClienteServices.WorkFlowDestinoService;
 
 @RestController
-@RequestMapping("/client/workflow")
+@RequestMapping("/client/workflowDestino")
 public class WorkFlowDestinoController {
 
   private final WorkFlowDestinoService service;

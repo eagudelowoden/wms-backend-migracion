@@ -41,4 +41,10 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
   @Query(value = "EXEC pa_GetModelMaster :codigoSap", nativeQuery = true)
   List<Object[]> getModelMaster(@Param("codigoSap") String codigoSap);
+
+  @Query(value = "EXEC pa_GetLevelsClasification", nativeQuery = true)
+  List<Object[]> getLevelsClasification();
+
+  @Query(value = "EXEC pa_GetListFailuresMaster :nombre", nativeQuery = true)
+  List<Object[]> getFallas(@Param("nombre") String nombre);
 }

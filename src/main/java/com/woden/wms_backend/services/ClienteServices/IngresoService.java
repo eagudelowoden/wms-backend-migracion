@@ -6,7 +6,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -386,11 +388,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return results;
   }
 
-  public Integer getProactiveRepair(String serial) {
-    Integer results = ingresoRepository.getProactiveRepair(serial, 0);
-    return results;
-  }
-
   public Integer UpdateSapCode(int codigoSapId, int usuarioIdMovimiento, String serial) {
     Integer results = ingresoRepository.updateSapCode(codigoSapId, usuarioIdMovimiento, serial, 0);
     return results;
@@ -409,7 +406,82 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     palletId.forEach(id -> ingresoRepository.unifyEntry(palletIdDestino, tipologiaId, usuarioId, id));
   }
 
-  public void updatePalletEntry(Integer palletId, Integer usuarioIdMovimiento, List<String> seriales){
+  public void updatePalletEntry(Integer palletId, Integer usuarioIdMovimiento, List<String> seriales) {
     seriales.forEach(serial -> ingresoRepository.updatePalletEntry(palletId, usuarioIdMovimiento, serial));
+  }
+
+  public void updatePalletAndTipologyEntry(Integer palletId, Integer tipologiaId, Integer usuarioIdMovimiento,
+      Integer estadoId, List<String> seriales) {
+    seriales.forEach(serial -> ingresoRepository.updatePalletAndTipologyEntry(palletId, tipologiaId,
+        usuarioIdMovimiento, estadoId, serial));
+  }
+
+  public List<String> getLevelEntry(String serial) {
+    List<Object[]> results = ingresoRepository.getLevelEntry(serial);
+    List<String> levelEntry = new ArrayList<>();
+    results.forEach(result -> levelEntry.add((String) result[0]));
+    return levelEntry;
+  }
+
+  public Integer getProactiveRepair(String serial) {
+    try (Connection conn = dataSource.getConnection()) {
+      CallableStatement stmt = conn.prepareCall("{call pa_GetProactiveRepair(?, ?)}");
+
+      // Parámetro de entrada
+      stmt.setString(1, serial);
+
+      // Parámetro de salida
+      stmt.registerOutParameter(2, Types.INTEGER);
+
+      stmt.execute();
+
+      Integer filas = stmt.getInt(2);
+
+      stmt.close();
+      conn.close();
+
+      return filas;
+    } catch (SQLException e) {
+      System.err.println("Error en getProactiveRepairCallable: " + e.getMessage());
+      return 0;
+    }
+  }
+
+  public void updateStateAllEntry(Integer estadoId, Integer usuarioId, String serial) {
+    ingresoRepository.updateStateAllEntry(estadoId, usuarioId, serial);
+  }
+
+  public List<Map<String, String>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
+    List<Object[]> results = ingresoRepository.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
+    List<Map<String, String>> diagnosticEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, String> entry = new HashMap<>();
+      entry.put("serial", (String) result[0]);
+      entry.put("mac", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("descripcion", (String) result[3]);
+      entry.put("falla", (String) result[4]);
+      entry.put("estado", (String) result[5]);
+      diagnosticEntries.add(entry);
+    }
+    return diagnosticEntries;
+  }
+
+  public List<String> searchDeliveryEntry(String serial) {
+    List<String> results = ingresoRepository.searchDeliveryEntry(serial);
+    return results.isEmpty() ? null : results;
+  }
+
+  public void updateLevel(Integer levelId, Integer palletId) {
+    Integer filas = 0;
+    ingresoRepository.updateLevel(levelId, palletId, filas);
+  }
+
+  public void updateStateEntryNotUsuario(Integer estadoId, Integer palletId, Integer fecha, String serial) {
+    ingresoRepository.updateStateEntryNotUsuario(estadoId, palletId, fecha, serial);
+  }
+
+  public void updateChangedEntry(String serial1, String serial2, String mac, Integer estadoId) {
+    ingresoRepository.updateChangedEntry(serial1, serial2, mac, estadoId);
   }
 }

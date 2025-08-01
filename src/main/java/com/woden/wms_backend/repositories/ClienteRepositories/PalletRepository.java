@@ -122,4 +122,10 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Transactional
   @Query(value = "EXEC pa_UnifyPallet :palletId", nativeQuery = true)
   Integer unifyPallet(@Param("palletId") Integer palletId);
+
+  @Query(value = "EXEC pa_GetListPallet :destino", nativeQuery = true)
+  List<Object[]> getListPallets(@Param("destino") String destino);
+
+  @Query(value = "pa_GetIdPallet :numero", nativeQuery = true)
+  Integer getIdPallet(@Param("numero") String numero);
 }

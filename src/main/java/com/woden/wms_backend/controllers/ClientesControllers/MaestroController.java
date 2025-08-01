@@ -68,4 +68,16 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         List<ModeloDTO> results = maestroService.getModelMaster(codigoSap);
         return ResponseEntity.ok(results);
     }
+
+    @GetMapping("/getLevelsClasification")
+    public ResponseEntity<List<String>> getLevelsClasification() {
+        List<String> results = maestroService.getLevelsClasification();
+        return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/getFallas")
+    public List<Map<String, String>> getFallas(@RequestParam String nombre) {
+        return maestroService.getFallas(nombre);
+    }
+
 }

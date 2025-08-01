@@ -2,6 +2,7 @@ package com.woden.wms_backend.services.WmsWdGeneral;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,5 +119,10 @@ public class UsuarioService {
         usuario.setCargo((String) row[14]);
         usuario.setArea((String) row[15]);
         return usuario;
+    }
+
+    public List<String> getListUser(Integer idCliente, String tipoPerfil) {
+        List<Object[]> results = usuarioRepository.getListUser(idCliente, tipoPerfil);
+        return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
     }
 }

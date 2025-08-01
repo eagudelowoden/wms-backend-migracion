@@ -18,4 +18,13 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Query(value = "SELECT BaseNoDisponibleON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getBaseNoDisponibleON(@Param("id") int id);
+
+  @Query(value = "SELECT calidadON FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Integer getCalidadON(@Param("id") int Id);
+
+  @Query(value = "SELECT nivelClasificacionON FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Integer getNivelClasificacionValue(@Param("id") int id);
+
+  @Query(value = "SELECT odooPqrsON FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Boolean getOdooPqrsON(@Param("id") int id);
 }

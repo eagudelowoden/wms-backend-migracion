@@ -265,4 +265,18 @@ public class PalletController extends BaseController<PalletModel, Integer> {
         return ResponseEntity.ok(Map.of("message", "Pallets unificados correctamente"));
     }
 
+    @GetMapping("/getListPallets")
+    public ResponseEntity<?> getListPallets(@RequestParam String destino) {
+        List<String> pallets = palletService.getListPallets(destino);
+        return ResponseEntity.ok(pallets);
+    }
+
+    @GetMapping("/getIdPallet")
+    public ResponseEntity<Integer> getIdPallet(@RequestParam String numero) {
+        Integer idPallet = palletService.getIdPallet(numero);
+        if (idPallet == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(idPallet);
+    }
 }

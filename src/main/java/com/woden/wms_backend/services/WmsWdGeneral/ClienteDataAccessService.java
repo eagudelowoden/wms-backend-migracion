@@ -25,4 +25,19 @@ public class ClienteDataAccessService {
     Boolean result = clienteRepository.getBaseNoDisponibleON(id);
     return result != null ? (result ? 1 : 0) : null;
   }
+
+  public Integer getCalidadON(int id) {
+    Integer result = clienteRepository.getCalidadON(id);
+    return result;
+  }
+
+  public Integer getNivelClasificacionValue(int id) {
+    Integer result = clienteRepository.getNivelClasificacionValue(id);
+    return result;
+  }
+
+  public Integer getOdooPqrsON(int id) {
+    Boolean result = clienteRepository.getOdooPqrsON(id);
+    return result != null ? (result ? 1 : 0) : null;
+  }
 }

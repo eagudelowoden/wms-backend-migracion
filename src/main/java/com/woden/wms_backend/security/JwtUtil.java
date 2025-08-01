@@ -16,7 +16,7 @@ public class JwtUtil {
 
     private final MacAlgorithm ALGORITMO = Jwts.SIG.HS256; // Algoritmo de firma
     private final SecretKey SECRET_KEY = ALGORITMO.key().build(); // Genera una clave segura
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 horas
+    private final long EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutos
 
     public String generateToken(String username, String clientName, String clientDb, Integer clientId) {
         Map<String, Object> claims = new HashMap<>();
@@ -24,13 +24,19 @@ public class JwtUtil {
         claims.put("clientName", clientName);
         claims.put("clientId", clientId);
 
-        return Jwts.builder()
-                .claims(claims) // Añadimos los claims adicionales
+        String token = Jwts.builder()
+                .claims(claims)
                 .subject(username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SECRET_KEY, ALGORITMO)
                 .compact();
+
+        System.out.println("Nuevo token generado para: " + username +
+                " | Cliente DB: " + clientDb +
+                " | Expira en: " + (EXPIRATION_TIME / 1000 / 60) + " min");
+
+        return token;
     }
 
     public String extractUsername(String token) {
@@ -56,6 +62,7 @@ public class JwtUtil {
                     .verifyWith(SECRET_KEY) // Verifica el token con la clave
                     .build()
                     .parseSignedClaims(token); // Parsea el token
+
             return true;
         } catch (Exception e) {
             return false;
@@ -70,6 +77,7 @@ public class JwtUtil {
 
     public Claims extractAllClaims(String token) {
         return Jwts.parser()
+                .setAllowedClockSkewSeconds(5)
                 .verifyWith(SECRET_KEY)
                 .build()
                 .parseSignedClaims(token)

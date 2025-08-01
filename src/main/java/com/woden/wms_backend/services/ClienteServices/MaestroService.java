@@ -1,6 +1,8 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -58,4 +60,21 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
             return modelo;
         }).collect(Collectors.toList());
     }
+
+    public List<String> getLevelsClasification() {
+        List<Object[]> results = maestroRepository.getLevelsClasification();
+        return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
+    }
+
+    public List<Map<String, String>> getFallas(String nombre) {
+        List<Object[]> results = maestroRepository.getFallas(nombre);
+
+        return results.stream().map(obj -> {
+            Map<String, String> map = new HashMap<>();
+            map.put("codigo", (String) obj[0]);
+            map.put("descripcion", (String) obj[1]);
+            return map;
+        }).collect(Collectors.toList());
+    }
+
 }
