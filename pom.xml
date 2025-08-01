@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.1</version>
+		<version>3.4.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.woden</groupId>
 	<artifactId>wms-backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.17-SNAPSHOT</version>
 	<name>wms-backend</name>
 	<description>Backend del sistema de WMS Web</description>
 	<url/>
@@ -29,39 +29,94 @@
 	<properties>
 		<java.version>21</java.version>
 	</properties>
+
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+        <!-- Spring Boot Starters -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+				<!-- HikariCP (Pool de conexiones) -->
+				<dependency>
+						<groupId>com.zaxxer</groupId>
+						<artifactId>HikariCP</artifactId>
+				</dependency>
 
+        <!-- JWT -->
+        <dependency>
+					<groupId>io.jsonwebtoken</groupId>
+					<artifactId>jjwt-api</artifactId>
+					<version>0.12.3</version>
+				</dependency>
+				<dependency>
+						<groupId>io.jsonwebtoken</groupId>
+						<artifactId>jjwt-impl</artifactId>
+						<version>0.12.3</version>
+						<scope>runtime</scope>
+				</dependency>
+				<dependency>
+						<groupId>io.jsonwebtoken</groupId>
+						<artifactId>jjwt-jackson</artifactId>
+						<version>0.12.3</version>
+						<scope>runtime</scope>
+				</dependency>
+				
+        <!-- SQL Server -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+				<!-- JasperReports core -->
+				<dependency>
+						<groupId>net.sf.jasperreports</groupId>
+						<artifactId>jasperreports</artifactId>
+						<version>7.0.2</version>
+				</dependency>
+
+				<!-- JasperReports PDF Export -->
+				<dependency>
+						<groupId>net.sf.jasperreports</groupId>
+						<artifactId>jasperreports-pdf</artifactId>
+						<version>7.0.2</version>
+				</dependency>
+
+				<!-- Barcode4J -->
+				<dependency>
+						<groupId>net.sf.barcode4j</groupId>
+						<artifactId>barcode4j</artifactId>
+						<version>2.1</version>
+				</dependency>
+
+        <!-- Servlet API (para HttpServletRequest) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+				</dependency>
+    </dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -86,6 +141,25 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.hibernate.tool</groupId>
+				<artifactId>hibernate-tools-maven</artifactId>
+				<version>5.6.0.Final</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.microsoft.sqlserver</groupId>
+						<artifactId>mssql-jdbc</artifactId>
+						<version>9.4.0.jre11</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<revengFile>${project.basedir}/src/main/resources/hibernate.reveng.xml</revengFile>
+					<packageName>com.yourpackage.model</packageName>
+					<configurationFile>${project.basedir}/src/main/resources/hibernate.cfg.xml</configurationFile>
+					<templatePath>${project.basedir}/src/main/resources/templates/</templatePath>
+					<outputDirectory>${project.basedir}/src/main/java</outputDirectory>
 				</configuration>
 			</plugin>
 		</plugins>
