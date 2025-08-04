@@ -108,7 +108,7 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         }
 
         Map<String, String> response = new HashMap<>();
-        response.put("token", newToken);
+        response.put("clientToken", newToken);
         response.put("clientDb", client.getNombre());
         response.put("clientDbName", client.getDbase());
         return ResponseEntity.ok(response);
