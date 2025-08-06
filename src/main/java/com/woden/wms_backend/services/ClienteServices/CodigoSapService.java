@@ -12,6 +12,7 @@ import com.woden.wms_backend.dto.CodigoSapModelDTO;
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.TipoMaestroRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.util.TypeMapper;
 
@@ -24,6 +25,8 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
     private CodigoSapRepository codigoSapRepository;
     @Autowired
     private MaestroRepository maestroRepository;
+    @Autowired
+    private TipoMaestroRepository tipoMaestroRepository;
 
     public List<Map<String, String>> getListDescriptionSapCode() {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCode();
@@ -72,12 +75,14 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
     }
 
     public Integer getIdSerial(String tipo) {
-        Integer id = maestroRepository.getIdSerial(tipo);
+        Integer idTipoCodigoSap = tipoMaestroRepository.getTipoCodigoSap("Tipo CodigoSap");
+        Integer id = maestroRepository.getIdSerial(tipo, idTipoCodigoSap);
         return id != null ? id : 0;
     }
 
     public Integer getIdNoSerial(String tipo) {
-        Integer id = maestroRepository.getIdNoSerial(tipo);
+        Integer idTipoCodigoSap = tipoMaestroRepository.getTipoCodigoSap("Tipo CodigoSap");
+        Integer id = maestroRepository.getIdNoSerial(tipo, idTipoCodigoSap);
         return id != null ? id : 0;
     }
 

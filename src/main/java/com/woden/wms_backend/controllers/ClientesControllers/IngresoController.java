@@ -188,7 +188,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/sendEntry")
   public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
-    ingresoService.sendEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0);
+    ingresoService.sendEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), dto.getOpcion());
     return ResponseEntity.ok(Map.of("message", "Ingreso enviado correctamente."));
   }
 
