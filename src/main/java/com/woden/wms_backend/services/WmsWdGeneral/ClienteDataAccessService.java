@@ -32,8 +32,8 @@ public class ClienteDataAccessService {
   }
 
   public Integer getNivelClasificacionValue(int id) {
-    Integer result = clienteRepository.getNivelClasificacionValue(id);
-    return result;
+    Boolean result = clienteRepository.getNivelClasificacionValue(id);
+    return result ? 1 : 0;
   }
 
   public Integer getOdooPqrsON(int id) {
