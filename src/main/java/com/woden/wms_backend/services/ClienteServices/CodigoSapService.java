@@ -72,11 +72,13 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
     }
 
     public Integer getIdSerial(String tipo) {
-        return maestroRepository.getIdByCodigo(tipo, 12);
+        Integer id = maestroRepository.getIdSerial(tipo);
+        return id != null ? id : 0;
     }
 
     public Integer getIdNoSerial(String tipo) {
-        return maestroRepository.getIdByCodigo(tipo, 12);
+        Integer id = maestroRepository.getIdNoSerial(tipo);
+        return id != null ? id : 0;
     }
 
     public int getIdComboPallet(String codigo, String descripcion) {
