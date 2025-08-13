@@ -52,7 +52,31 @@ public class MovimientoService extends BaseService<MovimientoModel, Integer> {
     return null; // Devuelve 0 si no se encuentra nada o hay error
   }
 
-  public Integer userCount(Integer usuarioId) {
+    public Integer getNext(int palletId) {
+        String sql = "SELECT destinoId FROM Movimiento " +
+                "WHERE id = (SELECT MAX(m.id) FROM Movimiento m " +
+                "INNER JOIN Ingreso i ON m.serialId = i.id WHERE i.PalletId = ?)";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, palletId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("destinoId");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener destinoId: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+
+    public Integer userCount(Integer usuarioId) {
     return movimientoRepository.userCount(usuarioId);
   }
 }

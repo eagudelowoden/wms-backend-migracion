@@ -6,15 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.woden.wms_backend.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.woden.wms_backend.dto.AbrirPalletDTO;
-import com.woden.wms_backend.dto.ConfirmarPalletDTO;
-import com.woden.wms_backend.dto.PalletDTO;
-import com.woden.wms_backend.dto.SendPalletDTO;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
@@ -270,7 +267,25 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
+    public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino) {
+        List<Object[]> results = palletRepository.SearchPalletBoxPallet(numero, destino);
+        List<Map<String, String>> palletBox = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Map<String, String> pallet = new HashMap<>();
+            pallet.put("id", String.valueOf(result[0]));        // ✅ Conversión segura
+            pallet.put("numero", String.valueOf(result[1]));
+            pallet.put("cantidadCaja", String.valueOf(result[2]));
+            pallet.put("tipologia", String.valueOf(result[3]));
+            palletBox.add(pallet);
+        }
+
+        return palletBox;
+
+    }
+
+
+    public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
     Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
     return result > 0;
   }
@@ -284,6 +299,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
         dto.getPalletId(),
         0);
   }
+
 
   public List<PalletStorageDTO> searchStoragePallet(String numero, String tipo, String tipoAccesorio) {
     List<Object[]> results = palletRepository.searchStoragePallet(numero, tipo, tipoAccesorio);
@@ -311,6 +327,11 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   public void updatePosition(Integer palletId, Integer posicionId) {
     palletRepository.updatePosition(palletId, posicionId, 0);
   }
+
+  public void inactivatePallet(int palletId) {
+        int dummyFilas = 0; // Este valor no se actualiza, es solo decorativo
+        palletRepository.innactivatePallet(palletId, dummyFilas);
+    }
 
   public void updateTipologia(Integer palletId, Integer tipologiaId) {
     palletRepository.updateTipologia(palletId, tipologiaId, 0);

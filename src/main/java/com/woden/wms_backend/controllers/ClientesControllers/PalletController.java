@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.woden.wms_backend.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
-import com.woden.wms_backend.dto.AbrirPalletDTO;
-import com.woden.wms_backend.dto.CerrarIngresoDTO;
-import com.woden.wms_backend.dto.ConfirmarPalletDTO;
-import com.woden.wms_backend.dto.CountPalletDTO;
-import com.woden.wms_backend.dto.PalletDTO;
-import com.woden.wms_backend.dto.RegularizarLotePalletDTO;
-import com.woden.wms_backend.dto.SendPalletDTO;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
@@ -179,6 +173,17 @@ public class PalletController extends BaseController<PalletModel, Integer> {
         return ResponseEntity.ok(pallets);
     }
 
+    @GetMapping("/searchPalletsBoxes")
+    public ResponseEntity<?> SearchPalletBoxPallet(
+            @RequestParam String numero,
+            @RequestParam String destino) {
+        System.out.println("Endpoint Pallets Proceso - Numero: " + numero + ", Destino: " + destino);
+        List<Map<String, String>> pallets = palletService.SearchPalletBoxPallet(numero, destino);
+        return ResponseEntity.ok(pallets);
+    }
+
+
+
     @DeleteMapping("/deleteAccesory/{palletId}/{cantidad}/{codigoSapId}")
     public ResponseEntity<String> eliminarAccesorio(
             @PathVariable Integer palletId,
@@ -235,6 +240,14 @@ public class PalletController extends BaseController<PalletModel, Integer> {
         Integer tipologiaId = requestBody.get("tipologiaId");
         palletService.updateTipologia(palletId, tipologiaId);
     }
+
+    @PostMapping("/inactivate")
+    public ResponseEntity<String> inactivate(@RequestBody Map<String, Integer> body) {
+        Integer palletId = body.get("palletId");
+        palletService.inactivatePallet(palletId);
+        return ResponseEntity.ok("Pallet inactivado correctamente");
+    }
+
 
     @GetMapping("/searchStorageGroupPalletAccesory")
     public ResponseEntity<List<PalletStorageDTO>> searchStorageGroupPalletAccesory(

@@ -84,7 +84,13 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("destino") String destino,
       @Param("tipo") String tipo);
 
-  @Modifying
+    @Query(value = "EXEC pa_SearchPalletBoxPallet :numero, :destino", nativeQuery = true)
+    List<Object[]> SearchPalletBoxPallet(
+            @Param("numero") String numero,
+            @Param("destino") String destino);
+
+
+    @Modifying
   @Transactional
   @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
   Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
@@ -105,6 +111,12 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_UpdateTipologyPallet :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
   void updateTipologia(@Param("palletId") Integer palletId,
       @Param("tipologiaId") Integer tipologiaId, @Param("filas") Integer filas);
+
+    //Inhabilitar pallet de empaque
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_InnactivatePallet :palletId, :filas OUT", nativeQuery = true)
+    void innactivatePallet(@Param("palletId") int palletId, @Param("filas") int filas);
 
   @Query(value = "EXEC pa_SearchStorageGroupPalletAccesory :numero, :tipoAccesorio", nativeQuery = true)
   List<Object[]> searchStorageGroupPalletAccesory(@Param("numero") String numero,

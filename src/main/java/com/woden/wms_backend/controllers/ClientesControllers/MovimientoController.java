@@ -23,9 +23,16 @@ public class MovimientoController extends BaseController<MovimientoModel, Intege
   public Integer getLast(@PathVariable Integer palletId) {
       return movimientoService.getLast(palletId);
   }
-  
+
+    @GetMapping("/getNext/{palletId}")
+    public Integer getNext(@PathVariable Integer palletId) {
+        return movimientoService.getLast(palletId);
+    }
+
   @GetMapping("/userCount/{usuarioId}")
   public Integer userCount(@PathVariable Integer usuarioId) {
     return movimientoService.userCount(usuarioId);
   }
+
+
 }
