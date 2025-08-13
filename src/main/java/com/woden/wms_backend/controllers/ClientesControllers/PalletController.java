@@ -279,4 +279,9 @@ public class PalletController extends BaseController<PalletModel, Integer> {
         }
         return ResponseEntity.ok(idPallet);
     }
+
+    @PostMapping("/updateSapCodePallet")
+    public ResponseEntity<?> updateSapCodePallet(@RequestParam Integer palletId, @RequestParam Integer codigoSapId) {
+        return ResponseEntity.ok(palletService.updateSapCodePallet(palletId, codigoSapId, 0));
+    }
 }

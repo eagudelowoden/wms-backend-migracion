@@ -188,7 +188,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/sendEntry")
   public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
-    ingresoService.sendEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), dto.getOpcion());
+    ingresoService.sendEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(),
+        dto.getOpcion());
     return ResponseEntity.ok(Map.of("message", "Ingreso enviado correctamente."));
   }
 
@@ -292,7 +293,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     Integer palletId = requestBody.get("palletId");
 
     ingresoService.updateLevel(levelId, palletId);
-    return ResponseEntity.ok(Map.of("message", "Nivel actualizado correctamente."));
+    return ResponseEntity.ok(Map.of("message", 1));
   }
 
   @PostMapping("/updateStateEntryNotUsuario")
@@ -306,7 +307,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     for (String s : serial) {
       ingresoService.updateStateEntryNotUsuario(estadoId, palletId, fecha, s);
     }
-    return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente."));
+    return ResponseEntity.ok(Map.of("message", 1));
   }
 
   @GetMapping("/updateChangeStateEntry")
@@ -317,6 +318,22 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     Integer estadoId = (Integer) requestBody.get("estadoId");
 
     ingresoService.updateChangedEntry(serial1, serial2, mac, estadoId);
-    return ResponseEntity.ok(Map.of("message", "Estado cambiado correctamente."));
+    return ResponseEntity.ok(Map.of("message", "1"));
   }
+
+  @PostMapping("/updateClasificationEntry")
+  public ResponseEntity<?> updateClasificationEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
+    List<Map<String, Object>> ingresos = requestBody.get("ingresos");
+    for (Map<String, Object> ingreso : ingresos) {
+      Integer estadoId = (Integer) ingreso.get("estadoId");
+      Integer nivelId = (Integer) ingreso.get("nivelId");
+      Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
+      String serial = (String) ingreso.get("serial");
+
+      ingresoService.updateClasificationEntry(serial, estadoId, nivelId, usuarioId);
+    }
+
+    return ResponseEntity.ok(Map.of("message", 1));
+  }
+
 }

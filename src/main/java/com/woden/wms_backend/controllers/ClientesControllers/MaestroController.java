@@ -80,4 +80,8 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         return maestroService.getFallas(nombre);
     }
 
+    @GetMapping("/getDescription")
+    public ResponseEntity<List<String>> getDesctiption(@RequestParam String codigo) {
+        return ResponseEntity.ok(maestroService.getDesctiption(codigo));
+    }
 }

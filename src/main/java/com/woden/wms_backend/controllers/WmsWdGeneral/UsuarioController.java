@@ -219,4 +219,9 @@ public class UsuarioController {
                     .body(Map.of("error", "Error al renovar los tokens"));
         }
     }
+
+    @GetMapping("/getId")
+    public Integer getIdUser(@RequestParam String username) {
+        return usuarioService.getIdUser(username);
+    }
 }
