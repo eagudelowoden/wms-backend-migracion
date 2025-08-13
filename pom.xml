@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.woden</groupId>
 	<artifactId>wms-backend</artifactId>
-	<version>1.0.18-SNAPSHOT</version>
+	<version>1.0.20-SNAPSHOT</version>
 	<name>wms-backend</name>
 	<description>Backend del sistema de WMS Web</description>
 	<url/>
@@ -146,7 +146,7 @@
 			<plugin>
 				<groupId>org.hibernate.tool</groupId>
 				<artifactId>hibernate-tools-maven</artifactId>
-				<version>5.6.0.Final</version>
+				<version>6.1.5.Final</version>
 				<dependencies>
 					<dependency>
 						<groupId>com.microsoft.sqlserver</groupId>
@@ -164,5 +164,13 @@
 			</plugin>
 		</plugins>
 	</build>
+    <repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+
 
 </project>

@@ -484,4 +484,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public void updateChangedEntry(String serial1, String serial2, String mac, Integer estadoId) {
     ingresoRepository.updateChangedEntry(serial1, serial2, mac, estadoId);
   }
+
+  public void updateClasificationEntry(String serial, Integer estadoId, Integer nivelId, Integer usuarioId) {
+    ingresoRepository.updateClasificationEntry(serial, estadoId, nivelId, usuarioId);
+  }
 }

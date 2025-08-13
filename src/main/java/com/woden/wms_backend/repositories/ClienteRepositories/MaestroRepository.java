@@ -48,9 +48,12 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
   @Query(value = "EXEC pa_GetListFailuresMaster :nombre", nativeQuery = true)
   List<Object[]> getFallas(@Param("nombre") String nombre);
 
-  @Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo", nativeQuery = true)
-  Integer getIdSerial(@Param("codigo") String codigo);
+  @Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo AND TipoMaestroId = :tipoMaestroId", nativeQuery = true)
+  Integer getIdSerial(@Param("codigo") String codigo, @Param("tipoMaestroId") Integer tipoMaestroId);
 
-  @Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo", nativeQuery = true)
-  Integer getIdNoSerial(@Param("codigo") String codigo);
+  @Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo AND TipoMaestroId = :tipoMaestroId", nativeQuery = true)
+  Integer getIdNoSerial(@Param("codigo") String codigo, @Param("tipoMaestroId") Integer tipoMaestroId);
+
+  @Query(value = "EXEC pa_GetDescriptionMaster :codigo", nativeQuery = true)
+  List<Object[]> getDesctiption(@Param("codigo") String codigo);
 }

@@ -77,4 +77,8 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
         }).collect(Collectors.toList());
     }
 
+    public List<String> getDesctiption(String codigo) {
+        List<Object[]> results = maestroRepository.getDesctiption(codigo);
+        return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
+    }
 }

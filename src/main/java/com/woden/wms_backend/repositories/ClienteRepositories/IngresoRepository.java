@@ -82,7 +82,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
   @Query(value = "EXEC pa_SearchTransitEntry :palletId", nativeQuery = true)
   List<Object[]> searchIngresoTransito(@Param("palletId") Integer palletId);
 
-  //repetido
+  // repetido
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_UpdateSapCodeEntry :codigoSapId, :usuarioIdMovimiento, :serial, :filas OUT", nativeQuery = true)
@@ -107,7 +107,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
   @Query(value = "DECLARE @result INT; EXEC pa_Reingresos :serial, @result OUTPUT; SELECT @result", nativeQuery = true)
   Integer getReingresos(@Param("serial") String serial);
 
-  ///repetido
+  /// repetido
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_UpdateSapCodeEntry :codigoSapId, :usuarioIdMovimiento, :serial, :filas OUT", nativeQuery = true)
@@ -199,5 +199,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
       @Param("serial2") String serial2,
       @Param("mac") String mac,
       @Param("estadoId") Integer estadoId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateClasificationEntry :estadoId, :nivelId, :usuarioId, :serial ", nativeQuery = true)
+  void updateClasificationEntry(@Param("serial") String serial, @Param("estadoId") Integer estadoId,
+      @Param("nivelId") Integer nivelId, @Param("usuarioId") Integer usuarioId);
 
 }

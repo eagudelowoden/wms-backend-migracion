@@ -125,4 +125,8 @@ public class UsuarioService {
         List<Object[]> results = usuarioRepository.getListUser(idCliente, tipoPerfil);
         return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
     }
+
+    public Integer getIdUser(String nombreUsuario) {
+        return usuarioRepository.getIdUser(nombreUsuario);
+    }
 }

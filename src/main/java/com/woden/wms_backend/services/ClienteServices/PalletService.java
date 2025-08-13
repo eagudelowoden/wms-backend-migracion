@@ -386,4 +386,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   public Integer getIdPallet(String numero) {
     return palletRepository.getIdPallet(numero);
   }
+
+  public Integer updateSapCodePallet(Integer palletId, Integer codigoSapId, Integer filas) {
+    return palletRepository.updateSapCodePallet(palletId, codigoSapId, filas);
+  }
 }

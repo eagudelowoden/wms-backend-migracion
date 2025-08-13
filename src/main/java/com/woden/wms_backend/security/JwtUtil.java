@@ -16,7 +16,7 @@ public class JwtUtil {
 
     private final MacAlgorithm ALGORITMO = Jwts.SIG.HS256; // Algoritmo de firma
     private final SecretKey SECRET_KEY = ALGORITMO.key().build(); // Genera una clave segura
-    private final long EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutos
+    private final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 30 minutos
 
     public String generateToken(String username, String clientName, String clientDb, Integer clientId) {
         Map<String, Object> claims = new HashMap<>();
