@@ -488,4 +488,22 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public void updateClasificationEntry(String serial, Integer estadoId, Integer nivelId, Integer usuarioId) {
     ingresoRepository.updateClasificationEntry(serial, estadoId, nivelId, usuarioId);
   }
+
+  public void updateStateEntry(Integer estadoId, Integer palletId, Integer usuarioId, Integer fecha, String serial) {
+    ingresoRepository.updateStateEntry(estadoId, palletId, usuarioId, fecha, serial);
+  }
+
+  public List<Map<String, String>> searchClasificationEntry() {
+    List<Object[]> results = ingresoRepository.searchClasificationEntry();
+    List<Map<String, String>> clasificationEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, String> entry = new HashMap<>();
+      entry.put("serial", (String) result[0]);
+      entry.put("mac", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("descripcion", (String) result[3]);
+      clasificationEntries.add(entry);
+    }
+    return clasificationEntries;
+  }
 }

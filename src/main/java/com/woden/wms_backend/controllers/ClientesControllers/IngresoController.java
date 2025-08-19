@@ -186,18 +186,16 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
-    @PostMapping("/sendEntry")
-    public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
-        ingresoService.sendEntry(
-                dto.getEstadoId(),
-                dto.getTipologiaId(),
-                dto.getUsuarioId(),
-                dto.getPalletId(),
-                dto.getOpcion()
-        );
-        return ResponseEntity.ok(Map.of("message", "Ingreso enviado correctamente."));
-    }
-
+  @PostMapping("/sendEntry")
+  public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
+    ingresoService.sendEntry(
+        dto.getEstadoId(),
+        dto.getTipologiaId(),
+        dto.getUsuarioId(),
+        dto.getPalletId(),
+        dto.getOpcion());
+    return ResponseEntity.ok(Map.of("message", "Ingreso enviado correctamente."));
+  }
 
   @PostMapping("/updateTipologiaEntry")
   public void updateTipologia(@RequestBody Map<String, Integer> requestBody) {
@@ -316,6 +314,24 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(Map.of("message", 1));
   }
 
+  @PostMapping("/updateStateEntry")
+  public ResponseEntity<?> updateStateEntry(
+      @RequestBody Map<String, Object> requestBody) {
+    Integer estadoId = (Integer) requestBody.get("estadoId");
+    Integer palletId = (Integer) requestBody.get("palletId");
+    Integer usuarioId = (Integer) requestBody.get("usuarioId");
+    Integer fecha = (Integer) requestBody.get("fecha");
+    List<?> serialRaw = (List<?>) requestBody.get("seriales");
+    List<String> serial = serialRaw.stream().map(Object::toString).toList();
+
+    for (String s : serial) {
+
+      ingresoService.updateStateEntry(estadoId, palletId, usuarioId, fecha, s);
+    }
+
+    return ResponseEntity.ok(Map.of("message", 1));
+  }
+
   @GetMapping("/updateChangeStateEntry")
   public ResponseEntity<?> updateChangeStateEntry(@RequestBody Map<String, Object> requestBody) {
     String serial1 = (String) requestBody.get("serial1");
@@ -340,6 +356,12 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
 
     return ResponseEntity.ok(Map.of("message", 1));
+  }
+
+  @GetMapping("/searchClasificationEntry")
+  public ResponseEntity<?> searchClasificationEntry() {
+    List<Map<String, String>> clasificationEntries = ingresoService.searchClasificationEntry();
+    return ResponseEntity.ok(clasificationEntries);
   }
 
 }
