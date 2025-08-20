@@ -84,6 +84,7 @@ private IngresoRepository ingresoRepository;
             seriales.put("nivel", result[8] != null ? result[8].toString() : "");
             seriales.put("lote", result[9] != null ? result[9].toString() : "");
             seriales.put("modelo", result[10] != null ? result[10].toString() : "");
+            //estos metodos se hacen para mostrar los valores
 
             serialesBOx.add(seriales);
         }
