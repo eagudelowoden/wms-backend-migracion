@@ -89,7 +89,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
             @Param("numero") String numero,
             @Param("destino") String destino);
 
-
+    
     @Modifying
   @Transactional
   @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)

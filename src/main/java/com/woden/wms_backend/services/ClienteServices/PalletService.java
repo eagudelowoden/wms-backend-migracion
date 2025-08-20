@@ -276,7 +276,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
             pallet.put("id", String.valueOf(result[0]));        // ✅ Conversión segura
             pallet.put("numero", String.valueOf(result[1]));
             pallet.put("cantidadCaja", String.valueOf(result[2]));
-            pallet.put("tipologia", String.valueOf(result[3]));
+            pallet.put("descripcion", String.valueOf(result[3]));
+            pallet.put("tipologia", String.valueOf(result[4]));
             palletBox.add(pallet);
         }
 

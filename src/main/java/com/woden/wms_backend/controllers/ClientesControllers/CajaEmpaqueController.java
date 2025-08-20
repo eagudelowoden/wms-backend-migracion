@@ -1,12 +1,10 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.CajaEmpaqueDTO;
-import com.woden.wms_backend.dto.PalletDTO;
 import com.woden.wms_backend.services.ClienteServices.CajaEmpaqueService;
 
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
-import com.woden.wms_backend.services.ClienteServices.CajaEmpaqueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +42,36 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         List<CajaEmpaqueDTO> cajas = cajaEmpaqueService.SearchReceivePacking(estado, numero);
         return ResponseEntity.ok(cajas);
     }
+
+    @GetMapping("/searchProcessCajas")
+    public ResponseEntity<List<CajaEmpaqueDTO>> SearchProcessBoxPacking(
+            @RequestParam Integer palletId,
+            @RequestParam Integer cajaEmpaqueId,
+            @RequestParam String estado) {
+        List<CajaEmpaqueDTO> cajas = cajaEmpaqueService.SearchProcessBoxPacking(palletId, cajaEmpaqueId, estado);
+        return ResponseEntity.ok(cajas);
+    }
+
+    @GetMapping("/SearchPackingBoxesProcess")
+    public ResponseEntity<List<CajaEmpaqueDTO>> SearchPacking(
+            @RequestParam Integer palletId) {
+        List<CajaEmpaqueDTO> cajas = cajaEmpaqueService.SearchPacking(palletId);
+        return ResponseEntity.ok(cajas);
+    }
+
+
+    @GetMapping("/searchCajasAndSeriales")
+    public ResponseEntity<?> SearchPalletBoxEntry(
+            @RequestParam String estado,
+            @RequestParam Integer palletId,
+            @RequestParam Integer cajaEmpaqueId) {
+        List<Map<String, String>> seriales = cajaEmpaqueService.SearchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
+        return ResponseEntity.ok(seriales);
+    }
+
+
+
+
 
 
 

@@ -4,8 +4,11 @@ import lombok.Data;
 
 @Data
 public class CajaEmpaqueDTO {
-    private int id;
+    private Integer id;
     private String numero;
     private String pallet;
-    private int cantidad;
+    private Integer cantidad;
+    private Integer Seriales;
+    private String Estado;
+
 }

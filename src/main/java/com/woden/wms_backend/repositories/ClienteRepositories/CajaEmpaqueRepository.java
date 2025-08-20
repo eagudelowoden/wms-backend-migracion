@@ -31,11 +31,30 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
             @Param("numero") String numero
     );
 
-    @Query(value = "EXEC pa_SearchProcessBoxPacking :estado, :numero", nativeQuery = true)
+    @Query(value = "EXEC pa_SearchProcessBoxPacking :palletId, :cajaEmpaqueId, :estado", nativeQuery = true)
     List<Object[]> SearchProcessBoxPacking(
-            @Param("estado") String estado,
-            @Param("numero") String numero
+            @Param("palletId") Integer palletId,
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
+            @Param("estado") String estado // <-- aquí también String
     );
+
+
+    @Query(value = "EXEC pa_SearchPacking :palletId", nativeQuery = true)
+    List<Object[]> SearchPacking(
+            @Param("palletId") Integer palletId
+    );
+
+    /*
+    @Query(value = "EXEC pa_SearchPalletBoxEntry :estado, :palletId, :cajaEmpaqueId", nativeQuery = true)
+    List<Object[]> SearchPalletBoxEntry(
+            @Param("estado") String estado,
+            @Param("palletId") Integer palletId,
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId // <-- aquí también String
+    );
+
+     */
+
+
 
 
 

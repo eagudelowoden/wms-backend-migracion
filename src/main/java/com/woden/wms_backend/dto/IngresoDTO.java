@@ -18,4 +18,5 @@ public class IngresoDTO {
   private String lote;
   private String modelo;
   private Integer reingreso;
+  private String smartCard;
 }

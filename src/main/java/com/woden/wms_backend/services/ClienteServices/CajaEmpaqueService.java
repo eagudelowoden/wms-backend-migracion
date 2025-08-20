@@ -1,7 +1,9 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import com.woden.wms_backend.dto.*;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.*;
+//import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -12,26 +14,14 @@ import java.util.stream.Collectors;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.woden.wms_backend.dto.AbrirPalletDTO;
-import com.woden.wms_backend.dto.ConfirmarPalletDTO;
-import com.woden.wms_backend.dto.PalletDTO;
-import com.woden.wms_backend.dto.SendPalletDTO;
-import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
-import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.services.BaseService;
-import com.woden.wms_backend.util.TypeMapper;
-import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
-import com.woden.wms_backend.dto.CajaEmpaqueDTO;
 
 
 @Service
 public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 @Autowired
 private CajaEmpaqueRepository cajaEmpaqueRepository;
+@Autowired
+private IngresoRepository ingresoRepository;
 
     public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
         Integer filas = 0;
@@ -50,6 +40,63 @@ private CajaEmpaqueRepository cajaEmpaqueRepository;
             return caja;
         }).collect(Collectors.toList());
     }
+
+    public List<CajaEmpaqueDTO> SearchProcessBoxPacking(Integer palletId, Integer cajaEmpaqueId, String estado) {
+        List<Object[]> results = cajaEmpaqueRepository.SearchProcessBoxPacking(palletId, cajaEmpaqueId, estado);
+
+        return results.stream().map(obj -> {
+            CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
+            caja.setId((Integer) obj[0]);
+            caja.setNumero((String) obj[1]);
+            caja.setSeriales((Integer) obj[2]);
+            caja.setEstado((String) obj[3]);
+            caja.setPallet((String) obj[4]);
+            return caja;
+        }).collect(Collectors.toList());
+    }
+
+    public List<CajaEmpaqueDTO> SearchPacking(Integer palletId) {
+        List<Object[]> results = cajaEmpaqueRepository.SearchPacking(palletId);
+
+        return results.stream().map(obj -> {
+            CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
+            caja.setId((Integer) obj[0]);
+            caja.setNumero((String) obj[1]);
+            caja.setSeriales((Integer) obj[2]);
+            return caja;
+        }).collect(Collectors.toList());
+    }
+
+    public List<Map<String, String>> SearchPalletBoxEntry(String estado, Integer palletId, Integer cajaEmpaqueId) {
+        List<Object[]> results = ingresoRepository.SearchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
+        List<Map<String, String>> serialesBOx = new ArrayList<>();
+
+        for (Object[] result : results) {
+            Map<String, String> seriales = new HashMap<>();
+            seriales.put("serial", result[0] != null ? result[0].toString() : "");
+            seriales.put("mac", result[1] != null ? result[1].toString() : "");
+            seriales.put("smartCard", result[2] != null ? result[2].toString() : "");
+            seriales.put("numeroSmartcard", result[3] != null ? result[3].toString() : "");
+            seriales.put("serial3", result[4] != null ? result[4].toString() : "");
+            seriales.put("serial4", result[5] != null ? result[5].toString() : "");
+            seriales.put("codigo", result[6] != null ? result[6].toString() : "");
+            seriales.put("descripcion", result[7] != null ? result[7].toString() : "");
+            seriales.put("nivel", result[8] != null ? result[8].toString() : "");
+            seriales.put("lote", result[9] != null ? result[9].toString() : "");
+            seriales.put("modelo", result[10] != null ? result[10].toString() : "");
+
+            serialesBOx.add(seriales);
+        }
+        return serialesBOx;
+    }
+
+
+
+
+
+
+
+
 
 
 }
