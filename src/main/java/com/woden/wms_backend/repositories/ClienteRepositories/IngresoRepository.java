@@ -1,5 +1,6 @@
 package com.woden.wms_backend.repositories.ClienteRepositories;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -217,4 +218,14 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "EXEC pa_SearchClasificationEntry", nativeQuery = true)
 	List<Object[]> searchClasificationEntry();
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateStateOneEntry :estadoId, :nivelId, :usuarioIdMovimiento, :fecha, :serial, :filas OUT", nativeQuery = true)
+	void updateStateOneEntry(@Param("estadoId") Integer estadoId,
+			@Param("nivelId") Integer nivelId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("fecha") Date fecha,
+			@Param("serial") String serial,
+			@Param("filas") Integer filas);
 }

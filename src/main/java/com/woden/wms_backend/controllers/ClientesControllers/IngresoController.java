@@ -1,5 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -317,19 +319,24 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @PostMapping("/updateStateEntry")
   public ResponseEntity<?> updateStateEntry(
       @RequestBody Map<String, Object> requestBody) {
-    Integer estadoId = (Integer) requestBody.get("estadoId");
-    Integer palletId = (Integer) requestBody.get("palletId");
-    Integer usuarioId = (Integer) requestBody.get("usuarioId");
-    Integer fecha = (Integer) requestBody.get("fecha");
-    List<?> serialRaw = (List<?>) requestBody.get("seriales");
-    List<String> serial = serialRaw.stream().map(Object::toString).toList();
+    try {
+      Integer estadoId = (Integer) requestBody.get("estadoId");
+      Integer palletId = (Integer) requestBody.get("palletId");
+      Integer usuarioId = (Integer) requestBody.get("usuarioId");
+      Integer fecha = (Integer) requestBody.get("fecha");
+      List<?> serialRaw = (List<?>) requestBody.get("seriales");
+      List<String> serial = serialRaw.stream().map(Object::toString).toList();
 
-    for (String s : serial) {
+      for (String s : serial) {
 
-      ingresoService.updateStateEntry(estadoId, palletId, usuarioId, fecha, s);
+        ingresoService.updateStateEntry(estadoId, palletId, usuarioId, fecha, s);
+      }
+
+      return ResponseEntity.ok(1);
+
+    } catch (Exception e) {
+      return ResponseEntity.ok(0);
     }
-
-    return ResponseEntity.ok(Map.of("message", 1));
   }
 
   @GetMapping("/updateChangeStateEntry")
@@ -362,6 +369,27 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public ResponseEntity<?> searchClasificationEntry() {
     List<Map<String, String>> clasificationEntries = ingresoService.searchClasificationEntry();
     return ResponseEntity.ok(clasificationEntries);
+  }
+
+  @PostMapping("/updateStateOneEntry")
+  public ResponseEntity<?> updateStateOneEntry(@RequestBody Map<String, Object> requestBody) {
+    try {
+      Integer estadoId = (Integer) requestBody.get("estadoId");
+      Integer nivelId = (Integer) requestBody.get("nivelId");
+      Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
+      String fechaStr = (String) requestBody.get("fecha");
+      String serial = (String) requestBody.get("serial");
+
+      // Parse ISO date string
+      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+      Date fecha = dateFormat.parse(fechaStr);
+
+      ingresoService.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial);
+      return ResponseEntity.ok(Map.of("message", 1));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(500).body(Map.of("error", "Error al procesar la fecha: " + e.getMessage()));
+    }
   }
 
 }

@@ -84,4 +84,9 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     public ResponseEntity<List<String>> getDesctiption(@RequestParam String codigo) {
         return ResponseEntity.ok(maestroService.getDesctiption(codigo));
     }
+
+    @GetMapping("/getWarranty")
+    public ResponseEntity<Integer> getWarranty() {
+        return ResponseEntity.ok(maestroService.getWarranty());
+    }
 }

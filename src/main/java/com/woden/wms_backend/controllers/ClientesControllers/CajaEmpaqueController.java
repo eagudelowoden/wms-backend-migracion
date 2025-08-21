@@ -1,12 +1,10 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.CajaEmpaqueDTO;
-import com.woden.wms_backend.dto.PalletDTO;
 import com.woden.wms_backend.services.ClienteServices.CajaEmpaqueService;
 
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
-import com.woden.wms_backend.services.ClienteServices.CajaEmpaqueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

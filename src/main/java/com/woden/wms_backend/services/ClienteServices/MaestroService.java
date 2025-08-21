@@ -81,4 +81,8 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
         List<Object[]> results = maestroRepository.getDesctiption(codigo);
         return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
     }
+
+    public Integer getWarranty() {
+        return maestroRepository.getWarranty();
+    }
 }

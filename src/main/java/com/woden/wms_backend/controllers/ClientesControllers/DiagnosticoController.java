@@ -59,4 +59,8 @@ public class DiagnosticoController {
     }
   }
 
+  @GetMapping("/getFailureIdDiagnostic")
+  public ResponseEntity<Integer> getFailureIdDiagnostic(@RequestParam String serial) {
+    return ResponseEntity.ok(service.getFailureIdDiagnostic(serial));
+  }
 }
