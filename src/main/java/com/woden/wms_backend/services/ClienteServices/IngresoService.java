@@ -2,6 +2,7 @@ package com.woden.wms_backend.services.ClienteServices;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.util.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.woden.wms_backend.controllers.ClientesControllers.IngresoController;
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
 import com.woden.wms_backend.dto.IngresoDTO;
 import com.woden.wms_backend.dto.IngresoIlegibleDTO;
@@ -41,7 +41,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private IngresoRepository ingresoRepository;
   private IlegibleRepository ilegibleRepository;
   private ConsecutiveService consecutiveService;
-  private static final Logger log = LoggerFactory.getLogger(IngresoController.class);
+  // private static final Logger log =
+  // LoggerFactory.getLogger(IngresoController.class);
 
   @Transactional
   public void createIngreso(IngresoModel ingreso) {
@@ -230,7 +231,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
 
     Object[] obj = results.get(0);
-    log.info("Tiempo en ejecutar SP: {} ms", obj[1]);
     IngresoModelDTO ingreso = new IngresoModelDTO();
     ingreso.setId((Integer) obj[0]);
     ingreso.setSerial((String) obj[1]);
@@ -248,7 +248,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     // log.info("Tiempo en mapear a modelo: {} ms", (end - afterQuery));
     // log.info("Tiempo total en servicio: {} ms", (end - start));
 
-    log.info("Tiempo en ejecutar SP: {} ms", obj[1]);
     return ingreso;
     // try {
 
@@ -487,5 +486,29 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateClasificationEntry(String serial, Integer estadoId, Integer nivelId, Integer usuarioId) {
     ingresoRepository.updateClasificationEntry(serial, estadoId, nivelId, usuarioId);
+  }
+
+  public void updateStateEntry(Integer estadoId, Integer palletId, Integer usuarioId, Integer fecha, String serial) {
+    ingresoRepository.updateStateEntry(estadoId, palletId, usuarioId, fecha, serial);
+  }
+
+  public List<Map<String, String>> searchClasificationEntry() {
+    List<Object[]> results = ingresoRepository.searchClasificationEntry();
+    List<Map<String, String>> clasificationEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, String> entry = new HashMap<>();
+      entry.put("serial", (String) result[0]);
+      entry.put("mac", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("descripcion", (String) result[3]);
+      clasificationEntries.add(entry);
+    }
+    return clasificationEntries;
+  }
+
+  public void updateStateOneEntry(Integer estadoId, Integer nivelId, Integer usuarioIdMovimiento, Date fecha,
+      String serial) {
+    Integer filas = 4;
+    ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
   }
 }

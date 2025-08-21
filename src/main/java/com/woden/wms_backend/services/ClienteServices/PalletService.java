@@ -346,9 +346,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setNumero((String) obj[1]);
       pallet.setCantidad((Integer) obj[2]);
       pallet.setCodigoSap((String) obj[3]);
-      pallet.setTipologia((String) obj[4]);
-      pallet.setPosicion((String) obj[5]);
-      pallet.setOrigen((String) obj[6]);
+      pallet.setDescripcion((String) obj[4]);
+      pallet.setTipologia((String) obj[5]);
+      pallet.setPosicion((String) obj[6]);
+      pallet.setOrigen((String) obj[7]);
       return pallet;
     }).collect(Collectors.toList());
   }

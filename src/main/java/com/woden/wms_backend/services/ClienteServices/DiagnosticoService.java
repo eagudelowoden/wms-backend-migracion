@@ -59,4 +59,8 @@ public class DiagnosticoService {
       System.out.println("Error: " + e.getMessage());
     }
   }
+
+  public Integer getFailureIdDiagnostic(String serial) {
+    return repository.getFailureIdDiagnostic(serial);
+  }
 }

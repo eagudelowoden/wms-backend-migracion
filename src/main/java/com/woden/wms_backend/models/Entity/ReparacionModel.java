@@ -12,28 +12,28 @@ import lombok.Data;
 public class ReparacionModel {
     @Id
     @Column(name = "Id")
-    private int id;
-    private int serialId;
+    private Integer id;
+    private Integer serialId;
     private String serial;
     private String mac;
-    private int codigoSapId;
+    private Integer codigoSapId;
     private String codigoSap;
     private String descripcion;
-    private int estadoFinalId;
+    private Integer estadoFinalId;
     private String estadoFinal;
-    private int fallaDxId;
-    private int falla1Id;
+    private Integer fallaDxId;
+    private Integer falla1Id;
     private String falla1;
-    private int falla2Id;
-    private int falla3Id;
-    private int falla4Id;
+    private Integer falla2Id;
+    private Integer falla3Id;
+    private Integer falla4Id;
     private String partesCambiadas;
-    private int motivoScrapId;
-    private int tecnicoAsignacionId;
-    private int tecnicoReparacionId;
+    private Integer motivoScrapId;
+    private Integer tecnicoAsignacionId;
+    private Integer tecnicoReparacionId;
     private String tecnicoReparacion;
     private String fechaAsignacion;
     private String fechaReparacion;
-    private int estadoCalidadId;
-    private int usuarioId;
+    private Integer estadoCalidadId;
+    private Integer usuarioId;
 }

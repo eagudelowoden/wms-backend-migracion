@@ -56,4 +56,7 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
   @Query(value = "EXEC pa_GetDescriptionMaster :codigo", nativeQuery = true)
   List<Object[]> getDesctiption(@Param("codigo") String codigo);
+
+  @Query(value = "EXEC pa_GetWarrantyMaster", nativeQuery = true)
+  Integer getWarranty();
 }
