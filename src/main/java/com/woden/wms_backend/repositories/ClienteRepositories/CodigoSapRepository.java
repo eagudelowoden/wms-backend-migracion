@@ -15,20 +15,20 @@ public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Inte
   List<Object[]> getListDescriptionSapCode();
 
   @Query(value = "EXEC pa_GetListDescriptionSapCodeSerial :id", nativeQuery = true)
-  List<Object[]> getListDescriptionSapCodeSerial(@Param("id") int id);
+  List<Object[]> getListDescriptionSapCodeSerial(@Param("id") Integer id);
 
   @Query(value = "EXEC pa_GetListDescriptionSapCodeNoSerial :id", nativeQuery = true)
-  List<Object[]> getListDescriptionSapCodeNoSerial(@Param("id") int id);
+  List<Object[]> getListDescriptionSapCodeNoSerial(@Param("id") Integer id);
 
   @Query(value = "EXEC pa_GetIdSapCode :codigo", nativeQuery = true)
-  int getIdByCodigo(@Param("codigo") String codigo);
+  Integer getIdByCodigo(@Param("codigo") String codigo);
 
-  @Query(value = "EXEC pa_GetIdSapCodeByDescription :codigo, :descripcion", nativeQuery = true)
-  int getIdComboPallet(@Param("codigo") String codigo, @Param("descripcion") String descripcion);
+  @Query(value = "EXEC pa_GetIdSapCodeByDescriptionType :codigo, :descripcion, :tipo", nativeQuery = true)
+  Integer getIdComboPallet(@Param("codigo") String codigo, @Param("descripcion") String descripcion, @Param("tipo") Integer tipo);
 
   @Query(value = "EXEC pa_GetModelSapCode :codigo", nativeQuery = true)
   List<Object[]> getModelByCodigo(@Param("codigo") String codigo);
 
   @Query(value = "EXEC pa_GetFamilyId :codigoSap", nativeQuery = true)
-  int getFamilyId(@Param("codigoSap") String codigoSap);
+  Integer getFamilyId(@Param("codigoSap") String codigoSap);
 }

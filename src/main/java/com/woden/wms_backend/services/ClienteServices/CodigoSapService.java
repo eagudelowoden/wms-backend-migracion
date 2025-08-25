@@ -86,8 +86,8 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         return id != null ? id : 0;
     }
 
-    public int getIdComboPallet(String codigo, String descripcion) {
-        return codigoSapRepository.getIdComboPallet(codigo, descripcion);
+    public Integer getIdComboPallet(String codigo, String descripcion, Integer tipo) {
+        return codigoSapRepository.getIdComboPallet(codigo, descripcion, tipo);
     }
 
     public CodigoSapModelDTO obtenerModeloPorCodigo(String codigo) {
