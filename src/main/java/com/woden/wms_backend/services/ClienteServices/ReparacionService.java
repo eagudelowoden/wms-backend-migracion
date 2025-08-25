@@ -2,7 +2,10 @@ package com.woden.wms_backend.services.ClienteServices;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -90,4 +93,15 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
     }
     return response;
   }
+
+  public List<Map<String, Object>> searchAssignedRepair(Integer tecnicoAsignacionId, String tipo) {
+    List<Object[]> results = repository.searchAssignedRepair(tecnicoAsignacionId, tipo);
+    return results.stream().map(obj -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("serial", obj[0]);
+      map.put("fechaAsignacion", obj[1]);
+      return map;
+    }).collect(Collectors.toList());
+  }
+
 }

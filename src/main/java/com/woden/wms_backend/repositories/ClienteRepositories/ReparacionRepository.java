@@ -41,4 +41,8 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
   @Transactional
   @Query(value = "EXEC pa_DeleteRepair :serial", nativeQuery = true)
   void deleteRepair(@Param("serial") String serial);
+
+  @Query(value = "EXEC pa_SearchAssignedRepair :tecnicoAsignacionId, :tipo", nativeQuery = true)
+  List<Object[]> searchAssignedRepair(@Param("tecnicoAsignacionId") Integer tecnicoAsignacionId,
+      @Param("tipo") String tipo);
 }

@@ -65,9 +65,10 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
     @GetMapping("/getIdComboPallet")
     public ResponseEntity<Map<String, Integer>> getIdComboPallet(
             @RequestParam String codigo,
-            @RequestParam String descripcion) {
+            @RequestParam String descripcion,
+            @RequestParam Integer tipo) {
         Map<String, Integer> response = new HashMap<>();
-        int id = codigoSapService.getIdComboPallet(codigo, descripcion);
+        Integer id = codigoSapService.getIdComboPallet(codigo, descripcion, tipo);
         response.put("id", id);
         return ResponseEntity.ok(response);
     }
