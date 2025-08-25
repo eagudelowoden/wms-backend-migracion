@@ -21,7 +21,8 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_InsertRepair :serialId, :serial, :mac, :codigoSapId, :estadoFinalId, :fallaDxId, :tecnicoAsignacionId, :fechaAsignacion, :usuarioId", nativeQuery = true)
-  void create(@Param("serialId") Integer serialId,
+  void create
+          (@Param("serialId") Integer serialId,
       @Param("serial") String serial,
       @Param("mac") String mac,
       @Param("codigoSapId") Integer codigoSapId,

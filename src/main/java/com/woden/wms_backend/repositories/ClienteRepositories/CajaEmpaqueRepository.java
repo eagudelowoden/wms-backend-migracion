@@ -8,6 +8,7 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -43,17 +44,22 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
             @Param("palletId") Integer palletId
     );
 
-    /*
-    @Query(value = "EXEC pa_SearchPalletBoxEntry :estado, :palletId, :cajaEmpaqueId", nativeQuery = true)
-    List<Object[]> SearchPalletBoxEntry(
-            @Param("estado") String estado,
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_InsertBoxPacking :numero, :palletId, :estadoId, :usuarioId, :fecha", nativeQuery = true)
+    void create(
+            @Param("numero") String numero,
             @Param("palletId") Integer palletId,
-            @Param("cajaEmpaqueId") Integer cajaEmpaqueId // <-- aquí también String
+            @Param("estadoId") Integer estadoId,
+            @Param("usuarioId") Integer usuarioId, // <-- aquí también String
+            @Param("fecha") LocalDateTime fecha // <-- aquí también String
     );
 
-     */
-
-
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_DeleteBoxPacking :cajaEmpaqueId", nativeQuery = true)
+    Integer eliminarCaja(
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId);
 
 
 

@@ -6,7 +6,12 @@ import com.woden.wms_backend.repositories.ClienteRepositories.*;
 //import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -19,6 +24,8 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 private CajaEmpaqueRepository cajaEmpaqueRepository;
 @Autowired
 private IngresoRepository ingresoRepository;
+
+
 
     public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
         Integer filas = 0;
@@ -87,6 +94,19 @@ private IngresoRepository ingresoRepository;
         }
         return serialesBOx;
     }
+
+    public void create(String numero, Integer palletId, Integer estadoId,
+                       Integer usuarioId, LocalDateTime fecha) {
+        cajaEmpaqueRepository.create(numero, palletId, estadoId, usuarioId, fecha);
+    }
+
+    public int eliminarCaja(Integer cajaEmpaqueId) {
+        return cajaEmpaqueRepository.eliminarCaja(cajaEmpaqueId);
+    }
+
+
+
+
 
 
 
