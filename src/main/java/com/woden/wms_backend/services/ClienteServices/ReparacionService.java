@@ -42,15 +42,14 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
 
     for (Object[] obj : results) {
       ReparacionModel reparacion = new ReparacionModel();
-      reparacion.setId((Integer) obj[0]);
-      reparacion.setSerial((String) obj[1]);
-      reparacion.setMac((String) obj[2]);
-      reparacion.setCodigoSap((String) obj[5]);
-      reparacion.setDescripcion((String) obj[6]);
-      reparacion.setEstadoFinal((String) obj[7]);
-      reparacion.setFalla1((String) obj[8]);
-      reparacion.setTecnicoReparacion((String) obj[9]);
-      reparacion.setFechaReparacion(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
+      reparacion.setSerial((String) obj[0]);
+      reparacion.setMac((String) obj[1]);
+      reparacion.setCodigoSap((String) obj[2]);
+      reparacion.setDescripcion((String) obj[3]);
+      reparacion.setEstadoFinal((String) obj[4]);
+      reparacion.setFalla1((String) obj[5]);
+      reparacion.setTecnicoReparacion((String) obj[6]);
+      reparacion.setFechaReparacion(obj[7] != null ? ((Timestamp) obj[7]).toString() : null);
       response.add(reparacion);
     }
 
@@ -100,6 +99,25 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
       Map<String, Object> map = new HashMap<>();
       map.put("serial", obj[0]);
       map.put("fechaAsignacion", obj[1]);
+      return map;
+    }).collect(Collectors.toList());
+  }
+
+  public List<Map<String, Object>> searchRepairedRepair(Integer tecnicoReparacionId, String estado) {
+    List<Object[]> results = repository.searchRepairedRepair(tecnicoReparacionId, estado);
+    return results.stream().map(obj -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("serial", obj[0]);
+      map.put("fechaReparacion", obj[1]);
+      return map;
+    }).collect(Collectors.toList());
+  }
+
+  public List<Map<String, Object>> getAssignedTechnicianRepair(String serial) {
+    List<Object[]> results = repository.getAssignedTechnicianRepair(serial);
+    return results.stream().map(obj -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("tecnicoAsignacion", obj[0]);
       return map;
     }).collect(Collectors.toList());
   }

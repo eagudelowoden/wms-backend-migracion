@@ -45,4 +45,11 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
   @Query(value = "EXEC pa_SearchAssignedRepair :tecnicoAsignacionId, :tipo", nativeQuery = true)
   List<Object[]> searchAssignedRepair(@Param("tecnicoAsignacionId") Integer tecnicoAsignacionId,
       @Param("tipo") String tipo);
+
+  @Query(value = "EXEC pa_SearchRepairedRepair :tecnicoReparacionId, :estado", nativeQuery = true)
+  List<Object[]> searchRepairedRepair(@Param("tecnicoReparacionId") Integer tecnicoReparacionId,
+      @Param("estado") String estado);
+
+  @Query(value = "EXEC pa_GetAssignedTechnicianRepair :serial", nativeQuery = true)
+  List<Object[]> getAssignedTechnicianRepair(@Param("serial") String serial);
 }

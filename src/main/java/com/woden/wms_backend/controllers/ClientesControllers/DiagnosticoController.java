@@ -27,7 +27,7 @@ public class DiagnosticoController {
   }
 
   @PostMapping("/createDiagnostico")
-  public ResponseEntity<Integer> insertarDiagnostico(
+  public ResponseEntity<?> insertarDiagnostico(
       @RequestParam Integer serialId,
       @RequestParam String serial,
       @RequestParam String mac,
@@ -37,6 +37,11 @@ public class DiagnosticoController {
       service.create(serialId, serial, mac, codigoSapId, usuarioId);
       return ResponseEntity.ok(1);
     } catch (Exception e) {
+      String errorMsg = e.getMessage();
+      if (errorMsg != null && errorMsg.toLowerCase().contains("reporte34")) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(1001);
+      }
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(0);
     }
