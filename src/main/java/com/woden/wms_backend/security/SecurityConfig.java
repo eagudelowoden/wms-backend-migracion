@@ -30,8 +30,8 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita CORS
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/general/users/login").permitAll()
-            .requestMatchers("/general/version").permitAll()
+            .requestMatchers("/general/users/login", "/api/general/users/login").permitAll()
+            .requestMatchers("/general/version", "/api/general/version").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
@@ -40,8 +40,11 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://18.217.246.39:8081", "http://18.217.246.39:8083",
-        "http://localhost:4200", "http://localhost:8081"));
+    configuration
+        .setAllowedOrigins(List.of("http://18.217.246.39:8081", "http://18.217.246.39:8083", "http://localhost:4200",
+            "http://localhost:8081", "http://52.14.166.232:8443", "http://52.14.166.232:9091", "http://localhost:8443",
+            "https://woden-wts-dev.arkade.com.co",
+            "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*", "http://woden-wts-dev.arkade.com.co:443"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);

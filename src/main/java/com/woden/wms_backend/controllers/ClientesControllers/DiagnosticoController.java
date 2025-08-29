@@ -32,9 +32,13 @@ public class DiagnosticoController {
       @RequestParam String serial,
       @RequestParam String mac,
       @RequestParam Integer codigoSapId,
-      @RequestParam Integer usuarioId) {
+      @RequestParam Integer usuarioId,
+      @RequestParam String variable1,
+      @RequestParam String variable2,
+      @RequestParam String variable3,
+      @RequestParam String variable4) {
     try {
-      service.create(serialId, serial, mac, codigoSapId, usuarioId);
+      service.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
       return ResponseEntity.ok(1);
     } catch (Exception e) {
       String errorMsg = e.getMessage();
@@ -67,5 +71,10 @@ public class DiagnosticoController {
   @GetMapping("/getFailureIdDiagnostic")
   public ResponseEntity<Integer> getFailureIdDiagnostic(@RequestParam String serial) {
     return ResponseEntity.ok(service.getFailureIdDiagnostic(serial));
+  }
+
+  @GetMapping("/getFailureDiagnostic")
+  public ResponseEntity<String> getFailureDiagnostic(@RequestParam String serial) {
+    return ResponseEntity.ok(service.getFailureDiagnostic(serial));
   }
 }

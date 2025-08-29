@@ -24,8 +24,8 @@ public class DiagnosticoService {
   private DiagnosticoRepository repository;
 
   @Transactional
-  public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId) {
-    repository.create(serialId, serial, mac, codigoSapId, usuarioId);
+  public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId, String variable1, String variable2, String variable3, String variable4) {
+    repository.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
   }
 
   public Integer updateSapCode(String serial) {
@@ -62,5 +62,9 @@ public class DiagnosticoService {
 
   public Integer getFailureIdDiagnostic(String serial) {
     return repository.getFailureIdDiagnostic(serial);
+  }
+
+  public String getFailureDiagnostic(String serial) {
+    return repository.getFailureDiagnostic(serial);
   }
 }

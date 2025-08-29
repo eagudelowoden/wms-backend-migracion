@@ -13,12 +13,16 @@ import com.woden.wms_backend.repositories.BaseRepository;
 public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, Integer> {
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertDiagnostic :serialId, :serial, :mac, :codigoSapId, :usuarioId", nativeQuery = true)
+    @Query(value = "EXEC pa_InsertDiagnostic :serialId, :serial, :mac, :codigoSapId, :variable1, :variable2, :variable3, :variable4, :usuarioId", nativeQuery = true)
     void create(@Param("serialId") Integer serialId,
             @Param("serial") String serial,
             @Param("mac") String mac,
             @Param("codigoSapId") Integer codigoSapId,
-            @Param("usuarioId") Integer usuarioId);
+            @Param("usuarioId") Integer usuarioId,
+            @Param("variable1") String variable1,
+            @Param("variable2") String variable2,
+            @Param("variable3") String variable3,
+            @Param("variable4") String variable4);
 
     @Modifying
     @Transactional
@@ -31,4 +35,7 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
 
     @Query(value = "EXEC pa_GetFailureIdDiagnostic :serial", nativeQuery = true)
     Integer getFailureIdDiagnostic(@Param("serial") String serial);
+
+    @Query(value = "EXEC pa_GetFailureDiagnostic :serial", nativeQuery = true)
+    String getFailureDiagnostic(@Param("serial") String serial);
 }
