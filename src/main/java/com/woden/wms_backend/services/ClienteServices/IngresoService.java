@@ -511,4 +511,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Integer filas = 4;
     ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
   }
+
+    public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,Integer usuarioIdMovimiento,
+                                   String serial, Integer loteId) {
+        Integer filas = 4;
+        ingresoRepository.UpdatePackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,loteId,filas);
+    }
 }

@@ -392,4 +392,20 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
+    @PostMapping("/UpdatePackingEntry")
+    public ResponseEntity<?> UpdatePackingEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
+        List<Map<String, Object>> ingresos = requestBody.get("ingresos");
+        for (Map<String, Object> ingreso : ingresos) {
+            Integer estadoId = (Integer) ingreso.get("estadoId");
+            Integer palletId = (Integer) ingreso.get("palletId");
+            Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
+            Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
+            String serial = (String) ingreso.get("serial");
+            Integer loteId = (Integer) ingreso.get("loteId");
+            ingresoService.UpdatePackingEntry(estadoId,palletId,cajaEmpaqueId,usuarioId,serial,loteId);
+        }
+
+        return ResponseEntity.ok(Map.of("message", 1));
+    }
+
 }

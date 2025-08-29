@@ -1,12 +1,17 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.CajaEmpaqueDTO;
+import com.woden.wms_backend.models.Entity.ReparacionModel;
 import com.woden.wms_backend.services.ClienteServices.CajaEmpaqueService;
 
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,7 +64,6 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return ResponseEntity.ok(cajas);
     }
 
-
     @GetMapping("/searchCajasAndSeriales")
     public ResponseEntity<?> SearchPalletBoxEntry(
             @RequestParam String estado,
@@ -68,6 +72,22 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         List<Map<String, String>> seriales = cajaEmpaqueService.SearchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
         return ResponseEntity.ok(seriales);
     }
+
+    @PostMapping("/createBoxPacking")
+    public ResponseEntity<?> createEntity(@RequestBody CajaEmpaqueModel requestBody) {
+        cajaEmpaqueService.create(requestBody.getNumero(), requestBody.getPalletId(), requestBody.getEstadoId(),
+                requestBody.getUsuarioId(), requestBody.getFecha());
+        return ResponseEntity.ok(1);
+    }
+
+    @DeleteMapping("/eliminarCajas")
+    public ResponseEntity<Integer> eliminarCaja(
+            @RequestParam Integer cajaEmpaqueId) {
+        int status = cajaEmpaqueService.eliminarCaja(cajaEmpaqueId);
+        return ResponseEntity.ok(status);
+    }
+
+
 
 
 

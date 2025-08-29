@@ -267,19 +267,19 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino) {
-    List<Object[]> results = palletRepository.SearchPalletBoxPallet(numero, destino);
-    List<Map<String, String>> palletBox = new ArrayList<>();
+    public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino) {
+        List<Object[]> results = palletRepository.SearchPalletBoxPallet(numero, destino);
+        List<Map<String, String>> palletBox = new ArrayList<>();
 
-    for (Object[] result : results) {
-      Map<String, String> pallet = new HashMap<>();
-      pallet.put("id", String.valueOf(result[0])); // ✅ Conversión segura
-      pallet.put("numero", String.valueOf(result[1]));
-      pallet.put("cantidadCaja", String.valueOf(result[2]));
-      pallet.put("descripcion", String.valueOf(result[3]));
-      pallet.put("tipologia", String.valueOf(result[4]));
-      palletBox.add(pallet);
-    }
+        for (Object[] result : results) {
+            Map<String, String> pallet = new HashMap<>();
+            pallet.put("id", String.valueOf(result[0]));        // ✅ Conversión segura
+            pallet.put("numero", String.valueOf(result[1]));
+            pallet.put("cantidadCaja", String.valueOf(result[2]));
+            pallet.put("descripcion", String.valueOf(result[3]));
+            pallet.put("tipologia", String.valueOf(result[4]));
+            palletBox.add(pallet);
+        }
 
     return palletBox;
 

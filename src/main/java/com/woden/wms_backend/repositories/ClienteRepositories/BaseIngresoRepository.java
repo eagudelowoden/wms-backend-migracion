@@ -11,6 +11,9 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface BaseIngresoRepository extends BaseRepository<BaseIngresoModel, Integer> {
+
+
+
   @Query(value = "EXEC pa_GetModelBase :base, :serial", nativeQuery = true)
   List<Object[]> getModel(@Param("base") String base, @Param("serial") String serial);
 }

@@ -235,4 +235,16 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("fecha") Date fecha,
 			@Param("serial") String serial,
 			@Param("filas") Integer filas);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdatePackingEntry :estadoId, :palletId, :cajaEmpaqueId, :usuarioIdMovimiento, :serial, :loteId :filas OUT", nativeQuery = true)
+    void UpdatePackingEntry(@Param("estadoId") Integer estadoId,
+                            @Param("palletId") Integer palletId,
+                            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
+                            @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+                            @Param("serial") String serial,
+                            @Param("loteId") Integer loteId,
+                            @Param("filas") Integer filas);
 }

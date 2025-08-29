@@ -40,4 +40,11 @@ public class ClienteDataAccessService {
     Boolean result = clienteRepository.getOdooPqrsON(id);
     return result != null ? (result ? 1 : 0) : null;
   }
+
+  public Integer getsmartCardInfoON(int id) {
+       Boolean result = clienteRepository.getsmartCardInfoON(id);
+       return result != null ? (result ? 1 : 0) : null;
+  }
+
+
 }

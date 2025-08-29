@@ -1,12 +1,17 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
 import com.woden.wms_backend.dto.*;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
+import com.woden.wms_backend.models.Entity.EmpaqueModel;
+import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.*;
 //import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
 import org.springframework.stereotype.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +24,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
+
 @Autowired
 private CajaEmpaqueRepository cajaEmpaqueRepository;
+
 @Autowired
 private IngresoRepository ingresoRepository;
+
+@Autowired
+private  EmpaqueRepository empaqueRepository;
+
+
+
 
     public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
         Integer filas = 0;
@@ -68,6 +81,8 @@ private IngresoRepository ingresoRepository;
         }).collect(Collectors.toList());
     }
 
+    private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
+
     public List<Map<String, String>> SearchPalletBoxEntry(String estado, Integer palletId, Integer cajaEmpaqueId) {
         List<Object[]> results = ingresoRepository.SearchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
         List<Map<String, String>> serialesBOx = new ArrayList<>();
@@ -91,6 +106,48 @@ private IngresoRepository ingresoRepository;
         }
         return serialesBOx;
     }
+
+    public void create(String numero, Integer palletId, Integer estadoId,
+                       Integer usuarioId, LocalDateTime fecha) {
+        cajaEmpaqueRepository.create(numero, palletId, estadoId, usuarioId, fecha);
+    }
+
+    public int eliminarCaja(Integer cajaEmpaqueId) {
+        return cajaEmpaqueRepository.eliminarCaja(cajaEmpaqueId);
+    }
+
+    public void createEmpaque(EmpaqueModel empaque) {
+        try {
+            // ✅ Si el loteId es 0, lo mando como null
+            Integer loteIdParam = (empaque.getLoteId() != 0) ? empaque.getLoteId() : null;
+            Integer filas = 0;
+            empaqueRepository.createInsert(
+                    empaque.getSerialId(),
+                    empaque.getSerial(),
+                    empaque.getMac(),
+                    empaque.getCodigoSapId(),
+                    empaque.getPalletId(),
+                    empaque.getCajaEmpaqueId(),
+                    empaque.getNivelId(),
+                    empaque.getUsuarioId(),
+                    empaque.getFecha(),
+                    loteIdParam,              // 👈 agregado
+                    empaque.getSmartCardId(),
+                    empaque.getSmartCard(),
+                    filas
+            );
+            logger.info("Guardado correctamente");
+        } catch (Exception e) {
+            logger.error("Error al insertar empaque: {}", e.getMessage(), e);
+        }
+    }
+
+
+
+
+
+
+
 
 
 
