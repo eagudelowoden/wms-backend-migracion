@@ -27,4 +27,7 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Query(value = "SELECT odooPqrsON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getOdooPqrsON(@Param("id") int id);
+
+  @Query(value = "SELECT smartCardInfoON FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Boolean getsmartCardInfoON(@Param("id") int id);
 }

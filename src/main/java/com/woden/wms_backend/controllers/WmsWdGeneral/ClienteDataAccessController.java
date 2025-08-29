@@ -56,4 +56,13 @@ public class ClienteDataAccessController {
     Integer odooPqrsOn = clienteService.getOdooPqrsON(id);
     return ResponseEntity.ok(odooPqrsOn);
   }
+
+    @GetMapping("/getsmartCardInfoON/{id}")
+    public ResponseEntity<Integer> gesmartCardInfoON(@PathVariable Integer id) {
+        Integer smartCardInfoON = clienteService.getsmartCardInfoON(id);
+        return ResponseEntity.ok(smartCardInfoON);
+    }
+
+
+
 }
