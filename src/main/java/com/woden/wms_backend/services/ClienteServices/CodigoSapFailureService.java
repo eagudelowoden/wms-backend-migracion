@@ -56,4 +56,8 @@ public class CodigoSapFailureService {
       return map;
     }).collect(Collectors.toList());
   }
+
+  public Boolean searchMandatoryComponent(Integer codigoSapId, Integer fallaId) {
+    return repository.searchMandatoryComponent(codigoSapId, fallaId);
+  }
 }

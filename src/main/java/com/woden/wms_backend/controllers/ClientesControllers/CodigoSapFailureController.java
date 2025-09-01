@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,12 +19,18 @@ public class CodigoSapFailureController {
   private CodigoSapFailureService service;
 
   @GetMapping("/getSapCodeFailureAsig")
-  public Boolean getSapCodeFailureAsig(@RequestParam String nombre) {
-    return service.getSapCodeFailureAsig(nombre);
+  public ResponseEntity<Boolean> getSapCodeFailureAsig(@RequestParam String nombre) {
+    return ResponseEntity.ok(service.getSapCodeFailureAsig(nombre));
   }
 
   @GetMapping("/getFallasFailure")
-  public List<Map<String, String>> getFallas(@RequestParam String nombre) {
-    return service.getFallas(nombre);
+  public ResponseEntity<List<Map<String, String>>> getFallas(@RequestParam String nombre) {
+    return ResponseEntity.ok(service.getFallas(nombre));
+  }
+
+  @GetMapping("/searchMandatoryComponent")
+  public ResponseEntity<Boolean> searchMandatoryComponent(@RequestParam Integer codigoSapId,
+      @RequestParam Integer fallaId) {
+    return ResponseEntity.ok(service.searchMandatoryComponent(codigoSapId, fallaId));
   }
 }

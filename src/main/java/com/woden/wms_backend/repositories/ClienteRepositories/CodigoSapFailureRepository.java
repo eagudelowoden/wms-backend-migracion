@@ -13,4 +13,7 @@ import com.woden.wms_backend.repositories.BaseRepository;
 public interface CodigoSapFailureRepository extends BaseRepository<CodigoSapFailureModel, Integer> {
   @Query(value = "EXEC pa_GetListFailuresCodigoSapNoId :nombre", nativeQuery = true)
   List<Object[]> getFallas(@Param("nombre") String nombre);
+
+  @Query(value = "EXEC pa_SearchMandatoryComponent :codigoSapId, :fallaId", nativeQuery = true)
+  Boolean searchMandatoryComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
 }
