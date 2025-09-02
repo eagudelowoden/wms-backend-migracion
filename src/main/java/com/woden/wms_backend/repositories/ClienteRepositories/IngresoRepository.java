@@ -263,6 +263,18 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
                             @Param("SmartCard") String SmartCard,
                             @Param("filas") Integer filas);
 
+        @Modifying
+        @Transactional
+        @Query(value = "EXEC pa_UpdatePackingAllEntry :estadoId, :serial, :filas OUT", nativeQuery = true)
+        void UpdatePackingAllEntry(
+                @Param("estadoId") Integer estadoId,
+                @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+                @Param("serial") String serial,
+                @Param("filas") Integer filas
+        );
+
+
+
 
 
 

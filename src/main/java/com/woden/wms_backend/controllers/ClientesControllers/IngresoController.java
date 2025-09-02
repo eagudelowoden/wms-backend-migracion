@@ -430,6 +430,17 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         }
     }
 
+    @PostMapping("/updatePackingAllEntry")
+    public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId, @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
+        try {
+            int result = ingresoService.UpdatePackingAllEntry(seriales, estadoId, usuarioIdMovimiento);
+            return ResponseEntity.ok(result); // ✅ devuelve 1 si se procesó al menos un serial
+        } catch (Exception e) {
+            e.printStackTrace(); // log del error
+            return ResponseEntity.badRequest().body(0); // ❌ error
+        }
+    }
+
 
 
 

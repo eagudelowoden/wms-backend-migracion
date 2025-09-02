@@ -526,17 +526,26 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         Integer loteIdFinal   = (loteId != null && loteId != 0) ? loteId : null;
         Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
         String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
-        ingresoRepository.UpdatePackingEntrySmartCard(
-                estadoId,
-                palletId,
-                cajaEmpaqueId,
-                usuarioIdMovimiento,
-                serial,
-                loteIdFinal,
-                smartCardIdFinal,
-                smartCardFinal,
-                filas
+        ingresoRepository.UpdatePackingEntrySmartCard(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteIdFinal,
+                smartCardIdFinal, smartCardFinal, filas
         );
     }
+
+    @Transactional
+    public int UpdatePackingAllEntry(List<String> seriales, Integer estadoId, Integer usuarioIdMovimiento) {
+        int count = 0;
+        Integer filas = 4;
+        for (String serial : seriales) {
+            // Llamada al repositorio pasando los parámetros requeridos
+            ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, serial, filas);
+            count++;
+        }
+        return count > 0 ? 1 : 0;
+    }
+
+
+
+
+
 
 }

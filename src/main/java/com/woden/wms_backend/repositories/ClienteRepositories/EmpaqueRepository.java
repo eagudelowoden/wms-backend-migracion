@@ -34,6 +34,12 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
     );
 
 
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_DeletePacking :serial", nativeQuery = true)
+    void eliminarSeriesEmpaque(@Param("serial") String serial);
+
+
 
 
 }
