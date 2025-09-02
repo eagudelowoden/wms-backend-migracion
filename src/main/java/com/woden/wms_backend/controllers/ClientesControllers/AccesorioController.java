@@ -65,13 +65,8 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         try {
             accesorioService.cerrarPalletAccesorio(dto);
 
-            System.out.println("Cerrar accesorio - PalletId: " + dto);
+           // System.out.println("Cerrar accesorio - PalletId: " + dto);
             response.put("message", "Pallet cerrado correctamente");
-            System.out.println("Cerrar accesorio - PalletId: " + dto.getPalletId()
-                    + ", Estado: " + dto.getEstado()
-                    + ", DestinoId: " + dto.getDestinoId()
-                    + ", TipologiaId: " + dto.getTipologiaId()
-                    + ", PosicionId: " + dto.getPosicionId());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

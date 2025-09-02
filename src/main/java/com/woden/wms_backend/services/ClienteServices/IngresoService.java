@@ -517,4 +517,26 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         Integer filas = 4;
         ingresoRepository.UpdatePackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,loteId,filas);
     }
+
+
+    public void UpdatePackingEntrySmartCard(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
+            String serial, Integer loteId, Integer smartCardId, String smartCard) {
+        Integer filas = 4;
+        // 🔹 Normalización de parámetros para evitar conflicto FK
+        Integer loteIdFinal   = (loteId != null && loteId != 0) ? loteId : null;
+        Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
+        String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
+        ingresoRepository.UpdatePackingEntrySmartCard(
+                estadoId,
+                palletId,
+                cajaEmpaqueId,
+                usuarioIdMovimiento,
+                serial,
+                loteIdFinal,
+                smartCardIdFinal,
+                smartCardFinal,
+                filas
+        );
+    }
+
 }

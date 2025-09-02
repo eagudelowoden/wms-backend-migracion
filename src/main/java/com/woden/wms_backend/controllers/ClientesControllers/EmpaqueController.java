@@ -3,6 +3,8 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
+import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
+import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
 // import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
 
+import java.util.List;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/client/empaque")
@@ -23,6 +28,12 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
 
     @Autowired
     private EmpaqueService empaqueService;
+
+    @Autowired
+    private IngresoRepository ingresoRepository;
+
+    @Autowired
+    private IngresoService ingresoService;
 
 
     @PostMapping("/insertPacking")
@@ -44,6 +55,8 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
         );
         return ResponseEntity.ok(1);
     }
+
+
 
 
 

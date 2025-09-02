@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ctc.wstx.shaded.msv_core.datatype.xsd.IntegerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -405,7 +406,31 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
             ingresoService.UpdatePackingEntry(estadoId,palletId,cajaEmpaqueId,usuarioId,serial,loteId);
         }
 
-        return ResponseEntity.ok(Map.of("message", 1));
+        return ResponseEntity.ok(1);
     }
+
+    @PostMapping("/updatePackingEntrySmartCard")
+    public ResponseEntity<Integer> updatePackingEntrySmartCard(
+            @RequestParam Integer estadoId,
+            @RequestParam Integer palletId,
+            @RequestParam Integer cajaEmpaqueId,
+            @RequestParam Integer usuarioId,
+            @RequestParam String serial,
+            @RequestParam Integer loteId,
+            @RequestParam Integer SmardCardId,
+            @RequestParam String SmartCard) {
+        try {
+            ingresoService.UpdatePackingEntrySmartCard(
+                    estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId,SmardCardId,SmartCard );
+            return ResponseEntity.ok(1); // ✅ éxito
+        } catch (Exception e) {
+            // Puedes loggear el error
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(0); // ❌ error
+        }
+    }
+
+
+
 
 }
