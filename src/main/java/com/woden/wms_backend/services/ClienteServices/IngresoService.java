@@ -446,6 +446,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
   }
 
+  public List<String> getProactiveRepairAll() {
+    List<String> seriales = ingresoRepository.getProactiveRepairAll();
+    return seriales;
+  }
+
   public void updateStateAllEntry(Integer estadoId, Integer usuarioId, String serial) {
     ingresoRepository.updateStateAllEntry(estadoId, usuarioId, serial);
   }
@@ -512,9 +517,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
   }
 
-    public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,Integer usuarioIdMovimiento,
-                                   String serial, Integer loteId) {
-        Integer filas = 4;
-        ingresoRepository.UpdatePackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,loteId,filas);
-    }
+  public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
+      String serial, Integer loteId) {
+    Integer filas = 4;
+    ingresoRepository.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId, filas);
+  }
 }

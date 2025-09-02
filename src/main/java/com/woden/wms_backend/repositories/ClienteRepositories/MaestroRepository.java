@@ -59,4 +59,16 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
   @Query(value = "EXEC pa_GetWarrantyMaster", nativeQuery = true)
   Integer getWarranty();
+
+  @Query(value = "EXEC pa_SearchLevelComponentsAsig :serial", nativeQuery = true)
+  Integer searchLevelComponentsAsig(@Param("serial") String serial);
+
+  @Query(value = "EXEC pa_SearchLevel :levelId", nativeQuery = true)
+  Integer getLevelById(@Param("levelId") Integer levelId);
+
+  @Query(value = "EXEC pa_SearchLevelId :level", nativeQuery = true)
+  Integer getLevelId(@Param("level") String level);
+
+  @Query(value = "EXEC pa_GetIdLevelRepairMaster", nativeQuery = true)
+  Integer getIdLevelRepairMaster();
 }

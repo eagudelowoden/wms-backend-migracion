@@ -37,6 +37,15 @@ public class ReparacionController extends BaseController<ReparacionModel, Intege
     return ResponseEntity.ok(1);
   }
 
+  @PostMapping("/updateRepair")
+  public ResponseEntity<?> updateEntity(@RequestBody ReparacionModel requestBody) {
+    service.updateRepair(requestBody.getEstadoFinalId(), requestBody.getFalla1Id(), requestBody.getFalla2Id(),
+        requestBody.getFalla3Id(), requestBody.getFalla4Id(), requestBody.getPartesCambiadas(),
+        requestBody.getMotivoScrapId(), requestBody.getTecnicoReparacionId(), requestBody.getSerial(),
+        requestBody.getEstadoCalidadId());
+    return ResponseEntity.ok(1);
+  }
+
   @DeleteMapping("/deleteRepair")
   public ResponseEntity<?> deleteEntity(@RequestBody List<String> seriales) {
     try {
@@ -68,7 +77,8 @@ public class ReparacionController extends BaseController<ReparacionModel, Intege
   }
 
   @GetMapping("/searchRepairedRepair")
-  public ResponseEntity<?> searchRepairedRepair(@RequestParam Integer tecnicoReparacionId, @RequestParam String estado) {
+  public ResponseEntity<?> searchRepairedRepair(@RequestParam Integer tecnicoReparacionId,
+      @RequestParam String estado) {
     return ResponseEntity.ok(service.searchRepairedRepair(tecnicoReparacionId, estado));
   }
 

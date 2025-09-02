@@ -160,6 +160,12 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(proactiveRepair);
   }
 
+  @GetMapping("/getProactiveRepairAll")
+  public ResponseEntity<List<String>> getProactiveRepairAll() {
+    List<String> proactiveRepair = ingresoService.getProactiveRepairAll();
+    return ResponseEntity.ok(proactiveRepair);
+  }
+
   @PostMapping("/updateSapCodeEntry")
   public ResponseEntity<Integer> updateSapCodeEntry(@RequestBody RegularizarSapSerialIngresoDTO dto) {
     return ResponseEntity
@@ -385,27 +391,27 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       Date fecha = dateFormat.parse(fechaStr);
 
       ingresoService.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial);
-      return ResponseEntity.ok(Map.of("message", 1));
+      return ResponseEntity.ok(1);
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(500).body(Map.of("error", "Error al procesar la fecha: " + e.getMessage()));
     }
   }
 
-    @PostMapping("/UpdatePackingEntry")
-    public ResponseEntity<?> UpdatePackingEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
-        List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-        for (Map<String, Object> ingreso : ingresos) {
-            Integer estadoId = (Integer) ingreso.get("estadoId");
-            Integer palletId = (Integer) ingreso.get("palletId");
-            Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
-            Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
-            String serial = (String) ingreso.get("serial");
-            Integer loteId = (Integer) ingreso.get("loteId");
-            ingresoService.UpdatePackingEntry(estadoId,palletId,cajaEmpaqueId,usuarioId,serial,loteId);
-        }
-
-        return ResponseEntity.ok(Map.of("message", 1));
+  @PostMapping("/UpdatePackingEntry")
+  public ResponseEntity<?> UpdatePackingEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
+    List<Map<String, Object>> ingresos = requestBody.get("ingresos");
+    for (Map<String, Object> ingreso : ingresos) {
+      Integer estadoId = (Integer) ingreso.get("estadoId");
+      Integer palletId = (Integer) ingreso.get("palletId");
+      Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
+      Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
+      String serial = (String) ingreso.get("serial");
+      Integer loteId = (Integer) ingreso.get("loteId");
+      ingresoService.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId);
     }
+
+    return ResponseEntity.ok(1);
+  }
 
 }

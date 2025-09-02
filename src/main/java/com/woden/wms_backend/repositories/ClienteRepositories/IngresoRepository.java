@@ -105,15 +105,15 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_GetSerialByMac :mac", nativeQuery = true)
 	List<Object[]> getSerialByMac(@Param("mac") String mac);
 
-  @Query(value = "DECLARE @result INT; EXEC pa_Reingresos :serial, @result OUTPUT; SELECT @result", nativeQuery = true)
-  Integer getReingresos(@Param("serial") String serial);
+	@Query(value = "DECLARE @result INT; EXEC pa_Reingresos :serial, @result OUTPUT; SELECT @result", nativeQuery = true)
+	Integer getReingresos(@Param("serial") String serial);
 
-  @Query(value = "EXEC pa_SearchPalletBoxEntry :estado, :palletId, :cajaEmpaqueId", nativeQuery = true)
-  List<Object[]> SearchPalletBoxEntry(
-            @Param("estado") String estado,
-            @Param("palletId") Integer palletId,
-            @Param("cajaEmpaqueId") Integer cajaEmpaqueId // <-- aquí también String
-  );
+	@Query(value = "EXEC pa_SearchPalletBoxEntry :estado, :palletId, :cajaEmpaqueId", nativeQuery = true)
+	List<Object[]> SearchPalletBoxEntry(
+			@Param("estado") String estado,
+			@Param("palletId") Integer palletId,
+			@Param("cajaEmpaqueId") Integer cajaEmpaqueId // <-- aquí también String
+	);
 
 	/// repetido
 	@Modifying
@@ -236,15 +236,17 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("serial") String serial,
 			@Param("filas") Integer filas);
 
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdatePackingEntry :estadoId, :palletId, :cajaEmpaqueId, :usuarioIdMovimiento, :serial, :loteId :filas OUT", nativeQuery = true)
+	void UpdatePackingEntry(@Param("estadoId") Integer estadoId,
+			@Param("palletId") Integer palletId,
+			@Param("cajaEmpaqueId") Integer cajaEmpaqueId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("serial") String serial,
+			@Param("loteId") Integer loteId,
+			@Param("filas") Integer filas);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdatePackingEntry :estadoId, :palletId, :cajaEmpaqueId, :usuarioIdMovimiento, :serial, :loteId :filas OUT", nativeQuery = true)
-    void UpdatePackingEntry(@Param("estadoId") Integer estadoId,
-                            @Param("palletId") Integer palletId,
-                            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
-                            @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-                            @Param("serial") String serial,
-                            @Param("loteId") Integer loteId,
-                            @Param("filas") Integer filas);
+	@Query(value = "EXEC pa_GetProactiveRepairAll", nativeQuery = true)
+	List<String> getProactiveRepairAll();
 }

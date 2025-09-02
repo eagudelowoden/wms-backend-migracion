@@ -85,4 +85,20 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
     public Integer getWarranty() {
         return maestroRepository.getWarranty();
     }
+
+    public Integer searchLevelComponentsAsig(String serial) {
+        return maestroRepository.searchLevelComponentsAsig(serial);
+    }
+
+    public Integer getLevelById(Integer levelId) {
+        return maestroRepository.getLevelById(levelId);
+    }
+
+    public Integer getLevelId(String level) {
+        return maestroRepository.getLevelId(level);
+    }
+
+    public Integer getIdLevelRepairMaster() {
+        return maestroRepository.getIdLevelRepairMaster();
+    }
 }

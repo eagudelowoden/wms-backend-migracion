@@ -89,4 +89,25 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     public ResponseEntity<Integer> getWarranty() {
         return ResponseEntity.ok(maestroService.getWarranty());
     }
+
+    @GetMapping("/searchLevelComponentsAsig")
+    public ResponseEntity<Integer> searchLevelComponentsAsig(@RequestParam String serial) {
+        return ResponseEntity.ok(maestroService.searchLevelComponentsAsig(serial));
+    }
+
+    @GetMapping("/getLevelById")
+    public ResponseEntity<Integer> getLevelById(@RequestParam Integer levelId) {
+        return ResponseEntity.ok(maestroService.getLevelById(levelId));
+    }
+
+    @GetMapping("/getLevelId")
+    public ResponseEntity<Integer> getLevelId(@RequestParam String level) {
+        return ResponseEntity.ok(maestroService.getLevelId(level));
+    }
+
+    @GetMapping("/getIdLevelRepairMaster")
+    public ResponseEntity<Integer> getIdLevelRepairMaster() {
+        return ResponseEntity.ok(maestroService.getIdLevelRepairMaster());
+    }
+
 }

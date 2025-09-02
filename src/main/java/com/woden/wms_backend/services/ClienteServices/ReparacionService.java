@@ -25,6 +25,14 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
         fechaAsignacion, usuarioId);
   }
 
+  public void updateRepair(Integer estadoFinalId, Integer falla1Id, Integer falla2Id, Integer falla3Id,
+      Integer falla4Id, String partesCambiadas, Integer motivoScrapId, Integer tecnicoReparacionId, String serial,
+      Integer estadoCalidadId) {
+    Integer filas = 0;
+    repository.updateRepair(estadoFinalId, falla1Id, falla2Id, falla3Id, falla4Id, partesCambiadas, motivoScrapId,
+        tecnicoReparacionId, serial, estadoCalidadId, filas);
+  }
+
   public void deleteRepair(List<String> seriales) {
     for (String serial : seriales) {
       repository.deleteRepair(serial);
