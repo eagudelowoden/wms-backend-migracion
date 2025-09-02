@@ -1,18 +1,21 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
+import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
+import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
 // import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.woden.wms_backend.controllers.BaseController;
+
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -23,6 +26,12 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
 
     @Autowired
     private EmpaqueService empaqueService;
+
+    @Autowired
+    private IngresoRepository ingresoRepository;
+
+    @Autowired
+    private IngresoService ingresoService;
 
 
     @PostMapping("/insertPacking")
@@ -44,6 +53,25 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
         );
         return ResponseEntity.ok(1);
     }
+    private static final Logger logger = LoggerFactory.getLogger(EmpaqueController.class);
+
+    @DeleteMapping("/eliminarSeriesEmpaque")
+    public ResponseEntity<Integer> eliminarSeriesEmpaque(@RequestBody List<String> seriales) {
+        if (seriales == null || seriales.isEmpty()) {
+  //          logger.warn("⚠️ Se llamó a eliminarSeriesEmpaque pero la lista de seriales estaba vacía o nula");
+        } else {
+        //    logger.info("🗑️ Se van a eliminar los seriales: {}", seriales);
+        }
+
+        int status = empaqueService.eliminarSeriesEmpaque(seriales);
+
+        //logger.info("✅ Resultado de eliminarSeriesEmpaque: {}", status);
+        return ResponseEntity.ok(status);
+    }
+
+
+
+
 
 
 

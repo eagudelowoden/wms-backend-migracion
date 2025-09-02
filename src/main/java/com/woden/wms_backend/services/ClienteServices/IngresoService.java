@@ -517,9 +517,40 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
   }
 
-  public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
-      String serial, Integer loteId) {
-    Integer filas = 4;
-    ingresoRepository.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId, filas);
-  }
+    public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,Integer usuarioIdMovimiento,
+                                   String serial, Integer loteId) {
+        Integer filas = 4;
+        ingresoRepository.UpdatePackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,loteId,filas);
+    }
+
+
+    public void UpdatePackingEntrySmartCard(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
+            String serial, Integer loteId, Integer smartCardId, String smartCard) {
+        Integer filas = 4;
+        // 🔹 Normalización de parámetros para evitar conflicto FK
+        Integer loteIdFinal   = (loteId != null && loteId != 0) ? loteId : null;
+        Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
+        String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
+        ingresoRepository.UpdatePackingEntrySmartCard(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteIdFinal,
+                smartCardIdFinal, smartCardFinal, filas
+        );
+    }
+
+    @Transactional
+    public int UpdatePackingAllEntry(List<String> seriales, Integer estadoId, Integer usuarioIdMovimiento) {
+        int count = 0;
+        Integer filas = 4;
+        for (String serial : seriales) {
+            // Llamada al repositorio pasando los parámetros requeridos
+            ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, serial, filas);
+            count++;
+        }
+        return count > 0 ? 1 : 0;
+    }
+
+
+
+
+
+
 }
