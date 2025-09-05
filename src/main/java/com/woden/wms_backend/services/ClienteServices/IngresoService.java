@@ -537,15 +537,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
 
     @Transactional
-    public int UpdatePackingAllEntry(List<String> seriales, Integer estadoId, Integer usuarioIdMovimiento) {
+    public int UpdatePackingAllEntry(Integer estadoId, Integer usuarioIdMovimiento,List<String> seriales) {
         int count = 0;
-        Integer filas = 4;
+
         for (String serial : seriales) {
             // Llamada al repositorio pasando los parámetros requeridos
-            ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, serial, filas);
+            ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, serial);
             count++;
         }
         return count > 0 ? 1 : 0;
+    }
+
+    public void updateChangedPacking(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
+                                   String serial, Integer usuarioIdMovimiento, Integer tipologiaId) {
+        Integer filas = 4;
+        ingresoRepository.updateChangedPacking(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,tipologiaId,filas);
     }
 
 

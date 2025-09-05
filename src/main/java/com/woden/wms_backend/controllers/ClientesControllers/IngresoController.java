@@ -411,7 +411,6 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       Integer loteId = (Integer) ingreso.get("loteId");
       ingresoService.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId);
     }
-
         return ResponseEntity.ok(1);
     }
 
@@ -439,13 +438,32 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     @PostMapping("/updatePackingAllEntry")
     public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId, @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
         try {
-            int result = ingresoService.UpdatePackingAllEntry(seriales, estadoId, usuarioIdMovimiento);
+            int result = ingresoService.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento,seriales);
+          //  System.out.println("updatePackingAllEntry");
             return ResponseEntity.ok(result); // ✅ devuelve 1 si se procesó al menos un serial
         } catch (Exception e) {
             e.printStackTrace(); // log del error
             return ResponseEntity.badRequest().body(0); // ❌ error
         }
     }
+
+    @PostMapping("/updateChangedPacking")
+    public ResponseEntity<?> updateChangedPacking(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
+        List<Map<String, Object>> ingresos = requestBody.get("ingresos");
+        for (Map<String, Object> ingreso : ingresos) {
+            Integer estadoId = (Integer) ingreso.get("estadoId");
+            Integer palletId = (Integer) ingreso.get("palletId");
+            Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
+            String serial = (String) ingreso.get("serial");
+            Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
+            Integer tipologiaId = (Integer) ingreso.get("tipologiaId");
+            ingresoService.updateChangedPacking(estadoId, palletId, cajaEmpaqueId,  serial, usuarioId, tipologiaId);
+        }
+        return ResponseEntity.ok(1);
+    }
+
+
+
 
 
 

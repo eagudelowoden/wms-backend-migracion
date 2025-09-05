@@ -176,13 +176,13 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     @GetMapping("/searchPalletsBoxes")
     public ResponseEntity<?> SearchPalletBoxPallet(
             @RequestParam String numero,
-            @RequestParam String destino) {
-        System.out.println("Endpoint Pallets Proceso - Numero: " + numero + ", Destino: " + destino);
-        List<Map<String, String>> pallets = palletService.SearchPalletBoxPallet(numero, destino);
+            @RequestParam String destino,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+
+        List<Map<String, String>> pallets = palletService.SearchPalletBoxPallet(numero, destino, page, size);
         return ResponseEntity.ok(pallets);
     }
-
-
 
     @DeleteMapping("/deleteAccesory/{palletId}/{cantidad}/{codigoSapId}")
     public ResponseEntity<String> eliminarAccesorio(

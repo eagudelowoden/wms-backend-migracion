@@ -1,9 +1,6 @@
 package com.woden.wms_backend.services.ClienteServices;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.woden.wms_backend.dto.*;
@@ -267,13 +264,22 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-    public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino) {
+    public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino, int page, int size) {
         List<Object[]> results = palletRepository.SearchPalletBoxPallet(numero, destino);
-        List<Map<String, String>> palletBox = new ArrayList<>();
 
-        for (Object[] result : results) {
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, results.size());
+
+        if (fromIndex >= results.size()) {
+            return Collections.emptyList();
+        }
+
+        List<Object[]> paged = results.subList(fromIndex, toIndex);
+
+        List<Map<String, String>> palletBox = new ArrayList<>();
+        for (Object[] result : paged) {
             Map<String, String> pallet = new HashMap<>();
-            pallet.put("id", String.valueOf(result[0]));        // ✅ Conversión segura
+            pallet.put("id", String.valueOf(result[0]));
             pallet.put("numero", String.valueOf(result[1]));
             pallet.put("cantidadCaja", String.valueOf(result[2]));
             pallet.put("descripcion", String.valueOf(result[3]));
@@ -281,9 +287,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
             palletBox.add(pallet);
         }
 
-    return palletBox;
+        return palletBox;
+    }
 
-  }
 
   public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
     Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);

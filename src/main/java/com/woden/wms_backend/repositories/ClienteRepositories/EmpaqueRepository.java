@@ -40,6 +40,14 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
     void eliminarSeriesEmpaque(@Param("serial") String serial);
 
 
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdatePackingSmartCard :smartCardId, :smartCardNuevo, :serial, :filas OUT", nativeQuery = true)
+    void updateSmartCard(
+            @Param("smartCardId") Integer smartCardId,
+            @Param("smartCardNuevo") String smartCardNuevo,
+            @Param("serial") String serial,
+            @Param("filas") Integer filas);
 
 
 }
