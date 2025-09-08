@@ -33,4 +33,10 @@ public class CodigoSapFailureController {
       @RequestParam Integer fallaId) {
     return ResponseEntity.ok(service.searchMandatoryComponent(codigoSapId, fallaId));
   }
+
+  @GetMapping("/searchSapCodeFailureComponent")
+  public ResponseEntity<List<Map<String, Object>>> searchSapCodeFailureComponent(@RequestParam Integer codigoSapId,
+      @RequestParam Integer fallaId) {
+    return ResponseEntity.ok(service.searchSapCodeFailureComponent(codigoSapId, fallaId));
+  }
 }

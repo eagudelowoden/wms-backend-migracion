@@ -101,4 +101,36 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
     public Integer getIdLevelRepairMaster() {
         return maestroRepository.getIdLevelRepairMaster();
     }
+
+    public void insertComponentsAsig(String serial, Integer componenteId) {
+        maestroRepository.insertComponentsAsig(serial, componenteId);
+    }
+
+    public void deleteComponentsAsig(String serial, Integer componenteId) {
+        maestroRepository.deleteComponentsAsig(serial, componenteId);
+    }
+
+    public List<Map<String, Object>> searchComponents(String serial, String falla) {
+        List<Object[]> results = maestroRepository.searchComponents(serial, falla);
+        return results.stream().map(obj -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", (Integer) obj[0]);
+            map.put("componente", (String) obj[1]);
+            map.put("nivel", (String) obj[2]);
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> searchComponentsAsig(String serial, String falla) {
+        int filas = 0; // Valor inicial para filas OUT
+        List<Object[]> results = maestroRepository.searchComponentsAsig(serial, falla, filas);
+        return results.stream().map(obj -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", (Integer) obj[0]);
+            map.put("componente", (String) obj[1]);
+            map.put("nivel", (String) obj[2]);
+            return map;
+        }).collect(Collectors.toList());
+    }
+
 }

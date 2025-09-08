@@ -76,7 +76,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
           ingreso.getLoteId(),
           ingreso.getCajaIngresoId(),
           ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null);
-      logger.info("Guardado correctamente");
+      // logger.info("Guardado correctamente");
       System.out.println(result);
     } catch (Exception e) {
       logger.error("Error al insertar ingreso: {}", e.getMessage());

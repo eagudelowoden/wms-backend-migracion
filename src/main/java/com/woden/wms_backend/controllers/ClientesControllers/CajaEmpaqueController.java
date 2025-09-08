@@ -1,17 +1,12 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.CajaEmpaqueDTO;
-import com.woden.wms_backend.models.Entity.ReparacionModel;
 import com.woden.wms_backend.services.ClienteServices.CajaEmpaqueService;
 
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,7 +27,6 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         Integer cajaEmpaqueId = requestBody.get("cajaEmpaqueId");
         Integer estadoId = requestBody.get("estadoId");
 
-        System.out.println("Actualizando caja empaque ID: " + cajaEmpaqueId + " con estado ID: " + estadoId);
 
         // Aquí iría la lógica para actualizar el estado en la BD
         cajaEmpaqueService.updateStatusBoxPacking(cajaEmpaqueId, estadoId);

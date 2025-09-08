@@ -16,4 +16,7 @@ public interface CodigoSapFailureRepository extends BaseRepository<CodigoSapFail
 
   @Query(value = "EXEC pa_SearchMandatoryComponent :codigoSapId, :fallaId", nativeQuery = true)
   Boolean searchMandatoryComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
+
+  @Query (value = "EXEC pa_SearchSapCodeFailureComponent :codigoSapId, :fallaId", nativeQuery = true)
+  List<Object[]> searchSapCodeFailureComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
 }

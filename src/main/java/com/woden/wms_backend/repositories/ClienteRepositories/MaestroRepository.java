@@ -2,12 +2,15 @@ package com.woden.wms_backend.repositories.ClienteRepositories;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.BaseRepository;
+
 
 @Repository
 public interface MaestroRepository extends BaseRepository<MaestroModel, Integer> {
@@ -71,4 +74,21 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
   @Query(value = "EXEC pa_GetIdLevelRepairMaster", nativeQuery = true)
   Integer getIdLevelRepairMaster();
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_InsertComponentsAsig :serial, :componenteId", nativeQuery = true)
+  void insertComponentsAsig(@Param("serial") String serial, @Param("componenteId") Integer componenteId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_DeleteComponentsAsig :serial, :componenteId", nativeQuery = true)
+  void deleteComponentsAsig(@Param("serial") String serial, @Param("componenteId") Integer componenteId);
+
+  @Query(value = "EXEC pa_SearchComponents :serial, :falla", nativeQuery = true)
+  List<Object[]> searchComponents(@Param("serial") String serial, @Param("falla") String falla);
+
+  @Query(value = "EXEC pa_SearchComponentsAsig :serial, :falla, :filas OUT", nativeQuery = true)
+  List<Object[]> searchComponentsAsig(@Param("serial") String serial, @Param("falla") String falla,
+      @Param("filas") Integer filas);
 }

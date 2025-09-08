@@ -69,7 +69,7 @@ public class UsuarioService {
 
         // Manejo de valores nulos
         if (usuario.getClave() == null || clave == null) {
-            System.out.println("Clave:" + usuario.getClave()); // Imprimir en consola
+            // System.out.println("Clave:" + usuario.getClave()); // Imprimir en consola
             long end = System.currentTimeMillis();
             log.info("Tiempo total en servicio: {} ms", (end - start));
             return false; // Contraseña inválida

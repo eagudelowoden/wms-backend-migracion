@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -110,4 +112,51 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         return ResponseEntity.ok(maestroService.getIdLevelRepairMaster());
     }
 
+    @PostMapping("/insertComponentsAsig")
+    public ResponseEntity<Integer> insertComponentsAsig(@RequestBody Map<String, Object> body) {
+        String serial = (String) body.get("serial");
+        Object componenteIdObj = body.get("componenteId");
+        List<Integer> componenteId;
+        if (componenteIdObj instanceof List<?>) {
+            componenteId = ((List<?>) componenteIdObj).stream()
+                    .filter(item -> item instanceof Number)
+                    .map(item -> ((Number) item).intValue())
+                    .toList();
+        } else {
+            componenteId = List.of();
+        }
+        componenteId.forEach(id -> maestroService.insertComponentsAsig(serial, id));
+        return ResponseEntity.ok(1);
+    }
+
+    @PostMapping("/deleteComponentsAsig")
+    public ResponseEntity<Integer> deleteComponentsAsig(@RequestBody Map<String, Object> body) {
+        String serial = (String) body.get("serial");
+        Object componenteIdObj = body.get("componenteId");
+        List<Integer> componenteId;
+        if (componenteIdObj instanceof List<?>) {
+            componenteId = ((List<?>) componenteIdObj).stream()
+                    .filter(item -> item instanceof Number)
+                    .map(item -> ((Number) item).intValue())
+                    .toList();
+        } else {
+            componenteId = List.of();
+        }
+        componenteId.forEach(id -> maestroService.deleteComponentsAsig(serial, id));
+        return ResponseEntity.ok(1);
+    }
+
+    @GetMapping("/searchComponents")
+    public ResponseEntity<List<Map<String, Object>>> searchComponents(@RequestParam String serial,
+            @RequestParam String falla) {
+        List<Map<String, Object>> componentes = maestroService.searchComponents(serial, falla);
+        return ResponseEntity.ok(componentes);
+    }
+
+    @GetMapping("/searchComponentsAsig")
+    public ResponseEntity<List<Map<String, Object>>> searchComponentsAsig(@RequestParam String serial,
+            @RequestParam String falla) {
+        List<Map<String, Object>> componentes = maestroService.searchComponentsAsig(serial, falla);
+        return ResponseEntity.ok(componentes);
+    }
 }

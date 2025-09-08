@@ -60,4 +60,15 @@ public class CodigoSapFailureService {
   public Boolean searchMandatoryComponent(Integer codigoSapId, Integer fallaId) {
     return repository.searchMandatoryComponent(codigoSapId, fallaId);
   }
+
+  public List<Map<String, Object>> searchSapCodeFailureComponent(Integer codigoSapId, Integer fallaId) {
+    List<Object[]> results = repository.searchSapCodeFailureComponent(codigoSapId, fallaId);
+    return results.stream().map(obj -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", (Integer) obj[0]);
+      map.put("componente", (String) obj[1]);
+      map.put("nivel", (String) obj[2]);
+      return map;
+    }).collect(Collectors.toList());
+  }
 }
