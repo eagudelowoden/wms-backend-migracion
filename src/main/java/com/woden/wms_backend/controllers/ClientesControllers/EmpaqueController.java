@@ -70,6 +70,21 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
     }
 
 
+    @PostMapping("/updateSmartCard")
+    public ResponseEntity<?> updateSmartCard(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
+        List<Map<String, Object>> ingresos = requestBody.get("ingresos");
+        for (Map<String, Object> ingreso : ingresos) {
+            Integer smartCardId = (Integer) ingreso.get("smartCardId");
+            String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
+            String serial = (String) ingreso.get("serial");
+            empaqueService.updateSmartCard(smartCardId, smartCardNuevo,serial);
+        }
+        return ResponseEntity.ok(1);
+    }
+
+
+
+
 
 
 

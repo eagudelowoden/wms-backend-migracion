@@ -53,5 +53,11 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         return count > 0 ? 1 : 0;
     }
 
+    public void updateSmartCard(Integer smartCardId, String smartCardNuevo,
+                                     String serial) {
+        Integer filas = 4;
+        empaqueRepository.updateSmartCard(smartCardId, smartCardNuevo,  serial,filas);
+    }
+
 
 }
