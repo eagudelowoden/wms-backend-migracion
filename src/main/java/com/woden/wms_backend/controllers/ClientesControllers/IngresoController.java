@@ -474,5 +474,4 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         return ResponseEntity.ok(1);
     }
 
-
 }
