@@ -561,7 +561,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         ingresoRepository.updateSmartCardEntry(smartCardId, smartCardNuevo, serial,filas);
     }
 
-
+    public void backRepairedEntry(String serial) {
+        Integer filas = 0;
+        ingresoRepository.backRepairedEntry(serial, filas);
+    }
 
 
 
