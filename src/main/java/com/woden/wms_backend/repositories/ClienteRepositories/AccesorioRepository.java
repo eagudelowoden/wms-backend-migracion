@@ -76,7 +76,7 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
     void UpdateSerialAccesory(
             @Param("serialNuevo") String serialNuevo,
             @Param("serialAnterior") String serialAnterior,
-            @Param("filas") Integer fiñas);
+            @Param("filas") Integer filas);
 
 
 

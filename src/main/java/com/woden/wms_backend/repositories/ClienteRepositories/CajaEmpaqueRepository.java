@@ -38,7 +38,6 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
             @Param("estado") String estado // <-- aquí también String
     );
 
-
     @Query(value = "EXEC pa_SearchPacking :palletId", nativeQuery = true)
     List<Object[]> SearchPacking(
             @Param("palletId") Integer palletId
