@@ -60,8 +60,4 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     @Query(value = "EXEC pa_DeleteBoxPacking :cajaEmpaqueId", nativeQuery = true)
     Integer eliminarCaja(
             @Param("cajaEmpaqueId") Integer cajaEmpaqueId);
-
-
-
-
 }

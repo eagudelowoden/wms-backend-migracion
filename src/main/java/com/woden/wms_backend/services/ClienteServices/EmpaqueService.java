@@ -35,7 +35,7 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
 
             Integer loteIdParam = (loteId != 0) ? loteId : null;
             Integer filas = 0;
-            empaqueRepository.createInsert(serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId, nivelId, usuarioId, fecha, loteIdParam, smartCardId, smartCard, filas
+            empaqueRepository.createInsert(serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId, nivelId, usuarioId, fecha, loteIdParam, smartCardId, smartCard
             );
             logger.info("Guardado correctamente");
         } catch (Exception e) {
@@ -58,6 +58,14 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         Integer filas = 4;
         empaqueRepository.updateSmartCard(smartCardId, smartCardNuevo,  serial,filas);
     }
+
+    public void UpdatePacking(Integer serialId, String serialNuevo, String mac,
+                                String serialAnterior) {
+        Integer filas = 4;
+        empaqueRepository.UpdatePacking(serialId, serialNuevo, mac,serialAnterior,filas);
+    }
+
+
 
 
 }

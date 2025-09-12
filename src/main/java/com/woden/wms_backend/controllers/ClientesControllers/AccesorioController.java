@@ -119,4 +119,15 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         List<AccesorioSeparateDTO> lista = accesorioService.searchSeparatePalletAccesory(cantidad, palletId);
         return ResponseEntity.ok(lista);
     }
+
+    @PostMapping("/updateSerialAccesory")
+    public ResponseEntity<Map<String, String>> updateStatusBoxPacking(@RequestBody Map<String, String> requestBody) {
+        String serialNuevo = requestBody.get("serialNuevo");
+        String serialAnterior = requestBody.get("serialAnterior");
+
+        accesorioService.UpdateSerialAccesory(serialNuevo, serialAnterior);
+
+        return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente."));
+    }
+
 }

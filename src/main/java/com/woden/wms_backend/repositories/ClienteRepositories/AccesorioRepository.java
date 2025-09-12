@@ -39,8 +39,8 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
     @Transactional
     @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
     Integer deleteAccesorio(@Param("palletId") Integer palletId,
-            @Param("cantidad") Integer cantidad,
-            @Param("codigoSapId") Integer codigoSapId);
+                            @Param("cantidad") Integer cantidad,
+                            @Param("codigoSapId") Integer codigoSapId);
 
     @Modifying
     @Transactional
@@ -66,5 +66,19 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
 
     @Query(value = "EXEC pa_SearchSeparatePalletAccesory :cantidad, :palletId", nativeQuery = true)
     List<Object[]> searchSeparatePalletAccesory(@Param("cantidad") Integer cantidad,
-            @Param("palletId") Integer palletId);
+                                                @Param("palletId") Integer palletId);
+
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateSerialAccesory :serialNuevo, :serialAnterior, :filas OUT", nativeQuery = true)
+    void UpdateSerialAccesory(
+            @Param("serialNuevo") String serialNuevo,
+            @Param("serialAnterior") String serialAnterior,
+            @Param("filas") Integer fiñas);
+
+
+
+
 }

@@ -532,7 +532,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
         String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
         ingresoRepository.UpdatePackingEntrySmartCard(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteIdFinal,
-                smartCardIdFinal, smartCardFinal, filas
+                smartCardIdFinal, smartCardFinal
         );
     }
 
@@ -548,7 +548,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         return count > 0 ? 1 : 0;
     }
 
-    public void updateChangedPacking(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
+    public void updateChangedPackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
                                    String serial, Integer usuarioIdMovimiento, Integer tipologiaId) {
         Integer filas = 4;
         ingresoRepository.updateChangedPacking(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,tipologiaId,filas);
