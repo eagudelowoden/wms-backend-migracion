@@ -127,7 +127,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_SendStorageEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :opcion, :filas OUT", nativeQuery = true)
+	@Query(value = "EXEC pa_SendStorageEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :filas OUT", nativeQuery = true)
 	void SendStorageEntry(
 			@Param("estadoId") Integer estadoId,
 			@Param("tipologiaId") Integer tipologiaId,

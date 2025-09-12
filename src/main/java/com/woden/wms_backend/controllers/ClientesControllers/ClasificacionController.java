@@ -46,7 +46,7 @@ public class ClasificacionController extends BaseController<ClasificacionModel, 
     }
     service.create(lista, usuarioId);
 
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok(1);
   }
 
 }
