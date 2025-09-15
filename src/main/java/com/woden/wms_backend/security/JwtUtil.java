@@ -32,9 +32,8 @@ public class JwtUtil {
                 .signWith(SECRET_KEY, ALGORITMO)
                 .compact();
 
-        System.out.println("Nuevo token generado para: " + username +
-                " | Cliente DB: " + clientDb +
-                " | Expira en: " + (EXPIRATION_TIME / 1000 / 60) + " min");
+        System.out.println("Inicio de sesión para: " + username +
+                " | Cliente DB: " + clientDb);
 
         return token;
     }

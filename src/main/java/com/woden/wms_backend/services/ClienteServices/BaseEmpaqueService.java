@@ -1,9 +1,7 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import com.woden.wms_backend.dto.BaseEmpaqueDTO;
-import com.woden.wms_backend.dto.BaseIngresoDTO;
 import  com.woden.wms_backend.models.Entity.BaseEmpaqueModel;
-import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.services.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

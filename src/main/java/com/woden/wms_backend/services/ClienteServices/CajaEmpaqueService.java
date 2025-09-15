@@ -4,7 +4,6 @@ import com.woden.wms_backend.controllers.ClientesControllers.JasperReportControl
 import com.woden.wms_backend.dto.*;
 import com.woden.wms_backend.models.Entity.CajaEmpaqueModel;
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
-import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.*;
 //import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
