@@ -551,7 +551,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     public void updateChangedPackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
                                    String serial, Integer usuarioIdMovimiento, Integer tipologiaId) {
         Integer filas = 4;
-        ingresoRepository.updateChangedPacking(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,tipologiaId,filas);
+        ingresoRepository.UpdateChangedPackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,tipologiaId,filas);
     }
 
 
@@ -561,7 +561,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         ingresoRepository.updateSmartCardEntry(smartCardId, smartCardNuevo, serial,filas);
     }
 
-
+    public void backRepairedEntry(String serial) {
+        Integer filas = 0;
+        ingresoRepository.backRepairedEntry(serial, filas);
+    }
 
 
 

@@ -96,16 +96,12 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
     }
 */
     @PostMapping("/updatePacking")
-    public ResponseEntity<?> updateChangedPackingEntry(@RequestBody Map<String, Object> empaque) {
+    public ResponseEntity<?> updatePacking(@RequestBody Map<String, Object> empaque) {
         Integer serialId = ((Number) empaque.get("serialId")).intValue();
         String serialNuevo = (String) empaque.get("serialNuevo");
         String mac = (String) empaque.get("mac");
         String serialAnterior = (String) empaque.get("serialAnterior");
-
-        empaqueService.UpdatePacking(
-                serialId, serialNuevo,mac,serialAnterior
-        );
-
+        empaqueService.UpdatePacking(serialId, serialNuevo,mac,serialAnterior);
         return ResponseEntity.ok(1);
     }
 

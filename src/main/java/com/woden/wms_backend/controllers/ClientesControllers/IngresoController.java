@@ -448,21 +448,18 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
 
     @PostMapping("/updateChangedPackingEntry")
-    public ResponseEntity<?> updateChangedPackingEntry(@RequestBody Map<String, Object> ingreso) {
-        Integer estadoId = ((Number) ingreso.get("estadoId")).intValue();
-        Integer palletId = ((Number) ingreso.get("palletId")).intValue();
-        Integer cajaEmpaqueId = ((Number) ingreso.get("cajaEmpaqueId")).intValue();
+    public ResponseEntity<?> updateChangedPacking(@RequestBody Map<String, Object> ingreso) {
+        Integer estadoId = (Integer) ingreso.get("estadoId");
+        Integer palletId = (Integer) ingreso.get("palletId");
+        Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
         String serial = (String) ingreso.get("serial");
-        Integer usuarioId = ((Number) ingreso.get("usuarioIdMovimiento")).intValue();
-        Integer tipologiaId = ((Number) ingreso.get("tipologiaId")).intValue();
+        Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
+        Integer tipologiaId = (Integer) ingreso.get("tipologiaId");
 
-        ingresoService.updateChangedPackingEntry(
-                estadoId, palletId, cajaEmpaqueId, serial, usuarioId, tipologiaId
-        );
+        ingresoService.updateChangedPackingEntry(estadoId, palletId, cajaEmpaqueId, serial, usuarioId, tipologiaId);
 
         return ResponseEntity.ok(1);
     }
-
 
     
     @PostMapping("/updateSmartCardEntry")
