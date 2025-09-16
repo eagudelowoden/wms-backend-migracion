@@ -30,6 +30,22 @@ public class ClasificacionService extends BaseService<ClasificacionModel, Intege
     }
   }
 
+  public void insertClasificacionWeb(List<List<String>> seriales, Integer usuarioId) {
+    for (List<String> entry : seriales) {
+      String serial = entry.get(0);
+      Integer usuarioAsignadoId = Integer.parseInt(entry.get(1));
+      repository.insertClasificacionWeb(serial, usuarioId, usuarioAsignadoId);
+    }
+  }
+
+  public void updateClasificacion(String serial, String estadoEnviado, Integer nivelId) {
+    repository.updateClasificacion(serial, estadoEnviado, nivelId);
+  }
+
+  public void deleteClasificacion(String serial) {
+    repository.deleteClasificacion(serial);
+  }
+
   // @Autowired
   // private DataSource dataSource;
   // public int insertarLote(List<List<String>> serialEstadoUsuario, int

@@ -17,4 +17,21 @@ public interface ClasificacionRepository extends BaseRepository<ClasificacionMod
   public void insertClasificacion(@Param("serial") String serial, @Param("estadoEnviado") String estadoEnviado,
       @Param("usuarioId") Integer usuarioId, @Param("fecha") String fecha,
       @Param("usuarioAsignadoId") Integer usuarioAsignadoId);
+
+  @Transactional
+  @Modifying
+  @Query(value = "EXEC pa_InsertClasificationWeb :serial, :usuarioId, :usuarioAsignadoId", nativeQuery = true)
+  public void insertClasificacionWeb(@Param("serial") String serial, @Param("usuarioId") Integer usuarioId,
+      @Param("usuarioAsignadoId") Integer usuarioAsignadoId);
+
+  @Transactional
+  @Modifying
+  @Query(value = "EXEC pa_UpdateClasificacion :estadoEnviado, :nivelId, :serial", nativeQuery = true)
+  public void updateClasificacion(@Param("serial") String serial, @Param("estadoEnviado") String estadoEnviado,
+      @Param("nivelId") Integer nivelId);
+
+  @Transactional
+  @Modifying
+  @Query(value = "EXEC pa_DeleteClasificacion :serial", nativeQuery = true)
+  public void deleteClasificacion(@Param("serial") String serial);
 }
