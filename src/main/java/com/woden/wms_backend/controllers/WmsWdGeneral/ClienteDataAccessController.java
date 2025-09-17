@@ -5,10 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.woden.wms_backend.services.WmsWdGeneral.ClienteDataAccessService;
 
@@ -63,6 +60,15 @@ public class ClienteDataAccessController {
         return ResponseEntity.ok(smartCardInfoON);
     }
 
+    @PostMapping("/updateBaseEmpaqueClient/{id}")
+    public String actualizarBaseEmpaque(
+            @PathVariable int id,
+            @RequestParam int baseEmpaqueON) {
 
+        int updated = clienteService.updateBaseEmpaqueON(id, baseEmpaqueON);
+        return updated > 0
+                ? "✅ BaseEmpaqueON actualizado correctamente"
+                : "⚠️ No se actualizó ningún registro";
+    }
 
 }

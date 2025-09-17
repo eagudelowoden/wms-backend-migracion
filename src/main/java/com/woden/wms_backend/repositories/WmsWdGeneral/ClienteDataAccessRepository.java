@@ -1,6 +1,8 @@
 package com.woden.wms_backend.repositories.WmsWdGeneral;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -30,4 +32,9 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Query(value = "SELECT smartCardInfoON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getsmartCardInfoON(@Param("id") int id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Cliente SET BaseEmpaqueON = :baseEmpaqueON WHERE Id = :id", nativeQuery = true)
+    int updateBaseEmpaqueON(@Param("baseEmpaqueON") int baseEmpaqueON, @Param("id") int id);
 }

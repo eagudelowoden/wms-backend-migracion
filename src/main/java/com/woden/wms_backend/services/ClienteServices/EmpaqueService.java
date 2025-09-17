@@ -65,7 +65,10 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         empaqueRepository.UpdatePacking(serialId, serialNuevo, mac,serialAnterior,filas);
     }
 
-
-
+    public void UpdatePackingWeb(Integer serialId, String serialNuevo, String mac, Integer nivelNuevo,
+                                 String serialAnterior) {
+        Integer filas = 0;
+        empaqueRepository.UpdatePackingWeb(serialId, serialNuevo, nivelNuevo, mac, serialAnterior, filas);
+    }
 
 }

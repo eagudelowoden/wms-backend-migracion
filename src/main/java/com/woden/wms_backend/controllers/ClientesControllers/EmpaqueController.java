@@ -82,19 +82,22 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
         return ResponseEntity.ok(1);
     }
 
-    /*
-    @PostMapping("/updatePacking")
-    public ResponseEntity<?> UpdatePacking(@RequestBody List<Map<String, Object>> ingresos) {
-        for (Map<String, Object> ingreso : ingresos) {
-            Integer serialId = (Integer) ingreso.get("serialId");
-            String serialNuevo = (String) ingreso.get("serialNuevo");
-            String mac = (String) ingreso.get("mac");
-            String serialAnterior = (String) ingreso.get("serialAnterior");
-            empaqueService.UpdatePacking(serialId, serialNuevo, mac, serialAnterior);
-        }
+
+    @PostMapping("/updatePackingWeb")
+    public ResponseEntity<?> updatePackingWeb(@RequestBody Map<String, Object> empaque) {
+        Integer serialId = ((Number) empaque.get("serialId")).intValue();
+        String serialNuevo = (String) empaque.get("serialNuevo");
+        String mac = (String) empaque.get("mac");
+        Integer nivelNuevo = ((Number) empaque.get("nivelNuevo")).intValue();
+        String serialAnterior = (String) empaque.get("serialAnterior");
+
+        empaqueService.UpdatePackingWeb(serialId, serialNuevo, mac, nivelNuevo, serialAnterior);
+
         return ResponseEntity.ok(1);
     }
-*/
+
+
+
     @PostMapping("/updatePacking")
     public ResponseEntity<?> updatePacking(@RequestBody Map<String, Object> empaque) {
         Integer serialId = ((Number) empaque.get("serialId")).intValue();

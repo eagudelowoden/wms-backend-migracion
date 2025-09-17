@@ -9,4 +9,5 @@ public class BaseEmpaqueDTO {
   private String estadoSap;
   private String estadoRR;
   private String Lote;
+  private Integer cantidad;
 }

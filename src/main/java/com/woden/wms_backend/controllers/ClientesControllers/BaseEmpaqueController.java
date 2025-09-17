@@ -42,4 +42,26 @@ public class BaseEmpaqueController extends BaseController<BaseEmpaqueModel, Inte
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/getCountBase")
+    public ResponseEntity<BaseEmpaqueDTO> getCountBase(@RequestParam String base) {
+        BaseEmpaqueDTO model = baseEmpaqueService.getCountBase(base);
+
+        if (model == null) {
+            // 🚨 Caso: no hay registros
+            BaseEmpaqueDTO empty = new BaseEmpaqueDTO();
+            empty.setCantidad(0);
+            return ResponseEntity.ok(empty);
+        }
+
+        return ResponseEntity.ok(model);
+    }
+
+
+
+
+
+
+
+
 }

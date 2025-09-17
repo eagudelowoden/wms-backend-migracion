@@ -58,4 +58,18 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
             @Param("filas") Integer filas);
 
 
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdatePackingWeb :serialId, :serialNuevo, :nivelNuevo, :mac, :serialAnterior, :filas OUT", nativeQuery = true)
+    void UpdatePackingWeb(
+            @Param("serialId") Integer serialId,
+            @Param("serialNuevo") String serialNuevo,
+            @Param("nivelNuevo") Integer nivelNuevo,
+            @Param("mac") String mac,
+            @Param("serialAnterior") String serialAnterior,
+            @Param("filas") Integer filas);
+
+
+
 }
