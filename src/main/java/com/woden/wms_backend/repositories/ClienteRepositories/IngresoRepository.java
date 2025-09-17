@@ -298,4 +298,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	void backRepairedEntry(
 			@Param("serial") String serial,
 			@Param("filas") Integer filas);
+
+	@Query(value = "EXEC pa_SearchRepairEntry :estadoFinal, :perfil, :usuarioId", nativeQuery = true)
+	List<Object[]> searchRepairEntry(@Param("estadoFinal") String estadoFinal,
+			@Param("perfil") String perfil,
+			@Param("usuarioId") Integer usuarioId);
 }

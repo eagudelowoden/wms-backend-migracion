@@ -491,4 +491,13 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         }
     }
 
+    @GetMapping("/searchRepairEntry")
+    public ResponseEntity<?> searchRepairEntry(
+            @RequestParam String estadoFinal,
+            @RequestParam String perfil,
+            @RequestParam Integer usuarioId) {
+        List<Map<String, String>> repairEntries = ingresoService.searchRepairEntry(estadoFinal, perfil,
+                usuarioId);
+        return ResponseEntity.ok(repairEntries);
+    }
 }
