@@ -6,6 +6,10 @@ import io.jsonwebtoken.security.MacAlgorithm;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,8 +36,12 @@ public class JwtUtil {
                 .signWith(SECRET_KEY, ALGORITMO)
                 .compact();
 
+        ZonedDateTime ahoraBogota = ZonedDateTime.now(ZoneId.of("America/Bogota"));
+        String hora = ahoraBogota.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
         System.out.println("Inicio de sesión para: " + username +
-                " | Cliente DB: " + clientDb);
+                " | Cliente DB: " + clientDb +
+                " | Hora de inicio de sesión: " + hora);
 
         return token;
     }

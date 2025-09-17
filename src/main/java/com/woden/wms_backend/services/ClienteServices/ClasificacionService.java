@@ -33,7 +33,7 @@ public class ClasificacionService extends BaseService<ClasificacionModel, Intege
   public void insertClasificacionWeb(List<List<String>> seriales, Integer usuarioId) {
     for (List<String> entry : seriales) {
       String serial = entry.get(0);
-      Integer usuarioAsignadoId = Integer.parseInt(entry.get(1));
+      Integer usuarioAsignadoId = Integer.parseInt(entry.get(2));
       repository.insertClasificacionWeb(serial, usuarioId, usuarioAsignadoId);
     }
   }
