@@ -17,24 +17,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 
 @Service
 public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 
-@Autowired
-private CajaEmpaqueRepository cajaEmpaqueRepository;
+    @Autowired
+    private CajaEmpaqueRepository cajaEmpaqueRepository;
 
-@Autowired
-private IngresoRepository ingresoRepository;
+    @Autowired
+    private IngresoRepository ingresoRepository;
 
-@Autowired
-private  EmpaqueRepository empaqueRepository;
-
-
-
+    @Autowired
+    private EmpaqueRepository empaqueRepository;
 
     public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
         Integer filas = 0;
@@ -46,10 +41,10 @@ private  EmpaqueRepository empaqueRepository;
 
         return results.stream().map(obj -> {
             CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
-            caja.setId((Integer) obj[0]);        // ID
-            caja.setNumero((String) obj[1]);     // NUMERO
-            caja.setPallet((String) obj[2]);  // PALLET
-            caja.setCantidad((Integer) obj[3]);  // CANTIDAD
+            caja.setId((Integer) obj[0]); 
+            caja.setNumero((String) obj[1]);
+            caja.setPallet((String) obj[2]);
+            caja.setCantidad((Integer) obj[3]);
             return caja;
         }).collect(Collectors.toList());
     }
@@ -99,7 +94,7 @@ private  EmpaqueRepository empaqueRepository;
             seriales.put("nivel", result[8] != null ? result[8].toString() : "");
             seriales.put("lote", result[9] != null ? result[9].toString() : "");
             seriales.put("modelo", result[10] != null ? result[10].toString() : "");
-            //estos metodos se hacen para mostrar los valores
+            // estos metodos se hacen para mostrar los valores
 
             serialesBOx.add(seriales);
         }
@@ -107,7 +102,7 @@ private  EmpaqueRepository empaqueRepository;
     }
 
     public void create(String numero, Integer palletId, Integer estadoId,
-                       Integer usuarioId, LocalDateTime fecha) {
+            Integer usuarioId, LocalDateTime fecha) {
         cajaEmpaqueRepository.create(numero, palletId, estadoId, usuarioId, fecha);
     }
 
@@ -119,7 +114,6 @@ private  EmpaqueRepository empaqueRepository;
         try {
             // ✅ Si el loteId es 0, lo mando como null
             Integer loteIdParam = (empaque.getLoteId() != 0) ? empaque.getLoteId() : null;
-            Integer filas = 0;
             empaqueRepository.createInsert(
                     empaque.getSerialId(),
                     empaque.getSerial(),
@@ -130,30 +124,13 @@ private  EmpaqueRepository empaqueRepository;
                     empaque.getNivelId(),
                     empaque.getUsuarioId(),
                     empaque.getFecha(),
-                    loteIdParam,              // 👈 agregado
+                    loteIdParam, // 👈 agregado
                     empaque.getSmartCardId(),
-                    empaque.getSmartCard()
-            );
+                    empaque.getSmartCard());
             logger.info("Guardado correctamente");
         } catch (Exception e) {
             logger.error("Error al insertar empaque: {}", e.getMessage(), e);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
