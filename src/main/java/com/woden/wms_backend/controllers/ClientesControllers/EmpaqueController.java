@@ -69,7 +69,7 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
         return ResponseEntity.ok(status);
     }
 
-
+/*
     @PostMapping("/updateSmartCard")
     public ResponseEntity<?> updateSmartCard(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
         List<Map<String, Object>> ingresos = requestBody.get("ingresos");
@@ -79,6 +79,19 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer>{
             String serial = (String) ingreso.get("serial");
             empaqueService.updateSmartCard(smartCardId, smartCardNuevo,serial);
         }
+        return ResponseEntity.ok(1);
+    }
+*/
+
+    @PostMapping("/updateSmartCard")
+    public ResponseEntity<?> updateSmartCard(@RequestBody Map<String, Object> empaque) {
+        Integer smartCardId = ((Number) empaque.get("smartCardId")).intValue();
+        String serialNuevo = (String) empaque.get("serialNuevo");
+        String smartCardNuevo = (String) empaque.get("smartCardNuevo");
+        String serial = (String) empaque.get("serial");
+
+        empaqueService.updateSmartCard(smartCardId, smartCardNuevo,serial);
+
         return ResponseEntity.ok(1);
     }
 
