@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.woden.wms_backend.models.Entity.IngresoModel;
@@ -247,18 +248,18 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("loteId") Integer loteId,
 			@Param("filas") Integer filas);
 
-	@Modifying
-	@Transactional
-	@Query(value = "EXEC pa_UpdatePackingEntrySmartCard :estadoId, :palletId, :cajaEmpaqueId, :usuarioIdMovimiento, :serial, :loteId, :SmardCardId, :SmartCard, :filas OUT", nativeQuery = true)
-	void UpdatePackingEntrySmartCard(@Param("estadoId") Integer estadoId,
-			@Param("palletId") Integer palletId,
-			@Param("cajaEmpaqueId") Integer cajaEmpaqueId,
-			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-			@Param("serial") String serial,
-			@Param("loteId") Integer loteId,
-			@Param("SmardCardId") Integer SmardCardId,
-			@Param("SmartCard") String SmartCard,
-			@Param("filas") Integer filas);
+
+    @Procedure(procedureName = "pa_UpdatePackingEntrySmartCard")
+    Integer UpdatePackingEntrySmartCard(
+            @Param("EstadoId") Integer estadoId,
+            @Param("PalletId") Integer palletId,
+            @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
+            @Param("UsuarioId") Integer usuarioIdMovimiento,
+            @Param("Serial") String serial,
+            @Param("LoteId") Integer loteId,
+            @Param("SmartCardId") Integer SmardCardId,
+            @Param("SmartCard") String SmartCard
+    );
 
 	@Modifying
 	@Transactional
@@ -274,7 +275,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_UpdateChangedPackingEntry :estadoId, :palletId, :cajaEmpaqueId, :serial, :usuarioIdMovimiento, :tipologiaId, :filas OUT", nativeQuery = true)
-	void updateChangedPacking(
+	void UpdateChangedPackingEntry(
 			@Param("estadoId") Integer estadoId,
 			@Param("palletId") Integer palletId,
 			@Param("cajaEmpaqueId") Integer cajaEmpaqueId,

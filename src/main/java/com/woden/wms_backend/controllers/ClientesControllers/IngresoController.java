@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ctc.wstx.shaded.msv_core.datatype.xsd.IntegerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -124,8 +125,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
     @PostMapping("/generar-ilegible")
     public ResponseEntity<?> generarIngresoIlegible(@RequestBody IngresoIlegibleDTO ingresoDTO,
-            @RequestParam String cliente,
-            @RequestParam Integer usuarioId) {
+                                                    @RequestParam String cliente,
+                                                    @RequestParam Integer usuarioId) {
         String serialGenerado = ingresoService.generarIngresoIlegible(ingresoDTO, cliente, usuarioId);
         return (serialGenerado != null)
                 ? ResponseEntity.ok().body(Map.of("serial", serialGenerado))
@@ -178,8 +179,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
             String zplGenerado = zplService.generarZpl(serialesSeleccionados);
             return ResponseEntity.ok(zplGenerado);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al generar ZPL: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ZPL: " + e.getMessage());
         }
     }
 
@@ -286,8 +286,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
             @RequestParam String estadoFinal,
             @RequestParam String perfil,
             @RequestParam Integer usuarioId) {
-        List<Map<String, String>> diagnosticEntries = ingresoService.searchDiagnosticEntry(estadoFinal, perfil,
-                usuarioId);
+        List<Map<String, String>> diagnosticEntries = ingresoService.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
         return ResponseEntity.ok(diagnosticEntries);
     }
 
@@ -437,11 +436,10 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
 
     @PostMapping("/updatePackingAllEntry")
-    public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId,
-            @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
+    public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId, @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
         try {
             int result = ingresoService.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, seriales);
-            // System.out.println("updatePackingAllEntry");
+            //  System.out.println("updatePackingAllEntry");
             return ResponseEntity.ok(result); // ✅ devuelve 1 si se procesó al menos un serial
         } catch (Exception e) {
             e.printStackTrace(); // log del error
@@ -449,21 +447,30 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         }
     }
 
-    @PostMapping("/updateChangedPacking")
-    public ResponseEntity<?> updateChangedPacking(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
-        List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-        for (Map<String, Object> ingreso : ingresos) {
-            Integer estadoId = (Integer) ingreso.get("estadoId");
-            Integer palletId = (Integer) ingreso.get("palletId");
-            Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
-            String serial = (String) ingreso.get("serial");
-            Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
-            Integer tipologiaId = (Integer) ingreso.get("tipologiaId");
-            ingresoService.updateChangedPacking(estadoId, palletId, cajaEmpaqueId, serial, usuarioId, tipologiaId);
-        }
+    @PostMapping("/updateChangedPackingEntry")
+    public ResponseEntity<?> updateChangedPacking(@RequestBody Map<String, Object> ingreso) {
+        Integer estadoId = (Integer) ingreso.get("estadoId");
+        Integer palletId = (Integer) ingreso.get("palletId");
+        Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
+        String serial = (String) ingreso.get("serial");
+        Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
+        Integer tipologiaId = (Integer) ingreso.get("tipologiaId");
+
+        ingresoService.updateChangedPackingEntry(estadoId, palletId, cajaEmpaqueId, serial, usuarioId, tipologiaId);
+
         return ResponseEntity.ok(1);
     }
 
+    @PostMapping("/updateSmartCardEntry")
+    public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String, Object> ingreso) {
+        Integer smartCardId = (Integer) ingreso.get("smartCardId");
+        String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
+        String serial = (String) ingreso.get("serial");
+        ingresoService.updateSmartCardEntry(smartCardId, smartCardNuevo, serial);
+
+        return ResponseEntity.ok(1);
+    }
+    /*
     @PostMapping("/updateSmartCardEntry")
     public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
         List<Map<String, Object>> ingresos = requestBody.get("ingresos");
@@ -475,6 +482,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         }
         return ResponseEntity.ok(1);
     }
+*/
 
     @PostMapping("/backRepairedEntry")
     public ResponseEntity<?> backRepairedEntry(@RequestBody Map<String, Object> requestBody) {

@@ -5,6 +5,7 @@ import com.woden.wms_backend.repositories.BaseRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -14,25 +15,21 @@ import java.time.LocalDateTime;
 public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer> {
 
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_InsertPacking :serialId, :serial, :mac, :codigoSapId, :palletId, :cajaEmpaqueId, :nivelId, :usuarioId, :fecha, :loteId, :smartCardId, :smartCard, :filas OUT", nativeQuery = true)
-    void createInsert(
-            @Param("serialId") Integer serialId,
-            @Param("serial") String serial,
-            @Param("mac") String mac,
-            @Param("codigoSapId") Integer codigoSapId,
-            @Param("palletId") Integer palletId,
-            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
-            @Param("nivelId") Integer nivelId,
-            @Param("usuarioId") Integer usuarioId,
-            @Param("fecha") LocalDateTime fecha,
-            @Param("loteId") Integer loteId,   // 👈 agregado
-            @Param("smartCardId") Integer smartCardId,
-            @Param("smartCard") String smartCard,
-            @Param("filas") Integer filas
+    @Procedure(procedureName = "pa_InsertPacking")
+    Integer createInsert(
+            @Param("SerialId") Integer serialId,
+            @Param("Serial") String serial,
+            @Param("Mac") String mac,
+            @Param("CodigoSapId") Integer codigoSapId,
+            @Param("PalletId") Integer palletId,
+            @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
+            @Param("NivelId") Integer nivelId,
+            @Param("UsuarioId") Integer usuarioId,
+            @Param("Fecha") LocalDateTime fecha,
+            @Param("LoteId") Integer loteId,
+            @Param("SmartCardId") Integer smartCardId,
+            @Param("SmartCard") String smartCard
     );
-
 
     @Modifying
     @Transactional
@@ -48,6 +45,31 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
             @Param("smartCardNuevo") String smartCardNuevo,
             @Param("serial") String serial,
             @Param("filas") Integer filas);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdatePacking :serialId, :serialNuevo, :mac, :serialAnterior ,:filas OUT", nativeQuery = true)
+    void UpdatePacking(
+            @Param("serialId") Integer serialId,
+            @Param("serialNuevo") String serialNuevo,
+            @Param("mac") String mac,
+            @Param("serialAnterior") String serialAnterior,
+            @Param("filas") Integer filas);
+
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdatePackingWeb :serialId, :serialNuevo, :nivelNuevo, :mac, :serialAnterior, :filas OUT", nativeQuery = true)
+    void UpdatePackingWeb(
+            @Param("serialId") Integer serialId,
+            @Param("serialNuevo") String serialNuevo,
+            @Param("nivelNuevo") Integer nivelNuevo,
+            @Param("mac") String mac,
+            @Param("serialAnterior") String serialAnterior,
+            @Param("filas") Integer filas);
+
 
 
 }

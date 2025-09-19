@@ -80,4 +80,7 @@ public class PalletModel {
 
     @Transient // ❌ No está en la BD
     private Integer cantidadCaja;
+
+    @Transient // ❌ No está en la BD
+    private Boolean smartCard;
 }

@@ -107,4 +107,12 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
     return accesorios;
   }
+   public void UpdateSerialAccesory(String serialNuevo,
+                              String serialAnterior) {
+        Integer filas = 4;
+        accesorioRepository.UpdateSerialAccesory(serialNuevo, serialAnterior, filas);
+    }
+
+
+
 }

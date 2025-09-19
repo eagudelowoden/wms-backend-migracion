@@ -46,5 +46,12 @@ public class ClienteDataAccessService {
        return result != null ? (result ? 1 : 0) : null;
   }
 
+  public Integer updateBaseEmpaqueON(int id, int baseEmpaqueON) {
+      return clienteRepository.updateBaseEmpaqueON(baseEmpaqueON, id);
+  }
+
+
+
+
 
 }

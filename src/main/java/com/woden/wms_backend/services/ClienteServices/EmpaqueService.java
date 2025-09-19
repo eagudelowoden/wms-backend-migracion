@@ -30,9 +30,8 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         try {
 
             Integer loteIdParam = (loteId != 0) ? loteId : null;
-            Integer filas = 0;
             empaqueRepository.createInsert(serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId, nivelId,
-                    usuarioId, fecha, loteIdParam, smartCardId, smartCard, filas);
+                    usuarioId, fecha, loteIdParam, smartCardId, smartCard);
         } catch (Exception e) {
             logger.error("Error al insertar empaque: {}", e.getMessage(), e);
         }
@@ -52,6 +51,18 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             String serial) {
         Integer filas = 4;
         empaqueRepository.updateSmartCard(smartCardId, smartCardNuevo, serial, filas);
+    }
+
+    public void UpdatePacking(Integer serialId, String serialNuevo, String mac,
+            String serialAnterior) {
+        Integer filas = 4;
+        empaqueRepository.UpdatePacking(serialId, serialNuevo, mac, serialAnterior, filas);
+    }
+
+    public void UpdatePackingWeb(Integer serialId, String serialNuevo, String mac, Integer nivelNuevo,
+            String serialAnterior) {
+        Integer filas = 0;
+        empaqueRepository.UpdatePackingWeb(serialId, serialNuevo, nivelNuevo, mac, serialAnterior, filas);
     }
 
 }

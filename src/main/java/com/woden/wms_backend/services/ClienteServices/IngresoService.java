@@ -526,14 +526,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public void UpdatePackingEntrySmartCard(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
       Integer usuarioIdMovimiento,
       String serial, Integer loteId, Integer smartCardId, String smartCard) {
-    Integer filas = 4;
     // 🔹 Normalización de parámetros para evitar conflicto FK
     Integer loteIdFinal = (loteId != null && loteId != 0) ? loteId : null;
     Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
     String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
     ingresoRepository.UpdatePackingEntrySmartCard(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial,
         loteIdFinal,
-        smartCardIdFinal, smartCardFinal, filas);
+        smartCardIdFinal, smartCardFinal);
   }
 
   @Transactional
@@ -548,11 +547,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return count > 0 ? 1 : 0;
   }
 
-  public void updateChangedPacking(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
+  public void updateChangedPackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
       String serial, Integer usuarioIdMovimiento, Integer tipologiaId) {
     Integer filas = 4;
-    ingresoRepository.updateChangedPacking(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, tipologiaId,
-        filas);
+    ingresoRepository.UpdateChangedPackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial,
+        tipologiaId, filas);
   }
 
   public void updateSmartCardEntry(Integer smartCardId, String smartCardNuevo,

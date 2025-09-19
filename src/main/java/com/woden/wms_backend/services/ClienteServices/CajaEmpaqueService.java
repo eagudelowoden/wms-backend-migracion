@@ -132,8 +132,7 @@ private  EmpaqueRepository empaqueRepository;
                     empaque.getFecha(),
                     loteIdParam,              // 👈 agregado
                     empaque.getSmartCardId(),
-                    empaque.getSmartCard(),
-                    filas
+                    empaque.getSmartCard()
             );
             logger.info("Guardado correctamente");
         } catch (Exception e) {

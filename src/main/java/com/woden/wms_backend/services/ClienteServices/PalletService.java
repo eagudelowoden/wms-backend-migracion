@@ -58,6 +58,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     pallet.setFecha((String) row[15]);
     pallet.setMultimodelo(TypeMapper.toBoolean(row[16]));
     pallet.setCantidadCaja((Integer) row[17]);
+    pallet.setSmartCard(TypeMapper.toBoolean(row[18]));
+
 
     return pallet;
   }

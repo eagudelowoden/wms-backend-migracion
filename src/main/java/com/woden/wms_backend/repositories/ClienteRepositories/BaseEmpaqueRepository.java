@@ -14,5 +14,9 @@ public interface BaseEmpaqueRepository extends BaseRepository<BaseEmpaqueModel, 
     @Query(value = "EXEC pa_GetModelBase :base, :serial", nativeQuery = true)
     List<Object[]> getModel(@Param("base") String base, @Param("serial") String serial);
 
+    @Query(value = "EXEC pa_GetCountBase :base", nativeQuery = true)
+    List<Object[]> getCountBase(@Param("base") String base);
+
+
 
 }

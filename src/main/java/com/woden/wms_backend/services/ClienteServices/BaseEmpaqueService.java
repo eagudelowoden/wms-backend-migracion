@@ -33,4 +33,30 @@ public class BaseEmpaqueService extends BaseService<BaseEmpaqueModel, Integer> {
     }
 
 
+    public BaseEmpaqueDTO getCountBase(String base) {
+        List<Object[]> results = empaqueRepository.getCountBase(base);
+        if (results.isEmpty()) {
+            return null; // O lanzar una excepción si prefieres
+        }
+
+        Object[] row = results.get(0);
+        BaseEmpaqueDTO model = new BaseEmpaqueDTO();
+
+        // ✅ Convertir el valor a int de forma segura
+        int cantidad = 0;
+        if (row[0] != null) {
+            try {
+                cantidad = Integer.parseInt(row[0].toString());
+            } catch (NumberFormatException e) {
+                cantidad = 0; // fallback
+            }
+        }
+        model.setCantidad(cantidad);
+
+        return model;
+    }
+
+
+
+
 }
