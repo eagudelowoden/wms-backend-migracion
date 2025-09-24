@@ -19,6 +19,7 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
     public CajaEmpaqueController(CajaEmpaqueService service) {
         super(service);
     }
+
     @Autowired
     private CajaEmpaqueService cajaEmpaqueService;
 
@@ -26,7 +27,6 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
     public ResponseEntity<Map<String, String>> updateStatusBoxPacking(@RequestBody Map<String, Integer> requestBody) {
         Integer cajaEmpaqueId = requestBody.get("cajaEmpaqueId");
         Integer estadoId = requestBody.get("estadoId");
-
 
         // Aquí iría la lógica para actualizar el estado en la BD
         cajaEmpaqueService.updateStatusBoxPacking(cajaEmpaqueId, estadoId);
@@ -80,17 +80,5 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         int status = cajaEmpaqueService.eliminarCaja(cajaEmpaqueId);
         return ResponseEntity.ok(status);
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

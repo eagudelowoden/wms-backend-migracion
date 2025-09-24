@@ -14,60 +14,52 @@ import java.time.LocalDateTime;
 @Repository
 public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer> {
 
+  @Procedure(procedureName = "pa_InsertPacking")
+  Integer createInsert(
+      @Param("SerialId") Integer serialId,
+      @Param("Serial") String serial,
+      @Param("Mac") String mac,
+      @Param("CodigoSapId") Integer codigoSapId,
+      @Param("PalletId") Integer palletId,
+      @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
+      @Param("NivelId") Integer nivelId,
+      @Param("UsuarioId") Integer usuarioId,
+      @Param("Fecha") LocalDateTime fecha,
+      @Param("LoteId") Integer loteId,
+      @Param("SmartCardId") Integer smartCardId,
+      @Param("SmartCard") String smartCard);
 
-    @Procedure(procedureName = "pa_InsertPacking")
-    Integer createInsert(
-            @Param("SerialId") Integer serialId,
-            @Param("Serial") String serial,
-            @Param("Mac") String mac,
-            @Param("CodigoSapId") Integer codigoSapId,
-            @Param("PalletId") Integer palletId,
-            @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
-            @Param("NivelId") Integer nivelId,
-            @Param("UsuarioId") Integer usuarioId,
-            @Param("Fecha") LocalDateTime fecha,
-            @Param("LoteId") Integer loteId,
-            @Param("SmartCardId") Integer smartCardId,
-            @Param("SmartCard") String smartCard
-    );
+  @Procedure(procedureName = "pa_DeletePacking")
+  void eliminarSeriesEmpaque(@Param("serial") String serial);
 
-    @Procedure(procedureName = "pa_DeletePacking")
-    void eliminarSeriesEmpaque(@Param("serial") String serial);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdatePackingSmartCard :smartCardId, :smartCardNuevo, :serial, :filas OUT", nativeQuery = true)
+  void updateSmartCard(
+      @Param("smartCardId") Integer smartCardId,
+      @Param("smartCardNuevo") String smartCardNuevo,
+      @Param("serial") String serial,
+      @Param("filas") Integer filas);
 
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdatePacking :serialId, :serialNuevo, :mac, :serialAnterior ,:filas OUT", nativeQuery = true)
+  void UpdatePacking(
+      @Param("serialId") Integer serialId,
+      @Param("serialNuevo") String serialNuevo,
+      @Param("mac") String mac,
+      @Param("serialAnterior") String serialAnterior,
+      @Param("filas") Integer filas);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdatePackingSmartCard :smartCardId, :smartCardNuevo, :serial, :filas OUT", nativeQuery = true)
-    void updateSmartCard(
-            @Param("smartCardId") Integer smartCardId,
-            @Param("smartCardNuevo") String smartCardNuevo,
-            @Param("serial") String serial,
-            @Param("filas") Integer filas);
-
-
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdatePacking :serialId, :serialNuevo, :mac, :serialAnterior ,:filas OUT", nativeQuery = true)
-    void UpdatePacking(
-            @Param("serialId") Integer serialId,
-            @Param("serialNuevo") String serialNuevo,
-            @Param("mac") String mac,
-            @Param("serialAnterior") String serialAnterior,
-            @Param("filas") Integer filas);
-
-
-
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdatePackingWeb :serialId, :serialNuevo, :nivelNuevo, :mac, :serialAnterior, :filas OUT", nativeQuery = true)
-    void UpdatePackingWeb(
-            @Param("serialId") Integer serialId,
-            @Param("serialNuevo") String serialNuevo,
-            @Param("nivelNuevo") Integer nivelNuevo,
-            @Param("mac") String mac,
-            @Param("serialAnterior") String serialAnterior,
-            @Param("filas") Integer filas);
-
-
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdatePackingWeb :serialId, :serialNuevo, :nivelNuevo, :mac, :serialAnterior, :filas OUT", nativeQuery = true)
+  void UpdatePackingWeb(
+      @Param("serialId") Integer serialId,
+      @Param("serialNuevo") String serialNuevo,
+      @Param("nivelNuevo") Integer nivelNuevo,
+      @Param("mac") String mac,
+      @Param("serialAnterior") String serialAnterior,
+      @Param("filas") Integer filas);
 
 }
