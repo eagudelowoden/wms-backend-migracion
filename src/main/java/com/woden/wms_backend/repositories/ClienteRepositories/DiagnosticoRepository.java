@@ -1,5 +1,7 @@
 package com.woden.wms_backend.repositories.ClienteRepositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +40,13 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
 
     @Query(value = "EXEC pa_GetFailureDiagnostic :serial", nativeQuery = true)
     String getFailureDiagnostic(@Param("serial") String serial);
+
+    @Modifying
+    @Transactional
+    @Query(value  = "EXEC pa_DeleteDiagnostic :serial", nativeQuery = true)
+    void delete(@Param("serial") String serial);
+
+    
+    @Query(value = "EXEC pa_GetDiagnosedUser :usuarioId", nativeQuery = true)
+    public List<Object[]> getDiagnosedUser(@Param("usuarioId") Integer usuarioId);
 }

@@ -1,5 +1,7 @@
 package com.woden.wms_backend.repositories.ClienteRepositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +36,7 @@ public interface ClasificacionRepository extends BaseRepository<ClasificacionMod
     @Modifying
     @Query(value = "EXEC pa_DeleteClasificacion :serial", nativeQuery = true)
     public void deleteClasificacion(@Param("serial") String serial);
+
+    @Query(value = "EXEC pa_GetClassifiedUser :usuarioId", nativeQuery = true)
+    public List<Object[]> getClassifiedUser(@Param("usuarioId") Integer usuarioId);
 }

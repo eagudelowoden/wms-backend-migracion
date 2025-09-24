@@ -20,4 +20,16 @@ public interface PqrsRepository extends BaseRepository<PqrsModel, Integer> {
       @Param("fallaDiagnosticoId") Integer fallaDiagnosticoId,
       @Param("name") String name,
       @Param("XStudioDiagnosticoTecnicoWoden") String XStudioDiagnosticoTecnicoWoden);
+
+  @Query(value = "EXEC pa_GetModelPqrs :serial, :stage ", nativeQuery = true)
+  PqrsModel getModelPqrs(@Param("serial") String serial, @Param("stage") String stage);
+
+  @Transactional
+  @Modifying
+  @Query(value = "EXEC pa_UpdateSerialIdAndSapCodeIdPqrs :serialId, :serial, :codigoSapId, :filas OUT", nativeQuery = true)
+  void updateSerialIdAndSapCodeIdPqrs(
+      @Param("serialId") Integer serialId,
+      @Param("codigoSapId") Integer codigoSapId,
+      @Param("serial") String serial, 
+      @Param("filas") Integer filas);
 }

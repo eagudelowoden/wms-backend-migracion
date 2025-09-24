@@ -2,7 +2,10 @@ package com.woden.wms_backend.services.ClienteServices;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,35 +49,28 @@ public class ClasificacionService extends BaseService<ClasificacionModel, Intege
     repository.deleteClasificacion(serial);
   }
 
-  // @Autowired
-  // private DataSource dataSource;
-  // public int insertarLote(List<List<String>> serialEstadoUsuario, int
-  // usuarioId) {
-  // int status = 0;
-  // String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new
-  // Date(status));
+  public List<Map<String, Object>> getClassifiedUser(Integer usuarioId) {
+    List<Object[]> results = repository.getClassifiedUser(usuarioId);
 
-  // try (Connection conn = dataSource.getConnection();
-  // CallableStatement cst = conn.prepareCall("{call
-  // pa_InsertClasification(?,?,?,?,?)}")) {
+    List<Map<String, Object>> formattedResults = new ArrayList<>();
 
-  // for (List<String> entry : serialEstadoUsuario) {
-  // cst.setString(1, entry.get(0)); // serial
-  // cst.setString(2, entry.get(1)); // estado
-  // cst.setInt(3, usuarioId); // usuario que ejecuta
-  // cst.setTimestamp(4, Timestamp.valueOf(fecha));
-  // cst.setInt(5, Integer.parseInt(entry.get(2))); // usuario asignado
-  // cst.addBatch();
-  // }
-
-  // int[] filas = cst.executeBatch();
-  // status = (filas.length > 0) ? 1 : 0;
-
-  // } catch (SQLException ex) {
-  // ex.printStackTrace();
-  // }
-
-  // return status;
-  // }
+    for (Object[] row : results) {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0].toString());
+      map.put("serialId", row[1].toString());
+      map.put("serial", row[2].toString());
+      map.put("mac", row[3].toString());
+      map.put("codigoSap", row[4].toString());
+      map.put("descripcion", row[5].toString());
+      map.put("usuarioAsignado", row[6] != null ? row[6].toString() : "");
+      map.put("nivelId", Integer.parseInt(row[7].toString()));
+      map.put("loteId", row[8] != null ? Integer.parseInt(row[8].toString()) : 0);
+      map.put("lote", row[9] != null ? row[9].toString() : "");
+      map.put("modelo", row[10] != null ? row[10].toString() : "");
+      map.put("fecha", row[11] != null ? row[11].toString() : "");
+      formattedResults.add(map);
+    }
+    return formattedResults;
+  }
 
 }
