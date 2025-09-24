@@ -517,56 +517,67 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
   }
 
-    public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,Integer usuarioIdMovimiento,
-                                   String serial, Integer loteId) {
-        Integer filas = 4;
-        ingresoRepository.UpdatePackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,loteId,filas);
+  public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
+      String serial, Integer loteId) {
+    Integer filas = 4;
+    ingresoRepository.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId, filas);
+  }
+
+  public void UpdatePackingEntrySmartCard(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
+      Integer usuarioIdMovimiento,
+      String serial, Integer loteId, Integer smartCardId, String smartCard) {
+    // 🔹 Normalización de parámetros para evitar conflicto FK
+    Integer loteIdFinal = (loteId != null && loteId != 0) ? loteId : null;
+    Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
+    String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
+    ingresoRepository.UpdatePackingEntrySmartCard(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial,
+        loteIdFinal,
+        smartCardIdFinal, smartCardFinal);
+  }
+
+  @Transactional
+  public int UpdatePackingAllEntry(Integer estadoId, Integer usuarioIdMovimiento, List<String> seriales) {
+    int count = 0;
+
+    for (String serial : seriales) {
+      // Llamada al repositorio pasando los parámetros requeridos
+      ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, serial);
+      count++;
     }
+    return count > 0 ? 1 : 0;
+  }
 
+  public void updateChangedPackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
+      String serial, Integer usuarioIdMovimiento, Integer tipologiaId) {
+    Integer filas = 4;
+    ingresoRepository.UpdateChangedPackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial,
+        tipologiaId, filas);
+  }
 
-    public void UpdatePackingEntrySmartCard(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
-            String serial, Integer loteId, Integer smartCardId, String smartCard) {
-        Integer filas = 4;
-        // 🔹 Normalización de parámetros para evitar conflicto FK
-        Integer loteIdFinal   = (loteId != null && loteId != 0) ? loteId : null;
-        Integer smartCardIdFinal = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
-        String smartCardFinal = (smartCard == null || smartCard.trim().isEmpty()) ? "0" : smartCard;
-        ingresoRepository.UpdatePackingEntrySmartCard(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteIdFinal,
-                smartCardIdFinal, smartCardFinal
-        );
+  public void updateSmartCardEntry(Integer smartCardId, String smartCardNuevo,
+      String serial) {
+    Integer filas = 4;
+    ingresoRepository.updateSmartCardEntry(smartCardId, smartCardNuevo, serial, filas);
+  }
+
+  public void backRepairedEntry(String serial) {
+    Integer filas = 0;
+    ingresoRepository.backRepairedEntry(serial, filas);
+  }
+
+  public List<Map<String, String>> searchRepairEntry(String estadoFinal, String perfil, Integer usuarioId) {
+    List<Object[]> results = ingresoRepository.searchRepairEntry(estadoFinal, perfil, usuarioId);
+    List<Map<String, String>> repairEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, String> entry = new HashMap<>();
+      entry.put("serial", (String) result[0]);
+      entry.put("mac", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("descripcion", (String) result[3]);
+      entry.put("estado", (String) result[4]);
+      repairEntries.add(entry);
     }
-
-    @Transactional
-    public int UpdatePackingAllEntry(Integer estadoId, Integer usuarioIdMovimiento,List<String> seriales) {
-        int count = 0;
-
-        for (String serial : seriales) {
-            // Llamada al repositorio pasando los parámetros requeridos
-            ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, serial);
-            count++;
-        }
-        return count > 0 ? 1 : 0;
-    }
-
-    public void updateChangedPackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
-                                   String serial, Integer usuarioIdMovimiento, Integer tipologiaId) {
-        Integer filas = 4;
-        ingresoRepository.UpdateChangedPackingEntry(estadoId, palletId,cajaEmpaqueId ,usuarioIdMovimiento, serial,tipologiaId,filas);
-    }
-
-
-    public void updateSmartCardEntry(Integer smartCardId, String smartCardNuevo,
-                                     String serial) {
-        Integer filas = 4;
-        ingresoRepository.updateSmartCardEntry(smartCardId, smartCardNuevo, serial,filas);
-    }
-
-    public void backRepairedEntry(String serial) {
-        Integer filas = 0;
-        ingresoRepository.backRepairedEntry(serial, filas);
-    }
-
-
-
+    return repairEntries;
+  }
 
 }

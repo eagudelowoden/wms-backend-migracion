@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ctc.wstx.shaded.msv_core.datatype.xsd.IntegerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,24 +42,6 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     @Autowired
     private IngresoService ingresoService;
     private ZplService zplService;
-
-    // @PostMapping("/create")
-    // public ResponseEntity<Map<String, String>> createIngreso(@RequestBody
-    // IngresoModel ingreso) {
-    // try {
-    // ingresoService.createIngreso(ingreso);
-
-    // Map<String, String> response = new HashMap<>();
-    // response.put("message", "Ingreso registrado correctamente.");
-
-    // return ResponseEntity.ok(response); // ✅ Devuelve application/json
-    // } catch (Exception e) {
-    // Map<String, String> response = new HashMap<>();
-    // response.put("error", "Error al registrar el ingreso: " + e.getMessage());
-
-    // return ResponseEntity.status(500).body(response);
-    // }
-    // }
 
     @PostMapping("/create")
     public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
@@ -125,8 +106,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
     @PostMapping("/generar-ilegible")
     public ResponseEntity<?> generarIngresoIlegible(@RequestBody IngresoIlegibleDTO ingresoDTO,
-                                                    @RequestParam String cliente,
-                                                    @RequestParam Integer usuarioId) {
+            @RequestParam String cliente,
+            @RequestParam Integer usuarioId) {
         String serialGenerado = ingresoService.generarIngresoIlegible(ingresoDTO, cliente, usuarioId);
         return (serialGenerado != null)
                 ? ResponseEntity.ok().body(Map.of("serial", serialGenerado))
@@ -179,7 +160,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
             String zplGenerado = zplService.generarZpl(serialesSeleccionados);
             return ResponseEntity.ok(zplGenerado);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ZPL: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al generar ZPL: " + e.getMessage());
         }
     }
 
@@ -286,7 +268,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
             @RequestParam String estadoFinal,
             @RequestParam String perfil,
             @RequestParam Integer usuarioId) {
-        List<Map<String, String>> diagnosticEntries = ingresoService.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
+        List<Map<String, String>> diagnosticEntries = ingresoService.searchDiagnosticEntry(estadoFinal, perfil,
+                usuarioId);
         return ResponseEntity.ok(diagnosticEntries);
     }
 
@@ -436,10 +419,11 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
 
     @PostMapping("/updatePackingAllEntry")
-    public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId, @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
+    public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId,
+            @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
         try {
             int result = ingresoService.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, seriales);
-            //  System.out.println("updatePackingAllEntry");
+            // System.out.println("updatePackingAllEntry");
             return ResponseEntity.ok(result); // ✅ devuelve 1 si se procesó al menos un serial
         } catch (Exception e) {
             e.printStackTrace(); // log del error
@@ -474,16 +458,42 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
 
     /*
-    @PostMapping("/updateSmartCardEntry")
-    public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
-        List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-        for (Map<String, Object> ingreso : ingresos) {
-            Integer smartCardId = (Integer) ingreso.get("smartCardId");
-            String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
-            String serial = (String) ingreso.get("serial");
-            ingresoService.updateSmartCardEntry(smartCardId, smartCardNuevo, serial);
+     * @PostMapping("/updateSmartCardEntry")
+     * public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String,
+     * List<Map<String, Object>>> requestBody) {
+     * List<Map<String, Object>> ingresos = requestBody.get("ingresos");
+     * for (Map<String, Object> ingreso : ingresos) {
+     * Integer smartCardId = (Integer) ingreso.get("smartCardId");
+     * String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
+     * String serial = (String) ingreso.get("serial");
+     * ingresoService.updateSmartCardEntry(smartCardId, smartCardNuevo, serial);
+     * }
+     * return ResponseEntity.ok(1);
+     * }
+     */
+
+    @PostMapping("/backRepairedEntry")
+    public ResponseEntity<?> backRepairedEntry(@RequestBody Map<String, Object> requestBody) {
+        List<?> serialesRaw = (List<?>) requestBody.get("seriales");
+        List<String> seriales = serialesRaw.stream().map(Object::toString).toList();
+        try {
+            for (String serial : seriales) {
+                ingresoService.backRepairedEntry(serial);
+            }
+            return ResponseEntity.ok(1);
+        } catch (Exception e) {
+            e.printStackTrace(); // log del error
+            return ResponseEntity.badRequest().body(0); // ❌ error
         }
-        return ResponseEntity.ok(1);
     }
-*/
+
+    @GetMapping("/searchRepairEntry")
+    public ResponseEntity<?> searchRepairEntry(
+            @RequestParam String estadoFinal,
+            @RequestParam String perfil,
+            @RequestParam Integer usuarioId) {
+        List<Map<String, String>> repairEntries = ingresoService.searchRepairEntry(estadoFinal, perfil,
+                usuarioId);
+        return ResponseEntity.ok(repairEntries);
+    }
 }

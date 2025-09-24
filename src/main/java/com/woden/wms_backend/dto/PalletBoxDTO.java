@@ -1,5 +1,8 @@
 package com.woden.wms_backend.dto;
 
+import lombok.Data;
+
+@Data
 public class PalletBoxDTO {
     private Long id;
     private String numero;

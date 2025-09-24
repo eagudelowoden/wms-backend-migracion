@@ -86,8 +86,18 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         return id != null ? id : 0;
     }
 
-    public Integer getIdComboPallet(String codigo, String descripcion, Integer tipo) {
-        return codigoSapRepository.getIdComboPallet(codigo, descripcion, tipo);
+    public Integer getIdComboPallet(String codigo, String descripcion) {
+        List<Integer> ids = codigoSapRepository.getIdComboPallet(codigo, descripcion);
+
+        if (ids == null || ids.isEmpty()) {
+            return null; // o 0 si prefieres
+        }
+
+        // 🔹 opción 1: devolver el último (igual a tu código Swing)
+        // return ids.get(ids.size() - 1);
+
+        // 🔹 opción 2: devolver siempre el primero
+        return ids.get(0);
     }
 
     public CodigoSapModelDTO obtenerModeloPorCodigo(String codigo) {

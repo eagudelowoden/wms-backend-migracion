@@ -128,7 +128,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_SendStorageEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :opcion, :filas OUT", nativeQuery = true)
+	@Query(value = "EXEC pa_SendStorageEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :filas OUT", nativeQuery = true)
 	void SendStorageEntry(
 			@Param("estadoId") Integer estadoId,
 			@Param("tipologiaId") Integer tipologiaId,
@@ -300,4 +300,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	void backRepairedEntry(
 			@Param("serial") String serial,
 			@Param("filas") Integer filas);
+
+	@Query(value = "EXEC pa_SearchRepairEntry :estadoFinal, :perfil, :usuarioId", nativeQuery = true)
+	List<Object[]> searchRepairEntry(@Param("estadoFinal") String estadoFinal,
+			@Param("perfil") String perfil,
+			@Param("usuarioId") Integer usuarioId);
 }

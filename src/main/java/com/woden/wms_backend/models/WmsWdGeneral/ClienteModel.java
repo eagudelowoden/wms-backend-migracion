@@ -89,4 +89,7 @@ public class ClienteModel {
     private Integer bloqueoReimpresionON;
     @Column(name = "prealerta")
     private String prealerta;
+    @Column(name = "odooPqrsON")
+    private Boolean odooPqrsON;
+    
 }

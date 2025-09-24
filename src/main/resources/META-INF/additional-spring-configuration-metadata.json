@@ -28,5 +28,10 @@
     "name": "wms.datasource.tigo-bog.url",
     "type": "java.lang.String",
     "description": "A description for 'wms.datasource.tigo-bog.url'"
+  },
+  {
+    "name": "app.version",
+    "type": "java.lang.String",
+    "description": "A description for 'app.version'"
   }
 ]}

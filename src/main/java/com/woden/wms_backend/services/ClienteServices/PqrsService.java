@@ -20,4 +20,13 @@ public class PqrsService extends BaseService<PqrsModel, Integer>{
       String XStudioDiagnosticoTecnicoWoden) {
     pqrsRepository.updatePqrs(estadoDiagnosticoId, fallaDiagnosticoId, name, XStudioDiagnosticoTecnicoWoden);
   }
+
+  public PqrsModel getModelPqrs(String serial, String stage) {
+    return pqrsRepository.getModelPqrs(serial, stage);
+  }
+
+  public void updateSerialIdAndSapCodeIdPqrs(Integer serialId, Integer codigoSapId, String serial) {
+    Integer filas = 4;
+    pqrsRepository.updateSerialIdAndSapCodeIdPqrs(serialId, codigoSapId, serial, filas);
+  }
 }

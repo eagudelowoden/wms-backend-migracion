@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,5 +77,22 @@ public class DiagnosticoController {
   @GetMapping("/getFailureDiagnostic")
   public ResponseEntity<String> getFailureDiagnostic(@RequestParam String serial) {
     return ResponseEntity.ok(service.getFailureDiagnostic(serial));
+  }
+
+  @DeleteMapping("/deleteDiagnostico")
+  public ResponseEntity<?> deleteDiagnostico(@RequestBody List<String> seriales) {
+    try {
+      for (String s : seriales) {
+        service.delete(s);
+      }
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/getDiagnosedUser")
+  public ResponseEntity<List<Map<String, Object>>> getDiagnosedUser(@RequestParam Integer usuarioId) {
+    return ResponseEntity.ok(service.getDiagnosedUser(usuarioId));
   }
 }

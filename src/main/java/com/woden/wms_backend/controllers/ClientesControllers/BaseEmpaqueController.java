@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.woden.wms_backend.dto.BaseEmpaqueDTO;
-import com.woden.wms_backend.dto.BaseIngresoDTO;
 import com.woden.wms_backend.models.Entity.BaseEmpaqueModel;
 import com.woden.wms_backend.services.ClienteServices.BaseEmpaqueService;
 import com.woden.wms_backend.controllers.BaseController;

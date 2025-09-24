@@ -23,8 +23,8 @@ public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Inte
   @Query(value = "EXEC pa_GetIdSapCode :codigo", nativeQuery = true)
   Integer getIdByCodigo(@Param("codigo") String codigo);
 
-  @Query(value = "EXEC pa_GetIdSapCodeByDescriptionType :codigo, :descripcion, :tipo", nativeQuery = true)
-  Integer getIdComboPallet(@Param("codigo") String codigo, @Param("descripcion") String descripcion, @Param("tipo") Integer tipo);
+  @Query(value = "EXEC pa_GetIdSapCodeByDescription :codigo, :descripcion", nativeQuery = true)
+  List<Integer> getIdComboPallet(@Param("codigo") String codigo, @Param("descripcion") String descripcion);
 
   @Query(value = "EXEC pa_GetModelSapCode :codigo", nativeQuery = true)
   List<Object[]> getModelByCodigo(@Param("codigo") String codigo);
