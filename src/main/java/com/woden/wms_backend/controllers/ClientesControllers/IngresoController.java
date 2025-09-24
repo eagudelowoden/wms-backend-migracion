@@ -454,6 +454,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
         return ResponseEntity.ok(1);
     }
+
+
+
     /*
      * @PostMapping("/updateSmartCardEntry")
      * public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String,

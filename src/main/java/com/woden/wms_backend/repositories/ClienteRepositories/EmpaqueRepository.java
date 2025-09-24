@@ -31,9 +31,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
             @Param("SmartCard") String smartCard
     );
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_DeletePacking :serial", nativeQuery = true)
+    @Procedure(procedureName = "pa_DeletePacking")
     void eliminarSeriesEmpaque(@Param("serial") String serial);
 
 

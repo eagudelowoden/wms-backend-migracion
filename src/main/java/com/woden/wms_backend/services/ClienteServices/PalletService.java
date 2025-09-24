@@ -266,6 +266,27 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+    public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
+        List<Object[]> results = palletRepository.SearchPackingDeliveryPallet(numero, tipologia, tipo);
+        return results.stream().map(obj -> {
+            PalletDTO pallet = new PalletDTO();
+            pallet.setId((Integer) obj[0]);
+            pallet.setNumero((String) obj[1]);
+            pallet.setCantidad((Integer) obj[2]);
+            pallet.setOrigen((String) obj[3]);
+            pallet.setTipologia((String) obj[4]);
+            pallet.setCodigoSap((String) obj[5]);
+            pallet.setDescripcion((String) obj[6]);
+            return pallet;
+        }).collect(Collectors.toList());
+    }
+
+
+
+
+
+
+
     public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino, int page, int size) {
         List<Object[]> results = palletRepository.SearchPalletBoxPallet(numero, destino);
 
