@@ -43,7 +43,7 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         }
     }
 
-    @Transactional
+
     public int eliminarSeriesEmpaque(List<String> seriales) {
         int count = 0;
         for (String serial : seriales) {

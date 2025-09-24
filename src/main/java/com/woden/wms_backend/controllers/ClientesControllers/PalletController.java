@@ -173,6 +173,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
         return ResponseEntity.ok(pallets);
     }
 
+
     @GetMapping("/searchPalletsBoxes")
     public ResponseEntity<?> SearchPalletBoxPallet(
             @RequestParam String numero,
@@ -297,4 +298,17 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     public ResponseEntity<?> updateSapCodePallet(@RequestParam Integer palletId, @RequestParam Integer codigoSapId) {
         return ResponseEntity.ok(palletService.updateSapCodePallet(palletId, codigoSapId, 0));
     }
+
+    @GetMapping("/searchEntrega")
+    public ResponseEntity<List<PalletDTO>> searchPackingDeliveryPallet(
+            @RequestParam String numero,
+            @RequestParam String tipologia,
+            @RequestParam String tipo) {
+
+        List<PalletDTO> pallets = palletService.searchPackingDeliveryPallet(numero, tipologia, tipo);
+        return ResponseEntity.ok(pallets);
+    }
+
+
+
 }

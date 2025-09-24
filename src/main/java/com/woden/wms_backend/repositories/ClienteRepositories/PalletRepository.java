@@ -84,6 +84,14 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("destino") String destino,
       @Param("tipo") String tipo);
 
+    @Query(value = "EXEC pa_SearchPackingDeliveryPallet :numero, :tipologia, :tipo", nativeQuery = true)
+    List<Object[]> SearchPackingDeliveryPallet(
+            @Param("numero") String numero,
+            @Param("tipologia") String tipologia,
+            @Param("tipo") String tipo);
+
+
+
     @Query(value = "EXEC pa_SearchPalletBoxPallet :numero, :destino", nativeQuery = true)
     List<Object[]> SearchPalletBoxPallet(
             @Param("numero") String numero,
