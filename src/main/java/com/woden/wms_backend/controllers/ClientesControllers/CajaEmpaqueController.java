@@ -81,4 +81,10 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return ResponseEntity.ok(status);
     }
 
+    @GetMapping("/pallet/{palletId}")
+    public ResponseEntity<List<String>> getSerialesByPallet(@PathVariable Integer palletId) {
+        List<String> seriales = cajaEmpaqueService.getSerialesByPallet(palletId);
+        return ResponseEntity.ok(seriales);
+    }
+
 }

@@ -50,9 +50,14 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
       @Param("fecha") LocalDateTime fecha // <-- aquí también String
   );
 
-  @Modifying
-  @Transactional
-  @Query(value = "EXEC pa_DeleteBoxPacking :cajaEmpaqueId", nativeQuery = true)
-  Integer eliminarCaja(
-      @Param("cajaEmpaqueId") Integer cajaEmpaqueId);
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_DeleteBoxPacking :cajaEmpaqueId", nativeQuery = true)
+    Integer eliminarCaja(
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_SerialesByPallet :palletId", nativeQuery = true)
+    List<String> SerialesByPallet(@Param("palletId") Integer palletId);
 }

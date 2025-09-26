@@ -75,6 +75,10 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  public List<String> getSerialesByPallet(Integer palletId) {
+    return cajaEmpaqueRepository.SerialesByPallet(palletId);
+  }
+
   private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
 
   public List<Map<String, String>> SearchPalletBoxEntry(String estado, Integer palletId, Integer cajaEmpaqueId) {
