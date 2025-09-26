@@ -17,9 +17,6 @@ import lombok.Data;
 @NamedStoredProcedureQuery(name = "pa_GetListClient", procedureName = "pa_GetListClient", resultClasses = ClienteDTO.class, parameters = {
         @StoredProcedureParameter(mode = ParameterMode.IN, type = Integer.class, name = "usuarioId")
 })
-// @NamedStoredProcedureQuery(name = "pa_GetIdClient", procedureName = "pa_GetListClient", resultClasses = ClienteDTO.class, parameters = {
-//     @StoredProcedureParameter(mode = ParameterMode.IN, type = Integereger.class, name = "usuarioId")
-// })
 public class ClienteModel {
     @Id
     @Column(name = "Id")
@@ -32,7 +29,6 @@ public class ClienteModel {
     private Integer activo;
     @Column(name = "ColorCorporativo")
     private String ColorCorporativo;
-    // private String Activo;
     @Column(name = "conn")
     private String conn;
     @Column(name = "man_app")
@@ -45,12 +41,8 @@ public class ClienteModel {
     private String PrnEtiquetado;
     @Column(name = "PrnEmpaque")
     private String PrnEmpaque;
-    @Column(name = "LblEtiquetado")
-    private String LblEtiquetado;
     @Column(name = "LblEmpaque")
     private String LblEmpaque;
-    @Column(name = "Archivos")
-    private String Archivos;
     @Column(name = "Pallet")
     private String Pallet;
     @Column(name = "CodigoSap")
@@ -91,5 +83,8 @@ public class ClienteModel {
     private String prealerta;
     @Column(name = "odooPqrsON")
     private Boolean odooPqrsON;
-    
+    @Column(name = "Archivos")
+    private String archivos;
+    @Column(name = "LblEtiquetado")
+    private String lblEtiquetado;
 }

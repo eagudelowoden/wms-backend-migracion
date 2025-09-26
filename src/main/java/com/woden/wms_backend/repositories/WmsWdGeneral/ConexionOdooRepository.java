@@ -11,6 +11,6 @@ import com.woden.wms_backend.models.WmsWdGeneral.ConexionOdooModel;
 
 @Repository
 public interface ConexionOdooRepository extends JpaRepository<ConexionOdooModel, Integer> {
-  @Query(value = "EXEC pa_GetConexionOdoo :id", nativeQuery = true)
+  @Query(value = "EXEC WmsWdGeneral.dbo.pa_GetConexionOdoo :id", nativeQuery = true)
   List<Object[]> getConexionOdoo(@Param("id") int id);
 }

@@ -3,7 +3,6 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +17,11 @@ import com.woden.wms_backend.services.ClienteServices.PqrsService;
 @RequestMapping("/client/pqrs")
 public class PqrsController {
 
-  @Autowired
-  private PqrsService pqrsService;
+  private final PqrsService pqrsService;
+
+  public PqrsController(PqrsService pqrsService) {
+    this.pqrsService = pqrsService;
+  }
 
   @PostMapping("/update")
   public ResponseEntity<?> updatePqrs(@RequestBody List<Map<String, Object>> request) {
@@ -27,15 +29,15 @@ public class PqrsController {
       Integer estadoDiagnosticoId = (Integer) item.get("estadoDiagnosticoId");
       Integer fallaDiagnosticoId = (Integer) item.get("fallaDiagnosticoId");
       String name = (String) item.get("name");
-      String XStudioDiagnosticoTecnicoWoden = (String) item.get("XStudioDiagnosticoTecnicoWoden");
+      String xStudioDiagnosticoTecnicoWoden = (String) item.get("xStudioDiagnosticoTecnicoWoden");
 
-      pqrsService.updatePqrs(estadoDiagnosticoId, fallaDiagnosticoId, name, XStudioDiagnosticoTecnicoWoden);
+      pqrsService.updatePqrs(estadoDiagnosticoId, fallaDiagnosticoId, name, xStudioDiagnosticoTecnicoWoden);
     }
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok(1);
   }
 
   @GetMapping("/getModelPqrs")
-  public ResponseEntity<?> getModelPqrs(@RequestParam String serial, @RequestParam String stage) {
+  public ResponseEntity<?> getModelPqrs(@RequestParam String serial, @RequestParam Integer stage) {
     return ResponseEntity.ok(pqrsService.getModelPqrs(serial, stage));
   }
 
