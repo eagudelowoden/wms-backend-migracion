@@ -248,29 +248,24 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("loteId") Integer loteId,
 			@Param("filas") Integer filas);
 
+	@Procedure(procedureName = "pa_UpdatePackingEntrySmartCard")
+	Integer UpdatePackingEntrySmartCard(
+			@Param("EstadoId") Integer estadoId,
+			@Param("PalletId") Integer palletId,
+			@Param("CajaEmpaqueId") Integer cajaEmpaqueId,
+			@Param("UsuarioId") Integer usuarioIdMovimiento,
+			@Param("Serial") String serial,
+			@Param("LoteId") Integer loteId,
+			@Param("SmartCardId") Integer SmardCardId,
+			@Param("SmartCard") String SmartCard);
 
-    @Procedure(procedureName = "pa_UpdatePackingEntrySmartCard")
-    Integer UpdatePackingEntrySmartCard(
-            @Param("EstadoId") Integer estadoId,
-            @Param("PalletId") Integer palletId,
-            @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
-            @Param("UsuarioId") Integer usuarioIdMovimiento,
-            @Param("Serial") String serial,
-            @Param("LoteId") Integer loteId,
-            @Param("SmartCardId") Integer SmardCardId,
-            @Param("SmartCard") String SmartCard
-    );
+	@Procedure(procedureName = "pa_UpdatePackingAllEntry")
+	void UpdatePackingAllEntry(
+			@Param("estadoId") Integer estadoId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("serial") String serial);
 
-
-
-    @Procedure(procedureName = "pa_UpdatePackingAllEntry")
-    void UpdatePackingAllEntry(
-            @Param("estadoId") Integer estadoId,
-            @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-            @Param("serial") String serial);
-
-
-    @Query(value = "EXEC pa_GetProactiveRepairAll", nativeQuery = true)
+	@Query(value = "EXEC pa_GetProactiveRepairAll", nativeQuery = true)
 	List<String> getProactiveRepairAll();
 
 	@Modifying
@@ -305,4 +300,20 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	List<Object[]> searchRepairEntry(@Param("estadoFinal") String estadoFinal,
 			@Param("perfil") String perfil,
 			@Param("usuarioId") Integer usuarioId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateStateEntryNotUsuarioRepaired :estadoId, :palletId, :fecha, :serial", nativeQuery = true)
+	void updateStateEntryNotUsuarioRepaired(@Param("estadoId") Integer estadoId,
+			@Param("palletId") Integer palletId,
+			@Param("fecha") Integer fecha,
+			@Param("serial") String serial);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateStateEntryNotUsuarioDiagnosed :estadoId, :palletId, :fecha, :serial", nativeQuery = true)
+	void updateStateEntryNotUsuarioDiagnosed(@Param("estadoId") Integer estadoId,
+			@Param("palletId") Integer palletId,
+			@Param("fecha") Integer fecha,
+			@Param("serial") String serial);
 }

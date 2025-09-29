@@ -18,7 +18,6 @@ public class PqrsService extends BaseService<PqrsModel, Integer>{
       Integer fallaDiagnosticoId,
       String name,
       String XStudioDiagnosticoTecnicoWoden) {
-        System.out.println("xestudio: " + XStudioDiagnosticoTecnicoWoden);
     pqrsRepository.updatePqrs(estadoDiagnosticoId, fallaDiagnosticoId, name, XStudioDiagnosticoTecnicoWoden);
   }
 

@@ -57,9 +57,7 @@ public class OdooService extends BaseService<PqrsModel, Integer> {
       modelsClient.setConfig(modelsConfig);
 
       for (PqrsModel pqrs : tickets) {
-        System.out.println("Nombre del ticket: " + pqrs.getName());
         PqrsModel pqrsModel = pqrsRepository.getModelPqrs(pqrs.getName(), 4);
-        System.out.println("pqrsModel: " + pqrsModel);
         Integer ticketId = pqrsModel.getId();
         Map<String, Object> valores = new HashMap<>();
         valores.put("stage_id", 4);
