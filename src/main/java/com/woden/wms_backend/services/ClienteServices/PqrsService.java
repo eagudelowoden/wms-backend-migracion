@@ -21,7 +21,7 @@ public class PqrsService extends BaseService<PqrsModel, Integer>{
     pqrsRepository.updatePqrs(estadoDiagnosticoId, fallaDiagnosticoId, name, XStudioDiagnosticoTecnicoWoden);
   }
 
-  public PqrsModel getModelPqrs(String serial, String stage) {
+  public PqrsModel getModelPqrs(String serial, Integer stage) {
     return pqrsRepository.getModelPqrs(serial, stage);
   }
 

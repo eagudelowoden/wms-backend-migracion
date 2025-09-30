@@ -580,4 +580,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return repairEntries;
   }
 
+  public void updateStateEntryNotUsuarioRepaired(Integer estadoId, Integer palletId, Integer fecha, String serial) {
+    ingresoRepository.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, serial);
+  }
+
+  public void updateStateEntryNotUsuarioDiagnosed(Integer estadoId, Integer palletId, Integer fecha, String serial) {
+    ingresoRepository.updateStateEntryNotUsuarioDiagnosed(estadoId, palletId, fecha, serial);
+  }
 }

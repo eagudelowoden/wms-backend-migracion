@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.models.WmsWdGeneral.ConexionOdooModel;
 import com.woden.wms_backend.repositories.WmsWdGeneral.ConexionOdooRepository;
@@ -14,10 +16,19 @@ public class ConexionOdooService extends BaseService<ConexionOdooModel, Integer>
   @Autowired
   private ConexionOdooRepository repository;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
   public ConexionOdooModel getConexionOdoo(Integer id) {
     List<Object[]> results = repository.getConexionOdoo(id);
     // ConexionOdooModel conexionesOdoo = new ConexionOdooModel();
     ConexionOdooModel conexion = new ConexionOdooModel();
+    for (Object[] row : results) {
+      for (int i = 0; i < row.length; i++) {
+        if (row[i] == null) {
+          row[i] = ""; // Reemplaza null con una cadena vacía
+        }
+        System.out.println("Valor en fila " + i + ": " + row[i]);
+      }
+    }
     for (Object[] row : results) {
       conexion.setId((Integer) row[0]);
       conexion.setIdClienteWms((Integer) row[1]);
@@ -31,7 +42,6 @@ public class ConexionOdooService extends BaseService<ConexionOdooModel, Integer>
       conexion.setModelo((String) row[9]);
       conexion.setTeamId((Integer) row[10]);
       conexion.setCompanyId((Integer) row[11]);
-      conexion.setMinutosRefresco((Integer) row[12]);
       // conexionesOdoo.add(conexion);
     }
     return conexion;
