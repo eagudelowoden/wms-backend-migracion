@@ -61,14 +61,20 @@ public class ClienteDataAccessController {
     }
 
     @PostMapping("/updateBaseEmpaqueClient/{id}")
-    public String actualizarBaseEmpaque(
+    public ResponseEntity<Map<String, Object>> actualizarBaseEmpaque(
             @PathVariable int id,
             @RequestParam int baseEmpaqueON) {
 
         int updated = clienteService.updateBaseEmpaqueON(id, baseEmpaqueON);
-        return updated > 0
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", updated > 0);
+        response.put("message", updated > 0
                 ? "✅ BaseEmpaqueON actualizado correctamente"
-                : "⚠️ No se actualizó ningún registro";
+                : "⚠️ No se actualizó ningún registro");
+
+        return ResponseEntity.ok(response);
     }
+
 
 }

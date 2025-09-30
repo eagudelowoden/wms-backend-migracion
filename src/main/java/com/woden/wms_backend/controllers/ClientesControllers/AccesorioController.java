@@ -130,4 +130,17 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         return ResponseEntity.ok(Map.of("message", "Estado actualizado correctamente."));
     }
 
+    @GetMapping("/searchPackingCodigoSapAccesory")
+    public ResponseEntity<List<AccesorioSeparateDTO>> searchPackingCodigoSapAccesory(
+            @RequestParam String estado,
+            @RequestParam Integer palletId,
+            @RequestParam Integer codigoSapId
+    ) {
+        List<AccesorioSeparateDTO> lista = accesorioService.searchPackingCodigoSapAccesory(estado, palletId, codigoSapId);
+        return ResponseEntity.ok(lista);
+    }
+
+
+
+
 }
