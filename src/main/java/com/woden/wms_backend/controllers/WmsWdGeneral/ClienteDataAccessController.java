@@ -54,27 +54,26 @@ public class ClienteDataAccessController {
     return ResponseEntity.ok(odooPqrsOn);
   }
 
-    @GetMapping("/getsmartCardInfoON/{id}")
-    public ResponseEntity<Integer> gesmartCardInfoON(@PathVariable Integer id) {
-        Integer smartCardInfoON = clienteService.getsmartCardInfoON(id);
-        return ResponseEntity.ok(smartCardInfoON);
-    }
+  @GetMapping("/getsmartCardInfoON/{id}")
+  public ResponseEntity<Integer> gesmartCardInfoON(@PathVariable Integer id) {
+    Integer smartCardInfoON = clienteService.getsmartCardInfoON(id);
+    return ResponseEntity.ok(smartCardInfoON);
+  }
 
-    @PostMapping("/updateBaseEmpaqueClient/{id}")
-    public ResponseEntity<Map<String, Object>> actualizarBaseEmpaque(
-            @PathVariable int id,
-            @RequestParam int baseEmpaqueON) {
+  @PostMapping("/updateBaseEmpaqueClient/{id}")
+  public ResponseEntity<Map<String, Object>> actualizarBaseEmpaque(
+      @PathVariable int id,
+      @RequestParam int baseEmpaqueON) {
 
-        int updated = clienteService.updateBaseEmpaqueON(id, baseEmpaqueON);
+    int updated = clienteService.updateBaseEmpaqueON(id, baseEmpaqueON);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", updated > 0);
-        response.put("message", updated > 0
-                ? "✅ BaseEmpaqueON actualizado correctamente"
-                : "⚠️ No se actualizó ningún registro");
+    Map<String, Object> response = new HashMap<>();
+    response.put("success", updated > 0);
+    response.put("message", updated > 0
+        ? "BaseEmpaqueON actualizado correctamente"
+        : "No se actualizó ningún registro");
 
-        return ResponseEntity.ok(response);
-    }
-
+    return ResponseEntity.ok(response);
+  }
 
 }
