@@ -21,7 +21,7 @@ public class ClienteDataAccessService {
     Boolean result = clienteRepository.getBaseIngresoON(id);
     return result != null ? (result ? 1 : 0) : null;
   }
-  
+
   @Cacheable("baseEmpaqueOn")
   public Integer getBaseEmpaqueON(int id) {
       return clienteRepository.getBaseEmpaqueON(id);
