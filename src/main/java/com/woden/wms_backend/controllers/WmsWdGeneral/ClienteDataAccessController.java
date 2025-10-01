@@ -30,6 +30,14 @@ public class ClienteDataAccessController {
     return ResponseEntity.ok(baseIngresoOn);
   }
 
+    @GetMapping("/BaseEmpaqueON/{id}")
+    public int getBaseEmpaqueON(@PathVariable Integer id) {
+        return clienteService.getBaseEmpaqueON(id);
+    }
+
+
+
+
   @GetMapping("/BaseNoDisponibleOn/{id}")
   public ResponseEntity<Integer> getBaseNoDisponibleOn(@PathVariable Integer id) {
     Integer baseNoDisponibleOn = clienteService.getBaseNoDisponibleON(id);
