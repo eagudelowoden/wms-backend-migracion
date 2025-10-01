@@ -1,6 +1,7 @@
 package com.woden.wms_backend.services.WmsWdGeneral;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.repositories.WmsWdGeneral.ClienteDataAccessRepository;
@@ -19,6 +20,11 @@ public class ClienteDataAccessService {
   public Integer getBaseIngresoON(int id) {
     Boolean result = clienteRepository.getBaseIngresoON(id);
     return result != null ? (result ? 1 : 0) : null;
+  }
+  
+  @Cacheable("baseEmpaqueOn")
+  public Integer getBaseEmpaqueON(int id) {
+      return clienteRepository.getBaseEmpaqueON(id);
   }
 
   public Integer getBaseNoDisponibleON(int id) {

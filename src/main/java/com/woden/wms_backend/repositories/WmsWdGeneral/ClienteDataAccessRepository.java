@@ -37,4 +37,10 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
     @Transactional
     @Query(value = "UPDATE Cliente SET BaseEmpaqueON = :baseEmpaqueON WHERE Id = :id", nativeQuery = true)
     int updateBaseEmpaqueON(@Param("baseEmpaqueON") int baseEmpaqueON, @Param("id") int id);
+
+
+    @Query(value = "SELECT CASE WHEN BaseEmpaqueON = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
+    Integer getBaseEmpaqueON(@Param("id") int id);
+
+
 }
