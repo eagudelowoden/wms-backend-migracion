@@ -79,14 +79,14 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
             @Param("filas") Integer filas);
 
 
-    @Query(value = "EXEC pa_SearchPackingCodigoSapAccesory :estado, :palletid, :codigoSapId", nativeQuery = true)
+    @Query(value = "EXEC pa_SearchPackingCodigoSapAccesory :estado, :palletId, :codigoSapId", nativeQuery = true)
     List<Object[]> searchPackingCodigoSapAccesory( @Param("estado") String estado,
                                                 @Param("palletId") Integer palletId,
                                                 @Param("codigoSapId") Integer codigoSapId);
 
 
-    @Query(value = "EXEC pa_SearchAllPackedAccesory :estado", nativeQuery = true)
-    List<Object[]> searchAllPackedAccesory( @Param("estado") String estado);
+    @Query(value = "EXEC pa_SearchPackedAccesory :estado, :serial", nativeQuery = true)
+    List<Object[]> SearchPackedAccesory( @Param("estado") String estado, @Param("serial") String serial);
 
 
 

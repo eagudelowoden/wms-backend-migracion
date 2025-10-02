@@ -131,14 +131,24 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
     @GetMapping("/searchPackingCodigoSapAccesory")
-    public ResponseEntity<List<AccesorioSeparateDTO>> searchPackingCodigoSapAccesory(
+    public ResponseEntity<List<Map<String, Object>>> searchPackingCodigoSapAccesory(
             @RequestParam String estado,
             @RequestParam Integer palletId,
-            @RequestParam Integer codigoSapId
-    ) {
-        List<AccesorioSeparateDTO> lista = accesorioService.searchPackingCodigoSapAccesory(estado, palletId, codigoSapId);
+            @RequestParam Integer codigoSapId) {
+        List<Map<String, Object>> lista = accesorioService.searchPackingCodigoSapAccesory(estado, palletId, codigoSapId);
         return ResponseEntity.ok(lista);
     }
+
+    @GetMapping("/searchPackedAccesory")
+    public ResponseEntity<List<Map<String, Object>>> searchPackedAccesory(
+            @RequestParam String estado,
+            @RequestParam String serial) {
+        List<Map<String, Object>> lista = accesorioService.searchPackedAccesory(estado, serial);
+        return ResponseEntity.ok(lista);
+    }
+
+
+
 
 
 
