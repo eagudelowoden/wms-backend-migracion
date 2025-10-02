@@ -405,11 +405,11 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       @RequestParam Integer usuarioId,
       @RequestParam String serial,
       @RequestParam Integer loteId,
-      @RequestParam Integer SmardCardId,
+      @RequestParam Integer smartCardId,
       @RequestParam String SmartCard) {
     try {
       ingresoService.UpdatePackingEntrySmartCard(
-          estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId, SmardCardId, SmartCard);
+          estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId, smartCardId, SmartCard);
       return ResponseEntity.ok(1); // ✅ éxito
     } catch (Exception e) {
       // Puedes loggear el error

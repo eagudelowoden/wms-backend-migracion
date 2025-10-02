@@ -1,7 +1,9 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,45 +110,54 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     return accesorios;
   }
 
-    public List<AccesorioSeparateDTO> searchPackingCodigoSapAccesory(String estado, Integer palletId, Integer codigoSapId) {
-        List<Object[]> resultados = accesorioRepository.searchPackingCodigoSapAccesory(estado, palletId,codigoSapId);
-        List<AccesorioSeparateDTO> accesorios = new ArrayList<>();
+    public List<Map<String, Object>> searchPackingCodigoSapAccesory(String estado, Integer palletId, Integer codigoSapId) {
+        List<Object[]> resultados = accesorioRepository.searchPackingCodigoSapAccesory(estado, palletId, codigoSapId);
+        List<Map<String, Object>> formattedResults = new ArrayList<>();
 
-        for (Object[] fila : resultados) {
-            AccesorioSeparateDTO dto = new AccesorioSeparateDTO();
-            dto.setId((Integer) fila[0]);
-            dto.setCodigo((String) fila[1]);
-            dto.setDescripcion((String) fila[2]);
-            dto.setTipologia((String) fila[3]);
-            accesorios.add(dto);
+        for (Object[] row : resultados) {
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("codigo", row[0] != null ? row[0].toString() : "");
+            map.put("descripcion", row[1] != null ? row[1].toString() : "");
+            map.put("familia", row[2] != null ? row[2].toString() : "");
+            map.put("nuevos", row[3] != null ? row[3].toString() : "0");
+            map.put("reacondicionados", row[4] != null ? row[4].toString() : "0");
+
+
+            formattedResults.add(map);
         }
 
-        return accesorios;
-    }
-
-    public List<AccesorioSeparateDTO> searchAllPackedAccesory(String estado) {
-        List<Object[]> resultados = accesorioRepository.searchAllPackedAccesory(estado);
-        List<AccesorioSeparateDTO> accesorios = new ArrayList<>();
-
-        for (Object[] fila : resultados) {
-            AccesorioSeparateDTO dto = new AccesorioSeparateDTO();
-            dto.setId((Integer) fila[0]);
-            dto.setCodigo((String) fila[1]);
-            dto.setDescripcion((String) fila[2]);
-            dto.setTipologia((String) fila[3]);
-            accesorios.add(dto);
-        }
-
-        return accesorios;
+        return formattedResults;
     }
 
 
+    public List<Map<String, Object>> searchPackedAccesory(String estado, String serial) {
+        List<Object[]> resultados = accesorioRepository.SearchPackedAccesory(estado, serial);
+        List<Map<String, Object>> formattedResults = new ArrayList<>();
+
+        for (Object[] row : resultados) {
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("codigo", row[0] != null ? row[0].toString() : "");
+            map.put("descripcion", row[1] != null ? row[1].toString() : "");
+            map.put("nuevos", row[2] != null ? row[2].toString() : "0");
+            map.put("reacondicionados", row[3] != null ? row[3].toString() : "0");
+
+            formattedResults.add(map);
+        }
+
+        return formattedResults;
+    }
 
 
 
 
 
-   public void UpdateSerialAccesory(String serialNuevo,
+
+
+
+
+    public void UpdateSerialAccesory(String serialNuevo,
                               String serialAnterior) {
         Integer filas = 4;
         accesorioRepository.UpdateSerialAccesory(serialNuevo, serialAnterior, filas);

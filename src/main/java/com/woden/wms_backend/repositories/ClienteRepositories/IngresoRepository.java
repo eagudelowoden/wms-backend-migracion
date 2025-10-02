@@ -256,7 +256,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("UsuarioId") Integer usuarioIdMovimiento,
 			@Param("Serial") String serial,
 			@Param("LoteId") Integer loteId,
-			@Param("SmartCardId") Integer SmardCardId,
+			@Param("smartCardId") Integer smartCardId,
 			@Param("SmartCard") String SmartCard);
 
 	@Procedure(procedureName = "pa_UpdatePackingAllEntry")
