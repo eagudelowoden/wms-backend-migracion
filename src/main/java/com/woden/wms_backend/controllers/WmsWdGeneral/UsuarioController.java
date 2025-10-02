@@ -195,7 +195,7 @@ public class UsuarioController {
             String newGeneralToken = jwtUtil.generateToken(username, clientName, clientDb, clientId);
             String newClientToken = jwtUtil.generateToken(username, newClientName, newClientDb, newClientId);
 
-            log.info("Tokens renovados para: {} (General) y {} (Client)", username, newClientName);
+            // log.info("Tokens renovados para: {} (General) y {} (Client)", username, newClientName);
 
             // 7. Configurar headers de respuesta (seguridad)
             response.setHeader("Cache-Control", "no-store");

@@ -29,4 +29,8 @@ public class PqrsService extends BaseService<PqrsModel, Integer>{
     Integer filas = 4;
     pqrsRepository.updateSerialIdAndSapCodeIdPqrs(serialId, codigoSapId, serial, filas);
   }
+
+  public void updateObservationPqrs(Integer serialId, String serial, String observacion) {
+      pqrsRepository.updateObservationPqrs(serialId, serial, observacion);
+  }
 }
