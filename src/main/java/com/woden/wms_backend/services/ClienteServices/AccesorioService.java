@@ -124,6 +124,25 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return accesorios;
     }
 
+    public List<AccesorioSeparateDTO> searchAllPackedAccesory(String estado) {
+        List<Object[]> resultados = accesorioRepository.searchAllPackedAccesory(estado);
+        List<AccesorioSeparateDTO> accesorios = new ArrayList<>();
+
+        for (Object[] fila : resultados) {
+            AccesorioSeparateDTO dto = new AccesorioSeparateDTO();
+            dto.setId((Integer) fila[0]);
+            dto.setCodigo((String) fila[1]);
+            dto.setDescripcion((String) fila[2]);
+            dto.setTipologia((String) fila[3]);
+            accesorios.add(dto);
+        }
+
+        return accesorios;
+    }
+
+
+
+
 
 
 
