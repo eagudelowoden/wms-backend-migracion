@@ -142,7 +142,7 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
             map.put("descripcion", row[1] != null ? row[1].toString() : "");
             map.put("nuevos", row[2] != null ? row[2].toString() : "0");
             map.put("reacondicionados", row[3] != null ? row[3].toString() : "0");
-
+            /*hola mundo*/
             formattedResults.add(map);
         }
 
