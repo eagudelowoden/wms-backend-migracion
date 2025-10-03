@@ -49,4 +49,13 @@ public class PqrsController {
     pqrsService.updateSerialIdAndSapCodeIdPqrs(serialId, codigoSapId, serial);
     return ResponseEntity.ok(1);
   }
+
+  @PostMapping("/updateObservationPqrs")
+  public ResponseEntity<?> updateObservationPqrs(@RequestBody Map<String, Object> request) {
+    Integer serialId = (Integer) request.get("serialId");
+    String serial = (String) request.get("serial");
+    String observacion = (String) request.get("observacion");
+    pqrsService.updateObservationPqrs(serialId, serial, observacion);
+    return ResponseEntity.ok(1);
+  }
 }
