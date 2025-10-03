@@ -8,7 +8,7 @@ import com.woden.wms_backend.repositories.ClienteRepositories.PqrsRepository;
 import com.woden.wms_backend.services.BaseService;
 
 @Service
-public class PqrsService extends BaseService<PqrsModel, Integer>{
+public class PqrsService extends BaseService<PqrsModel, Integer> {
 
   @Autowired
   private PqrsRepository pqrsRepository;
@@ -31,6 +31,7 @@ public class PqrsService extends BaseService<PqrsModel, Integer>{
   }
 
   public void updateObservationPqrs(Integer serialId, String serial, String observacion) {
-      pqrsRepository.updateObservationPqrs(serialId, serial, observacion);
+    Integer filas = 4;
+    pqrsRepository.updateObservationPqrs(serialId, serial, observacion, filas);
   }
 }

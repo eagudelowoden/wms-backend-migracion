@@ -35,9 +35,10 @@ public interface PqrsRepository extends BaseRepository<PqrsModel, Integer> {
 
   @Transactional
   @Modifying
-  @Query(value = "EXEC pa_UpdateObservationPqrs :serialId, :serial, :observacion", nativeQuery = true)
+  @Query(value = "EXEC pa_UpdateObservationPqrs :serialId, :serial, :observacion, :filas OUT", nativeQuery = true)
   void updateObservationPqrs(
       @Param("serialId") Integer serialId,
       @Param("serial") String serial,
-      @Param("observacion") String observacion);
+      @Param("observacion") String observacion,
+      @Param("filas") Integer filas);
 }
