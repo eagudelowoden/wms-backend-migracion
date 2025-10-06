@@ -67,7 +67,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   void deletePallet(@Param("palletId") Integer palletId);
 
   @Query(value = "EXEC pa_GetBoxPallet :palletId, :tabla", nativeQuery = true)
-  int getBoxCount(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
+  Integer getBoxPallet(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
 
   @Modifying
   @Transactional
