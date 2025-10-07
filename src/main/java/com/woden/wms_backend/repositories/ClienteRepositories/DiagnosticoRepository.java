@@ -35,8 +35,8 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
             @Param("serial") String serial,
             @Param("estadoCalidadId") Integer estadoCalidadId);
 
-    @Query(value = "EXEC pa_GetFailureIdDiagnostic :serial", nativeQuery = true)
-    Integer getFailureIdDiagnostic(@Param("serial") String serial);
+    @Query(value = "EXEC pa_GetFailureIdDiagnostic :serialId", nativeQuery = true)
+    Integer getFailureIdDiagnostic(@Param("serialId") Integer serialId);
 
     @Query(value = "EXEC pa_GetFailureDiagnostic :serial", nativeQuery = true)
     String getFailureDiagnostic(@Param("serial") String serial);

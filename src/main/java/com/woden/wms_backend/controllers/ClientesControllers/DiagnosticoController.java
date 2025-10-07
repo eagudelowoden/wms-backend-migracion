@@ -70,8 +70,8 @@ public class DiagnosticoController {
   }
 
   @GetMapping("/getFailureIdDiagnostic")
-  public ResponseEntity<Integer> getFailureIdDiagnostic(@RequestParam String serial) {
-    return ResponseEntity.ok(service.getFailureIdDiagnostic(serial));
+  public ResponseEntity<Integer> getFailureIdDiagnostic(@RequestParam Integer serialId) {
+    return ResponseEntity.ok(service.getFailureIdDiagnostic(serialId));
   }
 
   @GetMapping("/getFailureDiagnostic")
