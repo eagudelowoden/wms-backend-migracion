@@ -173,7 +173,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     return ResponseEntity.ok(pallets);
   }
 
-  @GetMapping("/searchPalletsBoxes")
+  @GetMapping("/searchPalletsBoxesWeb")
   public ResponseEntity<?> SearchPalletBoxPallet(
       @RequestParam String numero,
       @RequestParam String destino,
