@@ -105,4 +105,6 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
         return ResponseEntity.ok(1);
     }
 
+
+
 }
