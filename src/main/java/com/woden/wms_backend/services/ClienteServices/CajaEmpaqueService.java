@@ -36,6 +36,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     cajaEmpaqueRepository.updateStatusBoxPacking(cajaEmpaqueId, estadoId, filas);
   }
 
+
   public List<CajaEmpaqueDTO> SearchReceivePacking(String numero, String pallet) {
     List<Object[]> results = cajaEmpaqueRepository.SearchReceivePacking(numero, pallet);
 
