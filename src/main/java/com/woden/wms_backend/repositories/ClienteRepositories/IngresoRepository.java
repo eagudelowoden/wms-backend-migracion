@@ -113,7 +113,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	List<Object[]> SearchPalletBoxEntry(
 			@Param("estado") String estado,
 			@Param("palletId") Integer palletId,
-			@Param("cajaEmpaqueId") Integer cajaEmpaqueId // <-- aquí también String
+			@Param("cajaEmpaqueId") Integer cajaEmpaqueId
 	);
 
 	/// repetido

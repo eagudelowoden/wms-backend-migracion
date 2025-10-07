@@ -163,7 +163,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       int cajas = 0;
       try {
         if (estado != null) {
-          cajas = palletRepository.getBoxCount(palletId, estado); // Usa el estado para validar dependencias en cajas
+          cajas = palletRepository.getBoxPallet(palletId, estado); // Usa el estado para validar dependencias en cajas
         }
       } catch (Exception e) {
         cajas = 0; // En caso de fallo en el procedimiento almacenado
@@ -438,5 +438,15 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public Integer updateSapCodePallet(Integer palletId, Integer codigoSapId, Integer filas) {
     return palletRepository.updateSapCodePallet(palletId, codigoSapId, filas);
+  }
+
+  public Integer getBoxPallet(Integer palletId, String tabla) {
+    return palletRepository.getBoxPallet(palletId, tabla);
+  }
+
+
+  public void innactivatePallet(Integer palletId) {
+    int filas = 0;
+    palletRepository.innactivatePallet(palletId, filas);
   }
 }

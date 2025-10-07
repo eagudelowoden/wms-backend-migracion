@@ -58,7 +58,7 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return ResponseEntity.ok(cajas);
     }
 
-    @GetMapping("/searchCajasAndSeriales")
+    @GetMapping("/searchPalletBoxEntry")
     public ResponseEntity<?> SearchPalletBoxEntry(
             @RequestParam String estado,
             @RequestParam Integer palletId,
