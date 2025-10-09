@@ -64,8 +64,8 @@ public class DiagnosticoService {
     }
   }
 
-  public Integer getFailureIdDiagnostic(String serial) {
-    return repository.getFailureIdDiagnostic(serial);
+  public Integer getFailureIdDiagnostic(Integer serialId) {
+    return repository.getFailureIdDiagnostic(serialId);
   }
 
   public String getFailureDiagnostic(String serial) {
