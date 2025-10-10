@@ -533,6 +533,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         smartCardIdFinal, smartCardFinal);
   }
 
+
+
   @Transactional
   public int UpdatePackingAllEntry(Integer estadoId, Integer usuarioIdMovimiento, List<String> seriales) {
     int count = 0;

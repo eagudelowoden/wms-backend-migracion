@@ -148,21 +148,33 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
         return formattedResults;
     }
-
-
-
-
-
-
-
-
-
     public void UpdateSerialAccesory(String serialNuevo,
                               String serialAnterior) {
         Integer filas = 4;
         accesorioRepository.UpdateSerialAccesory(serialNuevo, serialAnterior, filas);
     }
 
+    public int updatePackingBatch(List<String[]> packingDataList) {
+        int status = 0;
+        for (String[] data : packingDataList) {
+            try {
+                int filas = accesorioRepository.updatePackingAccesory(
+                        data[0],                         // codigoSap
+                        data[1],                         // tipo
+                        data[2],                         // estado (EMPAQUE)
+                        Integer.parseInt(data[3]),        // destino
+                        data[4],                         // serial
+                        Integer.parseInt(data[5]),        // palletId
+                        Integer.parseInt(data[6])         // cantidad
+                );
+                if (filas > 0) status = 1;
+            } catch (Exception e) {
+                System.err.println("❌ Error al ejecutar pa_UpdatePackingAccesory: " + e.getMessage());
+                return 0;
+            }
+        }
+        return status;
+    }
 
 
 }

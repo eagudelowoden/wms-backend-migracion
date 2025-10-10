@@ -148,6 +148,13 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
 
+    @PostMapping("/updatePackingBatch")
+    public ResponseEntity<Integer> updatePackingBatch(@RequestBody List<String[]> packingDataList) {
+        int result = accesorioService.updatePackingBatch(packingDataList);
+        return ResponseEntity.ok(result);
+    }
+
+
 
 
 
