@@ -1,5 +1,6 @@
 package com.woden.wms_backend.controllers.WmsWdGeneral;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +100,15 @@ public class UsuarioController {
         response.put("token", token);
         response.put("usuarioId", usuario.getId().toString());
         response.put("message", "Inicio de sesión exitoso");
+        File carpeta = new File("D:\\archivos\\ENV\\PRD\\archivos");
+        if (carpeta.exists()) {
+            System.out.println("✅ Conectado correctamente a la unidad D:");
+            for (File f : carpeta.listFiles()) {
+                System.out.println(" - " + f.getName());
+            }
+        } else {
+            System.out.println("❌ No se puede acceder a Z:");
+        }
 
         return ResponseEntity.ok(response);
     }
@@ -195,7 +205,8 @@ public class UsuarioController {
             String newGeneralToken = jwtUtil.generateToken(username, clientName, clientDb, clientId);
             String newClientToken = jwtUtil.generateToken(username, newClientName, newClientDb, newClientId);
 
-            // log.info("Tokens renovados para: {} (General) y {} (Client)", username, newClientName);
+            // log.info("Tokens renovados para: {} (General) y {} (Client)", username,
+            // newClientName);
 
             // 7. Configurar headers de respuesta (seguridad)
             response.setHeader("Cache-Control", "no-store");

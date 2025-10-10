@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -158,5 +159,27 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
             @RequestParam String falla) {
         List<Map<String, Object>> componentes = maestroService.searchComponentsAsig(serial, falla);
         return ResponseEntity.ok(componentes);
+    }
+
+    @GetMapping("/getFamilyNumberBox")
+    public ResponseEntity<Integer> getFamilyNumberBox(@RequestParam String codigoSap, @RequestParam String destino) {
+        Integer result = maestroService.getFamilyNumberBox(codigoSap, destino);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/getFamilyAcronyms")
+    public ResponseEntity<String> getFamilyAcronyms(@RequestParam String codigoSap, @RequestParam String destino) {
+        String result = maestroService.getFamilyAcronyms(codigoSap, destino);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/addCountBoxFamily")
+    public ResponseEntity<Integer> addCountBoxFamily(@RequestParam int familyId, @RequestParam String value) {
+        try {
+            maestroService.addCountBoxFamily(familyId, value);
+            return ResponseEntity.ok(1);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+        }
     }
 }

@@ -59,11 +59,11 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
     }
 
     @GetMapping("/searchPalletBoxEntry")
-    public ResponseEntity<?> SearchPalletBoxEntry(
+    public ResponseEntity<?> searchPalletBoxEntry(
             @RequestParam String estado,
             @RequestParam Integer palletId,
             @RequestParam Integer cajaEmpaqueId) {
-        List<Map<String, String>> seriales = cajaEmpaqueService.SearchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
+        List<Map<String, String>> seriales = cajaEmpaqueService.searchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
         return ResponseEntity.ok(seriales);
     }
 

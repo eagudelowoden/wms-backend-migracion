@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @Autowired
   private IngresoService ingresoService;
   private ZplService zplService;
+  private static final Logger logger = LoggerFactory.getLogger(IngresoController.class);
 
   @PostMapping("/create")
   public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
@@ -65,9 +68,11 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.badRequest().body(response);
 
     } catch (Exception e) {
-      response.put("error", "Error interno: " + e.getMessage());
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
+  logger.error("Error al registrar ingreso: ", e); // 👈 log completo con stacktrace
+  response.put("error", "Error interno: " + e.getMessage());
+  return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+}
+
   }
 
   @DeleteMapping("/eliminarIngresos")
@@ -455,21 +460,6 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(1);
   }
 
-  /*
-   * @PostMapping("/updateSmartCardEntry")
-   * public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String,
-   * List<Map<String, Object>>> requestBody) {
-   * List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-   * for (Map<String, Object> ingreso : ingresos) {
-   * Integer smartCardId = (Integer) ingreso.get("smartCardId");
-   * String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
-   * String serial = (String) ingreso.get("serial");
-   * ingresoService.updateSmartCardEntry(smartCardId, smartCardNuevo, serial);
-   * }
-   * return ResponseEntity.ok(1);
-   * }
-   */
-
   @PostMapping("/backRepairedEntry")
   public ResponseEntity<?> backRepairedEntry(@RequestBody Map<String, Object> requestBody) {
     List<?> serialesRaw = (List<?>) requestBody.get("seriales");
@@ -508,7 +498,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
     return ResponseEntity.ok(Map.of("message", 1));
   }
-  
+
   @PostMapping("/updateStateEntryNotUsuarioDiagnosed")
   public ResponseEntity<?> updateStateEntryNotUsuarioDiagnosed(@RequestBody Map<String, Object> requestBody) {
     Integer estadoId = (Integer) requestBody.get("estadoId");
@@ -521,5 +511,14 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       ingresoService.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, s);
     }
     return ResponseEntity.ok(Map.of("message", 1));
+  }
+
+  @GetMapping("/searchPalletBoxEntry")
+  public ResponseEntity<?> searchPalletBoxEntry(
+      @RequestParam String estado,
+      @RequestParam Integer palletId,
+      @RequestParam Integer cajaId) {
+    List<Map<String, String>> seriales = ingresoService.searchPalletBoxEntry(estado, palletId, cajaId);
+    return ResponseEntity.ok(seriales);
   }
 }

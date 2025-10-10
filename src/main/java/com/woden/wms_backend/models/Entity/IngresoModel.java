@@ -82,7 +82,7 @@ public class IngresoModel {
     @Transient
     private String nivel;
     private String usuario;
-    private Integer cajaDespacho;
+    private String cajaDespacho;
     private String Lote;
     private String modelo;
 }

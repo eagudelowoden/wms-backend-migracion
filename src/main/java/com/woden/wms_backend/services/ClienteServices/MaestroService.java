@@ -133,4 +133,17 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
         }).collect(Collectors.toList());
     }
 
+    public Integer getFamilyNumberBox(String codigoSap, String destino) {
+        return maestroRepository.getFamilyNumberBox(codigoSap, destino);
+    }
+
+    public String getFamilyAcronyms(String codigoSap, String destino) {
+        List<String> siglas = maestroRepository.getFamilyAcronyms(codigoSap, destino);
+        return siglas.get(0);
+    }
+
+    public void addCountBoxFamily(int familyId, String value) {
+        Integer filasOut = 4;
+        maestroRepository.addCountBoxFamily(familyId, value, filasOut);
+    }
 }

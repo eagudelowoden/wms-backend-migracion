@@ -82,8 +82,8 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 
   private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
 
-  public List<Map<String, String>> SearchPalletBoxEntry(String estado, Integer palletId, Integer cajaEmpaqueId) {
-    List<Object[]> results = ingresoRepository.SearchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
+  public List<Map<String, String>> searchPalletBoxEntry(String estado, Integer palletId, Integer cajaEmpaqueId) {
+    List<Object[]> results = ingresoRepository.searchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
     List<Map<String, String>> serialesBOx = new ArrayList<>();
 
     for (Object[] result : results) {

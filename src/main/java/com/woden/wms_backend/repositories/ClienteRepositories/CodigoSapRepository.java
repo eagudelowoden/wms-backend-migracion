@@ -30,5 +30,5 @@ public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Inte
   List<Object[]> getModelByCodigo(@Param("codigo") String codigo);
 
   @Query(value = "EXEC pa_GetFamilyId :codigoSap", nativeQuery = true)
-  Integer getFamilyId(@Param("codigoSap") String codigoSap);
+  List<Integer> getFamilyId(@Param("codigoSap") String codigoSap);
 }

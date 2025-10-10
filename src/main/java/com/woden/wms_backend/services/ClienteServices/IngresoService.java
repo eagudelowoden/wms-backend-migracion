@@ -90,8 +90,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     try (Connection conn = dataSource.getConnection()) {
       CallableStatement stmt = conn.prepareCall(
           "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-
-      // Parámetros de entrada (mismos en orden que el SP)
+      
       stmt.setString(1, ingreso.getSerial());
       stmt.setString(2, ingreso.getMac());
       stmt.setString(3, ingreso.getSerial3());
@@ -121,7 +120,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       stmt.setObject(27, ingreso.getCajaIngresoId(), Types.INTEGER);
       stmt.setObject(28, ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null, Types.INTEGER);
 
-      // Parametro de salida (retorno del SP: OK, ERROR_SERIE, ERROR_MAC, etc)
       stmt.registerOutParameter(29, Types.INTEGER);
       stmt.registerOutParameter(30, Types.VARCHAR);
 
@@ -190,10 +188,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setUsuario((String) obj[10]);
       ingreso.setCajaEmpaqueId((Integer) obj[11]);
       ingreso.setCajaEmpaque((String) obj[12]);
-      ingreso.setCajaDespacho((Integer) obj[13]);
+      ingreso.setCajaDespacho((String) obj[13]);
       ingreso.setPallet((String) obj[14]);
       ingreso.setPalletId((Integer) obj[15]);
-      ingreso.setPosicion((String) obj[13]);
+      ingreso.setPosicion((String) obj[16]);
       ingreso.setNivel((String) obj[17]);
       ingreso.setNivelId((Integer) obj[18]);
       ingreso.setTipoOrigenId((Integer) obj[19]);
@@ -586,5 +584,28 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateStateEntryNotUsuarioDiagnosed(Integer estadoId, Integer palletId, Integer fecha, String serial) {
     ingresoRepository.updateStateEntryNotUsuarioDiagnosed(estadoId, palletId, fecha, serial);
+  }
+
+  public List<Map<String, String>> searchPalletBoxEntry(String estado, Integer palletId, Integer cajaId) {
+    List<Object[]> results = ingresoRepository.searchPalletBoxEntry(estado, palletId, cajaId);
+    List<Map<String, String>> serialesBOx = new ArrayList<>();
+
+    for (Object[] result : results) {
+      Map<String, String> seriales = new HashMap<>();
+      seriales.put("serial", result[0] != null ? result[0].toString() : "");
+      seriales.put("mac", result[1] != null ? result[1].toString() : "");
+      seriales.put("smartCard", result[2] != null ? result[2].toString() : "");
+      seriales.put("numeroSmartcard", result[3] != null ? result[3].toString() : "");
+      seriales.put("serial3", result[4] != null ? result[4].toString() : "");
+      seriales.put("serial4", result[5] != null ? result[5].toString() : "");
+      seriales.put("codigo", result[6] != null ? result[6].toString() : "");
+      seriales.put("descripcion", result[7] != null ? result[7].toString() : "");
+      seriales.put("nivel", result[8] != null ? result[8].toString() : "");
+      seriales.put("lote", result[9] != null ? result[9].toString() : "");
+      seriales.put("modelo", result[10] != null ? result[10].toString() : "");
+
+      serialesBOx.add(seriales);
+    }
+    return serialesBOx;
   }
 }

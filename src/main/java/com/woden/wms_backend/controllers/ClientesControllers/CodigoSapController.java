@@ -82,4 +82,9 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
         response.put("codigosap", model);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/getFamilyId")
+    public ResponseEntity<Integer> getFamilyId(@RequestParam String codigoSap) {
+        return ResponseEntity.ok(codigoSapService.getFamilyId(codigoSap));
+    }
 }

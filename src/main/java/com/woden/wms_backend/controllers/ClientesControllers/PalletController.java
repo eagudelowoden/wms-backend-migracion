@@ -242,10 +242,14 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   }
 
   @PostMapping("/inactivate")
-  public ResponseEntity<String> inactivate(@RequestBody Map<String, Integer> body) {
-    Integer palletId = body.get("palletId");
-    palletService.inactivatePallet(palletId);
-    return ResponseEntity.ok("Pallet inactivado correctamente");
+  public ResponseEntity<Integer> inactivate(@RequestBody Map<String, Integer> body) {
+    try {
+      Integer palletId = body.get("palletId");
+      palletService.innactivatePallet(palletId);
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
   }
 
   @GetMapping("/searchStorageGroupPalletAccesory")

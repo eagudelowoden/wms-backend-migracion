@@ -94,10 +94,10 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         }
 
         // 🔹 opción 1: devolver el último (igual a tu código Swing)
-        // return ids.get(ids.size() - 1);
+        return ids.get(ids.size() - 1);
 
         // 🔹 opción 2: devolver siempre el primero
-        return ids.get(0);
+        // return ids.get(0);
     }
 
     public CodigoSapModelDTO obtenerModeloPorCodigo(String codigo) {
@@ -142,5 +142,10 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         codigoSap.setMultimodelo(TypeMapper.toBoolean(row[23]));
         codigoSap.setCantidadCaja((Integer) row[24]);
         return codigoSap;
+    }
+
+    public Integer getFamilyId(String codigo) {
+        List<Integer> results = codigoSapRepository.getFamilyId(codigo);        
+        return results.get(0);
     }
 }

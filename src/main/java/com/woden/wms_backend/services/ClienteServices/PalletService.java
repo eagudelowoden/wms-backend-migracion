@@ -83,11 +83,11 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       // Si KitIngresoON está activo, actualizar la cantidad en la familia
       if (kitEntryOn) {
         String codigoSap = p.getCodigoSapId().toString();
-        int familyId = codigoSapRepository.getFamilyId(codigoSap);
+        List<Integer> familyId = codigoSapRepository.getFamilyId(codigoSap);
         String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
 
         int filas = 0; // OUT simbólico
-        maestroRepository.addCountPalletFamily(newFamilyNumber, familyId, filas);
+        maestroRepository.addCountPalletFamily(newFamilyNumber, familyId.get(0), filas);
       }
 
     } catch (Exception e) {
@@ -212,7 +212,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     if ("serializable".equalsIgnoreCase(tipoEquipo)) {
       if ("ingreso".equalsIgnoreCase(tipo))
         return "Ingreso";
-      // Los otros tipos serializables no tienen lógica de conteo en pa_GetBoxPallet
       return null;
     } else {
       switch (tipo.toLowerCase()) {

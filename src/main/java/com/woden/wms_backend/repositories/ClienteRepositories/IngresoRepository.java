@@ -109,11 +109,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "DECLARE @result INT; EXEC pa_Reingresos :serial, @result OUTPUT; SELECT @result", nativeQuery = true)
 	Integer getReingresos(@Param("serial") String serial);
 
-	@Query(value = "EXEC pa_SearchPalletBoxEntry :estado, :palletId, :cajaEmpaqueId", nativeQuery = true)
-	List<Object[]> SearchPalletBoxEntry(
+	@Query(value = "EXEC pa_SearchPalletBoxEntry :estado, :palletId, :cajaId", nativeQuery = true)
+	List<Object[]> searchPalletBoxEntry(
 			@Param("estado") String estado,
 			@Param("palletId") Integer palletId,
-			@Param("cajaEmpaqueId") Integer cajaEmpaqueId
+			@Param("cajaId") Integer cajaId
 	);
 
 	/// repetido
