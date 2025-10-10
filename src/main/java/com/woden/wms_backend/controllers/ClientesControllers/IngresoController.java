@@ -521,4 +521,10 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     List<Map<String, String>> seriales = ingresoService.searchPalletBoxEntry(estado, palletId, cajaId);
     return ResponseEntity.ok(seriales);
   }
+
+  @GetMapping("/getListModel")
+  public ResponseEntity<List<IngresoModel>> getListModel(@RequestParam List<String> seriales) {
+    List<IngresoModel> ingreso = ingresoService.getListModel(seriales);
+    return ResponseEntity.ok(ingreso);
+  }
 }
