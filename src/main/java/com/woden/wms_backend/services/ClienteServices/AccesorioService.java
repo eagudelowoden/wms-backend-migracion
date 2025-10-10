@@ -129,6 +129,22 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
         return formattedResults;
     }
+    public int getPackedAccesoriesSerials(String codigoSap, String tipoAccesorio, Integer palletId) {
+        try {
+            List<Object[]> resultados = accesorioRepository.GetPackedAccesoriesSerials(codigoSap, tipoAccesorio, palletId);
+            if (resultados == null) {
+                return 0;
+            }
+            int count = resultados.size();
+            return count;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+
+
 
 
     public List<Map<String, Object>> searchPackedAccesory(String estado, String serial) {

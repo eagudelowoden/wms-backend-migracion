@@ -265,6 +265,8 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
 			@Param("serial") String serial);
 
+
+
 	@Query(value = "EXEC pa_GetProactiveRepairAll", nativeQuery = true)
 	List<String> getProactiveRepairAll();
 
