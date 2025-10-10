@@ -1,6 +1,5 @@
 package com.woden.wms_backend.models.Entity;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,14 +8,12 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Etiqueta", schema = "dbo")
-public class EtiquetaModel {
+@Table(name = "EtiquetaCampo", schema = "dbo")
+public class EtiquetaCampoModel {  
     @Id
     @Column(name = "Id")
-    private Integer id;
+    private int id;
+    private int etiquetaId;
     private String nombre;
-    private String tipo;
-    private Integer impresion;
-    private Integer codigoSapId;
-    private String codigoSapCombo;
+    private String valor;
 }

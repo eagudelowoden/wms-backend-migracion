@@ -25,6 +25,11 @@ public class EtiquetaController extends BaseController<EtiquetaModel, Integer> {
   @Autowired
   private EtiquetaService etiquetaService;
 
+  @GetMapping("/getModelLabel/{nombre}")
+  public EtiquetaModel getModelLabel(@PathVariable String nombre) {
+    return etiquetaService.getModelLabel(nombre);
+  }
+
   @GetMapping("/getListLabel/{tipo}")
   public List<EtiquetaListDTO> getListLabel(@PathVariable String tipo) {
     return etiquetaService.getListLabel(tipo);

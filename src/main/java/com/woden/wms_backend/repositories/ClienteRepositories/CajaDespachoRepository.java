@@ -31,6 +31,6 @@ public interface CajaDespachoRepository extends BaseRepository<CajaDespachoModel
   @Query(value = "EXEC pa_DeleteBoxDispatch :id", nativeQuery = true)
   void deleteBoxDispatch(@Param("id") Integer id);
 
-  @Query(value = "EXEC pa_GetCountBoxDispatch :palletId", nativeQuery = true)
-  Integer getCountBoxDispatch(@Param("palletId") Integer palletId);
+  @Query(value = "EXEC pa_GetCountBoxDispatch :cajaId", nativeQuery = true)
+  Integer getCountBoxDispatch(@Param("cajaId") Integer cajaId);
 }

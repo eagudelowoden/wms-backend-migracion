@@ -11,6 +11,9 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface EtiquetaRepository extends BaseRepository<EtiquetaModel, Integer> {
+  @Query(value = "EXEC pa_GetModelLabel :nombre", nativeQuery = true)
+  List<Object[]> getModelLabel(@Param("nombre") String nombre);
+
   @Query(value = "EXEC pa_GetListLabel :tipo", nativeQuery = true)
-  List<Object[]> getListLabelList(@Param("tipo") String tipo);
+  List<Object[]> getListLabel(@Param("tipo") String tipo);
 }

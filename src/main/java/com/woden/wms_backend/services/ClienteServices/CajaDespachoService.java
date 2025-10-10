@@ -46,7 +46,7 @@ public class CajaDespachoService extends BaseService<CajaDespachoModel, Integer>
     return (Integer) results.get(results.size() - 1)[0];
   }
 
-  public Integer getCountBoxDispatch(Integer palletId) {
-    return cajaDespachoRepository.getCountBoxDispatch(palletId);
+  public Integer getCountBoxDispatch(Integer cajaId) {
+    return cajaDespachoRepository.getCountBoxDispatch(cajaId);
   }
 }
