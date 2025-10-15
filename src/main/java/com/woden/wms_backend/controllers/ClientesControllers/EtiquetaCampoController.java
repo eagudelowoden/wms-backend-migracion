@@ -13,7 +13,7 @@ import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.services.ClienteServices.EtiquetaCampoService;
 
 @RestController
-@RequestMapping("/api/etiquetaCampo")
+@RequestMapping("/client/etiquetaCampo")
 public class EtiquetaCampoController extends BaseController<EtiquetaCampoModel, Integer> {
 
   public EtiquetaCampoController(EtiquetaCampoService service) {

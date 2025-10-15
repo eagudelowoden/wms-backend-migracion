@@ -12,7 +12,7 @@ import lombok.Data;
 public class BaseDespachoModel {
     @Id
     @Column(name = "Id")
-    private int id;
+    private Integer id;
     private String serial;
     private String codigoSap;
     private String estadoSap;

@@ -101,4 +101,13 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 	@Modifying
 	@Query(value = "EXEC pa_AddCountBoxFamily :familyId, :value, :filas OUT", nativeQuery = true)
 	void addCountBoxFamily(@Param("familyId") int familyId, @Param("value") String value, @Param("filas") Integer filas);
+	
+	@Query(value = "EXEC pa_GetFamilyMaster :codigoSap", nativeQuery = true)
+	List<Object[]> getFamilyMaster(@Param("codigoSap") String codigoSap);
+
+	@Query(value = "EXEC pa_GetProviderMaster :codigoSap", nativeQuery = true)
+	List<Object[]> getProviderMaster(@Param("codigoSap") String codigoSap);
+
+	@Query(value = "EXEC pa_GetProviderDescriptionMaster :descripcion", nativeQuery = true)
+	List<Object[]> getProviderDescriptionMaster(@Param("descripcion") String codigoSap);
 }
