@@ -154,6 +154,18 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/getPackedAccesoriesSerials")
+    public ResponseEntity<Integer> getPackedAccesoriesSerials(
+            @RequestParam String codigoSap,
+            @RequestParam String tipoAccesorio,
+            @RequestParam Integer palletId) {
+
+        int totalSeriales = accesorioService.getPackedAccesoriesSerials(codigoSap, tipoAccesorio, palletId);
+        return ResponseEntity.ok(totalSeriales);
+    }
+
+
+
 
 
 

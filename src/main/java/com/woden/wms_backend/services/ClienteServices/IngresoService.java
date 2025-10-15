@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
@@ -41,10 +42,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private IngresoRepository ingresoRepository;
   private IlegibleRepository ilegibleRepository;
   private ConsecutiveService consecutiveService;
-  // private static final Logger log =
-  // LoggerFactory.getLogger(IngresoController.class);
 
-  @Transactional
+    @Transactional
   public void createIngreso(IngresoModel ingreso) {
     try {
       Integer result = ingresoRepository.insertIngreso(
