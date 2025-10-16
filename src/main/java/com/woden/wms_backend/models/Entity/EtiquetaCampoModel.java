@@ -8,14 +8,12 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "BaseDespacho", schema = "dbo")
-public class BaseDespachoModel {
+@Table(name = "EtiquetaCampo", schema = "dbo")
+public class EtiquetaCampoModel {  
     @Id
     @Column(name = "Id")
-    private Integer id;
-    private String serial;
-    private String codigoSap;
-    private String estadoSap;
-    private String estadoRR;
-    private String Lote;
+    private int id;
+    private int etiquetaId;
+    private String nombre;
+    private String valor;
 }

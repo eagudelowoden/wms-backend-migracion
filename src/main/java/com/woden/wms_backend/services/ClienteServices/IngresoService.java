@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
@@ -89,7 +88,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     try (Connection conn = dataSource.getConnection()) {
       CallableStatement stmt = conn.prepareCall(
           "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-      
+
       stmt.setString(1, ingreso.getSerial());
       stmt.setString(2, ingreso.getMac());
       stmt.setString(3, ingreso.getSerial3());
@@ -161,18 +160,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
       Object[] obj = results.get(0);
       IngresoModel ingreso = new IngresoModel();
-      // ingreso.setId((Integer) obj[0]);
-      // ingreso.setSerial((String) obj[1]);
-      // ingreso.setMac((String) obj[2]);
-      // ingreso.setSerial3((String) obj[3]);
-      // ingreso.setSerial4((String) obj[4]);
-      // ingreso.setCodigoSap((String) obj[5]);
-      // ingreso.setDescripcion((String) obj[6]);
-      // ingreso.setUsuario((String) obj[7]);
-      // ingreso.setTipoOrigenId((Integer) obj[8]);
-      // ingreso.setTipologia((String) obj[9]);
-      // ingreso.setFecha(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
-      // ingreso.setLote((String) obj[11]);
 
       ingreso.setId((Integer) obj[0]);
       ingreso.setSerial((String) obj[1]);
@@ -532,8 +519,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         smartCardIdFinal, smartCardFinal);
   }
 
-
-
+  @Transactional
   public int UpdatePackingAllEntry(Integer estadoId, Integer usuarioIdMovimiento, List<String> seriales) {
     int count = 0;
 
@@ -607,5 +593,58 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       serialesBOx.add(seriales);
     }
     return serialesBOx;
+  }
+
+  public List<IngresoModel> getListModel(List<String> seriales) {
+    List<IngresoModel> ingresos = new ArrayList<>();
+
+    for (String serial : seriales) {
+      List<Object[]> results = ingresoRepository.searchIngreso(serial);
+
+      for (Object[] obj : results) {
+        IngresoModel ingreso = new IngresoModel();
+
+        ingreso.setId((Integer) obj[0]);
+        ingreso.setSerial((String) obj[1]);
+        ingreso.setMac((String) obj[2]);
+        ingreso.setSerial3((String) obj[3]);
+        ingreso.setSerial4((String) obj[4]);
+        ingreso.setCodigoSap((String) obj[5]);
+        ingreso.setCodigoSapId((Integer) obj[6]);
+        ingreso.setDescripcion((String) obj[7]);
+        ingreso.setEstado((String) obj[8]);
+        ingreso.setEstadoId((Integer) obj[9]);
+        ingreso.setUsuario((String) obj[10]);
+        ingreso.setCajaEmpaqueId((Integer) obj[11]);
+        ingreso.setCajaEmpaque((String) obj[12]);
+        ingreso.setCajaDespacho((String) obj[13]);
+        ingreso.setPallet((String) obj[14]);
+        ingreso.setPalletId((Integer) obj[15]);
+        ingreso.setPosicion((String) obj[16]);
+        ingreso.setNivel((String) obj[17]);
+        ingreso.setNivelId((Integer) obj[18]);
+        ingreso.setTipoOrigenId((Integer) obj[19]);
+        ingreso.setOrigenId((Integer) obj[20]);
+        ingreso.setTipologiaId((Integer) obj[21]);
+        ingreso.setTipologia((String) obj[22]);
+        ingreso.setPalletIdIngreso((Integer) obj[23]);
+        ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
+        ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[25]));
+        ingreso.setFalla((String) obj[26]);
+        ingreso.setLoteId((Integer) obj[27]);
+        ingreso.setPalletIdEmpaque((Integer) obj[28]);
+        ingreso.setLote((String) obj[29]);
+        ingreso.setSmartCardId((Integer) obj[30]);
+        ingreso.setSmartCard((String) obj[31]);
+        ingreso.setCajaIngresoId((Integer) obj[32]);
+        ingreso.setCajaIngreso((String) obj[33]);
+        ingreso.setModeloId((Integer) obj[34]);
+        ingreso.setModelo((String) obj[35]);
+
+        ingresos.add(ingreso);
+      }
+    }
+
+    return ingresos;
   }
 }

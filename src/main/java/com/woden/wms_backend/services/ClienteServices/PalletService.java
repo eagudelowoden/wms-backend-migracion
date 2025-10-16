@@ -287,7 +287,33 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
 
     public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino, int page, int size) {
-        List<Object[]> results = palletRepository.SearchPalletBoxPallet(numero, destino);
+        List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
+
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, results.size());
+
+        if (fromIndex >= results.size()) {
+            return Collections.emptyList();
+        }
+
+        List<Object[]> paged = results.subList(fromIndex, toIndex);
+
+        List<Map<String, String>> palletBox = new ArrayList<>();
+        for (Object[] result : paged) {
+            Map<String, String> pallet = new HashMap<>();
+            pallet.put("id", String.valueOf(result[0]));
+            pallet.put("numero", String.valueOf(result[1]));
+            pallet.put("cantidadCaja", String.valueOf(result[2]));
+            pallet.put("descripcion", String.valueOf(result[3]));
+            pallet.put("tipologia", String.valueOf(result[4]));
+            palletBox.add(pallet);
+        }
+
+        return palletBox;
+    }
+
+    public List<Map<String, String>> SearchPalletBoxPalletWeb(String numero, String destino, int page, int size) {
+        List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
 
         int fromIndex = page * size;
         int toIndex = Math.min(fromIndex + size, results.size());

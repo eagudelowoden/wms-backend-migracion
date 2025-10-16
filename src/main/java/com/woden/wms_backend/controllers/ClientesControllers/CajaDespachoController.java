@@ -53,7 +53,7 @@ public class CajaDespachoController {
   }
 
   @GetMapping("/getCountBoxDispatch")
-  public Integer getCountBoxDispatch(@RequestParam Integer palletId) {
-    return service.getCountBoxDispatch(palletId);
+  public Integer getCountBoxDispatch(@RequestParam Integer cajaId) {
+    return service.getCountBoxDispatch(cajaId);
   }
 }

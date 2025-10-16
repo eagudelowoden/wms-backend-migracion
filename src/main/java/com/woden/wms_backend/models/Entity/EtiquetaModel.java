@@ -13,8 +13,10 @@ import lombok.Data;
 public class EtiquetaModel {
     @Id
     @Column(name = "Id")
-    private int id;
+    private Integer id;
     private String nombre;
     private String tipo;
-    private int impresion;
+    private Integer impresion;
+    private Integer codigoSapId;
+    private String codigoSapCombo;
 }

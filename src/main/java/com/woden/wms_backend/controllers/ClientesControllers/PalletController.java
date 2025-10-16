@@ -173,7 +173,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     return ResponseEntity.ok(pallets);
   }
 
-  @GetMapping("/searchPalletsBoxesWeb")
+  @GetMapping("/searchPalletsBoxes")
   public ResponseEntity<?> SearchPalletBoxPallet(
       @RequestParam String numero,
       @RequestParam String destino,
@@ -181,6 +181,17 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       @RequestParam(defaultValue = "50") int size) {
 
     List<Map<String, String>> pallets = palletService.SearchPalletBoxPallet(numero, destino, page, size);
+    return ResponseEntity.ok(pallets);
+  }
+
+  @GetMapping("/searchPalletsBoxesWeb")
+  public ResponseEntity<?> SearchPalletBoxPalletWeb(
+      @RequestParam String numero,
+      @RequestParam String destino,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "50") int size) {
+
+    List<Map<String, String>> pallets = palletService.SearchPalletBoxPalletWeb(numero, destino, page, size);
     return ResponseEntity.ok(pallets);
   }
 
