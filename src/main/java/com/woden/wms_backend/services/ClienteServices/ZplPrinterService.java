@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
+import com.woden.wms_backend.models.Entity.IngresoModel;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -52,7 +54,7 @@ public class ZplPrinterService {
       String plantillaBasePath,
       EtiquetaModel etiqueta,
       List<EtiquetaCampoModel> campos,
-      List<List<String>> seriales,
+      List<IngresoModel> seriales,
       EtiquetaDatosGeneralesDTO datosGenerales) {
 
     StringBuilder zplFinal = new StringBuilder();
@@ -96,18 +98,35 @@ public class ZplPrinterService {
     }
   }
 
-  private String reemplazarCampos(String zpl, List<List<String>> seriales, List<EtiquetaCampoModel> campos) {
+  private String reemplazarCampos(String zpl, List<IngresoModel> seriales, List<EtiquetaCampoModel> campos) {
     for (int i = 0; i < seriales.size(); i++) {
-      List<String> fila = seriales.get(i);
+      IngresoModel ingreso = seriales.get(i);
+
       for (EtiquetaCampoModel ecm : campos) {
         String key = getKey(i, ecm.getNombre());
-        int index = Integer.parseInt(ecm.getValor());
-        if (index < fila.size()) {
-          zpl = zpl.replace(key, fila.get(index));
+        String nombreCampo = ecm.getNombre();
+        String valorCampo = obtenerValorCampo(ingreso, nombreCampo);
+
+        if (valorCampo != null) {
+          zpl = zpl.replace(key, valorCampo);
         }
       }
     }
     return zpl;
+  }
+
+  private String obtenerValorCampo(IngresoModel ingreso, String nombreCampo) {
+    try {
+      // Convierte el nombre a formato de propiedad (por si viene en mayúsculas)
+      String propiedad = nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
+      Field field = ingreso.getClass().getDeclaredField(propiedad);
+      field.setAccessible(true);
+      Object valor = field.get(ingreso);
+      return valor != null ? valor.toString() : "";
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      System.err.println("⚠️ Campo no encontrado en IngresoModel: " + nombreCampo);
+      return "";
+    }
   }
 
   private String reemplazarDatosGenerales(String zpl, EtiquetaDatosGeneralesDTO datos) {

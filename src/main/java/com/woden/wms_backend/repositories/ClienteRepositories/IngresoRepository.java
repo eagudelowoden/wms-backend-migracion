@@ -113,8 +113,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	List<Object[]> searchPalletBoxEntry(
 			@Param("estado") String estado,
 			@Param("palletId") Integer palletId,
-			@Param("cajaId") Integer cajaId
-	);
+			@Param("cajaId") Integer cajaId);
 
 	/// repetido
 	@Modifying
@@ -265,8 +264,6 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
 			@Param("serial") String serial);
 
-
-
 	@Query(value = "EXEC pa_GetProactiveRepairAll", nativeQuery = true)
 	List<String> getProactiveRepairAll();
 
@@ -318,4 +315,12 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("palletId") Integer palletId,
 			@Param("fecha") Integer fecha,
 			@Param("serial") String serial);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateDispatchEntry :serial, :estadoId, :palletId, :cajaDespachoId, :usuarioMovimientoId, :loteId, :filas OUT", nativeQuery = true)
+	void updateDispatchEntry(@Param("serial") String serial, @Param("estadoId") Integer estadoId,
+			@Param("palletId") Integer palletId,
+			@Param("cajaDespachoId") Integer cajaDespachoId, @Param("usuarioMovimientoId") Integer usuarioMovimientoId,
+			@Param("loteId") Integer loteId, @Param("filas") Integer filas);
 }

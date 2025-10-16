@@ -42,7 +42,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private IlegibleRepository ilegibleRepository;
   private ConsecutiveService consecutiveService;
 
-    @Transactional
+  @Transactional
   public void createIngreso(IngresoModel ingreso) {
     try {
       Integer result = ingresoRepository.insertIngreso(
@@ -646,5 +646,15 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
 
     return ingresos;
+  }
+
+  public void updateDispatchEntry(String serial, Integer estadoId, Integer palletId, Integer cajaDespachoId,
+      Integer usuarioMovimientoId, Integer loteId) {
+    Integer filas = 4;
+    if (loteId == 0) {
+      loteId = null;
+    }
+    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId,
+        filas);
   }
 }

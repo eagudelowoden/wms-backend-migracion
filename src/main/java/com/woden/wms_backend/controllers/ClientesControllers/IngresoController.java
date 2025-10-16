@@ -68,10 +68,10 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.badRequest().body(response);
 
     } catch (Exception e) {
-  logger.error("Error al registrar ingreso: ", e); // 👈 log completo con stacktrace
-  response.put("error", "Error interno: " + e.getMessage());
-  return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-}
+      logger.error("Error al registrar ingreso: ", e); // 👈 log completo con stacktrace
+      response.put("error", "Error interno: " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
 
   }
 
@@ -122,11 +122,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @GetMapping("/getModelSerial/{serial}")
   public ResponseEntity<IngresoModel> getModelSerial(@PathVariable String serial) {
     IngresoModel ingreso = ingresoService.getModelIngreso(serial);
-    if (ingreso != null) {
-      return ResponseEntity.ok(ingreso);
-    } else {
-      return ResponseEntity.noContent().build(); // 204 No Content
-    }
+    return ResponseEntity.ok(ingreso); // 👈 si ingreso es null, igual devuelve 200 OK
   }
 
   @GetMapping("/getSerialByMac/{mac}")
@@ -496,7 +492,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     for (String s : serial) {
       ingresoService.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, s);
     }
-    return ResponseEntity.ok(Map.of("message", 1));
+    return ResponseEntity.ok(1);
   }
 
   @PostMapping("/updateStateEntryNotUsuarioDiagnosed")
@@ -510,7 +506,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     for (String s : serial) {
       ingresoService.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, s);
     }
-    return ResponseEntity.ok(Map.of("message", 1));
+    return ResponseEntity.ok(1);
   }
 
   @GetMapping("/searchPalletBoxEntry")
@@ -526,5 +522,17 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public ResponseEntity<List<IngresoModel>> getListModel(@RequestParam List<String> seriales) {
     List<IngresoModel> ingreso = ingresoService.getListModel(seriales);
     return ResponseEntity.ok(ingreso);
+  }
+
+  @PostMapping("/updateDispatchEntry")
+  public ResponseEntity<Integer> updateDispatchEntry(@RequestParam String serial, @RequestParam Integer estadoId,
+      @RequestParam Integer palletId, @RequestParam Integer cajaDespachoId, @RequestParam Integer usuarioMovimientoId,
+      @RequestParam Integer loteId) {
+    try {
+      ingresoService.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.ok(0);
+    }
   }
 }
