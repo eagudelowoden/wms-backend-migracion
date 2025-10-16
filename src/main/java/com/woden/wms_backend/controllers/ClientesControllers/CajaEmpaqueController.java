@@ -87,4 +87,10 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return ResponseEntity.ok(seriales);
     }
 
+    @GetMapping("/getCountBoxPacking")
+    public Integer getCountBoxDispatch(@RequestParam Integer cajaEmpaqueId) {
+        return cajaEmpaqueService.getCountBoxPacking(cajaEmpaqueId);
+    }
+
+
 }
