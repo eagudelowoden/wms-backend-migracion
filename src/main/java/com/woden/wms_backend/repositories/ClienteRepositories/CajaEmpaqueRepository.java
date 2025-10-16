@@ -60,4 +60,8 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     @Transactional
     @Query(value = "EXEC pa_SerialesByPallet :palletId", nativeQuery = true)
     List<String> SerialesByPallet(@Param("palletId") Integer palletId);
+
+
+    @Query(value = "EXEC pa_GetCountBoxPacking :cajaEmpaqueId", nativeQuery = true)
+    Integer getCountBoxPacking(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
 }

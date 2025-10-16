@@ -138,4 +138,8 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     }
   }
 
+    public Integer getCountBoxPacking(Integer cajaEmpaqueId) {
+        return cajaEmpaqueRepository.getCountBoxPacking(cajaEmpaqueId);
+    }
+
 }
