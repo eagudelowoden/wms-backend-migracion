@@ -138,28 +138,125 @@ public class PrnZplController {
         }
     }
 
-    @GetMapping("/ruta/{cliente}")
+/*    @GetMapping("/ruta-cliente/{cliente}")
     public Map<String, Object> getRutaCliente(@PathVariable String cliente) {
         Map<String, Object> info = new HashMap<>();
-        String ruta = service.getRutaCliente(cliente);
-        File dir = new File(ruta);
 
-        info.put("cliente", cliente);
-        info.put("rutaConstruida", ruta);
-        info.put("existe", dir.exists());
-        info.put("esDirectorio", dir.isDirectory());
+        try {
+            // 🔹 Decodificar cliente (por si viene con %20 o similares)
+            String clienteDecodificado = java.net.URLDecoder.decode(cliente, StandardCharsets.UTF_8).trim();
 
-        // 📁 Listar subcarpetas si existe
-        List<String> subcarpetas = service.listarSubcarpetasCliente(cliente);
-        info.put("subcarpetas", subcarpetas);
-        info.put("cantidadSubcarpetas", subcarpetas.size());
+            // 🔹 Obtener la ruta física desde el servicio
+            String rutaFisica = service.getRutaCliente(clienteDecodificado);
 
-        System.out.println("📂 Ruta PRN generada para cliente [" + cliente + "]: " + ruta);
-        if (!subcarpetas.isEmpty()) {
-            System.out.println("📁 Subcarpetas encontradas: " + String.join(", ", subcarpetas));
+            // ✅ Forzar el formato UNC correcto (4 barras visibles)
+            if (!rutaFisica.startsWith("\\\\")) {
+                rutaFisica = "\\\\" + rutaFisica; // asegúrate de que empiece con doble barra real
+            }
+
+            // 🔹 Crear objeto File con la ruta limpia (solo 2 barras físicas)
+            File dir = new File(rutaFisica);
+
+            // 🔹 Generar la versión JSON con 4 barras visibles
+            String rutaJson = rutaFisica.replace("\\", "\\\\");
+            // ejemplo resultante: "\\\\10.128.0.28\\archivos\\ENV\\PRD\\etiquetas\\LEGACY-COSTARICA\\PRNS\\EMPAQUE"
+
+            // 🔹 Construir respuesta
+            info.put("cliente", clienteDecodificado);
+            info.put("rutaConstruida", rutaJson);
+            info.put("existe", dir.exists());
+            info.put("esDirectorio", dir.isDirectory());
+
+            // 📁 Subcarpetas
+            List<String> subcarpetas = service.listarSubcarpetasCliente(clienteDecodificado);
+            info.put("subcarpetas", subcarpetas);
+            info.put("cantidadSubcarpetas", subcarpetas.size());
+
+            // 🧾 Log en consola (también con las 4 barras)
+            String rutaConCuatroBarras = rutaFisica.replace("\\", "\\\\");
+            System.out.println("📂 Ruta PRN generada para cliente [" + clienteDecodificado + "]: " + rutaConCuatroBarras);
+            if (dir.exists()) {
+                System.out.println("✅ Directorio accesible");
+            }
+            if (!subcarpetas.isEmpty()) {
+                System.out.println("📁 Subcarpetas encontradas: " + String.join(", ", subcarpetas));
+            }
+
+        } catch (Exception e) {
+            info.put("error", e.getMessage());
+            info.put("existe", false);
+            info.put("esDirectorio", false);
+            info.put("subcarpetas", List.of());
+            info.put("cantidadSubcarpetas", 0);
         }
 
         return info;
     }
+
+ */
+    @GetMapping("/ruta")
+    public Map<String, Object> getRutaPorPath(@RequestParam String path) {
+        Map<String, Object> info = new HashMap<>();
+
+        try {
+            // 🔹 1️⃣ Decodificar ruta recibida del frontend (de %5C%5C a \\)
+            String rutaDecodificada = java.net.URLDecoder.decode(path, StandardCharsets.UTF_8);
+
+            // 🔹 2️⃣ No tocar estructura UNC, solo limpiar posibles espacios y barras normales
+            String rutaNormalizada = rutaDecodificada
+                    .replaceAll("[/]+", "\\\\") // convierte / a \
+                    .trim();
+
+            // 🔹 3️⃣ Mostrar cómo llega la ruta
+            System.out.println("📥 Ruta PRN recibida (cruda): " + path);
+            System.out.println("📂 Ruta PRN decodificada: " + rutaDecodificada);
+            System.out.println("📁 Ruta PRN normalizada: " + rutaNormalizada);
+
+            // 🔹 4️⃣ Crear File y validar
+            File dir = new File(rutaNormalizada);
+            boolean existe = dir.exists();
+            boolean esDirectorio = dir.isDirectory();
+            boolean legible = dir.canRead();
+
+            info.put("rutaRecibida", rutaNormalizada.replace("\\", "\\\\"));
+            info.put("existe", existe);
+            info.put("esDirectorio", esDirectorio);
+            info.put("esLegible", legible);
+
+            // 🔹 5️⃣ Listar subcarpetas si existe
+            if (existe && esDirectorio && legible) {
+                List<String> subcarpetas = Arrays.stream(Objects.requireNonNull(dir.listFiles()))
+                        .map(File::getName)
+                        .sorted(String::compareToIgnoreCase)
+                        .collect(Collectors.toList());
+
+                info.put("subcarpetas", subcarpetas);
+                info.put("cantidadSubcarpetas", subcarpetas.size());
+            } else {
+                info.put("subcarpetas", List.of());
+                info.put("cantidadSubcarpetas", 0);
+            }
+
+            // 🔹 6️⃣ Log visual claro en consola
+            if (existe) {
+                System.out.println("✅ Directorio accesible: " + rutaNormalizada);
+            } else {
+                System.out.println("❌ No se puede acceder a la ruta: " + rutaNormalizada);
+            }
+
+        } catch (Exception e) {
+            info.put("error", e.getMessage());
+            info.put("existe", false);
+            info.put("esDirectorio", false);
+            info.put("subcarpetas", List.of());
+            info.put("cantidadSubcarpetas", 0);
+            System.err.println("💥 Error procesando ruta PRN: " + e.getMessage());
+        }
+
+        return info;
+    }
+
+
+
 
 }
