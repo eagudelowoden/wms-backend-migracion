@@ -13,7 +13,6 @@ import com.woden.wms_backend.services.ClienteServices.PrnConfigService;
 import com.woden.wms_backend.services.ClienteServices.ZplPrinterService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +21,11 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/client/prn")
-@CrossOrigin(origins = "*")
 public class PrnZplController {
 
     @Autowired
@@ -43,10 +38,11 @@ public class PrnZplController {
     private EtiquetaService etiquetaService;
 
     @PostMapping("/generar")
-    public ResponseEntity<String> generarZplMultiple(@RequestBody GenerarZplDTO dto) {
+    public ResponseEntity<String> generarZplMultiple(@RequestBody GenerarZplDTOS dto) {
         String plantillaBasePath = dto.getPlantillaBasePath();
         EtiquetaModel etiqueta = dto.getEtiqueta();
         List<EtiquetaCampoModel> campos = dto.getCampos();
+        List<IngresoModel> seriales = dto.getSeriales();
         List<IngresoModel> seriales = dto.getSeriales();
         EtiquetaDatosGeneralesDTO datosGenerales = dto.getDatosGenerales();
         String zpl = zplPrinterService.generarZpl(plantillaBasePath, etiqueta, campos, seriales, datosGenerales);
@@ -116,6 +112,7 @@ class GenerarZplDTOS {
     private String plantillaBasePath;
     private EtiquetaModel etiqueta;
     private List<EtiquetaCampoModel> campos;
+    private List<IngresoModel> seriales;
     private List<IngresoModel> seriales;
     private PalletModel palletModel;
     private UsuarioModel usuario;
