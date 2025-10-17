@@ -43,7 +43,6 @@ public class PrnZplController {
         EtiquetaModel etiqueta = dto.getEtiqueta();
         List<EtiquetaCampoModel> campos = dto.getCampos();
         List<IngresoModel> seriales = dto.getSeriales();
-        List<IngresoModel> seriales = dto.getSeriales();
         EtiquetaDatosGeneralesDTO datosGenerales = dto.getDatosGenerales();
         String zpl = zplPrinterService.generarZpl(plantillaBasePath, etiqueta, campos, seriales, datosGenerales);
         return ResponseEntity.ok(zpl);
@@ -112,7 +111,6 @@ class GenerarZplDTOS {
     private String plantillaBasePath;
     private EtiquetaModel etiqueta;
     private List<EtiquetaCampoModel> campos;
-    private List<IngresoModel> seriales;
     private List<IngresoModel> seriales;
     private PalletModel palletModel;
     private UsuarioModel usuario;
