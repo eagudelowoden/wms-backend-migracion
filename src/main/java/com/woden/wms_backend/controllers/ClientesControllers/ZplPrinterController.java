@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,43 @@ public class ZplPrinterController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
   }
+
+    @PostMapping("/preview-base64")
+    public ResponseEntity<String> obtenerPreviewBase64(@RequestBody String zpl) {
+        try {
+            // Endpoint Labelary para generar imagen PNG
+            URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Accept", "image/png");
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(zpl.getBytes(StandardCharsets.UTF_8));
+            }
+
+            // Leer la respuesta en bytes
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (InputStream in = conn.getInputStream()) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
+            }
+
+            // Convertir a Base64
+            String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+            String dataUrl = "data:image/png;base64," + base64Image;
+
+            return ResponseEntity.ok(dataUrl);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error generando vista previa: " + e.getMessage());
+        }
+    }
 
 }
 

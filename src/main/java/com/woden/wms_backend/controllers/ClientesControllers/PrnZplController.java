@@ -1,18 +1,13 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
-import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
-import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
-import com.woden.wms_backend.models.Entity.EtiquetaModel;
-import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.models.Entity.SmartCardModel;
+import com.woden.wms_backend.models.Entity.*;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
 import com.woden.wms_backend.services.ClienteServices.EtiquetaService;
 import com.woden.wms_backend.services.ClienteServices.PrnConfigService;
 import com.woden.wms_backend.services.ClienteServices.ZplPrinterService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/client/prn")
-@CrossOrigin(origins = "*")
 public class PrnZplController {
 
     @Autowired
@@ -42,11 +33,11 @@ public class PrnZplController {
     private EtiquetaService etiquetaService;
 
     @PostMapping("/generar")
-    public ResponseEntity<String> generarZplMultiple(@RequestBody GenerarZplDTO dto) {
+    public ResponseEntity<String> generarZplMultiple(@RequestBody GenerarZplDTOS dto) {
         String plantillaBasePath = dto.getPlantillaBasePath();
         EtiquetaModel etiqueta = dto.getEtiqueta();
         List<EtiquetaCampoModel> campos = dto.getCampos();
-        List<List<String>> seriales = dto.getSeriales();
+        List<IngresoModel> seriales = dto.getSeriales();
         EtiquetaDatosGeneralesDTO datosGenerales = dto.getDatosGenerales();
         String zpl = zplPrinterService.generarZpl(plantillaBasePath, etiqueta, campos, seriales, datosGenerales);
         return ResponseEntity.ok(zpl);
@@ -83,32 +74,6 @@ public class PrnZplController {
         }
     }
 
-    @PostMapping("/vista-previa")
-    public ResponseEntity<byte[]> vistaPreviaZpl(@RequestBody String zpl) {
-        try {
-            URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Accept", "image/png");
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(zpl.getBytes(StandardCharsets.UTF_8));
-            }
-
-            try (InputStream in = conn.getInputStream()) {
-                byte[] imageBytes = in.readAllBytes();
-                return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_PNG)
-                        .body(imageBytes);
-            }
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-
 }
 
 @Data
@@ -116,7 +81,7 @@ class GenerarZplDTOS {
     private String plantillaBasePath;
     private EtiquetaModel etiqueta;
     private List<EtiquetaCampoModel> campos;
-    private List<List<String>> seriales;
+    private List<IngresoModel> seriales;
     private PalletModel palletModel;
     private UsuarioModel usuario;
     private SmartCardModel smartCardModel;
@@ -129,4 +94,3 @@ class EtiquetaDTOS {
     private int impresion;
     // cualquier otro campo necesario
 }
-
