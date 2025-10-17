@@ -41,14 +41,6 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 @Service
 public class ZplPrinterService {
-  // private final CajaService cajaService; // para obtener seriales, caja,
-  // pallet, lote
-  // @Autowired
-  // private EtiquetaService etiquetaService; // para nombre y folder
-  // private final MaestroDao maestroDao;
-  // private final LoteDao loteDao;
-  // private final IngresoDao ingresoDao;
-  // private final SmartCardDao smartCardDao;
 
   public String generarZpl(
       String plantillaBasePath,
@@ -74,7 +66,7 @@ public class ZplPrinterService {
 
       zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + porImpresion), campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
-      zplFinal.append(zpl);
+      zplFinal.append(zpl).append("\n^XZ###DELIMITER_ZPL###^XA\n");
       contador += porImpresion;
     }
 
@@ -86,8 +78,8 @@ public class ZplPrinterService {
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zplFinal.append(zpl);
     }
-
     return zplFinal.toString();
+
   }
 
   private String leerPlantilla(String ruta) {
@@ -132,13 +124,14 @@ public class ZplPrinterService {
   private String reemplazarDatosGenerales(String zpl, EtiquetaDatosGeneralesDTO datos) {
     zpl = zpl.replace("familia", Objects.toString(datos.getFamilia(), ""));
     zpl = zpl.replace("descripcion", Objects.toString(datos.getDescripcion(), ""));
+    zpl = zpl.replace("codigosap", Objects.toString(datos.getCodigosap(), ""));
     zpl = zpl.replace("usuario", Objects.toString(datos.getUsuario(), ""));
     zpl = zpl.replace("tipologia", Objects.toString(datos.getTipologia(), ""));
     zpl = zpl.replace("modelo", Objects.toString(datos.getModelo(), ""));
     zpl = zpl.replace("codProveedor", Objects.toString(datos.getCodProveedor(), ""));
     zpl = zpl.replace("proveedor", Objects.toString(datos.getProveedor(), ""));
     zpl = zpl.replace("lote", Objects.toString(datos.getLote(), ""));
-    zpl = zpl.replace("pNumberBox", Objects.toString(datos.getPNumberBox(), ""));
+    zpl = zpl.replace("pNumberBox", Objects.toString(datos.getNumberBox(), ""));
     zpl = zpl.replace("pallet", Objects.toString(datos.getPallet(), ""));
     zpl = zpl.replace("caja", Objects.toString(datos.getCaja(), ""));
     zpl = zpl.replace("fecha", Objects.toString(datos.getFecha(), ""));

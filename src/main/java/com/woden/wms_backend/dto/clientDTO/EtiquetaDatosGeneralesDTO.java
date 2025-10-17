@@ -15,7 +15,7 @@ public class EtiquetaDatosGeneralesDTO {
     private String modelo;
     private String codProveedor;
     private String proveedor;
-    private String pNumberBox;
+    private String numberBox;
     private String lote;
     private String smartCardSerial;
     private String smartCardCodigoSap;

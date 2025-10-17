@@ -4,6 +4,7 @@ import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
+import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
@@ -46,7 +47,7 @@ public class PrnZplController {
         String plantillaBasePath = dto.getPlantillaBasePath();
         EtiquetaModel etiqueta = dto.getEtiqueta();
         List<EtiquetaCampoModel> campos = dto.getCampos();
-        List<List<String>> seriales = dto.getSeriales();
+        List<IngresoModel> seriales = dto.getSeriales();
         EtiquetaDatosGeneralesDTO datosGenerales = dto.getDatosGenerales();
         String zpl = zplPrinterService.generarZpl(plantillaBasePath, etiqueta, campos, seriales, datosGenerales);
         return ResponseEntity.ok(zpl);
@@ -108,7 +109,6 @@ public class PrnZplController {
         }
     }
 
-
 }
 
 @Data
@@ -116,7 +116,7 @@ class GenerarZplDTOS {
     private String plantillaBasePath;
     private EtiquetaModel etiqueta;
     private List<EtiquetaCampoModel> campos;
-    private List<List<String>> seriales;
+    private List<IngresoModel> seriales;
     private PalletModel palletModel;
     private UsuarioModel usuario;
     private SmartCardModel smartCardModel;
@@ -129,4 +129,3 @@ class EtiquetaDTOS {
     private int impresion;
     // cualquier otro campo necesario
 }
-
