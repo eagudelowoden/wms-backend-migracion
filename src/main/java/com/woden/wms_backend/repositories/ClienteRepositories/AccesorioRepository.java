@@ -115,6 +115,4 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
 
 
 
-
-
 }

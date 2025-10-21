@@ -26,6 +26,9 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
   }
 
   @Autowired
+  private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate; // 👈 agrega esto arriba, junto con tus otros @Autowired
+
+  @Autowired
   private AccesorioRepository accesorioRepository;
   @Autowired
   private PalletRepository palletRepository;
@@ -130,18 +133,25 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return formattedResults;
     }
     public int getPackedAccesoriesSerials(String codigoSap, String tipoAccesorio, Integer palletId) {
+        String sql = "EXEC pa_GetPackedAccesoriesSerials ?, ?, ?";
         try {
-            List<Object[]> resultados = accesorioRepository.GetPackedAccesoriesSerials(codigoSap, tipoAccesorio, palletId);
-            if (resultados == null) {
-                return 0;
-            }
-            int count = resultados.size();
-            return count;
+            long start = System.currentTimeMillis();
+
+            List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, codigoSap, tipoAccesorio, palletId);
+            int total = resultados.size();
+
+            long end = System.currentTimeMillis();
+            System.out.println("⏱️ getPackedAccesoriesSerials ejecutado en " + (end - start) + " ms. Total: " + total);
+
+            return total;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("❌ Error en getPackedAccesoriesSerials: " + e.getMessage());
             return 0;
         }
     }
+
+
+
 
 
 
@@ -170,26 +180,37 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         accesorioRepository.UpdateSerialAccesory(serialNuevo, serialAnterior, filas);
     }
 
+    @Transactional
     public int updatePackingBatch(List<String[]> packingDataList) {
-        int status = 0;
-        for (String[] data : packingDataList) {
-            try {
-                int filas = accesorioRepository.updatePackingAccesory(
-                        data[0],                         // codigoSap
-                        data[1],                         // tipo
-                        data[2],                         // estado (EMPAQUE)
-                        Integer.parseInt(data[3]),        // destino
-                        data[4],                         // serial
-                        Integer.parseInt(data[5]),        // palletId
-                        Integer.parseInt(data[6])         // cantidad
-                );
-                if (filas > 0) status = 1;
-            } catch (Exception e) {
-                System.err.println("❌ Error al ejecutar pa_UpdatePackingAccesory: " + e.getMessage());
-                return 0;
+        String sql = "EXEC pa_UpdatePackingAccesory ?, ?, ?, ?, ?, ?, ?";
+
+        int batchSize = 200; // 🔹 puedes ajustar (100–500 según tu entorno)
+        int total = 0;
+
+        try {
+            for (int i = 0; i < packingDataList.size(); i += batchSize) {
+                List<String[]> batch = packingDataList.subList(i, Math.min(i + batchSize, packingDataList.size()));
+
+                jdbcTemplate.batchUpdate(sql, batch, batch.size(), (ps, data) -> {
+                    ps.setString(1, data[0]); // CodigoSap
+                    ps.setString(2, data[1]); // Tipo
+                    ps.setString(3, data[2]); // Estado
+                    ps.setInt(4, Integer.parseInt(data[3])); // DestinoId
+                    ps.setString(5, data[4]); // Serial
+                    ps.setInt(6, Integer.parseInt(data[5])); // PalletId
+                    ps.setInt(7, Integer.parseInt(data[6])); // Cantidad
+                });
+
+                total += batch.size();
             }
+
+            //System.out.println("✅ Batch ejecutado correctamente. Total registros procesados: " + total);
+            return 1;
+
+        } catch (Exception e) {
+            System.err.println("❌ Error durante batch update: " + e.getMessage());
+            return 0;
         }
-        return status;
     }
 
     public List<Map<String, Object>> SearchAllPackedAccesory(String estado) {

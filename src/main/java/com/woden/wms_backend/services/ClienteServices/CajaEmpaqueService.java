@@ -1,4 +1,5 @@
 package com.woden.wms_backend.services.ClienteServices;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
 import com.woden.wms_backend.dto.*;
@@ -7,6 +8,10 @@ import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.*;
 //import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.services.BaseService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+//import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +29,9 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 
   @Autowired
   private CajaEmpaqueRepository cajaEmpaqueRepository;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Autowired
   private IngresoRepository ingresoRepository;
@@ -76,9 +84,12 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public List<String> getSerialesByPallet(Integer palletId) {
-    return cajaEmpaqueRepository.SerialesByPallet(palletId);
-  }
+    @Transactional(readOnly = true)
+    public List<String> getSerialesByPallet(Integer palletId) {
+        Query query = entityManager.createNativeQuery("EXEC pa_SerialesByPallet :palletId");
+        query.setParameter("palletId", palletId);
+        return query.getResultList();
+    }
 
   private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
 
