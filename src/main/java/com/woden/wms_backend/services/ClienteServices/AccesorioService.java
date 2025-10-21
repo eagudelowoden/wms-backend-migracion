@@ -192,5 +192,23 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return status;
     }
 
+    public List<Map<String, Object>> SearchAllPackedAccesory(String estado) {
+        List<Object[]> resultados = accesorioRepository.SearchAllPackedAccesory(estado);
+        List<Map<String, Object>> formattedResults = new ArrayList<>();
+
+        for (Object[] row : resultados) {
+            Map<String, Object> map = new HashMap<>();
+
+            map.put("codigo", row[0] != null ? row[0].toString() : "");
+            map.put("descripcion", row[1] != null ? row[1].toString() : "");
+            map.put("nuevos", row[2] != null ? row[2].toString() : "0");
+            map.put("reacondicionados", row[3] != null ? row[3].toString() : "0");
+            /*hola mundo*/
+            formattedResults.add(map);
+        }
+
+        return formattedResults;
+    }
+
 
 }

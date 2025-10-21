@@ -164,6 +164,18 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         return ResponseEntity.ok(totalSeriales);
     }
 
+    @GetMapping("/searchAllPackedAccesory")
+    public ResponseEntity<List<Map<String, Object>>> SearchAllPackedAccesory(
+            @RequestParam String estado) {
+        List<Map<String, Object>> lista = accesorioService.SearchAllPackedAccesory(estado);
+        return ResponseEntity.ok(lista);
+    }
+
+
+
+
+
+
 
 
 
