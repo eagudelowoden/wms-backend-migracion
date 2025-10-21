@@ -11,5 +11,5 @@ import com.woden.wms_backend.models.WmsWdGeneral.UsuarioClientePerfilModel;
 public interface UsuarioClientePerfilRepository extends CrudRepository<UsuarioClientePerfilModel, Integer> {
 
   @Query(value = "EXEC pa_GetIdUserClientProfile :usuarioClienteId", nativeQuery = true)
-  Integer getIdUsuarioClientePerfil(@Param("usuarioClienteId") int usuarioClienteId);
+  Integer getIdUsuarioClientePerfil(@Param("usuarioClienteId") Integer usuarioClienteId);
 }

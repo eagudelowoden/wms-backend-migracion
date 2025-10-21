@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ctc.wstx.ent.IntEntity;
 import com.woden.wms_backend.services.WmsWdGeneral.UsuarioClientePerfilService;
 
 @RestController
@@ -20,10 +21,9 @@ public class UsuarioClientePerfilController {
     private UsuarioClientePerfilService usuarioClientePerfilService;
 
     @GetMapping("/id")
-    public ResponseEntity<Map<String, Integer>> getIdUsuarioClientePerfil(@RequestParam int usuarioClienteId) {
-        int id = usuarioClientePerfilService.getIdUsuarioClientePerfil(usuarioClienteId);
-        Map<String, Integer> response = new HashMap<>();
-        response.put("id", id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Integer> getIdUsuarioClientePerfil(@RequestParam Integer usuarioClienteId) {
+        Integer id = usuarioClientePerfilService.getIdUsuarioClientePerfil(usuarioClienteId);
+        // Map<String, Integer> response = new HashMap<>();
+        return ResponseEntity.ok(id);
     }
 }

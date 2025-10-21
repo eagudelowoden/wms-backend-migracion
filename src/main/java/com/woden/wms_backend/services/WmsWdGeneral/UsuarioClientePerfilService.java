@@ -9,8 +9,12 @@ public class UsuarioClientePerfilService {
 
   private UsuarioClientePerfilRepository usuarioClientePerfilRepository;
 
-  public int getIdUsuarioClientePerfil(int usuarioClienteId) {
+  public UsuarioClientePerfilService(UsuarioClientePerfilRepository usuarioClientePerfilRepository) {
+    this.usuarioClientePerfilRepository = usuarioClientePerfilRepository;
+  }
+
+  public Integer getIdUsuarioClientePerfil(Integer usuarioClienteId) {
     Integer id = usuarioClientePerfilRepository.getIdUsuarioClientePerfil(usuarioClienteId);
-    return id != null ? id : 0;
+    return id;
   }
 }
