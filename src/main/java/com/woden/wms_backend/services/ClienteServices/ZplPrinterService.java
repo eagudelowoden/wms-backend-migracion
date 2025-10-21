@@ -133,7 +133,7 @@ public class ZplPrinterService {
     zpl = zpl.replace("lote", Objects.toString(datos.getLote(), ""));
     zpl = zpl.replace("pNumberBox", Objects.toString(datos.getNumberBox(), ""));
     zpl = zpl.replace("pallet", Objects.toString(datos.getPallet(), ""));
-    zpl = zpl.replace("caja", Objects.toString(datos.getCaja(), ""));
+    zpl = zpl.replace("caja", "Caja: " + Objects.toString(datos.getCaja(), ""));
     zpl = zpl.replace("fecha", Objects.toString(datos.getFecha(), ""));
 
     if (datos.getSmartCardSerial() != null) {
