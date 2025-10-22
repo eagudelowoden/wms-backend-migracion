@@ -1,8 +1,5 @@
 package com.woden.wms_backend.controllers.WmsWdGeneral;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
