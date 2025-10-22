@@ -473,7 +473,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     public List<Map<String, String>> searchQualityDeliveryPallet() {
         List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
-
+       //VER TODOS LOS SERIALES
         return results.stream().map(result -> {
             Map<String, String> pallet = new HashMap<>();
             pallet.put("id", String.valueOf(result[0]));
