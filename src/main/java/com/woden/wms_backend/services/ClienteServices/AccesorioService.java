@@ -135,12 +135,12 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     public int getPackedAccesoriesSerials(String codigoSap, String tipoAccesorio, Integer palletId) {
         String sql = "EXEC pa_GetPackedAccesoriesSerials ?, ?, ?";
         try {
-            long start = System.currentTimeMillis();
+            // long start = System.currentTimeMillis();
 
             List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, codigoSap, tipoAccesorio, palletId);
             int total = resultados.size();
 
-            long end = System.currentTimeMillis();
+            // long end = System.currentTimeMillis();
          //   System.out.println("⏱️ getPackedAccesoriesSerials ejecutado en " + (end - start) + " ms. Total: " + total);
 
             return total;
@@ -185,7 +185,6 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         String sql = "EXEC pa_UpdatePackingAccesory ?, ?, ?, ?, ?, ?, ?";
 
         int batchSize = 200; // 🔹 puedes ajustar (100–500 según tu entorno)
-        int total = 0;
 
         try {
             for (int i = 0; i < packingDataList.size(); i += batchSize) {
@@ -201,7 +200,7 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
                     ps.setInt(7, Integer.parseInt(data[6])); // Cantidad
                 });
 
-                total += batch.size();
+                // total += batch.size();
             }
 
             //System.out.println("✅ Batch ejecutado correctamente. Total registros procesados: " + total);

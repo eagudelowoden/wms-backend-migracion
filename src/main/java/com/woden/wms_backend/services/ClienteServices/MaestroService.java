@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.woden.wms_backend.dto.ModeloDTO;
 import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.services.BaseService;

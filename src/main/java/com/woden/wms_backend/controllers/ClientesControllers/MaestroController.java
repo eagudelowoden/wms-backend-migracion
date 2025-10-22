@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
-import com.woden.wms_backend.dto.ModeloDTO;
 import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.services.ClienteServices.MaestroService;
 
