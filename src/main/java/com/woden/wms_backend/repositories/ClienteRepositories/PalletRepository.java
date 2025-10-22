@@ -157,4 +157,9 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
         Integer updateSapCodePallet(@Param("palletId") Integer palletId, @Param("codigoSapId") Integer codigoSapId,
                         @Param("filas") Integer filas);
 
+        @Query(value = "EXEC pa_SearchQualityDeliveryPallet", nativeQuery = true)
+        List<Object[]> searchQualityDeliveryPallet();
+
+
+
 }
