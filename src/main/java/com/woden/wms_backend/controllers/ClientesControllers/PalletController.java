@@ -336,4 +336,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+    @GetMapping("/searchQualityDeliveryPallet")
+    public ResponseEntity<List<Map<String, String>>> searchQualityDeliveryPallet() {
+        List<Map<String, String>> pallets = palletService.searchQualityDeliveryPallet();
+        return ResponseEntity.ok(pallets);
+    }
+
+
 }
