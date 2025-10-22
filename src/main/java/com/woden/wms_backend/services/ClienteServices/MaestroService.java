@@ -52,14 +52,13 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
     return maestroRepository.addCountPalletFamily(value, familyId, filas);
   }
 
-  public List<ModeloDTO> getModelMaster(String codigoSap) {
-    List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
-    return results.stream().map(obj -> {
-      ModeloDTO modelo = new ModeloDTO();
-      modelo.setModelo((String) obj[0]);
-      return modelo;
-    }).collect(Collectors.toList());
-  }
+    public List<String> getModelMaster(String codigoSap) {
+        List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
+        return results.stream()
+                .map(obj -> (String) obj[0]) // devuelve solo el string
+                .collect(Collectors.toList());
+    }
+
 
   public List<String> getLevelsClasification() {
     List<Object[]> results = maestroRepository.getLevelsClasification();

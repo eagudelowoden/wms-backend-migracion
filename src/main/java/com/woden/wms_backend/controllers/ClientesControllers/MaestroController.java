@@ -67,8 +67,8 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     }
 
     @GetMapping("/getModelMaster/{codigoSap}")
-    public ResponseEntity<List<ModeloDTO>> getModelMaster(@PathVariable String codigoSap) {
-        List<ModeloDTO> results = maestroService.getModelMaster(codigoSap);
+    public ResponseEntity<List<String>> getModelMaster(@PathVariable String codigoSap) {
+        List<String> results = maestroService.getModelMaster(codigoSap);
         return ResponseEntity.ok(results);
     }
 

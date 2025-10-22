@@ -282,10 +282,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
 
 
-
-
-
-
     public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino, int page, int size) {
         List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
 

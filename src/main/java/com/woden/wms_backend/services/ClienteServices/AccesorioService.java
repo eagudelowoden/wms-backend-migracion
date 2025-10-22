@@ -141,7 +141,7 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
             int total = resultados.size();
 
             long end = System.currentTimeMillis();
-            System.out.println("⏱️ getPackedAccesoriesSerials ejecutado en " + (end - start) + " ms. Total: " + total);
+         //   System.out.println("⏱️ getPackedAccesoriesSerials ejecutado en " + (end - start) + " ms. Total: " + total);
 
             return total;
         } catch (Exception e) {
