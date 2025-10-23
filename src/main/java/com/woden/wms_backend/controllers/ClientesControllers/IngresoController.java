@@ -384,18 +384,27 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @PostMapping("/UpdatePackingEntry")
-  public ResponseEntity<?> UpdatePackingEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
-    List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-    for (Map<String, Object> ingreso : ingresos) {
-      Integer estadoId = (Integer) ingreso.get("estadoId");
-      Integer palletId = (Integer) ingreso.get("palletId");
-      Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
-      Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
-      String serial = (String) ingreso.get("serial");
-      Integer loteId = (Integer) ingreso.get("loteId");
-      ingresoService.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId);
+  public ResponseEntity<Integer> UpdatePackingEntry(
+      @RequestParam("estadoId") Integer estadoId,
+      @RequestParam("palletId") Integer palletId,
+      @RequestParam("cajaEmpaqueId") Integer cajaEmpaqueId,
+      @RequestParam("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+      @RequestParam("serial") String serial,
+      @RequestParam("loteId") Integer loteId) {
+    try {
+      int result = ingresoService.UpdatePackingEntry(
+          estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId);
+
+      if (result == 1) {
+        return ResponseEntity.ok(1);
+      } else {
+        return ResponseEntity.badRequest().body(0);
+      }
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador UpdatePackingEntry: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
-    return ResponseEntity.ok(1);
   }
 
   @PostMapping("/updatePackingEntrySmartCard")
