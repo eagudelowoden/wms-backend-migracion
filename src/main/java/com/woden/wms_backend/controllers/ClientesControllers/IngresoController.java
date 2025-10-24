@@ -33,6 +33,10 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.ZplService;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @RestController
 @RequestMapping("/client/ingresos")
 public class IngresoController extends BaseController<IngresoModel, Integer> {
@@ -534,20 +538,34 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @PostMapping("/updateDispatchEntry")
-  public ResponseEntity<Integer> updateDispatchEntry(@RequestBody Map<String, Object> body) {
+  public ResponseEntity<Integer> updateDispatchEntry(
+      @RequestBody UpdateDispatchEntryRequest request) {
     try {
       ingresoService.updateDispatchEntry(
-          (String) body.get("serial"),
-          (Integer) body.get("estadoId"),
-          (Integer) body.get("palletId"),
-          (Integer) body.get("cajaDespachoId"),
-          (Integer) body.get("usuarioMovimientoId"),
-          (Integer) body.get("loteId"));
+          request.getSerial(),
+          request.getEstadoId(),
+          request.getPalletId(),
+          request.getCajaDespachoId(),
+          request.getUsuarioMovimientoId(),
+          request.getLoteId());
       return ResponseEntity.ok(1);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(0);
     } catch (Exception e) {
-      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
 
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class UpdateDispatchEntryRequest {
+  private String serial;
+  private Integer estadoId;
+  private Integer palletId;
+  private Integer cajaDespachoId;
+  private Integer usuarioMovimientoId;
+  private Integer loteId;
 }

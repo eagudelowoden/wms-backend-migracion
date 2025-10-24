@@ -659,13 +659,12 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return ingresos;
   }
 
+  @Transactional
   public void updateDispatchEntry(String serial, Integer estadoId, Integer palletId, Integer cajaDespachoId,
       Integer usuarioMovimientoId, Integer loteId) {
-    Integer filas = 4;
-    if (loteId == 0) {
-      loteId = null;
-    }
-    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId,
-        filas);
+    // Integer filas = 4;
+    loteId = (loteId != null && loteId == 0) ? null : loteId;
+    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
   }
 }
+

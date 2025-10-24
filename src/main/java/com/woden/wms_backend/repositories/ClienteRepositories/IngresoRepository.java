@@ -318,9 +318,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_UpdateDispatchEntry :estadoId, :palletId, :cajaDespachoId, :usuarioMovimientoId, :serial, :loteId, :filas OUT", nativeQuery = true)
+	@Query(value = "EXEC pa_UpdateDispatchEntry :estadoId, :palletId, :cajaDespachoId, :usuarioMovimientoId, :serial, :loteId", nativeQuery = true)
 	void updateDispatchEntry(@Param("serial") String serial, @Param("estadoId") Integer estadoId,
 			@Param("palletId") Integer palletId,
 			@Param("cajaDespachoId") Integer cajaDespachoId, @Param("usuarioMovimientoId") Integer usuarioMovimientoId,
-			@Param("loteId") Integer loteId, @Param("filas") Integer filas);
+			@Param("loteId") Integer loteId);
 }
