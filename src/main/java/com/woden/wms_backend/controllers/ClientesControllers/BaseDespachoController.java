@@ -27,6 +27,9 @@ public class BaseDespachoController extends BaseController<BaseDespachoModel, In
   @GetMapping("/getModelBaseDespacho")
   public ResponseEntity<BaseDespachoModel> getBaseDespacho(@RequestParam String base, @RequestParam String serial) {
     List<BaseDespachoModel> results = baseDespachoService.getModelBase(base, serial);
+    if (results.isEmpty()) {
+      return ResponseEntity.ok(null);
+    }
     BaseDespachoModel baseDespachoModel = results.get(0);
     return ResponseEntity.ok(baseDespachoModel);
   }

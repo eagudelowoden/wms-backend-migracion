@@ -534,14 +534,20 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @PostMapping("/updateDispatchEntry")
-  public ResponseEntity<Integer> updateDispatchEntry(@RequestParam String serial, @RequestParam Integer estadoId,
-      @RequestParam Integer palletId, @RequestParam Integer cajaDespachoId, @RequestParam Integer usuarioMovimientoId,
-      @RequestParam Integer loteId) {
+  public ResponseEntity<Integer> updateDispatchEntry(@RequestBody Map<String, Object> body) {
     try {
-      ingresoService.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
+      ingresoService.updateDispatchEntry(
+          (String) body.get("serial"),
+          (Integer) body.get("estadoId"),
+          (Integer) body.get("palletId"),
+          (Integer) body.get("cajaDespachoId"),
+          (Integer) body.get("usuarioMovimientoId"),
+          (Integer) body.get("loteId"));
       return ResponseEntity.ok(1);
     } catch (Exception e) {
-      return ResponseEntity.ok(0);
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
 }
