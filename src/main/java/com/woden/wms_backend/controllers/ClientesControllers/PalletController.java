@@ -337,11 +337,15 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     }
   }
 
-    @GetMapping("/searchQualityDeliveryPallet")
-    public ResponseEntity<List<Map<String, String>>> searchQualityDeliveryPallet() {
-        List<Map<String, String>> pallets = palletService.searchQualityDeliveryPallet();
-        return ResponseEntity.ok(pallets);
-    }
+  @GetMapping("/searchQualityDeliveryPallet")
+  public ResponseEntity<List<Map<String, String>>> searchQualityDeliveryPallet() {
+    List<Map<String, String>> pallets = palletService.searchQualityDeliveryPallet();
+    return ResponseEntity.ok(pallets);
+  }
 
-
+  @GetMapping("/searchPalletBoxDispatchPallet")
+  public ResponseEntity<List<Map<String, String>>> searchPalletBoxDispatchPallet(@RequestParam String numero) {
+    List<Map<String, String>> pallets = palletService.searchPalletBoxDispatchPallet(numero);
+    return ResponseEntity.ok(pallets);
+  }
 }

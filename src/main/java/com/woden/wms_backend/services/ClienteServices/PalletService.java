@@ -60,7 +60,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     pallet.setCantidadCaja((Integer) row[17]);
     pallet.setSmartCard(TypeMapper.toBoolean(row[18]));
 
-
     return pallet;
   }
 
@@ -265,75 +264,72 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-    public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
-        List<Object[]> results = palletRepository.SearchPackingDeliveryPallet(numero, tipologia, tipo);
-        return results.stream().map(obj -> {
-            PalletDTO pallet = new PalletDTO();
-            pallet.setId((Integer) obj[0]);
-            pallet.setNumero((String) obj[1]);
-            pallet.setCantidad((Integer) obj[2]);
-            pallet.setOrigen((String) obj[3]);
-            pallet.setTipologia((String) obj[4]);
-            pallet.setCodigoSap((String) obj[5]);
-            pallet.setDescripcion((String) obj[6]);
-            return pallet;
-        }).collect(Collectors.toList());
+  public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
+    List<Object[]> results = palletRepository.SearchPackingDeliveryPallet(numero, tipologia, tipo);
+    return results.stream().map(obj -> {
+      PalletDTO pallet = new PalletDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCantidad((Integer) obj[2]);
+      pallet.setOrigen((String) obj[3]);
+      pallet.setTipologia((String) obj[4]);
+      pallet.setCodigoSap((String) obj[5]);
+      pallet.setDescripcion((String) obj[6]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
+  public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino, int page, int size) {
+    List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
+
+    int fromIndex = page * size;
+    int toIndex = Math.min(fromIndex + size, results.size());
+
+    if (fromIndex >= results.size()) {
+      return Collections.emptyList();
     }
 
+    List<Object[]> paged = results.subList(fromIndex, toIndex);
 
-
-    public List<Map<String, String>> SearchPalletBoxPallet(String numero, String destino, int page, int size) {
-        List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
-
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, results.size());
-
-        if (fromIndex >= results.size()) {
-            return Collections.emptyList();
-        }
-
-        List<Object[]> paged = results.subList(fromIndex, toIndex);
-
-        List<Map<String, String>> palletBox = new ArrayList<>();
-        for (Object[] result : paged) {
-            Map<String, String> pallet = new HashMap<>();
-            pallet.put("id", String.valueOf(result[0]));
-            pallet.put("numero", String.valueOf(result[1]));
-            pallet.put("cantidadCaja", String.valueOf(result[2]));
-            pallet.put("descripcion", String.valueOf(result[3]));
-            pallet.put("tipologia", String.valueOf(result[4]));
-            palletBox.add(pallet);
-        }
-
-        return palletBox;
+    List<Map<String, String>> palletBox = new ArrayList<>();
+    for (Object[] result : paged) {
+      Map<String, String> pallet = new HashMap<>();
+      pallet.put("id", String.valueOf(result[0]));
+      pallet.put("numero", String.valueOf(result[1]));
+      pallet.put("cantidadCaja", String.valueOf(result[2]));
+      pallet.put("descripcion", String.valueOf(result[3]));
+      pallet.put("tipologia", String.valueOf(result[4]));
+      palletBox.add(pallet);
     }
 
-    public List<Map<String, String>> SearchPalletBoxPalletWeb(String numero, String destino, int page, int size) {
-        List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
+    return palletBox;
+  }
 
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, results.size());
+  public List<Map<String, String>> SearchPalletBoxPalletWeb(String numero, String destino, int page, int size) {
+    List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
 
-        if (fromIndex >= results.size()) {
-            return Collections.emptyList();
-        }
+    int fromIndex = page * size;
+    int toIndex = Math.min(fromIndex + size, results.size());
 
-        List<Object[]> paged = results.subList(fromIndex, toIndex);
-
-        List<Map<String, String>> palletBox = new ArrayList<>();
-        for (Object[] result : paged) {
-            Map<String, String> pallet = new HashMap<>();
-            pallet.put("id", String.valueOf(result[0]));
-            pallet.put("numero", String.valueOf(result[1]));
-            pallet.put("cantidadCaja", String.valueOf(result[2]));
-            pallet.put("descripcion", String.valueOf(result[3]));
-            pallet.put("tipologia", String.valueOf(result[4]));
-            palletBox.add(pallet);
-        }
-
-        return palletBox;
+    if (fromIndex >= results.size()) {
+      return Collections.emptyList();
     }
 
+    List<Object[]> paged = results.subList(fromIndex, toIndex);
+
+    List<Map<String, String>> palletBox = new ArrayList<>();
+    for (Object[] result : paged) {
+      Map<String, String> pallet = new HashMap<>();
+      pallet.put("id", String.valueOf(result[0]));
+      pallet.put("numero", String.valueOf(result[1]));
+      pallet.put("cantidadCaja", String.valueOf(result[2]));
+      pallet.put("descripcion", String.valueOf(result[3]));
+      pallet.put("tipologia", String.valueOf(result[4]));
+      palletBox.add(pallet);
+    }
+
+    return palletBox;
+  }
 
   public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
     Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
@@ -465,23 +461,37 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return palletRepository.getBoxPallet(palletId, tabla);
   }
 
-
   public void innactivatePallet(Integer palletId) {
     int filas = 0;
     palletRepository.innactivatePallet(palletId, filas);
   }
 
-    public List<Map<String, String>> searchQualityDeliveryPallet() {
-        List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
-       //VER TODOS LOS SERIALES
-        return results.stream().map(result -> {
-            Map<String, String> pallet = new HashMap<>();
-            pallet.put("id", String.valueOf(result[0]));
-            pallet.put("numero", String.valueOf(result[1]));
-            pallet.put("cantidadCaja", String.valueOf(result[2]));
-            return pallet;
-        }).collect(Collectors.toList());
-    }
+  public List<Map<String, String>> searchQualityDeliveryPallet() {
+    List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
+    return results.stream().map(result -> {
+      Map<String, String> pallet = new HashMap<>();
+      pallet.put("id", String.valueOf(result[0]));
+      pallet.put("numero", String.valueOf(result[1]));
+      pallet.put("cantidadCaja", String.valueOf(result[2]));
+      return pallet;
+    }).collect(Collectors.toList());
+  }
 
+  public List<Map<String, String>> searchPalletBoxDispatchPallet(String numero) {
+    List<Object[]> results = palletRepository.searchPalletBoxDispatchPallet(numero);
 
+    return results.stream().map(result -> {
+      Map<String, String> pallet = new HashMap<>();
+      pallet.put("id", String.valueOf(result[0]));
+      pallet.put("numero", String.valueOf(result[1]));
+      pallet.put("codigoSap", String.valueOf(result[2]));
+      pallet.put("descripcion", String.valueOf(result[3]));
+      pallet.put("cajas", String.valueOf(result[4]));
+      pallet.put("cantidadEquipos", String.valueOf(result[5]));
+      pallet.put("cantidadAccesorios", String.valueOf(result[6]));
+      pallet.put("cantidadSmartcard", String.valueOf(result[7]));
+      pallet.put("tipologia", String.valueOf(result[8]));
+      return pallet;
+    }).collect(Collectors.toList());
+  }
 }
