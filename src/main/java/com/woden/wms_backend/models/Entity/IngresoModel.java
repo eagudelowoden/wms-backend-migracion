@@ -37,7 +37,8 @@ public class IngresoModel {
     private Integer palletIdAlmacen;
     private Integer palletIdEmpaque;
     private Integer cajaEmpaqueId;
-    // private Integer cajaDespachoId;
+    @Transient // ❌ No está en la BD
+    private Integer cajaDespachoId;
     private Integer estadoId;
     private Integer tipoOrigenId;
     private Integer origenId;
@@ -50,7 +51,7 @@ public class IngresoModel {
     private String falla;
     private String tecnicoCliente;
     private Integer prealertaId;
-    private Integer cruce;
+    private Boolean cruce;
     private String novedad;
     private Boolean garantiaFabricante;
     private Integer garantiaWoden;

@@ -42,45 +42,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private IlegibleRepository ilegibleRepository;
   private ConsecutiveService consecutiveService;
 
-  @Transactional
-  public void createIngreso(IngresoModel ingreso) {
-    try {
-      Integer result = ingresoRepository.insertIngreso(
-          ingreso.getSerial(),
-          ingreso.getMac(),
-          ingreso.getSerial3(),
-          ingreso.getSerial4(),
-          ingreso.getSerial5(),
-          ingreso.getCodigoSapId(),
-          ingreso.getPalletId(),
-          ingreso.getEstadoId(),
-          ingreso.getTipoOrigenId(),
-          ingreso.getOrigenId(),
-          ingreso.getTipologiaId(),
-          ingreso.getNivelId(),
-          ingreso.getTramite(),
-          ingreso.getDocumento(),
-          ingreso.getGuia(),
-          ingreso.getCaja(),
-          ingreso.getFalla(),
-          ingreso.getTecnicoCliente(),
-          ingreso.getPrealertaId(),
-          ingreso.getCruce(),
-          ingreso.getNovedad(),
-          ingreso.getGarantiaFabricante(),
-          ingreso.getUsuarioId(),
-          ingreso.getObservaciones(),
-          ingreso.getEstadoCliente(),
-          ingreso.getLoteId(),
-          ingreso.getCajaIngresoId(),
-          ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null);
-      // logger.info("Guardado correctamente");
-      System.out.println(result);
-    } catch (Exception e) {
-      logger.error("Error al insertar ingreso: {}", e.getMessage());
-    }
-  }
-
   @Autowired
   private DataSource dataSource;
 
@@ -666,5 +627,41 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     loteId = (loteId != null && loteId == 0) ? null : loteId;
     ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
   }
-}
 
+  public List<IngresoModel> getModelDispatch(Integer palletId, Integer cajaId) {
+    List<IngresoModel> ingresos = new ArrayList<>();
+    List<Object[]> results = ingresoRepository.getModelDispatch(palletId, cajaId);
+    for (Object[] obj : results) {
+      IngresoModel ingreso = new IngresoModel();
+      ingreso.setId((Integer) obj[0]);
+      ingreso.setSerial((String) obj[1]);
+      ingreso.setMac((String) obj[2]);
+      ingreso.setCodigoSapId((Integer) obj[3]);
+      ingreso.setPalletId((Integer) obj[4]);
+      ingreso.setPalletIdIngreso((Integer) obj[5]);
+      ingreso.setCajaDespachoId((Integer) obj[6]);
+      ingreso.setTipoOrigenId((Integer) obj[7]);
+      ingreso.setOrigenId((Integer) obj[8]);
+      ingreso.setTipologiaId((Integer) obj[9]);
+      ingreso.setNivelId((Integer) obj[10]);
+      ingreso.setTramite((String) obj[11]);
+      ingreso.setDocumento((String) obj[12]);
+      ingreso.setGuia((String) obj[13]);
+      ingreso.setFalla((String) obj[14]);
+      ingreso.setPrealertaId((Integer) obj[15]);
+      ingreso.setCruce((TypeMapper.toBoolean(obj[16])));
+      ingreso.setNovedad((String) obj[17]);
+      ingreso.setFecha(obj[18] != null ? ((Timestamp) obj[18]).toString() : null);
+      ingreso.setSmartCard((String) obj[19]);
+      ingreso.setSmartCardId((Integer) obj[20]);
+      ingreso.setLoteId((Integer) obj[21]);
+      ingreso.setSerial3((String) obj[22]);
+      ingreso.setCajaIngresoId((Integer) obj[23]);
+      ingreso.setNumeroSmartcard((String) obj[24]);
+      ingreso.setFallaCosmeticaId((Integer) obj[25]);
+      ingreso.setFallaFuncionalId((Integer) obj[26]);
+      ingresos.add(ingreso);
+    }
+    return ingresos;
+  }
+}

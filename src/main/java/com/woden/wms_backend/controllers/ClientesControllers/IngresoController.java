@@ -184,13 +184,19 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/sendEntry")
   public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
-    ingresoService.sendEntry(
-        dto.getEstadoId(),
-        dto.getTipologiaId(),
-        dto.getUsuarioId(),
-        dto.getPalletId(),
-        dto.getOpcion());
-    return ResponseEntity.ok(Map.of("message", "Ingreso enviado correctamente."));
+    try {
+      ingresoService.sendEntry(
+          dto.getEstadoId(),
+          dto.getTipologiaId(),
+          dto.getUsuarioId(),
+          dto.getPalletId(),
+          dto.getOpcion());
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(0);
+    }
+
   }
 
   @PostMapping("/updateTipologiaEntry")
@@ -553,6 +559,17 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.badRequest().body(0);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/getModelDispatch")
+  public ResponseEntity<List<IngresoModel>> getModelDispatch(@RequestParam Integer palletId,
+      @RequestParam Integer cajaId) {
+    try {
+      List<IngresoModel> ingreso = ingresoService.getModelDispatch(palletId, cajaId);
+      return ResponseEntity.ok(ingreso);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(null);
     }
   }
 
