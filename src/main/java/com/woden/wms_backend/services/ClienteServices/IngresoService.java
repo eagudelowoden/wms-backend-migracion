@@ -501,10 +501,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
   }
 
-  public void UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId, Integer usuarioIdMovimiento,
-      String serial, Integer loteId) {
-    Integer filas = 4;
-    ingresoRepository.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId, filas);
+  public int UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
+      Integer usuarioIdMovimiento, String serial, Integer loteId) {
+    try {
+      Integer filas = 4;
+      if (loteId == 0) {
+        loteId = null;
+      }
+      ingresoRepository.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId,
+          filas);
+      return 1; // ✅ éxito
+    } catch (Exception e) {
+      System.err.println("Error en UpdatePackingEntry: " + e.getMessage());
+      e.printStackTrace();
+      return 0;
+    }
   }
 
   public void UpdatePackingEntrySmartCard(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
@@ -648,14 +659,12 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return ingresos;
   }
 
+  @Transactional
   public void updateDispatchEntry(String serial, Integer estadoId, Integer palletId, Integer cajaDespachoId,
       Integer usuarioMovimientoId, Integer loteId) {
-    Integer filas = 4;
-    if (loteId == 0) {
-      loteId = null;
-    }
-    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId,
-        filas);
+    // Integer filas = 4;
+    loteId = (loteId != null && loteId == 0) ? null : loteId;
+    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
   }
 
     public List<Map<String, String>> searchQualityEntry() {
@@ -690,3 +699,4 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
 
 }
+

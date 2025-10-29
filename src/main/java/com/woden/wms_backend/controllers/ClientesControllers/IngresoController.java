@@ -33,6 +33,10 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.ZplService;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @RestController
 @RequestMapping("/client/ingresos")
 public class IngresoController extends BaseController<IngresoModel, Integer> {
@@ -384,18 +388,27 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @PostMapping("/UpdatePackingEntry")
-  public ResponseEntity<?> UpdatePackingEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
-    List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-    for (Map<String, Object> ingreso : ingresos) {
-      Integer estadoId = (Integer) ingreso.get("estadoId");
-      Integer palletId = (Integer) ingreso.get("palletId");
-      Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
-      Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
-      String serial = (String) ingreso.get("serial");
-      Integer loteId = (Integer) ingreso.get("loteId");
-      ingresoService.UpdatePackingEntry(estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId);
+  public ResponseEntity<Integer> UpdatePackingEntry(
+      @RequestParam("estadoId") Integer estadoId,
+      @RequestParam("palletId") Integer palletId,
+      @RequestParam("cajaEmpaqueId") Integer cajaEmpaqueId,
+      @RequestParam("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+      @RequestParam("serial") String serial,
+      @RequestParam("loteId") Integer loteId) {
+    try {
+      int result = ingresoService.UpdatePackingEntry(
+          estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId);
+
+      if (result == 1) {
+        return ResponseEntity.ok(1);
+      } else {
+        return ResponseEntity.badRequest().body(0);
+      }
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador UpdatePackingEntry: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
-    return ResponseEntity.ok(1);
   }
 
   @PostMapping("/updatePackingEntrySmartCard")
@@ -525,20 +538,41 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @PostMapping("/updateDispatchEntry")
-  public ResponseEntity<Integer> updateDispatchEntry(@RequestParam String serial, @RequestParam Integer estadoId,
-      @RequestParam Integer palletId, @RequestParam Integer cajaDespachoId, @RequestParam Integer usuarioMovimientoId,
-      @RequestParam Integer loteId) {
+  public ResponseEntity<Integer> updateDispatchEntry(
+      @RequestBody UpdateDispatchEntryRequest request) {
     try {
-      ingresoService.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
+      ingresoService.updateDispatchEntry(
+          request.getSerial(),
+          request.getEstadoId(),
+          request.getPalletId(),
+          request.getCajaDespachoId(),
+          request.getUsuarioMovimientoId(),
+          request.getLoteId());
       return ResponseEntity.ok(1);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(0);
     } catch (Exception e) {
-      return ResponseEntity.ok(0);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
 
-  @GetMapping("/searchQualityEntry")
-   public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
-       List<Map<String, String>> entries = ingresoService.searchQualityEntry();
-       return ResponseEntity.ok(entries);
-  }
+    @GetMapping("/searchQualityEntry")
+    public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
+        List<Map<String, String>> entries = ingresoService.searchQualityEntry();
+        return ResponseEntity.ok(entries);
+    }
+
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class UpdateDispatchEntryRequest {
+  private String serial;
+  private Integer estadoId;
+  private Integer palletId;
+  private Integer cajaDespachoId;
+  private Integer usuarioMovimientoId;
+  private Integer loteId;
+
 }
