@@ -535,4 +535,10 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.ok(0);
     }
   }
+
+  @GetMapping("/searchQualityEntry")
+   public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
+       List<Map<String, String>> entries = ingresoService.searchQualityEntry();
+       return ResponseEntity.ok(entries);
+  }
 }

@@ -1,27 +1,51 @@
 package com.woden.wms_backend.models.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "Calidad", schema = "dbo")
 public class CalidadModel {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id")
     private int id;
+
+    @Column(name = "SerialId")
     private int serialId;
+
+    @Column(name = "Serial")
     private String serial;
+
+    @Column(name = "Mac")
     private String mac;
+
+    @Column(name = "CodigoSapId")
     private int codigoSapId;
+
+    @Column(name = "PalletId")
     private int palletId;
+
+    @Column(name = "CajaEmpaqueId")
     private int cajaEmpaqueId;
-    private int fallaCosmeticaId;
-    private int fallaFuncionalId;
-    private int estadoId;
+
+    @Column(name = "FallaCosmeticaId")
+    private Integer fallaCosmeticaId;
+
+    @Column(name = "FallaFuncionalId")
+    private Integer fallaFuncionalId;
+
+    @Column(name = "EstadoId")
+    private Integer estadoId;
+
+    @Column(name = "UsuarioId")
     private int usuarioId;
-    private String fecha;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "Fecha")
+    private LocalDateTime fecha;
 }

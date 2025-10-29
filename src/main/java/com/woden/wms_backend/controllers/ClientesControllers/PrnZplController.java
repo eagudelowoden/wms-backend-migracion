@@ -1,7 +1,6 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
-import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
@@ -9,7 +8,6 @@ import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
 import com.woden.wms_backend.services.ClienteServices.EtiquetaService;
-import com.woden.wms_backend.services.ClienteServices.PrnConfigService;
 import com.woden.wms_backend.services.ClienteServices.ZplPrinterService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +26,6 @@ import java.util.*;
 @RequestMapping("/client/prn")
 public class PrnZplController {
 
-    @Autowired
-    private PrnConfigService service;
 
     @Autowired
     private ZplPrinterService zplPrinterService;

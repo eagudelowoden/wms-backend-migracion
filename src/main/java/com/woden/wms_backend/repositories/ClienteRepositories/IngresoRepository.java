@@ -323,4 +323,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("palletId") Integer palletId,
 			@Param("cajaDespachoId") Integer cajaDespachoId, @Param("usuarioMovimientoId") Integer usuarioMovimientoId,
 			@Param("loteId") Integer loteId, @Param("filas") Integer filas);
+
+
+    @Query(value = "EXEC pa_SearchQualityEntry", nativeQuery = true)
+    List<Object[]> searchQualityEntry();
+
 }

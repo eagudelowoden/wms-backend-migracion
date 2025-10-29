@@ -657,4 +657,36 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId,
         filas);
   }
+
+    public List<Map<String, String>> searchQualityEntry() {
+        List<Object[]> results = ingresoRepository.searchQualityEntry();
+        List<Map<String, String>> data = new ArrayList<>();
+
+        for (Object[] obj : results) {
+            Map<String, String> fila = new HashMap<>();
+
+            fila.put("serial", getValue(obj[0]));
+            fila.put("mac", getValue(obj[1]));
+            fila.put("pallet", getValue(obj[2]));
+            fila.put("caja", getValue(obj[3]));
+            fila.put("smartCard", getValue(obj[4]));
+
+            data.add(fila);
+        }
+
+        return data;
+    }
+
+    /**
+     * 🔹 Convierte el valor en String, reemplazando null o "null" por vacío.
+     */
+    private String getValue(Object value) {
+        if (value == null) return "";
+        String str = String.valueOf(value).trim();
+        return "null".equalsIgnoreCase(str) ? "" : str;
+    }
+
+
+
+
 }
