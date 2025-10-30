@@ -162,4 +162,16 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
   @Query(value = "EXEC pa_SearchPalletBoxDispatchPallet :numero", nativeQuery = true)
   List<Object[]> searchPalletBoxDispatchPallet(@Param("numero") String numero);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_SendAllPallet :destinoId, :palletId", nativeQuery = true)
+    void sendAllPallet(
+            @Param("destinoId") Integer destinoId,
+            @Param("palletId") Integer palletId);
+
+
+
+
 }

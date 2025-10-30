@@ -72,4 +72,21 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         }
         return count > 0 ? 1 : 0;
     }
+
+    @Transactional
+    public int updateQualityPalletEntry(Integer estadoId, Integer usuarioIdMovimiento, List<Integer> palletIds) {
+        if (palletIds == null || palletIds.isEmpty()) {
+            return 0; // nada que actualizar
+        }
+
+        for (Integer palletId : palletIds) {
+            calidadRepository.updateQualityPalletEntry(estadoId, usuarioIdMovimiento, palletId);
+        }
+
+        return 1; // ✅ éxito (actualizó al menos uno)
+    }
+
+
+
+
 }

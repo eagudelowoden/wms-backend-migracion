@@ -5,6 +5,7 @@ import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.services.ClienteServices.CalidadService;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,6 +80,27 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(0);
+        }
+    }
+
+    @PostMapping("/updateQualityPalletEntry")
+    public ResponseEntity<Integer> updateQualityPalletEntry(
+            @RequestParam Integer estadoId,
+            @RequestParam Integer usuarioIdMovimiento,
+            @RequestBody List<Integer> palletIds) {
+
+        try {
+            int result = calidadService.updateQualityPalletEntry(estadoId, usuarioIdMovimiento, palletIds);
+
+            if (result == 1) {
+                return ResponseEntity.ok(1); // ✅ Éxito
+            } else {
+                return ResponseEntity.ok(0); // ⚠️ No se actualizó nada
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(-1);
         }
     }
 
