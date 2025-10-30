@@ -72,8 +72,4 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         }
         return count > 0 ? 1 : 0;
     }
-
-
-
-
 }
