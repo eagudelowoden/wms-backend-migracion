@@ -573,6 +573,12 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
+    @GetMapping("/searchQualityEntry")
+    public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
+        List<Map<String, String>> entries = ingresoService.searchQualityEntry();
+        return ResponseEntity.ok(entries);
+    }
+
   @DeleteMapping("/packOffPalletEntry")
   public ResponseEntity<Integer> packOffPalletEntry(@RequestParam Integer palletId, @RequestParam Integer usuarioId) {
     try {

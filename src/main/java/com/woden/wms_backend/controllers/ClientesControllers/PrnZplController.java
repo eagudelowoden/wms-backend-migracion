@@ -1,7 +1,6 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
-import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;

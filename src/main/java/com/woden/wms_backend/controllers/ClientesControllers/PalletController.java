@@ -348,4 +348,13 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     List<Map<String, String>> pallets = palletService.searchPalletBoxDispatchPallet(numero);
     return ResponseEntity.ok(pallets);
   }
+
+  @PostMapping("/sendAllPallet")
+  public ResponseEntity<Integer> sendAllPallet(
+          @RequestParam Integer destinoId,
+          @RequestParam Integer palletId) {
+      palletService.sendAllPallet(destinoId, palletId);
+      return ResponseEntity.ok(1);
+  }
+
 }
