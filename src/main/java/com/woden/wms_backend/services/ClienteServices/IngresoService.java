@@ -664,4 +664,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
     return ingresos;
   }
+
+  public Integer packOffPalletEntry(Integer palletId, Integer usuarioId) {
+    try {
+      ingresoRepository.packOffPalletEntry(palletId, usuarioId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
 }

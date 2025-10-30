@@ -17,7 +17,8 @@ public interface CajaDespachoRepository extends BaseRepository<CajaDespachoModel
   @Transactional
   @Modifying
   @Query(value = "EXEC pa_InsertBoxDispatch :numero, :palletId, :usuarioId, :fecha", nativeQuery = true)
-  void insertBoxDispatch(@Param ("numero") String numero,@Param ("palletId") Integer palletId, @Param ("usuarioId") Integer usuarioId, @Param ("fecha") String fecha);
+  void insertBoxDispatch(@Param("numero") String numero, @Param("palletId") Integer palletId,
+      @Param("usuarioId") Integer usuarioId, @Param("fecha") String fecha);
 
   @Query(value = "EXEC pa_SearchDispatch :palletId", nativeQuery = true)
   List<Object[]> searchDispatch(
@@ -33,4 +34,9 @@ public interface CajaDespachoRepository extends BaseRepository<CajaDespachoModel
 
   @Query(value = "EXEC pa_GetCountBoxDispatch :cajaId", nativeQuery = true)
   Integer getCountBoxDispatch(@Param("cajaId") Integer cajaId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_InactivateAllBoxDispatch :palletId, :filas OUT", nativeQuery = true)
+  void inactivateAllBoxDispatch(@Param("palletId") Integer palletId, @Param("filas") Integer filas);
 }

@@ -573,6 +573,17 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
+  @DeleteMapping("/packOffPalletEntry")
+  public ResponseEntity<Integer> packOffPalletEntry(@RequestParam Integer palletId, @RequestParam Integer usuarioId) {
+    try {
+      int status = ingresoService.packOffPalletEntry(palletId, usuarioId);
+      return ResponseEntity.ok(status);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(0);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
 }
 
 @Data
