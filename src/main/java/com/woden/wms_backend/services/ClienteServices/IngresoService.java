@@ -628,33 +628,34 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
   }
 
-    public List<Map<String, String>> searchQualityEntry() {
-        List<Object[]> results = ingresoRepository.searchQualityEntry();
-        List<Map<String, String>> data = new ArrayList<>();
+  public List<Map<String, String>> searchQualityEntry() {
+    List<Object[]> results = ingresoRepository.searchQualityEntry();
+    List<Map<String, String>> data = new ArrayList<>();
 
-        for (Object[] obj : results) {
-            Map<String, String> fila = new HashMap<>();
+    for (Object[] obj : results) {
+      Map<String, String> fila = new HashMap<>();
 
-            fila.put("serial", getValue(obj[0]));
-            fila.put("mac", getValue(obj[1]));
-            fila.put("pallet", getValue(obj[2]));
-            fila.put("caja", getValue(obj[3]));
-            fila.put("smartCard", getValue(obj[4]));
+      fila.put("serial", getValue(obj[0]));
+      fila.put("mac", getValue(obj[1]));
+      fila.put("pallet", getValue(obj[2]));
+      fila.put("caja", getValue(obj[3]));
+      fila.put("smartCard", getValue(obj[4]));
 
-            data.add(fila);
-        }
-
-        return data;
+      data.add(fila);
     }
 
-    /**
-     * 🔹 Convierte el valor en String, reemplazando null o "null" por vacío.
-     */
-    private String getValue(Object value) {
-        if (value == null) return "";
-        String str = String.valueOf(value).trim();
-        return "null".equalsIgnoreCase(str) ? "" : str;
-    }
+    return data;
+  }
+
+  /**
+   * 🔹 Convierte el valor en String, reemplazando null o "null" por vacío.
+   */
+  private String getValue(Object value) {
+    if (value == null)
+      return "";
+    String str = String.valueOf(value).trim();
+    return "null".equalsIgnoreCase(str) ? "" : str;
+  }
 
   public List<IngresoModel> getModelDispatch(Integer palletId, Integer cajaId) {
     List<IngresoModel> ingresos = new ArrayList<>();
@@ -701,7 +702,43 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       return 0;
     }
   }
+
+  public List<IngresoModel> getModelDispatchBox(Integer palletId, List<Integer> cajasIds) {
+    List<IngresoModel> ingresos = new ArrayList<>();
+    for (Integer caja : cajasIds) {
+      List<Object[]> results = ingresoRepository.getModelDispatch(palletId, caja);
+      for (Object[] obj : results) {
+        IngresoModel ingreso = new IngresoModel();
+        ingreso.setId((Integer) obj[0]);
+        ingreso.setSerial((String) obj[1]);
+        ingreso.setMac((String) obj[2]);
+        ingreso.setCodigoSapId((Integer) obj[3]);
+        ingreso.setPalletId((Integer) obj[4]);
+        ingreso.setPalletIdIngreso((Integer) obj[5]);
+        ingreso.setCajaDespachoId((Integer) obj[6]);
+        ingreso.setTipoOrigenId((Integer) obj[7]);
+        ingreso.setOrigenId((Integer) obj[8]);
+        ingreso.setTipologiaId((Integer) obj[9]);
+        ingreso.setNivelId((Integer) obj[10]);
+        ingreso.setTramite((String) obj[11]);
+        ingreso.setDocumento((String) obj[12]);
+        ingreso.setGuia((String) obj[13]);
+        ingreso.setFalla((String) obj[14]);
+        ingreso.setPrealertaId((Integer) obj[15]);
+        ingreso.setCruce((TypeMapper.toBoolean(obj[16])));
+        ingreso.setNovedad((String) obj[17]);
+        ingreso.setFecha(obj[18] != null ? ((Timestamp) obj[18]).toString() : null);
+        ingreso.setSmartCard((String) obj[19]);
+        ingreso.setSmartCardId((Integer) obj[20]);
+        ingreso.setLoteId((Integer) obj[21]);
+        ingreso.setSerial3((String) obj[22]);
+        ingreso.setCajaIngresoId((Integer) obj[23]);
+        ingreso.setNumeroSmartcard((String) obj[24]);
+        ingreso.setFallaCosmeticaId((Integer) obj[25]);
+        ingreso.setFallaFuncionalId((Integer) obj[26]);
+        ingresos.add(ingreso);
+      }
+    }
+    return ingresos;
+  }
 }
-
-
-
