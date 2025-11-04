@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.woden.wms_backend.controllers.BaseController;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,14 +27,18 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
     private CalidadService calidadService;
 
     @PostMapping("/updateFinalStateQuality")
-    public ResponseEntity<?> updateFinalStateQuality(@RequestBody Map<String, Object> calidad) {
+    public ResponseEntity<Map<String, Object>> updateFinalStateQuality(@RequestBody Map<String, Object> calidad) {
         Integer palletId = ((Number) calidad.get("palletId")).intValue();
         Integer estadoFinalId = ((Number) calidad.get("estadoFinalId")).intValue();
 
         calidadService.updateFinalStateQuality(palletId, estadoFinalId);
 
-        return ResponseEntity.ok("✅ Estado final actualizado correctamente");
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "✅ Estado final actualizado correctamente");
+        return ResponseEntity.ok(response);
     }
+
 
     @PostMapping("/insertCalidad")
     public ResponseEntity<Integer> createEntity(@RequestBody CalidadModel requestBody) {
@@ -103,6 +108,28 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(-1);
         }
     }
+
+    @PostMapping("/updateQuality")
+    public ResponseEntity<Integer> updateQuality(
+            @RequestParam Integer fallaFuncionalId,
+            @RequestParam Integer fallaComesticaId,
+            @RequestParam(value = "seriales") String serial) {
+        try {
+            int result = calidadService.updateQuality(fallaFuncionalId, fallaComesticaId, serial);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(0);
+        }
+    }
+
+
+
+
+
+
+
+
 
 
 

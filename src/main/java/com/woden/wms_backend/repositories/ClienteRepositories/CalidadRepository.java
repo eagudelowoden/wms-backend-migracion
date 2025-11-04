@@ -37,10 +37,9 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("Fecha") LocalDateTime fecha
     );
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_DeleteQuality :serial", nativeQuery = true)
+    @Procedure(procedureName = "pa_DeleteQuality")
     void eliminarSerialCalidad(@Param("serial") String serial);
+
 
 
     @Modifying
@@ -59,6 +58,18 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("estadoId") Integer estadoId,
             @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
             @Param("i") Integer i);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateQuality :fallaFuncionalId, :fallaComesticaId, :serial", nativeQuery = true)
+    void updateQuality(
+            @Param("fallaFuncionalId") Integer fallaFuncionalId,
+            @Param("fallaComesticaId") Integer fallaComesticaId,
+            @Param("serial") String serial);
+
+
+
+
 
 }
 

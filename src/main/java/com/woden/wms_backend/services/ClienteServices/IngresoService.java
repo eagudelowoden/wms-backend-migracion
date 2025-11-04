@@ -459,7 +459,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public void updateStateOneEntry(Integer estadoId, Integer nivelId, Integer usuarioIdMovimiento, Date fecha,
       String serial) {
     Integer filas = 4;
-    ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
+    ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial);
   }
 
   public int UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
