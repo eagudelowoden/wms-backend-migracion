@@ -50,16 +50,6 @@ public class DynamicDataSourceConfig {
       @Override
       protected Object determineCurrentLookupKey() {
         String clientDb = ClientDatabaseContext.getCurrentClientDb();
-        // return ClientDatabaseContext.getCurrentClientDb();
-        // // Registrar información detallada para debugging
-        // System.out.println("RoutingDataSource.determineCurrentLookupKey():");
-        // System.out.println("  clientDb: " + clientDb);
-        // System.out.println("  clientName: " + ClientDatabaseContext.getCurrentClientName());
-        // System.out.println("  clientId: " + ClientDatabaseContext.getCurrentClientId());
-        // System.out.println("  isUsingGeneralDb: " + ClientDatabaseContext.isUsingGeneralDb());
-        // Si estamos en un endpoint relacionado con cambio de cliente o verificación de
-        // conexiones,
-        // asegurarse de usar la base de datos general al hacer el cambio del cliente
         HttpServletRequest request = getCurrentRequest();
         if (request != null) {
           String uri = request.getRequestURI();

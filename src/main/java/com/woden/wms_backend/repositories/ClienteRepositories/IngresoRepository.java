@@ -336,4 +336,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Transactional
 	@Query(value = "EXEC pa_PackOffPalletEntry :palletId, :usuarioId", nativeQuery = true)
 	void packOffPalletEntry(@Param("palletId") Integer palletId, @Param("usuarioId") Integer usuarioId);
+
+	@Modifying
+	@Transactional
+	@Query (value = "EXEC pa_PackOffBoxEntry :palletId, :cajaId, :usuarioId", nativeQuery = true)
+	void packOffBoxEntry(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId, @Param("usuarioId") Integer usuarioId);
 }

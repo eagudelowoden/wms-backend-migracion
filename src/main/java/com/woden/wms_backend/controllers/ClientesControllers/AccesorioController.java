@@ -65,7 +65,6 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     try {
       accesorioService.cerrarPalletAccesorio(dto);
 
-      // System.out.println("Cerrar accesorio - PalletId: " + dto);
       response.put("message", "Pallet cerrado correctamente");
 
       return ResponseEntity.ok(response);
@@ -185,5 +184,26 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
   public ResponseEntity<Integer> packOffPalletAccesory(@RequestParam Integer palletId) {
     int status = accesorioService.packOffPalletAccesory(palletId);
     return ResponseEntity.ok(status);
+  }
+
+  @PostMapping("/getModelDispatchBoxAccesory")
+  public ResponseEntity<List<AccesorioModel>> getModelDispatchBoxAccesory(@RequestParam Integer palletId,
+      @RequestBody List<Integer> cajaDespachoId) {
+    List<AccesorioModel> acceesorio = accesorioService.getModelDispatchBoxAccesory(palletId, cajaDespachoId);
+    return ResponseEntity.ok(acceesorio);
+  }
+
+  @DeleteMapping("/packOffPalletAccesoryBox")
+  public ResponseEntity<Integer> packOffPalletAccesoryBox(@RequestParam Integer palletId,
+      @RequestBody List<Integer> cajaDespachoId) {
+    try {
+      Integer status = 1;
+      for (Integer caja : cajaDespachoId) {
+        status = accesorioService.packOffPalletAccesoryBox(palletId, caja);
+      }
+      return ResponseEntity.ok(status);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
   }
 }

@@ -28,7 +28,6 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
   @Autowired
   private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate; // 👈 agrega esto arriba, junto con tus otros
-                                                                   // @Autowired
 
   @Autowired
   private AccesorioRepository accesorioRepository;
@@ -143,10 +142,6 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
       List<Map<String, Object>> resultados = jdbcTemplate.queryForList(sql, codigoSap, tipoAccesorio, palletId);
       int total = resultados.size();
 
-      // long end = System.currentTimeMillis();
-      // System.out.println("⏱️ getPackedAccesoriesSerials ejecutado en " + (end -
-      // start) + " ms. Total: " + total);
-
       return total;
     } catch (Exception e) {
       System.err.println("❌ Error en getPackedAccesoriesSerials: " + e.getMessage());
@@ -258,6 +253,43 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
   public Integer packOffPalletAccesory(Integer palletId) {
     try {
       accesorioRepository.packOffPalletAccesory(palletId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
+
+  public List<AccesorioModel> getModelDispatchBoxAccesory(Integer palletId, List<Integer> cajasDespachoIds) {
+    List<AccesorioModel> accesorios = new ArrayList<>();
+    for (Integer cajaDespachoId : cajasDespachoIds) {
+      List<Object[]> results = accesorioRepository.getModelDispatchBoxAccesory(palletId, cajaDespachoId);
+
+      for (Object[] obj : results) {
+        AccesorioModel accesorio = new AccesorioModel();
+        accesorio.setId((Integer) obj[0]);
+        accesorio.setCodigoSapId((Integer) obj[1]);
+        accesorio.setTipoAccesorio((String) obj[2]);
+        accesorio.setTipoOrigenId((Integer) obj[3]);
+        accesorio.setOrigenId((Integer) obj[4]);
+        accesorio.setPalletId((Integer) obj[5]);
+        accesorio.setEstadoLimpiezaId((Integer) obj[6]);
+        accesorio.setDocumento((String) obj[7]);
+        accesorio.setObservacion((String) obj[8]);
+        accesorio.setGuia((String) obj[9]);
+        accesorio.setFecha(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
+        accesorio.setSerialEmpaque((String) obj[11]);
+        accesorio.setCaja((Integer) obj[12]);
+        accesorio.setFechaLimpieza(obj[13] != null ? ((Timestamp) obj[13]).toString() : null);
+        accesorio.setFechaEmpaque(obj[14] != null ? ((Timestamp) obj[14]).toString() : null);
+        accesorios.add(accesorio);
+      }
+    }
+    return accesorios;
+  }
+
+  public Integer packOffPalletAccesoryBox(Integer palletId, Integer cajaDespachoId) {
+    try {
+      accesorioRepository.packOffPalletAccesoryBox(palletId, cajaDespachoId);
       return 1;
     } catch (Exception e) {
       return 0;

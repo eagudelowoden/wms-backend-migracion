@@ -26,11 +26,6 @@ public class PrealertaService extends BaseService<PrealertaModel, Integer> {
     }
 
     Object[] obj = results.get(0);
-    // for (int i = 0; i < obj.length; i++) {
-    //   Object value = obj[i];
-    //   System.out.println("Posición " + i + ": tipo=" + (value != null ? value.getClass().getName() : "null")
-    //       + ", valor=" + value);
-    // }
     PrealertaModel prealerta = new PrealertaModel();
     prealerta.setId((Integer) obj[0]);
     prealerta.setNombre((String) obj[1]);

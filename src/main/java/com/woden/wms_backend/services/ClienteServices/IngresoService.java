@@ -741,4 +741,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
     return ingresos;
   }
+
+  public Integer packOffBoxEntry(Integer palletId, Integer cajaId, Integer usuarioId) {
+    try {
+      ingresoRepository.packOffBoxEntry(palletId, cajaId, usuarioId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
 }

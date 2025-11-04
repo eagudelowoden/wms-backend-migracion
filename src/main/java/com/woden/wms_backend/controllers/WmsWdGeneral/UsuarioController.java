@@ -99,16 +99,6 @@ public class UsuarioController {
         response.put("token", token);
         response.put("usuarioId", usuario.getId().toString());
         response.put("message", "Inicio de sesión exitoso");
-        // File carpeta = new File("Z:\\archivos\\ENV\\PRD\\archivos\\etiquetas");
-        // if (carpeta.exists()) {
-        //     response.put("carpeta", carpeta.getName()); // 🟢 Nuevo campo
-        //     System.out.println("✅ Conectado correctamente a la unidad D:");
-        //     for (File f : carpeta.listFiles()) {
-        //         System.out.println(" - " + f.getName());
-        //     }
-        // } else {
-        //     System.out.println("❌ No se puede acceder a Z:");
-        // }
 
         return ResponseEntity.ok(response);
     }

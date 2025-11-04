@@ -65,11 +65,6 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
             return ResponseEntity.badRequest().body("Cliente no encontrado");
         }
 
-        // System.out.println("Switching to client: " + client.getNombre() + ", DB: " +
-        // client.getDbase() + ", ID: "
-        // + client.getId());
-
-        // Obtener autenticación actual
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
@@ -88,20 +83,8 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
                 client.getDbase(),
                 client.getId());
 
-        // Verificar que el token contenga la información correcta
-        // try {
-        // Claims claims = jwtUtil.extractAllClaims(newToken);
-        // // System.out.println("Token claims: " + claims);
-        // // System.out.println(" clientName: " + claims.get("clientName"));
-        // // System.out.println(" dbName: " + claims.get("dbName"));
-        // // System.out.println(" clientId: " + claims.get("clientId"));
-        // } catch (Exception e) {
-        // System.out.println("Error al extraer claims del token: " + e.getMessage());
-        // }
 
         try {
-            // System.out.println("Activando conexión a la BD del cliente: " +
-            // client.getDbase());
             dynamicDataSourceConfig.initializeClientDataSource(client.getDbase());
         } catch (Exception e) {
             System.out.println("Error al activar conexión: " + e.getMessage());
@@ -120,8 +103,6 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         String connectionUrl = "jdbc:sqlserver://wd-wms-prd.cyeyhpu1wzr0.us-east-2.rds.amazonaws.com:14331;" +
                 "databaseName=" + currentDb + ";trustServerCertificate=true";
 
-        // En tu controlador, antes de crear la conexión:
-        System.out.println(" current-  Intentando conectar a: " + currentDb);
         return ResponseEntity.ok(new DatabaseInfo(currentDb, connectionUrl));
     }
 

@@ -46,27 +46,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         if (jwtUtil.validateToken(token)) {
-          // Obtener información del cliente desde el token
           String clientName = jwtUtil.extractClientName(token);
           Integer clientId = jwtUtil.extractClientId(token);
           String clientDb = jwtUtil.extractClientDb(token);
 
-          // Si tenemos suficiente información, establecer el contexto
           if (clientName != null && clientDb != null && clientId != null) {
             ClientDatabaseContext.setCurrentClient(clientName, clientDb, clientId);
-            // System.out.println("JwtAuthenticationFilter - Cliente configurado: " + clientName + ", DB: " + clientDb);
           } else {
-            // Si no hay cliente en el token, usar BD general
             ClientDatabaseContext.setCurrentClient("WmsWdGeneral", "WmsWdGeneral", 0);
             ClientDatabaseContext.useGeneralDatabase();
-            // System.out.println("JwtAuthenticationFilter - Usando BD general por falta de información en el token");
           }
-
-          // System.out.println("JwtAuthenticationFilter - Estado después de configurar:");
-          // System.out.println("  getCurrentClientName: " + ClientDatabaseContext.getCurrentClientName());
-          // System.out.println("  getCurrentClientDb: " + ClientDatabaseContext.getCurrentClientDb());
-          // System.out.println("  getCurrentClientId: " + ClientDatabaseContext.getCurrentClientId());
-          // System.out.println("  isUsingGeneralDb: " + ClientDatabaseContext.isUsingGeneralDb());
 
           // Configurar autenticación Spring Security
           UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

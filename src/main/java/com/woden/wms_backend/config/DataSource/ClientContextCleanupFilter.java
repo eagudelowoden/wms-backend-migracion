@@ -24,9 +24,7 @@ public class ClientContextCleanupFilter extends OncePerRequestFilter {
       // Permitir que la cadena de filtros continúe
       filterChain.doFilter(request, response);
     } finally {
-      // Limpiar el contexto del cliente después de que se complete la solicitud
       ClientDatabaseContext.clear();
-      // System.out.println("ClientContextCleanupFilter - Contexto del cliente limpiado");clientDb
     }
   }
 }
