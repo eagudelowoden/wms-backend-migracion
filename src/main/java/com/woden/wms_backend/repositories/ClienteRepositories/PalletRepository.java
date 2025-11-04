@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -164,13 +165,11 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   List<Object[]> searchPalletBoxDispatchPallet(@Param("numero") String numero);
 
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_SendAllPallet :destinoId, :palletId", nativeQuery = true)
+    @Procedure(procedureName = "pa_SendAllPallet")
     void sendAllPallet(
             @Param("destinoId") Integer destinoId,
-            @Param("palletId") Integer palletId);
-
+            @Param("palletId") Integer palletId
+    );
 
 
 

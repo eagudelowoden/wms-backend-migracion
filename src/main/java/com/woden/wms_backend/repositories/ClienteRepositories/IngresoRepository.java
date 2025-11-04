@@ -192,6 +192,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	void updateLevel(@Param("levelId") Integer levelId, @Param("palletId") Integer palletId,
 			@Param("filas") Integer filas);
 
+
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_UpdateStateEntryNotUsuario :estadoId, :palletId, :fecha, :serial", nativeQuery = true)
@@ -336,4 +337,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Transactional
 	@Query(value = "EXEC pa_PackOffPalletEntry :palletId, :usuarioId", nativeQuery = true)
 	void packOffPalletEntry(@Param("palletId") Integer palletId, @Param("usuarioId") Integer usuarioId);
+
+    @Procedure(procedureName = "dbo.pa_UpdateLevel")
+    Integer updateLevelWeb(
+            @Param("LevelId") Integer levelId,
+            @Param("PalletId") Integer palletId
+    );
+
 }

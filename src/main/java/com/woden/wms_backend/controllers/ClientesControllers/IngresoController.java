@@ -601,6 +601,15 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.badRequest().body(null);
     }
   }
+    @PostMapping("/updateLevelWeb")
+    public ResponseEntity<Map<String, Object>> updateLevelWeb(@RequestBody Map<String, Integer> body) {
+        Integer levelId = body.get("levelId");
+        Integer palletId = body.get("palletId");
+
+        int result = ingresoService.updateLevelWeb(levelId, palletId);
+        return ResponseEntity.ok(Map.of("message", result));
+    }
+
 }
 
 @Data

@@ -40,7 +40,7 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
 
     public void updateFinalStateQuality(Integer palletId, Integer estadoFinalId) {
         Integer filas = 0;
-        calidadRepository.updateFinalStateQuality(palletId, estadoFinalId, filas);
+        calidadRepository.updateFinalStateQuality(palletId, estadoFinalId);
         // opcional: log o manejo de filas
         System.out.println("✅ Filas actualizadas: " + filas);
     }
@@ -82,7 +82,6 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         return count > 0 ? 1 : 0;
     }
 
-    @Transactional
     public int updateQualityPalletEntry(Integer estadoId, Integer usuarioIdMovimiento, List<Integer> palletIds) {
         if (palletIds == null || palletIds.isEmpty()) {
             return 0; // nada que actualizar
@@ -96,10 +95,14 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
     }
 
     public int updateQuality(Integer fallaFuncionalId, Integer fallaComesticaId, String serial) {
-        calidadRepository.updateQuality(fallaFuncionalId, fallaComesticaId, serial);
-        return 1;
+        try {
+            calidadRepository.updateQuality(fallaFuncionalId, fallaComesticaId, serial);
+            return 1; // si llega aquí, el SP se ejecutó correctamente
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
-
     public boolean sendCalidad(ConfirmarPalletDTO dto) {
         ingresoRepository.sendIngreso(dto.getDestinoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0,
                 0);

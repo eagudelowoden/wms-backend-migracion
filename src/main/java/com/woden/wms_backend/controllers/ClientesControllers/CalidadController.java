@@ -30,16 +30,14 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
     public ResponseEntity<Map<String, Object>> updateFinalStateQuality(@RequestBody Map<String, Object> calidad) {
         Integer palletId = ((Number) calidad.get("palletId")).intValue();
         Integer estadoFinalId = ((Number) calidad.get("estadoFinalId")).intValue();
-
         calidadService.updateFinalStateQuality(palletId, estadoFinalId);
-
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "✅ Estado final actualizado correctamente");
         return ResponseEntity.ok(response);
     }
 
-
+    
     @PostMapping("/insertCalidad")
     public ResponseEntity<Integer> createEntity(@RequestBody CalidadModel requestBody) {
         try {
@@ -94,26 +92,25 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
             @RequestParam Integer usuarioIdMovimiento,
             @RequestBody List<Integer> palletIds) {
 
+        if (palletIds == null || palletIds.isEmpty()) {
+            return ResponseEntity.ok(0); // nada que actualizar
+        }
+
         try {
             int result = calidadService.updateQualityPalletEntry(estadoId, usuarioIdMovimiento, palletIds);
-
-            if (result == 1) {
-                return ResponseEntity.ok(1); // ✅ Éxito
-            } else {
-                return ResponseEntity.ok(0); // ⚠️ No se actualizó nada
-            }
-
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // 👈 se mantiene simple sin log
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(-1);
         }
     }
+
 
     @PostMapping("/updateQuality")
     public ResponseEntity<Integer> updateQuality(
             @RequestParam Integer fallaFuncionalId,
             @RequestParam Integer fallaComesticaId,
-            @RequestParam(value = "seriales") String serial) {
+            @RequestParam("seriales") String serial) {
         try {
             int result = calidadService.updateQuality(fallaFuncionalId, fallaComesticaId, serial);
             return ResponseEntity.ok(result);

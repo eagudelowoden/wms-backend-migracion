@@ -16,14 +16,11 @@ import java.time.LocalDateTime;
 public interface CalidadRepository extends BaseRepository<CalidadModel, Integer> {
 
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdateFinalStateQuality :palletId, :estadoFinalId, :filas OUT", nativeQuery = true)
-    void updateFinalStateQuality(
+    @Procedure(procedureName = "pa_UpdateFinalStateQuality")
+    Integer updateFinalStateQuality(
             @Param("palletId") Integer palletId,
-            @Param("estadoFinalId") Integer estadoFinalId,
-            @Param("filas") Integer filas);
-
+            @Param("estadoFinalId") Integer estadoFinalId
+    );
 
     @Procedure(name = "pa_InsertQuality", procedureName = "pa_InsertQuality")
     void createInsertCalidad(
@@ -51,24 +48,21 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("serial") String serial);
 
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdateQualityPalletEntry :estadoId, :usuarioIdMovimiento, :i", nativeQuery = true)
+    @Procedure(procedureName = "pa_UpdateQualityPalletEntryBatch")
+    /*SP optimizado pa_UpdateQualityPalletEntryBatch*/
+    /*SP optimizado pa_UpdateQualityPalletEntry*/
     void updateQualityPalletEntry(
             @Param("estadoId") Integer estadoId,
             @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-            @Param("i") Integer i);
+            @Param("palletId") Integer palletId
+    );
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdateQuality :fallaFuncionalId, :fallaComesticaId, :serial", nativeQuery = true)
+    @Procedure(procedureName = "pa_UpdateQuality")
     void updateQuality(
             @Param("fallaFuncionalId") Integer fallaFuncionalId,
             @Param("fallaComesticaId") Integer fallaComesticaId,
-            @Param("serial") String serial);
-
-
-
+            @Param("serial") String serial
+    );
 
 
 }

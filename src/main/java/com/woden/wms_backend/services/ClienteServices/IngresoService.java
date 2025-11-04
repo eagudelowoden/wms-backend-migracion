@@ -741,4 +741,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
     return ingresos;
   }
+
+    public int updateLevelWeb(Integer levelId, Integer palletId) {
+        Integer result = ingresoRepository.updateLevelWeb(levelId, palletId);
+        return (result != null && result > 0) ? 1 : 0;
+    }
 }
