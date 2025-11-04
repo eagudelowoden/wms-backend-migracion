@@ -1,6 +1,7 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
+import com.woden.wms_backend.dto.ConfirmarPalletDTO;
 import com.woden.wms_backend.models.Entity.CalidadModel;
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CalidadRepository;
@@ -11,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +27,12 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
   @Autowired
   private CalidadRepository calidadRepository;
 
+  @Autowired
+  private  PalletRepository palletRepository;
+
+  @Autowired
+  private IngresoRepository ingresoRepository;
+
   public CalidadService(CalidadRepository repository) {
   }
 
@@ -31,7 +40,7 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
 
     public void updateFinalStateQuality(Integer palletId, Integer estadoFinalId) {
         Integer filas = 0;
-        calidadRepository.updateFinalStateQuality(palletId, estadoFinalId, filas);
+        calidadRepository.updateFinalStateQuality(palletId, estadoFinalId);
         // opcional: log o manejo de filas
         System.out.println("✅ Filas actualizadas: " + filas);
     }
@@ -73,7 +82,6 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         return count > 0 ? 1 : 0;
     }
 
-    @Transactional
     public int updateQualityPalletEntry(Integer estadoId, Integer usuarioIdMovimiento, List<Integer> palletIds) {
         if (palletIds == null || palletIds.isEmpty()) {
             return 0; // nada que actualizar
@@ -85,6 +93,28 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
 
         return 1; // ✅ éxito (actualizó al menos uno)
     }
+
+    public int updateQuality(Integer fallaFuncionalId, Integer fallaComesticaId, String serial) {
+        try {
+            calidadRepository.updateQuality(fallaFuncionalId, fallaComesticaId, serial);
+            return 1; // si llega aquí, el SP se ejecutó correctamente
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public boolean sendCalidad(ConfirmarPalletDTO dto) {
+        ingresoRepository.sendIngreso(dto.getDestinoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0,
+                0);
+        palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+        return true;
+    }
+
+
+
+
+
+
 
 
 

@@ -431,7 +431,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     try {
       ingresoService.UpdatePackingEntrySmartCard(
           estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId, smartCardId, SmartCard);
-      return ResponseEntity.ok(1); 
+      return ResponseEntity.ok(1);
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.badRequest().body(0);
@@ -445,7 +445,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       int result = ingresoService.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, seriales);
       return ResponseEntity.ok(result);
     } catch (Exception e) {
-      e.printStackTrace(); 
+      e.printStackTrace();
       return ResponseEntity.badRequest().body(0);
     }
   }
@@ -599,6 +599,15 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(null);
     }
+  }
+
+  @PostMapping("/updateLevelWeb")
+  public ResponseEntity<Map<String, Object>> updateLevelWeb(@RequestBody Map<String, Integer> body) {
+    Integer levelId = body.get("levelId");
+    Integer palletId = body.get("palletId");
+
+    int result = ingresoService.updateLevelWeb(levelId, palletId);
+    return ResponseEntity.ok(Map.of("message", result));
   }
 
   @PutMapping("/packOffBoxEntry")

@@ -459,7 +459,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public void updateStateOneEntry(Integer estadoId, Integer nivelId, Integer usuarioIdMovimiento, Date fecha,
       String serial) {
     Integer filas = 4;
-    ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial, filas);
+    ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial);
   }
 
   public int UpdatePackingEntry(Integer estadoId, Integer palletId, Integer cajaEmpaqueId,
@@ -749,5 +749,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     } catch (Exception e) {
       return 0;
     }
+  }
+
+  public int updateLevelWeb(Integer levelId, Integer palletId) {
+    Integer result = ingresoRepository.updateLevelWeb(levelId, palletId);
+    return (result != null && result > 0) ? 1 : 0;
   }
 }

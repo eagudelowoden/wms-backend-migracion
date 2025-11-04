@@ -476,7 +476,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  @Transactional
+
   public int sendAllPallet(Integer destinoId, Integer palletId) {
       palletRepository.sendAllPallet(destinoId, palletId);
       return 1;
