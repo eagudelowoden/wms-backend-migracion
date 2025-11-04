@@ -41,12 +41,22 @@ public class CajaDespachoService extends BaseService<CajaDespachoModel, Integer>
   public Integer getLastBoxDispatch(Integer palletId) {
     List<Object[]> results = cajaDespachoRepository.getLastBoxDispatch(palletId);
     if (results.isEmpty() || results.get(0) == null) {
-      return 0;      
+      return 0;
     }
     return (Integer) results.get(results.size() - 1)[0];
   }
 
   public Integer getCountBoxDispatch(Integer cajaId) {
     return cajaDespachoRepository.getCountBoxDispatch(cajaId);
+  }
+
+  public Integer inactivateAllBoxDispatch(Integer palletId) {
+    Integer filas = 4;
+    try {
+      cajaDespachoRepository.inactivateAllBoxDispatch(palletId, filas);
+      return 1;
+    } catch (Exception e) {
+    }
+    return 0;
   }
 }

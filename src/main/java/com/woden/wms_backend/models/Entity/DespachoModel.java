@@ -30,10 +30,18 @@ public class DespachoModel {
     private String guia;
     private String falla;
     private int prealertaId;
-    private int cruce;
+    private Boolean cruce;
     private String novedad;
     private String pedidoSap;
     private int usuarioId;
     private String fecha;
     private String fechaIngreso;
+    private Integer smartCardId;
+    private String smartCard;
+    private Integer loteId;
+    private String serial3;
+    private Integer cajaIngresoId;
+    private String numeroSmartcard;
+    private Integer fallaCosmeticaId;
+    private Integer fallaFuncionalId;
 }

@@ -331,4 +331,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
     @Query(value = "EXEC pa_SearchQualityEntry", nativeQuery = true)
     List<Object[]> searchQualityEntry();
 
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_PackOffPalletEntry :palletId, :usuarioId", nativeQuery = true)
+	void packOffPalletEntry(@Param("palletId") Integer palletId, @Param("usuarioId") Integer usuarioId);
 }

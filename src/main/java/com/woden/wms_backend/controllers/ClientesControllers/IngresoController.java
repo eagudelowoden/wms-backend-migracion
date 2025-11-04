@@ -573,12 +573,34 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
-    @GetMapping("/searchQualityEntry")
-    public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
-        List<Map<String, String>> entries = ingresoService.searchQualityEntry();
-        return ResponseEntity.ok(entries);
-    }
+  @GetMapping("/searchQualityEntry")
+  public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
+    List<Map<String, String>> entries = ingresoService.searchQualityEntry();
+    return ResponseEntity.ok(entries);
+  }
 
+  @DeleteMapping("/packOffPalletEntry")
+  public ResponseEntity<Integer> packOffPalletEntry(@RequestParam Integer palletId, @RequestParam Integer usuarioId) {
+    try {
+      int status = ingresoService.packOffPalletEntry(palletId, usuarioId);
+      return ResponseEntity.ok(status);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(0);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @PostMapping("/getModelDispatchBox")
+  public ResponseEntity<List<IngresoModel>> getModelDispatchBox(@RequestParam Integer palletId,
+      @RequestBody List<Integer> cajasIds) {
+    try {
+      List<IngresoModel> ingreso = ingresoService.getModelDispatchBox(palletId, cajasIds);
+      return ResponseEntity.ok(ingreso);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(null);
+    }
+  }
 }
 
 @Data
