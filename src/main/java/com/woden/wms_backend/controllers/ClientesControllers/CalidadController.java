@@ -37,7 +37,7 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
         return ResponseEntity.ok(response);
     }
 
-    
+
     @PostMapping("/insertCalidad")
     public ResponseEntity<Integer> createEntity(@RequestBody CalidadModel requestBody) {
         try {
