@@ -245,12 +245,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public List<PalletDTO> searchReceivePallet(String numero, String destino, String tipo) {
     List<Object[]> results = palletRepository.searchReceivePallet(numero, destino, tipo);
-    // for (Object[] row : results) {
-    // System.out.println("---- Fila storage ----");
-    // for (int i = 0; i < row.length; i++) {
-    // System.out.println("Posición " + i + ": " + row[i]);
-    // }
-    // }
     return results.stream().map(obj -> {
       PalletDTO pallet = new PalletDTO();
       pallet.setId((Integer) obj[0]);
@@ -348,12 +342,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public List<PalletStorageDTO> searchStoragePallet(String numero, String tipo, String tipoAccesorio) {
     List<Object[]> results = palletRepository.searchStoragePallet(numero, tipo, tipoAccesorio);
-    // for (Object[] row : results) {
-    // System.out.println("---- Fila storage ----");
-    // for (int i = 0; i < row.length; i++) {
-    // System.out.println("Posición " + i + ": " + row[i]);
-    // }
-    // }
     return results.stream().map(obj -> {
       PalletStorageDTO pallet = new PalletStorageDTO();
       pallet.setId((Integer) obj[0]);
@@ -415,13 +403,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public List<PalletStorageDTO> searchStorageGroupPallet(String numero, String tipoEquipo) {
     List<Object[]> results = palletRepository.searchStorageGroupPallet(numero, tipoEquipo);
-    // for (Object[] row : results) {
-    // System.out.println("---- Fila ----");
-    // for (int i = 0; i < row.length; i++) {
-    // System.out.println("Posición " + i + ": " + row[i]);
-    // }
-    // }
-
     return results.stream().map(obj -> {
       PalletStorageDTO pallet = new PalletStorageDTO();
       pallet.setId((Integer) obj[0]);

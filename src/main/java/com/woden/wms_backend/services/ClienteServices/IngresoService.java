@@ -742,8 +742,17 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return ingresos;
   }
 
-    public int updateLevelWeb(Integer levelId, Integer palletId) {
-        Integer result = ingresoRepository.updateLevelWeb(levelId, palletId);
-        return (result != null && result > 0) ? 1 : 0;
+  public Integer packOffBoxEntry(Integer palletId, Integer cajaId, Integer usuarioId) {
+    try {
+      ingresoRepository.packOffBoxEntry(palletId, cajaId, usuarioId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
     }
+  }
+
+  public int updateLevelWeb(Integer levelId, Integer palletId) {
+    Integer result = ingresoRepository.updateLevelWeb(levelId, palletId);
+    return (result != null && result > 0) ? 1 : 0;
+  }
 }

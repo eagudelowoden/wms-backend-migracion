@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -430,11 +431,10 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     try {
       ingresoService.UpdatePackingEntrySmartCard(
           estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId, smartCardId, SmartCard);
-      return ResponseEntity.ok(1); // ✅ éxito
+      return ResponseEntity.ok(1);
     } catch (Exception e) {
-      // Puedes loggear el error
       e.printStackTrace();
-      return ResponseEntity.badRequest().body(0); // ❌ error
+      return ResponseEntity.badRequest().body(0);
     }
   }
 
@@ -443,11 +443,10 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
     try {
       int result = ingresoService.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, seriales);
-      // System.out.println("updatePackingAllEntry");
-      return ResponseEntity.ok(result); // ✅ devuelve 1 si se procesó al menos un serial
+      return ResponseEntity.ok(result);
     } catch (Exception e) {
-      e.printStackTrace(); // log del error
-      return ResponseEntity.badRequest().body(0); // ❌ error
+      e.printStackTrace();
+      return ResponseEntity.badRequest().body(0);
     }
   }
 
@@ -601,15 +600,31 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.badRequest().body(null);
     }
   }
-    @PostMapping("/updateLevelWeb")
-    public ResponseEntity<Map<String, Object>> updateLevelWeb(@RequestBody Map<String, Integer> body) {
-        Integer levelId = body.get("levelId");
-        Integer palletId = body.get("palletId");
 
-        int result = ingresoService.updateLevelWeb(levelId, palletId);
-        return ResponseEntity.ok(Map.of("message", result));
+  @PostMapping("/updateLevelWeb")
+  public ResponseEntity<Map<String, Object>> updateLevelWeb(@RequestBody Map<String, Integer> body) {
+    Integer levelId = body.get("levelId");
+    Integer palletId = body.get("palletId");
+
+    int result = ingresoService.updateLevelWeb(levelId, palletId);
+    return ResponseEntity.ok(Map.of("message", result));
+  }
+
+  @PutMapping("/packOffBoxEntry")
+  public ResponseEntity<Integer> packOffBoxEntry(@RequestParam Integer palletId, @RequestBody List<Integer> cajasIds,
+      @RequestParam Integer usuarioId) {
+    try {
+      Integer status = 0;
+      for (Integer cajaId : cajasIds) {
+        status = ingresoService.packOffBoxEntry(palletId, cajaId, usuarioId);
+      }
+      return ResponseEntity.ok(status);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(0);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
-
+  }
 }
 
 @Data

@@ -192,7 +192,6 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	void updateLevel(@Param("levelId") Integer levelId, @Param("palletId") Integer palletId,
 			@Param("filas") Integer filas);
 
-
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_UpdateStateEntryNotUsuario :estadoId, :palletId, :fecha, :serial", nativeQuery = true)
@@ -227,15 +226,13 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_SearchClasificationEntry", nativeQuery = true)
 	List<Object[]> searchClasificationEntry();
 
-    @Procedure(procedureName = "pa_UpdateStateOneEntry") // 👈 usa procedureName, no name
-    Integer updateStateOneEntry(
-            @Param("estadoId") Integer estadoId,
-            @Param("nivelId") Integer nivelId,
-            @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-            @Param("fecha") Date fecha,
-            @Param("serial") String serial
-    );
-
+	@Procedure(procedureName = "pa_UpdateStateOneEntry") // 👈 usa procedureName, no name
+	Integer updateStateOneEntry(
+			@Param("estadoId") Integer estadoId,
+			@Param("nivelId") Integer nivelId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("fecha") Date fecha,
+			@Param("serial") String serial);
 
 	@Modifying
 	@Transactional
@@ -328,20 +325,22 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_GetModelDispatch :palletId, :cajaId", nativeQuery = true)
 	List<Object[]> getModelDispatch(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId);
 
-
-    @Query(value = "EXEC pa_SearchQualityEntry", nativeQuery = true)
-    List<Object[]> searchQualityEntry();
-
+	@Query(value = "EXEC pa_SearchQualityEntry", nativeQuery = true)
+	List<Object[]> searchQualityEntry();
 
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_PackOffPalletEntry :palletId, :usuarioId", nativeQuery = true)
 	void packOffPalletEntry(@Param("palletId") Integer palletId, @Param("usuarioId") Integer usuarioId);
 
-    @Procedure(procedureName = "dbo.pa_UpdateLevel")
-    Integer updateLevelWeb(
-            @Param("LevelId") Integer levelId,
-            @Param("PalletId") Integer palletId
-    );
+	@Procedure(procedureName = "dbo.pa_UpdateLevel")
+	Integer updateLevelWeb(
+			@Param("LevelId") Integer levelId,
+			@Param("PalletId") Integer palletId);
 
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_PackOffBoxEntry :palletId, :cajaId, :usuarioId", nativeQuery = true)
+	void packOffBoxEntry(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId,
+			@Param("usuarioId") Integer usuarioId);
 }

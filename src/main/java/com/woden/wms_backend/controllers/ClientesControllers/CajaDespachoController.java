@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,6 +64,19 @@ public class CajaDespachoController {
     try {
       service.inactivateAllBoxDispatch(palletId);
       return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @PutMapping("/inactivateBoxDispatch")
+  public ResponseEntity<Integer> inactivateBoxDispatch(@RequestBody List<Integer> cajaDespachoId) {
+    try {
+      Integer status = 0;
+      for (Integer id : cajaDespachoId) {
+        status = service.inactivateBoxDispatch(id);
+      }
+      return ResponseEntity.ok(status);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }

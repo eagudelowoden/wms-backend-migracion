@@ -59,4 +59,13 @@ public class CajaDespachoService extends BaseService<CajaDespachoModel, Integer>
     }
     return 0;
   }
+
+  public Integer inactivateBoxDispatch(Integer id) {
+    try {
+      cajaDespachoRepository.inactivateBoxDispatch(id);
+      return 1;
+    } catch (Exception e) {
+    }
+    return 0;
+  }
 }

@@ -42,10 +42,10 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration
-        .setAllowedOrigins(List.of("http://18.217.246.39:8081", "http://18.217.246.39:8085",
+        .setAllowedOrigins(List.of("http://18.217.246.39:8081", "http://18.217.246.39:8085", "http://localhost:5173",
             "http://18.217.246.39:8083", "http://localhost:4200",
             "http://localhost:8081", "http://localhost:8085", "http://52.14.166.232:8443", "http://52.14.166.232:9091",
-            "http://localhost:8443",
+            "http://localhost:8443", "http://127.0.0.1:9100",
             "https://woden-wts-dev.arkade.com.co",
             "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*", "http://woden-wts-dev.arkade.com.co:443",
             "https://wms.woden.com.co:8081"));

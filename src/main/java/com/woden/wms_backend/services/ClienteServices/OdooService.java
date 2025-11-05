@@ -48,8 +48,6 @@ public class OdooService extends BaseService<PqrsModel, Integer> {
         return 0;
       }
 
-      System.out.println("Conexión Odoo exitosa");
-
       // Cliente para objetos
       XmlRpcClientConfigImpl modelsConfig = new XmlRpcClientConfigImpl();
       modelsConfig.setServerURL(new URL(url + "/xmlrpc/2/object"));
