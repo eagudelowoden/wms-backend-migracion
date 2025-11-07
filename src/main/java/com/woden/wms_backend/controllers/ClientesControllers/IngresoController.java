@@ -625,6 +625,27 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @PutMapping("/updateNoveltyAllEntry")
+  public ResponseEntity<Integer> updateNoveltyAllEntry(@RequestBody List<Map<String, Object>> requestList,
+      @RequestParam Integer estadoId, @RequestParam Integer tipologiaId, @RequestParam Integer usuarioId,
+      @RequestParam String novedad) {
+    try {
+      for (Map<String, Object> requestBody : requestList) {
+        String serial = (String) requestBody.get("serial");
+        String observaciones = (String) requestBody.get("observaciones");
+        Integer fallaCosmeticaId = (Integer) requestBody.get("fallaCosmeticaId");
+        Integer fallaFuncionalId = (Integer) requestBody.get("fallaFuncionalId");
+        ingresoService.updateNoveltyAllEntry(serial, estadoId, tipologiaId, observaciones, novedad, usuarioId,
+            fallaCosmeticaId, fallaFuncionalId);
+      }
+
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
 }
 
 @Data

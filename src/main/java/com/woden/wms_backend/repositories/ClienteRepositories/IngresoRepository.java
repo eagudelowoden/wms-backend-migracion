@@ -343,4 +343,12 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_PackOffBoxEntry :palletId, :cajaId, :usuarioId", nativeQuery = true)
 	void packOffBoxEntry(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId,
 			@Param("usuarioId") Integer usuarioId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateNoveltyAllEntry :serial, :estadoId, :tipologiaId, :observaciones, :novedad, :usuarioId, :fallaCosmeticaId, :fallaFuncionalId", nativeQuery = true)
+	void updateNoveltyAllEntry(@Param("serial") String serial, @Param("estadoId") Integer estadoId,
+			@Param("tipologiaId") Integer tipologiaId, @Param("observaciones") String observaciones,
+			@Param("novedad") String novedad, @Param("usuarioId") Integer usuarioId,
+			@Param("fallaCosmeticaId") Integer fallaCosmeticaId, @Param("fallaFuncionalId") Integer fallaFuncionalId);
 }

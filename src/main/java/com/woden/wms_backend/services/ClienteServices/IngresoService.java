@@ -754,4 +754,15 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Integer result = ingresoRepository.updateLevelWeb(levelId, palletId);
     return (result != null && result > 0) ? 1 : 0;
   }
+
+  public Integer updateNoveltyAllEntry(String serial, Integer estadoId, Integer tipologiaId, String observaciones,
+      String novedad, Integer usuarioId, Integer fallaCosmeticaId, Integer fallaFuncionalId) {
+    try {
+      ingresoRepository.updateNoveltyAllEntry(serial, estadoId, tipologiaId, observaciones, novedad, usuarioId,
+          fallaCosmeticaId, fallaFuncionalId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
 }
