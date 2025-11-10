@@ -295,4 +295,53 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
       return 0;
     }
   }
+
+  public String searchGroupAccesory(String codigoSap, String estado, String tipo) {
+       List<String[]> accesorios = accesorioRepository.searchGroupAccesory(codigoSap, estado, tipo);
+       if (accesorios == null || accesorios.isEmpty()) {
+           return null; // o puedes devolver "" si prefieres evitar null
+       }
+       String[] fila = accesorios.get(0);
+       return fila[0] != null ? fila[0] : null;
+  }
+
+
+    public List<AccesorioModel> searchCleaningAccesory(String codigoSap, String tipoAccesorio) {
+        List<Object[]> results = accesorioRepository.searchCleaningAccesory(tipoAccesorio, codigoSap);
+        List<AccesorioModel> lista = new ArrayList<>();
+
+        if (results == null || results.isEmpty()) return lista;
+
+        for (Object[] obj : results) {
+            AccesorioModel accesorio = new AccesorioModel();
+            accesorio.setId(obj[0] != null ? ((Number) obj[0]).intValue() : null);
+            accesorio.setCodigoSapId(obj[1] != null ? ((Number) obj[1]).intValue() : null);
+            accesorio.setTipoAccesorio((String) obj[2]);
+            accesorio.setTipoOrigenId(obj[3] != null ? ((Number) obj[3]).intValue() : null);
+            accesorio.setOrigenId(obj[4] != null ? ((Number) obj[4]).intValue() : null);
+            accesorio.setPalletId(obj[5] != null ? ((Number) obj[5]).intValue() : null);
+            accesorio.setEstadoLimpiezaId(obj[6] != null ? ((Number) obj[6]).intValue() : null);
+            accesorio.setDocumento((String) obj[7]);
+            accesorio.setObservacion((String) obj[8]);
+            accesorio.setGuia((String) obj[9]);
+            accesorio.setFecha(obj[10] != null ? obj[10].toString() : null);
+            accesorio.setSerialEmpaque((String) obj[11]);
+            accesorio.setCaja(obj[12] != null ? ((Number) obj[12]).intValue() : null);
+            accesorio.setFechaLimpieza(obj[13] != null ? obj[13].toString() : null);
+            accesorio.setFechaEmpaque(obj[14] != null ? obj[14].toString() : null);
+            lista.add(accesorio);
+        }
+
+        return lista;
+    }
+
+
+
+
+
+
+
+
+
+
 }

@@ -171,6 +171,4 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
             @Param("palletId") Integer palletId
     );
 
-
-
 }
