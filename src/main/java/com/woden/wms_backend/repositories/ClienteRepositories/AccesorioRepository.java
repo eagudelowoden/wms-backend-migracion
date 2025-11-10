@@ -85,7 +85,11 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
 
 
     @Query(value = "EXEC pa_SearchGroupAccesory :codigoSap, :estado, :tipo", nativeQuery = true)
-    List<String[]> searchGroupAccesory(@Param("codigoSap") String codigoSap, @Param("estado") String estado, @Param("tipo") String tipo);
+    List<Object[]> searchGroupAccesory(
+            @Param("codigoSap") String codigoSap,
+            @Param("estado") String estado,
+            @Param("tipo") String tipo);
+
 
 
     @Query(value = "EXEC pa_SearchCleaningAccesory :tipoAccesorio, :codigoSap", nativeQuery = true)

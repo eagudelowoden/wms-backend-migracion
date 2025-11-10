@@ -178,19 +178,27 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
     @GetMapping("/grupo")
-    public ResponseEntity<String> getGroupAccesory(@RequestParam String codigoSap, @RequestParam String estado, @RequestParam String tipo) {
+    public ResponseEntity<List<Map<String, Object>>> getGroupAccesory(
+            @RequestParam String codigoSap,
+            @RequestParam String estado,
+            @RequestParam String tipo) {
 
-        // Validaciones rápidas
-        if (codigoSap.isBlank() || estado.isBlank() || tipo.isBlank()) {
-            return ResponseEntity.badRequest().body("Parametros obligatorios: codigoSap, destino, tipo");
+        // Ejecuta el servicio
+        List<Map<String, Object>> grupo = accesorioService.searchGroupAccesory(
+                codigoSap.trim(),
+                estado.trim(),
+                tipo.trim()
+        );
+
+        // Si no hay resultados
+        if (grupo == null || grupo.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
         }
 
-        String grupo = accesorioService.searchGroupAccesory(codigoSap.trim(), estado.trim(), tipo.trim());
-        if (grupo == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        // Devuelve lista JSON
         return ResponseEntity.ok(grupo);
     }
+
 
     @GetMapping("/buscarlimpiezaAccesorios")
     public ResponseEntity<List<AccesorioModel>> buscarAccesoriosLimpieza(
