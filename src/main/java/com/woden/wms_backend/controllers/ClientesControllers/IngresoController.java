@@ -646,6 +646,13 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @GetMapping("/searchNoveltyEntry")
+  public ResponseEntity<?> searchNoveltyEntry(
+      @RequestParam String tipoNovedad) {
+    List<Map<String, Object>> novedades = ingresoService.searchNoveltyEntry(tipoNovedad);
+    return ResponseEntity.ok(novedades);
+  }
 }
 
 @Data
