@@ -216,4 +216,44 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
             return ResponseEntity.internalServerError().build(); // 500 error interno
         }
     }
+    @PostMapping("/updateAccesory")
+    public ResponseEntity<?> updateAccesory(@RequestBody Map<String, Object> requestBody) {
+        try {
+            Integer cantidad = (Integer) requestBody.get("cantidad");
+            Integer destinoId = (Integer) requestBody.get("destinoId");
+            Integer estadoLimpiezaId = (Integer) requestBody.get("estadoLimpiezaId");
+            String codigo = (String) requestBody.get("codigo");
+            String estado = (String) requestBody.get("estado");
+            String tipoAccesorio = (String) requestBody.get("tipoAccesorio");
+            Integer usuarioLimpiezaId = (Integer) requestBody.get("usuarioLimpiezaId");
+
+            accesorioService.updateAccesory(
+                    cantidad,
+                    destinoId,
+                    estadoLimpiezaId,
+                    codigo,
+                    estado,
+                    tipoAccesorio,
+                    usuarioLimpiezaId
+            );
+            return ResponseEntity.ok(Map.of("message", "✅ Accesorio actualizado correctamente."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "❌ Error al actualizar el accesorio: " + e.getMessage()));
+        }
+    }
+    @GetMapping("/searchEntrega")
+    public ResponseEntity<List<Map<String, Object>>> searchProcessAccesory(
+            @RequestParam String estadoLimpieza) {
+        // Ejecuta el servicio
+        List<Map<String, Object>> searchEntrega = accesorioService.searchProcessAccesory(
+                estadoLimpieza.trim());
+        // Si no hay resultados
+        if (searchEntrega == null || searchEntrega.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+        // Devuelve lista JSON
+        return ResponseEntity.ok(searchEntrega);
+    }
 }

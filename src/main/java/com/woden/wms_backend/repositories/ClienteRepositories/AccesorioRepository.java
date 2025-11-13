@@ -91,9 +91,25 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
             @Param("tipo") String tipo);
 
 
-
     @Query(value = "EXEC pa_SearchCleaningAccesory :tipoAccesorio, :codigoSap", nativeQuery = true)
     List<Object[]> searchCleaningAccesory(@Param("tipoAccesorio") String tipoAccesorio, @Param("codigoSap") String codigoSap);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateAccesory :cantidad, :destinoId, :estadoLimpiezaId, :codigo, :estado, :tipoAccesorio, :UsuarioLimpiezaId, :filas OUT", nativeQuery = true)
+    void updateAccesory(@Param("cantidad") Integer cantidad,
+                        @Param("destinoId") Integer destinoId,
+                        @Param("estadoLimpiezaId") Integer estadoLimpiezaId,
+                        @Param("codigo") String codigo,
+                        @Param("estado") String estado,
+                        @Param("tipoAccesorio") String tipoAccesorio,
+                        @Param("UsuarioLimpiezaId") Integer UsuarioLimpiezaId,
+                        @Param("filas") Integer filas);
+
+
+    @Query(value = "EXEC pa_SearchProcessAccesory :estadoLimpieza", nativeQuery = true)
+    List<Object[]> searchProcessAccesory(
+            @Param("estadoLimpieza") String estadoLimpieza);
 
 
 }

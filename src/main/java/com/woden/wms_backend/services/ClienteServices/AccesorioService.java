@@ -344,5 +344,35 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return lista;
     }
 
+    public void updateAccesory(Integer cantidad, Integer destinoId, Integer estadoLimpiezaId,
+                               String codigo, String estado, String tipoAccesorio, Integer UsuarioLimpiezaId  ) {
+        Integer filas = 4;
+        accesorioRepository.updateAccesory(cantidad, destinoId,estadoLimpiezaId,codigo, estado,
+                                          tipoAccesorio,UsuarioLimpiezaId, filas);
+    }
+
+    public List<Map<String, Object>> searchProcessAccesory(String estadoLimpieza) {
+        List<Object[]> accesorios = accesorioRepository.searchProcessAccesory(estadoLimpieza);
+        List<Map<String, Object>> lista = new ArrayList<>();
+
+        if (accesorios == null || accesorios.isEmpty()) {
+            return lista;
+        }
+        for (Object[] fila : accesorios) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", fila[0] != null ? fila[0].toString() : "");
+            item.put("codigo", fila[1] != null ? fila[1].toString() : "");
+            item.put("descripcion", fila[2] != null ? fila[2].toString() : "");
+            item.put("estadoLimpieza", fila[3] != null ? fila[3].toString() : "");
+            lista.add(item);
+        }
+        return lista;
+    }
+
+
+
+
+
+
 
 }
