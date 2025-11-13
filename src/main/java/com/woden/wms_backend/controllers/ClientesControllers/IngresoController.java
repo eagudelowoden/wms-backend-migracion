@@ -653,6 +653,40 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     List<Map<String, Object>> novedades = ingresoService.searchNoveltyEntry(tipoNovedad);
     return ResponseEntity.ok(novedades);
   }
+
+  @PutMapping("/updateNoveltyEntry")
+  public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<Map<String, Object>> requestList) {
+    int updatedCount = 0;
+    try {
+      for (Map<String, Object> requestBody : requestList) {
+        Integer id = (Integer) requestBody.get("id");
+        String serial = (String) requestBody.get("serial");
+        String mac = (String) requestBody.get("mac");
+        Integer codigoSapId = (Integer) requestBody.get("codigoSapId");
+        String guia = (String) requestBody.get("guia");
+        String documento = (String) requestBody.get("documento");
+        Integer tipoOrigenId = (Integer) requestBody.get("tipoOrigenId");
+        Integer origenId = (Integer) requestBody.get("origenId");
+        Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
+        Integer estadoId = (Integer) requestBody.get("estadoId");
+        String tipoNovedad = (String) requestBody.get("tipoNovedad");
+        Integer usuarioId = (Integer) requestBody.get("usuarioId");
+
+        int status = ingresoService.updateNoveltyEntry(
+            id, serial, mac, codigoSapId, guia, documento,
+            tipoOrigenId, origenId, tipologiaId, estadoId, tipoNovedad, usuarioId);
+
+        if (status == 1) {
+          updatedCount++;
+        }
+      }
+      return ResponseEntity.ok(updatedCount);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(updatedCount);
+    }
+  }
+
 }
 
 @Data

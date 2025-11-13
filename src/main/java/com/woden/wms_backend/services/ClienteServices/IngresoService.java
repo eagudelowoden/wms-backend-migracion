@@ -782,4 +782,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
     return novedades;
   }
+
+  public Integer updateNoveltyEntry(Integer id, String serial, String mac,
+      Integer codigoSapId, String guia, String documento,
+      Integer tipoOrigenId, Integer origenId,
+      Integer tipologiaId, Integer estadoId,
+      String tipoNovedad, Integer usuarioId) {
+    try {
+      ingresoRepository.updateNoveltyEntry(id, serial, mac, codigoSapId, guia, documento, tipoOrigenId, origenId,
+          tipologiaId, estadoId, tipoNovedad, usuarioId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
 }
