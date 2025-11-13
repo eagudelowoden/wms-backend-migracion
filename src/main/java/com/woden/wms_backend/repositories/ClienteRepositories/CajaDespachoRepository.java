@@ -44,4 +44,9 @@ public interface CajaDespachoRepository extends BaseRepository<CajaDespachoModel
   @Transactional
   @Query(value = "EXEC pa_InactivateBoxDispatch :cajaDespachoId", nativeQuery = true)
   void inactivateBoxDispatch(@Param("cajaDespachoId") Integer cajaDespachoId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_InsertDispatchBoxFromPackedBox :palletId", nativeQuery = true)
+  void insertDispatchBoxFromPackedBox(@Param("palletId") Integer palletId);
 }

@@ -1,4 +1,5 @@
 package com.woden.wms_backend.services.ClienteServices;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
@@ -44,7 +45,6 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     cajaEmpaqueRepository.updateStatusBoxPacking(cajaEmpaqueId, estadoId, filas);
   }
 
-
   public List<CajaEmpaqueDTO> SearchReceivePacking(String numero, String pallet) {
     List<Object[]> results = cajaEmpaqueRepository.SearchReceivePacking(numero, pallet);
 
@@ -84,12 +84,12 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-    @Transactional(readOnly = true)
-    public List<String> getSerialesByPallet(Integer palletId) {
-        Query query = entityManager.createNativeQuery("EXEC pa_SerialesByPallet :palletId");
-        query.setParameter("palletId", palletId);
-        return query.getResultList();
-    }
+  @Transactional(readOnly = true)
+  public List<String> getSerialesByPallet(Integer palletId) {
+    Query query = entityManager.createNativeQuery("EXEC pa_SerialesByPallet :palletId");
+    query.setParameter("palletId", palletId);
+    return query.getResultList();
+  }
 
   private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
 
@@ -149,8 +149,16 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     }
   }
 
-    public Integer getCountBoxPacking(Integer cajaEmpaqueId) {
-        return cajaEmpaqueRepository.getCountBoxPacking(cajaEmpaqueId);
-    }
+  public Integer getCountBoxPacking(Integer cajaEmpaqueId) {
+    return cajaEmpaqueRepository.getCountBoxPacking(cajaEmpaqueId);
+  }
 
+  public Integer updateStatusAllBoxPacking(Integer palletId, Integer estadoId) {
+    try {
+      cajaEmpaqueRepository.updateStatusAllBoxPacking(palletId, estadoId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
 }

@@ -15,40 +15,40 @@ import java.util.List;
 @Repository
 public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, Integer> {
 
-  @Modifying
-  @Transactional
-  @Query(value = "EXEC pa_updateStatusBoxPacking :cajaEmpaqueId, :estadoId, :filas OUT", nativeQuery = true)
-  void updateStatusBoxPacking(
-      @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
-      @Param("estadoId") Integer estadoId,
-      @Param("filas") Integer filas);
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_updateStatusBoxPacking :cajaEmpaqueId, :estadoId, :filas OUT", nativeQuery = true)
+    void updateStatusBoxPacking(
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
+            @Param("estadoId") Integer estadoId,
+            @Param("filas") Integer filas);
 
-  @Query(value = "EXEC pa_SearchReceivePacking :estado, :numero", nativeQuery = true)
-  List<Object[]> SearchReceivePacking(
-      @Param("estado") String estado,
-      @Param("numero") String numero);
+    @Query(value = "EXEC pa_SearchReceivePacking :estado, :numero", nativeQuery = true)
+    List<Object[]> SearchReceivePacking(
+            @Param("estado") String estado,
+            @Param("numero") String numero);
 
-  @Query(value = "EXEC pa_SearchProcessBoxPacking :palletId, :cajaEmpaqueId, :estado", nativeQuery = true)
-  List<Object[]> SearchProcessBoxPacking(
-      @Param("palletId") Integer palletId,
-      @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
-      @Param("estado") String estado // <-- aquí también String
-  );
+    @Query(value = "EXEC pa_SearchProcessBoxPacking :palletId, :cajaEmpaqueId, :estado", nativeQuery = true)
+    List<Object[]> SearchProcessBoxPacking(
+            @Param("palletId") Integer palletId,
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
+            @Param("estado") String estado // <-- aquí también String
+    );
 
-  @Query(value = "EXEC pa_SearchPacking :palletId", nativeQuery = true)
-  List<Object[]> SearchPacking(
-      @Param("palletId") Integer palletId);
+    @Query(value = "EXEC pa_SearchPacking :palletId", nativeQuery = true)
+    List<Object[]> SearchPacking(
+            @Param("palletId") Integer palletId);
 
-  @Modifying
-  @Transactional
-  @Query(value = "EXEC pa_InsertBoxPacking :numero, :palletId, :estadoId, :usuarioId, :fecha", nativeQuery = true)
-  void create(
-      @Param("numero") String numero,
-      @Param("palletId") Integer palletId,
-      @Param("estadoId") Integer estadoId,
-      @Param("usuarioId") Integer usuarioId, // <-- aquí también String
-      @Param("fecha") LocalDateTime fecha // <-- aquí también String
-  );
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_InsertBoxPacking :numero, :palletId, :estadoId, :usuarioId, :fecha", nativeQuery = true)
+    void create(
+            @Param("numero") String numero,
+            @Param("palletId") Integer palletId,
+            @Param("estadoId") Integer estadoId,
+            @Param("usuarioId") Integer usuarioId, // <-- aquí también String
+            @Param("fecha") LocalDateTime fecha // <-- aquí también String
+    );
 
     @Modifying
     @Transactional
@@ -61,7 +61,12 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     @Query(value = "EXEC pa_SerialesByPallet :palletId", nativeQuery = true)
     List<String> SerialesByPallet(@Param("palletId") Integer palletId);
 
-
     @Query(value = "EXEC pa_GetCountBoxPacking :cajaEmpaqueId", nativeQuery = true)
     Integer getCountBoxPacking(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateStatusAllBoxPacking :palletId, :estadoId, 4", nativeQuery = true)
+    void updateStatusAllBoxPacking(@Param("palletId") Integer palletId, @Param("estadoId") Integer estadoId);
+
 }

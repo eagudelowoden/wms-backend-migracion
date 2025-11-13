@@ -92,5 +92,10 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return cajaEmpaqueService.getCountBoxPacking(cajaEmpaqueId);
     }
 
+    @PutMapping("/updateStatusAllBoxPacking")
+    public ResponseEntity<Integer> updateStatusAllBoxPacking(@RequestParam Integer palletId,
+            @RequestParam Integer estadoId) {
+        return ResponseEntity.ok(cajaEmpaqueService.updateStatusAllBoxPacking(palletId, estadoId));
+    }
 
 }

@@ -343,4 +343,24 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_PackOffBoxEntry :palletId, :cajaId, :usuarioId", nativeQuery = true)
 	void packOffBoxEntry(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId,
 			@Param("usuarioId") Integer usuarioId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateNoveltyAllEntry :serial, :estadoId, :tipologiaId, :observaciones, :novedad, :usuarioId, :fallaCosmeticaId, :fallaFuncionalId", nativeQuery = true)
+	void updateNoveltyAllEntry(@Param("serial") String serial, @Param("estadoId") Integer estadoId,
+			@Param("tipologiaId") Integer tipologiaId, @Param("observaciones") String observaciones,
+			@Param("novedad") String novedad, @Param("usuarioId") Integer usuarioId,
+			@Param("fallaCosmeticaId") Integer fallaCosmeticaId, @Param("fallaFuncionalId") Integer fallaFuncionalId);
+
+	@Query(value = "EXEC pa_SearchNoveltyEntry :tipoNovedad", nativeQuery = true)
+	List<Object[]> searchNoveltyEntry(@Param("tipoNovedad") String tipoNovedad);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateNoveltyEntry :id, :serial, :mac, :codigoSapId, :guia, :documento, :tipoOrigenId, :origenId, :tipologiaId, :estadoId, :tipoNovedad, :usuarioId, 4", nativeQuery = true)
+	void updateNoveltyEntry(@Param("id") Integer id, @Param("serial") String serial, @Param("mac") String mac,
+			@Param("codigoSapId") Integer codigoSapId, @Param("guia") String guia, @Param("documento") String documento,
+			@Param("tipoOrigenId") Integer tipoOrigenId, @Param("origenId") Integer origenId,
+			@Param("tipologiaId") Integer tipologiaId, @Param("estadoId") Integer estadoId,
+			@Param("tipoNovedad") String tipoNovedad, @Param("usuarioId") Integer usuarioId);
 }

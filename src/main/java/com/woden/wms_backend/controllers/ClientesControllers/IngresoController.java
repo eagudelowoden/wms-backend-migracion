@@ -625,6 +625,68 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @PutMapping("/updateNoveltyAllEntry")
+  public ResponseEntity<Integer> updateNoveltyAllEntry(@RequestBody List<Map<String, Object>> requestList,
+      @RequestParam Integer estadoId, @RequestParam Integer tipologiaId, @RequestParam Integer usuarioId,
+      @RequestParam String novedad) {
+    try {
+      for (Map<String, Object> requestBody : requestList) {
+        String serial = (String) requestBody.get("serial");
+        String observaciones = (String) requestBody.get("observaciones");
+        Integer fallaCosmeticaId = (Integer) requestBody.get("fallaCosmeticaId");
+        Integer fallaFuncionalId = (Integer) requestBody.get("fallaFuncionalId");
+        ingresoService.updateNoveltyAllEntry(serial, estadoId, tipologiaId, observaciones, novedad, usuarioId,
+            fallaCosmeticaId, fallaFuncionalId);
+      }
+
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/searchNoveltyEntry")
+  public ResponseEntity<?> searchNoveltyEntry(
+      @RequestParam String tipoNovedad) {
+    List<Map<String, Object>> novedades = ingresoService.searchNoveltyEntry(tipoNovedad);
+    return ResponseEntity.ok(novedades);
+  }
+
+  @PutMapping("/updateNoveltyEntry")
+  public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<Map<String, Object>> requestList) {
+    int updatedCount = 0;
+    try {
+      for (Map<String, Object> requestBody : requestList) {
+        Integer id = (Integer) requestBody.get("id");
+        String serial = (String) requestBody.get("serial");
+        String mac = (String) requestBody.get("mac");
+        Integer codigoSapId = (Integer) requestBody.get("codigoSapId");
+        String guia = (String) requestBody.get("guia");
+        String documento = (String) requestBody.get("documento");
+        Integer tipoOrigenId = (Integer) requestBody.get("tipoOrigenId");
+        Integer origenId = (Integer) requestBody.get("origenId");
+        Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
+        Integer estadoId = (Integer) requestBody.get("estadoId");
+        String tipoNovedad = (String) requestBody.get("tipoNovedad");
+        Integer usuarioId = (Integer) requestBody.get("usuarioId");
+
+        int status = ingresoService.updateNoveltyEntry(
+            id, serial, mac, codigoSapId, guia, documento,
+            tipoOrigenId, origenId, tipologiaId, estadoId, tipoNovedad, usuarioId);
+
+        if (status == 1) {
+          updatedCount++;
+        }
+      }
+      return ResponseEntity.ok(updatedCount);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(updatedCount);
+    }
+  }
+
 }
 
 @Data

@@ -458,7 +458,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateStateOneEntry(Integer estadoId, Integer nivelId, Integer usuarioIdMovimiento, Date fecha,
       String serial) {
-    Integer filas = 4;
     ingresoRepository.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial);
   }
 
@@ -754,5 +753,47 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public int updateLevelWeb(Integer levelId, Integer palletId) {
     Integer result = ingresoRepository.updateLevelWeb(levelId, palletId);
     return (result != null && result > 0) ? 1 : 0;
+  }
+
+  public Integer updateNoveltyAllEntry(String serial, Integer estadoId, Integer tipologiaId, String observaciones,
+      String novedad, Integer usuarioId, Integer fallaCosmeticaId, Integer fallaFuncionalId) {
+    try {
+      ingresoRepository.updateNoveltyAllEntry(serial, estadoId, tipologiaId, observaciones, novedad, usuarioId,
+          fallaCosmeticaId, fallaFuncionalId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
+
+  public List<Map<String, Object>> searchNoveltyEntry(String tipoNovedad) {
+    List<Object[]> results = ingresoRepository.searchNoveltyEntry(tipoNovedad);
+    List<Map<String, Object>> novedades = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, Object> entry = new HashMap<>();
+      entry.put("id", (Integer) result[0]);
+      entry.put("serial", (String) result[1]);
+      entry.put("mac", (String) result[2]);
+      entry.put("codigoSap", (String) result[3]);
+      entry.put("descripcion", (String) result[4]);
+      entry.put("novedad", (String) result[5]);
+      entry.put("observaciones", (String) result[6]);
+      novedades.add(entry);
+    }
+    return novedades;
+  }
+
+  public Integer updateNoveltyEntry(Integer id, String serial, String mac,
+      Integer codigoSapId, String guia, String documento,
+      Integer tipoOrigenId, Integer origenId,
+      Integer tipologiaId, Integer estadoId,
+      String tipoNovedad, Integer usuarioId) {
+    try {
+      ingresoRepository.updateNoveltyEntry(id, serial, mac, codigoSapId, guia, documento, tipoOrigenId, origenId,
+          tipologiaId, estadoId, tipoNovedad, usuarioId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
   }
 }
