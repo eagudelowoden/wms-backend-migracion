@@ -73,14 +73,12 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
     }
 
     @GetMapping("/getModel/{codigo}")
-    public ResponseEntity<?> obtenerCodigoSap(@PathVariable String codigo) {
-        CodigoSapModelDTO model = codigoSapService.obtenerModeloPorCodigo(codigo);
-        if (model == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Codigo Sap no encontrado");
+    public ResponseEntity<CodigoSapModelDTO> obtenerCodigoSap(@PathVariable String codigo) {
+        CodigoSapModelDTO codigoSap = codigoSapService.obtenerModeloPorCodigo(codigo);
+        if (codigoSap == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        Map<String, CodigoSapModelDTO> response = new HashMap<>();
-        response.put("codigosap", model);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(codigoSap);
     }
 
     @GetMapping("/getFamilyId")

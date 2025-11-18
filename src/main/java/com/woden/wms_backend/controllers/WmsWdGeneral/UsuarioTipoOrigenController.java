@@ -20,8 +20,8 @@ public class UsuarioTipoOrigenController {
   private UsuarioTipoOrigenService usuarioTipoOrigenService;
 
   @GetMapping("/{usuarioId}/{clienteId}")
-  public ResponseEntity<List<UsuarioTipoOrigenDTO>> getListAssigned(@PathVariable int usuarioId, @PathVariable int clienteId) {
-    List<UsuarioTipoOrigenDTO> tipoOrigenes = usuarioTipoOrigenService.getListAssigned(usuarioId, clienteId);
+  public ResponseEntity<List<String>> getListAssigned(@PathVariable int usuarioId, @PathVariable int clienteId) {
+    List<String> tipoOrigenes = usuarioTipoOrigenService.getListAssigned(usuarioId, clienteId);
     return ResponseEntity.ok(tipoOrigenes);
   }
 }

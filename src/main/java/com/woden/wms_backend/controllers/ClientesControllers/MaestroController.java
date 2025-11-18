@@ -44,13 +44,11 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     }
 
     @GetMapping("/getId")
-    public ResponseEntity<Map<String, List<Integer>>> getIdMaster(
+    public ResponseEntity<Integer> getIdMaster(
             @RequestParam String codigo,
             @RequestParam String tipo) {
-        List<Integer> id = maestroService.getIdMaster(codigo, tipo);
-        Map<String, List<Integer>> response = new HashMap<>();
-        response.put("id", id);
-        return ResponseEntity.ok(response);
+        Integer id = maestroService.getIdMaster(codigo, tipo);
+        return ResponseEntity.ok(id);
     }
 
     @GetMapping("/tipo/{tipo}")
@@ -193,7 +191,7 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         String result = maestroService.getProviderMaster(codigoSap);
         return ResponseEntity.ok(result);
     }
-    
+
     @GetMapping("/getProviderDescriptionMaster")
     public ResponseEntity<String> getProviderDescriptionMaster(@RequestParam String codigoSap) {
         String result = maestroService.getProviderDescriptionMaster(codigoSap);

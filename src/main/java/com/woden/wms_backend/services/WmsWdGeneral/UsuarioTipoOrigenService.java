@@ -19,14 +19,12 @@ public class UsuarioTipoOrigenService {
     this.usuarioTipoOrigenRepository = usuarioTipoOrigenRepository;
   }
 
-  public List<UsuarioTipoOrigenDTO> getListAssigned(int usuarioId, int clienteId) {
+  public List<String> getListAssigned(int usuarioId, int clienteId) {
     List<Object[]> results = usuarioTipoOrigenRepository.getListAssigned(usuarioId, clienteId);
 
-    return results.stream().map(obj -> {
-      UsuarioTipoOrigenDTO usuarioTipoOrigen = new UsuarioTipoOrigenDTO();
-      usuarioTipoOrigen.setId((Integer) obj[0]);
-      usuarioTipoOrigen.setCodigo((String) obj[1]);
-      return usuarioTipoOrigen;
-    }).collect(Collectors.toList());
+    return results.stream()
+        .map(obj -> (String) obj[1]) // Convertir cada fila a String
+        .collect(Collectors.toList());
   }
+
 }

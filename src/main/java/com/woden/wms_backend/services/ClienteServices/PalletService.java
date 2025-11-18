@@ -153,7 +153,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return palletRepository.getCountPallet(palletId, tabla);
   }
 
-  public boolean deletePallet(Integer palletId, String tipoEquipo, String tipo) {
+  public boolean deletePallet1(Integer palletId, String tipoEquipo, String tipo) {
     if (!tipoEquipo.equals("") && !tipo.equals("")) {
       String estado = null;
       String tabla = null;
@@ -177,6 +177,15 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     palletRepository.deletePallet(palletId);
     return true;
+  }
+
+  public Integer deletePallet(Integer palletId) {
+    try {
+      palletRepository.deletePallet(palletId);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
   }
 
   private String getTablaDesdeTipo(String tipoEquipo, String tipo) {
@@ -476,11 +485,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-
   public int sendAllPallet(Integer destinoId, Integer palletId) {
-      palletRepository.sendAllPallet(destinoId, palletId);
-      return 1;
+    palletRepository.sendAllPallet(destinoId, palletId);
+    return 1;
   }
-
 
 }
