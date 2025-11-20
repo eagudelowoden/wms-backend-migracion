@@ -315,30 +315,22 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
 
 
-    public List<AccesorioModel> searchCleaningAccesory(String codigoSap, String tipoAccesorio) {
+    public List<Map<String, Object>> searchCleaningAccesory(String codigoSap, String tipoAccesorio) {
         List<Object[]> results = accesorioRepository.searchCleaningAccesory(tipoAccesorio, codigoSap);
-        List<AccesorioModel> lista = new ArrayList<>();
+        List<Map<String, Object>> lista = new ArrayList<>();
 
         if (results == null || results.isEmpty()) return lista;
 
-        for (Object[] obj : results) {
-            AccesorioModel accesorio = new AccesorioModel();
-            accesorio.setId(obj[0] != null ? ((Number) obj[0]).intValue() : null);
-            accesorio.setCodigoSapId(obj[1] != null ? ((Number) obj[1]).intValue() : null);
-            accesorio.setTipoAccesorio((String) obj[2]);
-            accesorio.setTipoOrigenId(obj[3] != null ? ((Number) obj[3]).intValue() : null);
-            accesorio.setOrigenId(obj[4] != null ? ((Number) obj[4]).intValue() : null);
-            accesorio.setPalletId(obj[5] != null ? ((Number) obj[5]).intValue() : null);
-            accesorio.setEstadoLimpiezaId(obj[6] != null ? ((Number) obj[6]).intValue() : null);
-            accesorio.setDocumento((String) obj[7]);
-            accesorio.setObservacion((String) obj[8]);
-            accesorio.setGuia((String) obj[9]);
-            accesorio.setFecha(obj[10] != null ? obj[10].toString() : null);
-            accesorio.setSerialEmpaque((String) obj[11]);
-            accesorio.setCaja(obj[12] != null ? ((Number) obj[12]).intValue() : null);
-            accesorio.setFechaLimpieza(obj[13] != null ? obj[13].toString() : null);
-            accesorio.setFechaEmpaque(obj[14] != null ? obj[14].toString() : null);
-            lista.add(accesorio);
+        for (Object[] fila : results) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("codigo", fila[0] != null ? fila[0].toString() : "");
+            item.put("descripcion", fila[1] != null ? fila[1].toString() : "");
+            item.put("estadoLimpieza", fila[2] != null ? fila[2].toString() : "");
+            item.put("esuarioLimpieza", fila[3] != null ? fila[3].toString() : "");
+            item.put("codigoSapId", fila[4] != null ? fila[4].toString() : "");
+            item.put("estadoLimpiezaId", fila[5] != null ? fila[5].toString() : "");
+            item.put("usuarioLimpiezaId", fila[6] != null ? fila[6].toString() : "");
+            lista.add(item);
         }
 
         return lista;

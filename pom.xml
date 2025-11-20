@@ -88,6 +88,28 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-common-protos</artifactId>
+            <version>2.63.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-iam-v1 -->
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-iam-v1</artifactId>
+            <version>1.58.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>4.33.1</version>
+        </dependency>
+
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

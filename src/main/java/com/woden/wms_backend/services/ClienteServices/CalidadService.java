@@ -55,7 +55,7 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
                     cajaEmpaqueId, usuarioId, fecha
             );
         } catch (Exception e) {
-            logger.error("❌ Error al insertar en calidad: {}", e.getMessage(), e);
+            logger.error("Error al insertar en calidad: {}", e.getMessage(), e);
             throw e; // re-lanzamos para que el controller capture el error si es necesario
         }
     }

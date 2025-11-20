@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -201,14 +202,14 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
 
 
     @GetMapping("/buscarlimpiezaAccesorios")
-    public ResponseEntity<List<AccesorioModel>> buscarAccesoriosLimpieza(
+    public ResponseEntity<List<Map<String, Object>>> buscarAccesoriosLimpieza(
             @RequestParam String codigoSap,
             @RequestParam String tipoAccesorio) {
         try {
-            List<AccesorioModel> accesorios = accesorioService.searchCleaningAccesory(codigoSap, tipoAccesorio);
+            List<Map<String, Object>> accesorios = accesorioService.searchCleaningAccesory(codigoSap, tipoAccesorio);
 
             if (accesorios.isEmpty()) {
-                return ResponseEntity.noContent().build(); // 204 sin resultados
+                return ResponseEntity.ok(new ArrayList<>()); // 200 []
             }
             return ResponseEntity.ok(accesorios); // 200 OK con lista
         } catch (Exception e) {
