@@ -31,8 +31,9 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
         .collect(Collectors.toList());
   }
 
-  public List<Integer> getIdMaster(String codigo, String tipo) {
-    return maestroRepository.getIdMaster(codigo, tipo);
+  public Integer getIdMaster(String codigo, String tipo) {
+    List<Integer> result = maestroRepository.getIdMaster(codigo, tipo);
+    return result.isEmpty() ? null : result.get(0);
   }
 
   public List<String> getListByTipo(String tipo) {
@@ -51,13 +52,12 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
     return maestroRepository.addCountPalletFamily(value, familyId, filas);
   }
 
-    public List<String> getModelMaster(String codigoSap) {
-        List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
-        return results.stream()
-                .map(obj -> (String) obj[0]) // devuelve solo el string
-                .collect(Collectors.toList());
-    }
-
+  public List<String> getModelMaster(String codigoSap) {
+    List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
+    return results.stream()
+        .map(obj -> (String) obj[0]) // devuelve solo el string
+        .collect(Collectors.toList());
+  }
 
   public List<String> getLevelsClasification() {
     List<Object[]> results = maestroRepository.getLevelsClasification();

@@ -84,11 +84,9 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   }
 
   @PostMapping("/cantidad-seriales")
-  public ResponseEntity<Map<String, Integer>> getCount(@RequestBody CountPalletDTO dto) {
+  public ResponseEntity<Integer> getCount(@RequestBody CountPalletDTO dto) {
     Integer cantidad = palletService.getCount(dto.getPalletId(), dto.getTabla());
-    Map<String, Integer> response = new HashMap<>();
-    response.put("cantidad", cantidad);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(cantidad);
   }
 
   @PostMapping("/cerrar")
@@ -114,7 +112,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       @RequestParam(required = false) String tipoEquipo,
       @RequestParam(required = false) String tipo) {
 
-    boolean eliminado = palletService.deletePallet(palletId, tipoEquipo, tipo);
+    boolean eliminado = palletService.deletePallet1(palletId, tipoEquipo, tipo);
     Map<String, String> response = new HashMap<>();
 
     if (eliminado) {
@@ -124,6 +122,13 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       response.put("message", "No se puede eliminar: El pallet tiene cajas o ingresos.");
       return ResponseEntity.badRequest().body(response);
     }
+  }
+
+  @DeleteMapping("/deletePallet/{palletId}")
+  public ResponseEntity<Integer> deletePallet(
+      @PathVariable Integer palletId) {
+    Integer result = palletService.deletePallet(palletId);
+    return ResponseEntity.ok(result);
   }
 
   @PostMapping("/confirmar-transito")
@@ -351,10 +356,10 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @PostMapping("/sendAllPallet")
   public ResponseEntity<Integer> sendAllPallet(
-          @RequestParam Integer destinoId,
-          @RequestParam Integer palletId) {
-      palletService.sendAllPallet(destinoId, palletId);
-      return ResponseEntity.ok(1);
+      @RequestParam Integer destinoId,
+      @RequestParam Integer palletId) {
+    palletService.sendAllPallet(destinoId, palletId);
+    return ResponseEntity.ok(1);
   }
 
 }
