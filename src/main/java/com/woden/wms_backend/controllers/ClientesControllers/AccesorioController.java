@@ -244,6 +244,7 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
                     .body(Map.of("error", "❌ Error al actualizar el accesorio: " + e.getMessage()));
         }
     }
+
     @GetMapping("/searchEntrega")
     public ResponseEntity<List<Map<String, Object>>> searchProcessAccesory(
             @RequestParam String estadoLimpieza) {
