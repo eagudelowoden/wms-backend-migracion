@@ -2,6 +2,7 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
+import com.woden.wms_backend.dto.PackingTransactionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
 
     @Autowired
     private EmpaqueService empaqueService;
+
 
     @PostMapping("/insertPacking")
     public ResponseEntity<?> createEntity(@RequestBody EmpaqueModel requestBody) {
@@ -103,6 +105,18 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
         String serialAnterior = (String) empaque.get("serialAnterior");
         empaqueService.UpdatePacking(serialId, serialNuevo, mac, serialAnterior);
         return ResponseEntity.ok(1);
+    }
+
+    @PostMapping("/createFullPacking")
+    public ResponseEntity<?> createFullPacking(@RequestBody PackingTransactionDTO request) {
+        try {
+            // Llamamos al método transaccional que creaste
+            empaqueService.createPackingCompleto(request);
+            return ResponseEntity.ok(1); // Retornamos éxito
+        } catch (Exception e) {
+            e.printStackTrace(); // Para ver el error en consola si falla
+            return ResponseEntity.badRequest().body("Error al crear packing: " + e.getMessage());
+        }
     }
 
 
