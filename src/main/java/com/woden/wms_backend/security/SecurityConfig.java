@@ -33,6 +33,9 @@ public class SecurityConfig {
             .requestMatchers("/general/users/login", "/api/general/users/login").permitAll()
             .requestMatchers("/general/version", "/api/general/version").permitAll()
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-reference/**").permitAll()
+            .requestMatchers("/general/ingreso/**").permitAll()
+            .requestMatchers("/general/clientes/**").permitAll()
+            .requestMatchers("/general/users/ping").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .build();

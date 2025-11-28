@@ -225,4 +225,9 @@ public class UsuarioController {
     public Integer getIdUser(@RequestParam String username) {
         return usuarioService.getIdUser(username);
     }
+
+    @GetMapping("/ping")
+    public Map<String, String> ping() {
+        return Map.of("status", "OK - Backend funcionando");
+    }
 }

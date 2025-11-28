@@ -83,7 +83,6 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
                 client.getDbase(),
                 client.getId());
 
-
         try {
             dynamicDataSourceConfig.initializeClientDataSource(client.getDbase());
         } catch (Exception e) {
@@ -111,6 +110,11 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         return clienteService.getKitIngresoValue(id);
     }
 
+    @GetMapping("/getClientes")
+    public List<Map<String, Object>> getClientes() {
+        return clienteService.getClientes();
+    }
+
     public static class DatabaseInfo {
         private final String databaseName;
         private final String connectionUrl;
@@ -135,4 +139,5 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
             return isGeneral;
         }
     }
+
 }

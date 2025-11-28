@@ -796,4 +796,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       return 0;
     }
   }
+
+  public List<Map<String, String>> searchNoveltyEntryDelivery(String perfil, Integer usuarioId) {
+    List<Object[]> results = ingresoRepository.searchNoveltyEntryDelivery(perfil, usuarioId);
+    List<Map<String, String>> noveltyEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, String> entry = new HashMap<>();
+      entry.put("serial", (String) result[0]);
+      entry.put("mac", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("descripcion", (String) result[3]);
+      noveltyEntries.add(entry);
+    }
+    return noveltyEntries;
+  }
 }

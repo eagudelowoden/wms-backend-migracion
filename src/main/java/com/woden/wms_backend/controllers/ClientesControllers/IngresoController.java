@@ -66,7 +66,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       String mensaje = switch (resultado) {
         case "1001" -> "Serial duplicado.";
         case "1002" -> "MAC duplicada.";
-        default -> "Error al registrar ingreso: " + resultado;
+        default -> resultado;
       };
 
       response.put("error", mensaje);
@@ -687,6 +687,14 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
+  @GetMapping("/searchNoveltyEntryDelivery")
+  public ResponseEntity<?> searchNoveltyEntryDelivery(
+      @RequestParam String perfil,
+      @RequestParam Integer usuarioId) {
+    List<Map<String, String>> noveltyEntries = ingresoService.searchNoveltyEntryDelivery(perfil,
+        usuarioId);
+    return ResponseEntity.ok(noveltyEntries);
+  }
 }
 
 @Data
