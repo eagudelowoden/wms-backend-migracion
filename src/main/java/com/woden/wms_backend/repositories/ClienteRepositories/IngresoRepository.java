@@ -363,4 +363,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("tipoOrigenId") Integer tipoOrigenId, @Param("origenId") Integer origenId,
 			@Param("tipologiaId") Integer tipologiaId, @Param("estadoId") Integer estadoId,
 			@Param("tipoNovedad") String tipoNovedad, @Param("usuarioId") Integer usuarioId);
+
+	@Query(value = "EXEC pa_SearchNoveltyEntryWeb :perfil, :usuarioId", nativeQuery = true)
+	List<Object[]> searchNoveltyEntryDelivery(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 }

@@ -23,4 +23,7 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
 
     @Query(value = "SELECT kitIngresoON FROM Cliente WHERE id = :id", nativeQuery = true)
     Boolean getKitIngresoON(@Param("id") int id);
+
+    @Query(value = "SELECT id, nombre from Cliente where id in (62,60,85,91)", nativeQuery = true)
+    List<Object[]> getClientes();
 }
