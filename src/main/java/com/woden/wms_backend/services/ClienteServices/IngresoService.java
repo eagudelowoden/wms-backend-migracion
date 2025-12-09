@@ -622,9 +622,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   @Transactional
   public void updateDispatchEntry(String serial, Integer estadoId, Integer palletId, Integer cajaDespachoId,
       Integer usuarioMovimientoId, Integer loteId) {
-    // Integer filas = 4;
+    Integer filas = 4;
     loteId = (loteId != null && loteId == 0) ? null : loteId;
-    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId);
+    ingresoRepository.updateDispatchEntry(serial, estadoId, palletId, cajaDespachoId, usuarioMovimientoId, loteId, filas);
   }
 
   public List<Map<String, String>> searchQualityEntry() {
@@ -797,8 +797,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
   }
 
-  public List<Map<String, String>> searchNoveltyEntryDelivery(String perfil, Integer usuarioId) {
-    List<Object[]> results = ingresoRepository.searchNoveltyEntryDelivery(perfil, usuarioId);
+  public List<Map<String, String>> searchNoveltyEntryDelivery(String perfil, Integer usuarioId, String tipoNovedad) {
+    List<Object[]> results = ingresoRepository.searchNoveltyEntryDelivery(perfil, usuarioId, tipoNovedad);
     List<Map<String, String>> noveltyEntries = new ArrayList<>();
     for (Object[] result : results) {
       Map<String, String> entry = new HashMap<>();
@@ -809,5 +809,35 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       noveltyEntries.add(entry);
     }
     return noveltyEntries;
+  }
+
+  public void sendNoveltyEntry(Integer estadoId, Integer tipologiaId, Integer usuarioId, Integer palletId,
+      Integer opcion) {
+    Integer filas = 0;
+    ingresoRepository.sendNoveltyEntry(estadoId, tipologiaId, usuarioId, palletId, opcion, filas);
+  }
+
+  public void updateStatusBatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento, Integer fecha,
+      List<String> serial, Integer loteId) {
+    for (String s : serial) {
+      ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteId);
+    }
+  }
+
+  public int UpdateEntryDispatch(Integer estadoId, Integer palletId,
+      Integer usuarioIdMovimiento, String serial, Integer loteId) {
+    try {
+      Integer filas = 4;
+      if (loteId == 0) {
+        loteId = null;
+      }
+      ingresoRepository.UpdateEntryDispatch(estadoId, palletId, usuarioIdMovimiento, serial, loteId,
+          filas);
+      return 1; // ✅ éxito
+    } catch (Exception e) {
+      System.err.println("Error en UpdateEntryDispatch: " + e.getMessage());
+      e.printStackTrace();
+      return 0;
+    }
   }
 }

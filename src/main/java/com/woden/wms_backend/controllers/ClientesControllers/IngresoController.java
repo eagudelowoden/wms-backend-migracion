@@ -690,10 +690,71 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @GetMapping("/searchNoveltyEntryDelivery")
   public ResponseEntity<?> searchNoveltyEntryDelivery(
       @RequestParam String perfil,
-      @RequestParam Integer usuarioId) {
+      @RequestParam Integer usuarioId,
+      @RequestParam String tipoNovedad) {
     List<Map<String, String>> noveltyEntries = ingresoService.searchNoveltyEntryDelivery(perfil,
-        usuarioId);
+        usuarioId, tipoNovedad);
     return ResponseEntity.ok(noveltyEntries);
+  }
+
+  @PostMapping("/sendNoveltyEntry")
+  public ResponseEntity<?> sendNoveltyEntry(@RequestBody SendIngresoDTO dto) {
+    try {
+      ingresoService.sendNoveltyEntry(
+          dto.getEstadoId(),
+          dto.getTipologiaId(),
+          dto.getUsuarioId(),
+          dto.getPalletId(),
+          dto.getOpcion());
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(0);
+    }
+  }
+
+  @PostMapping("/updateStatusBatch")
+  public ResponseEntity<?> updateStatusBatch(@RequestBody Map<String, Object> dto) {
+    try {
+      Integer estadoId = (Integer) dto.get("estadoId");
+      Integer palletId = (Integer) dto.get("palletId");
+      Integer usuarioIdMovimiento = (Integer) dto.get("usuarioIdMovimiento");
+      List<?> serialRaw = (List<?>) dto.get("seriales");
+      List<String> seriales = serialRaw.stream().map(Object::toString).toList();
+      Integer fecha = (Integer) dto.get("fecha");
+      Integer loteId = (Integer) dto.get("loteId");
+      loteId = (loteId != 0) ? loteId : null;
+      ingresoService.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, seriales, loteId);
+
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(0);
+    }
+  }
+
+  @PostMapping("/updateEntryDispatch")
+  public ResponseEntity<Integer> UpdateEntryDispatch(
+      @RequestParam("estadoId") Integer estadoId,
+      @RequestParam("palletId") Integer palletId,
+      @RequestParam("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+      @RequestParam("serial") String serial,
+      @RequestParam("loteId") Integer loteId) {
+    try {
+      int result = ingresoService.UpdateEntryDispatch(
+          estadoId, palletId, usuarioIdMovimiento, serial, loteId);
+
+      if (result == 1) {
+        return ResponseEntity.ok(1);
+      } else {
+        return ResponseEntity.badRequest().body(0);
+      }
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador updateEntryDispatch: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
   }
 }
 

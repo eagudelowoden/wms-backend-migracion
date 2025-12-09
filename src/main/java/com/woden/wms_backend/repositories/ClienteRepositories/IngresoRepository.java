@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.woden.wms_backend.models.Entity.IngresoModel;
-import com.woden.wms_backend.models.projections.SerialProjection;
 import com.woden.wms_backend.repositories.BaseRepository;
 
 import jakarta.transaction.Transactional;
@@ -317,12 +316,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_UpdateDispatchEntry :estadoId, :palletId, :cajaDespachoId, :usuarioMovimientoId, :serial, :loteId", nativeQuery = true)
+	@Query(value = "EXEC pa_UpdateDispatchEntry :estadoId, :palletId, :cajaDespachoId, :usuarioMovimientoId, :serial, :loteId, :filas OUT", nativeQuery = true)
 	void updateDispatchEntry(@Param("serial") String serial, @Param("estadoId") Integer estadoId,
 			@Param("palletId") Integer palletId,
 			@Param("cajaDespachoId") Integer cajaDespachoId, @Param("usuarioMovimientoId") Integer usuarioMovimientoId,
-			@Param("loteId") Integer loteId);
-
+			@Param("loteId") Integer loteId, @Param("filas") Integer filas);
 	@Query(value = "EXEC pa_GetModelDispatch :palletId, :cajaId", nativeQuery = true)
 	List<Object[]> getModelDispatch(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId);
 
@@ -365,6 +363,35 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("tipologiaId") Integer tipologiaId, @Param("estadoId") Integer estadoId,
 			@Param("tipoNovedad") String tipoNovedad, @Param("usuarioId") Integer usuarioId);
 
-	@Query(value = "EXEC pa_SearchNoveltyEntryWeb :perfil, :usuarioId", nativeQuery = true)
-	List<Object[]> searchNoveltyEntryDelivery(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
+	@Query(value = "EXEC pa_SearchNoveltyEntryWeb :perfil, :usuarioId, :tipoNovedad", nativeQuery = true)
+	List<Object[]> searchNoveltyEntryDelivery(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId,
+			@Param("tipoNovedad") String tipoNovedad);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_SendNoveltyEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :opcion, :filas OUT", nativeQuery = true)
+	void sendNoveltyEntry(
+			@Param("estadoId") Integer estadoId,
+			@Param("tipologiaId") Integer tipologiaId,
+			@Param("usuarioId") Integer usuarioId,
+			@Param("palletId") Integer palletId,
+			@Param("opcion") Integer opcion,
+			@Param("filas") Integer filas);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateStateEntryBatch :estadoId, :palletId, :usuarioIdMovimiento, :fecha, :serial, :loteId", nativeQuery = true)
+	void updateStatusBatch(@Param("estadoId") Integer estadoId, @Param("palletId") Integer palletId,
+			@Param("usuarioIdMovimiento") Integer usuarioId, @Param("fecha") Integer fecha, @Param("serial") String serial,
+			@Param("loteId") Integer loteId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateEntryDispatchWeb :estadoId, :palletId, :usuarioIdMovimiento, :serial, :loteId, :filas OUT", nativeQuery = true)
+	void UpdateEntryDispatch(@Param("estadoId") Integer estadoId,
+			@Param("palletId") Integer palletId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("serial") String serial,
+			@Param("loteId") Integer loteId,
+			@Param("filas") Integer filas);
 }
