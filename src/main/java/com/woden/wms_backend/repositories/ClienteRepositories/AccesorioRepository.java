@@ -111,5 +111,9 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
     List<Object[]> searchProcessAccesory(
             @Param("estadoLimpieza") String estadoLimpieza);
 
+    @Query(value = "EXEC pa_SearchDeliveryAccesory :palletId", nativeQuery = true)
+    List<Object[]> searchDeliveryAccesory(@Param("palletId") Integer palletId);
+
+
 
 }

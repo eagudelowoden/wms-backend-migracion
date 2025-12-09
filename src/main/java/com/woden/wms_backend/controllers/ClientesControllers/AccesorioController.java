@@ -258,4 +258,12 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         // Devuelve lista JSON
         return ResponseEntity.ok(searchEntrega);
     }
+
+    @GetMapping("/entregasPallets")
+    public ResponseEntity<List<Map<String, Object>>> searchDeliveryAccesory(@RequestParam Integer palletId) {
+        List<Map<String, Object>> respuesta = accesorioService.searchDeliveryAccesory(palletId);
+        return ResponseEntity.ok(respuesta);
+    }
+
+
 }

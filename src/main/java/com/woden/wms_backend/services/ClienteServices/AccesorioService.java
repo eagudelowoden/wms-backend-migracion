@@ -362,6 +362,25 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     }
 
 
+    public List<Map<String, Object>>  searchDeliveryAccesory(int palletId) {
+        List<Object[]> resultados = accesorioRepository.searchDeliveryAccesory(palletId);
+        List<Map<String, Object>> lista = new ArrayList<>();
+
+        if (resultados == null || resultados.isEmpty()) {
+            return lista;
+        }
+        for (Object[] fila : resultados) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", fila[0] != null ? fila[0].toString() : "");
+            item.put("codigo", fila[1] != null ? fila[1].toString() : "");
+            item.put("descripcion", fila[2] != null ? fila[2].toString() : "");
+            lista.add(item);
+        }
+        return lista;
+    }
+
+
+
 
 
 
