@@ -267,6 +267,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  
   public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
     List<Object[]> results = palletRepository.SearchPackingDeliveryPallet(numero, tipologia, tipo);
     return results.stream().map(obj -> {
