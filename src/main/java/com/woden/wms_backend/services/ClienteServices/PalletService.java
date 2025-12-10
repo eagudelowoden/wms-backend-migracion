@@ -102,7 +102,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setNumero((String) obj[1]);
       pallet.setCodigoSap((String) obj[2]);
       pallet.setDescripcion((String) obj[3]);
-      pallet.setCantidad((Integer) obj[4]); // Cantidad no está en PalletModel, pero sí en el DTO
+      pallet.setCantidad((Integer) obj[4]);
       pallet.setTipologia((String) obj[5]);
       pallet.setLote((String) obj[6]);
       return pallet;
