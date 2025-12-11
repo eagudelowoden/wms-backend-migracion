@@ -79,4 +79,8 @@ public class MovimientoService extends BaseService<MovimientoModel, Integer> {
     public Integer userCount(Integer usuarioId) {
     return movimientoRepository.userCount(usuarioId);
   }
+
+  public Integer getLastMovimient(Integer palletId) {
+    return movimientoRepository.getLastMovimient(palletId);
+  }
 }
