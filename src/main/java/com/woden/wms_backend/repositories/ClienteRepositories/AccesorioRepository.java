@@ -117,9 +117,13 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_UpdateDeliveryAccesory :palletid, :destinoId, :filas OUT", nativeQuery = true)
-    void updateDeliveryAccesory(@Param("palletid") Integer palletid,
-                        @Param("destinoId") Integer destinoId);
+    @Query(value = "EXEC pa_UpdateDeliveryAccesory :id, :destinoId, :palletId", nativeQuery = true)
+    void updateDeliveryAccesory(
+            @Param("id") Integer id,
+            @Param("destinoId") Integer destinoId,
+            @Param("palletId") Integer palletId
+    );
+
 
 
 

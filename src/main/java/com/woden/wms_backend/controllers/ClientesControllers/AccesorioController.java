@@ -266,21 +266,21 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
     @PostMapping("/updateDeliveryAccesory")
-    public ResponseEntity<String> updateDeliveryAccesory(
-            @RequestBody Map<String, Integer> request
-    ) {
+    public ResponseEntity<String> updateDeliveryAccesory(@RequestBody Map<String, Integer> request) {
+
+        System.out.println("📦 palletId recibido: " + request.get("palletId"));
+        System.out.println("📍 destinoId recibido: " + request.get("destinoId"));
+
         try {
-            Integer palletId = request.get("palletId");
-            Integer destinoId = request.get("destinoId");
-
-            accesorioService.updateDeliveryAccesory(palletId, destinoId);
-
+            accesorioService.updateDeliveryAccesory(request.get("palletId"), request.get("destinoId"));
             return ResponseEntity.ok("Accesorio actualizado");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());
         }
     }
+
 
 
 
