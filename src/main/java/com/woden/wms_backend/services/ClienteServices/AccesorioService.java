@@ -379,6 +379,10 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return lista;
     }
 
+    public void updateDeliveryAccesory(Integer palletid, Integer destinoId) {
+        Integer filas = 4;
+        accesorioRepository.updateDeliveryAccesory(palletid, destinoId);
+    }
 
 
 
