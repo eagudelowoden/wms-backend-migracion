@@ -46,17 +46,11 @@ public class SecurityConfig {
     CorsConfiguration configuration = new CorsConfiguration();
     // configuration.setAllowedOriginPatterns(List.of("*"));
     configuration.setAllowedOrigins(List.of("http://18.217.246.39:8081",
-    
-        "http://18.217.246.39:8085", "http://localhost:5173",
-        "http://18.217.246.39:8083", "http://localhost:4200",
-        "http://localhost:5173",
-        "http://localhost:8081", "http://localhost:8085",
-        "http://52.14.166.232:8443", "http://52.14.166.232:9091",
-        "http://localhost:8443", "http://127.0.0.1:9100",
+        "https://wms.woden.com.co", "https://wms.woden.com.co:9000", "http://wms.woden.com.co",
+        "http://18.217.246.39:9000", "http://localhost:4200", "http://52.14.166.232:8443",
         "https://woden-wts-dev.arkade.com.co",
         "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*",
-        "http://woden-wts-dev.arkade.com.co:443",
-        "https://wms.woden.com.co:8081"));
+        "http://woden-wts-dev.arkade.com.co:443"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
