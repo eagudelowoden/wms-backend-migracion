@@ -379,10 +379,11 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return lista;
     }
 
-    public void updateDeliveryAccesory(Integer palletId, Integer destinoId) {
-        accesorioRepository.updateDeliveryAccesory(palletId, destinoId, palletId);
+    // CORRECCIÓN: Ordenamos los parámetros igual que en el Repo
+    public void updateDeliveryAccesory(Integer id, Integer destinoId, Integer palletId) {
+        // Pasamos exactamente los 3 que pide el repositorio en el orden correcto
+        accesorioRepository.updateDeliveryAccesory(id, destinoId, palletId);
     }
-
 
 
 
