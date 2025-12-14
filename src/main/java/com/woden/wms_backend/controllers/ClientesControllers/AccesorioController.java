@@ -266,20 +266,25 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
 
-    @PostMapping("/updateDeliveryAccesory")
-    public ResponseEntity<?> updateDeliveryAccesory(@RequestBody Map<String, Object> requestBody) {
+    @PostMapping("/updateDeliveryAccesory") // Sugiero un nombre nuevo para no romper nada viejo
+    public ResponseEntity<?> updateDeliveryAccesoryBulk(@RequestBody Map<String, Object> requestBody) {
         try {
-            Integer id = (Integer) requestBody.get("id");
+            // Obtenemos la lista de IDs del cuerpo de la petición
+            List<Integer> ids = (List<Integer>) requestBody.get("ids");
             Integer destinoId = (Integer) requestBody.get("destinoId");
             Integer palletId = (Integer) requestBody.get("palletId");
+            // Validamos que haya algo que procesar
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No se enviaron seriales"));
+            }
+            // Llamamos al nuevo servicio masivo
+            accesorioService.updateDeliveryAccesory(ids, destinoId, palletId);
+            return ResponseEntity.ok(Map.of("message", "Actualización masiva exitosa", "cantidad", ids.size()));
 
-            accesorioService.updateDeliveryAccesory(id, destinoId, palletId);
-
-            return ResponseEntity.ok(Map.of("message", "creado"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error: " + e.getMessage()));
+                    .body(Map.of("error", "Error masivo: " + e.getMessage()));
         }
     }
 
