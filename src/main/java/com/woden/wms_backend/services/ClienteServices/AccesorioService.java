@@ -387,6 +387,17 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         }
     }
 
+    @Transactional
+    public void BackCleanEntry(List<Integer> ids) {
+        Integer filas = 4;
+        for (Integer id : ids) {
+            // Pasa ambos parámetros
+            accesorioRepository.BackCleanEntry(id, filas);
+        }
+    }
+
+
+
 
 
 

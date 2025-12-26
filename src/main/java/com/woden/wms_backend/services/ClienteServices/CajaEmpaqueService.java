@@ -161,4 +161,8 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
       return 0;
     }
   }
+  public Integer getLastBoxPacking(Integer palletId) {
+    return cajaEmpaqueRepository.getLastBoxPacking(palletId);
+  }
+
 }

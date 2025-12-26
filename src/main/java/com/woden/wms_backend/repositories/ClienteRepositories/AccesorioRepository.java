@@ -125,6 +125,14 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
     );
 
 
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_BackCleanEntry :id, :filas OUT", nativeQuery = true)
+    void BackCleanEntry(@Param("id") Integer id,@Param("filas") Integer filas);
+
+
+
+
 
 
 }

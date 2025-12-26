@@ -288,6 +288,23 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         }
     }
 
+    @PostMapping("/BackCleanEntry")
+    public ResponseEntity<?> BackCleanEntry(@RequestBody Map<String, Object> requestBody) {
+        try {
+            List<Integer> ids = (List<Integer>) requestBody.get("ids");
+            // Capturamos el palletId que viene de Angular
+
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No se enviaron seriales"));
+            }
+            accesorioService.BackCleanEntry(ids); // Pasamos ambos
+            return ResponseEntity.ok(Map.of("message", "Éxito", "cantidad", ids.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
 
 
 
