@@ -13,7 +13,7 @@ public interface EtiquetadoRepository extends BaseRepository<EtiquetadoModel, In
   @Transactional
   @Modifying
   @Query(value = "EXEC pa_InsertEtiquetado :serial, :mac, :variable1, :variable2, :variable3, :variable4, :reImpresion, :usuarioId, :fecha", nativeQuery = true)
-  void insertEtiqeutado(@Param("serial") String serial, @Param("mac") String mac, @Param("variable1") String variable1,
+  void insertEtiquetado(@Param("serial") String serial, @Param("mac") String mac, @Param("variable1") String variable1,
       @Param("variable2") String variable2, @Param("variable3") String variable3, @Param("variable4") String variable4,
-      @Param("reImpresion") Integer reImpresion, @Param("usuarioId") Integer usuarioId);
+      @Param("reImpresion") Integer reImpresion, @Param("usuarioId") Integer usuarioId, @Param("fecha") String fecha);
 }

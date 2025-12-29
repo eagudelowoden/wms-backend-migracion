@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.controllers.BaseController;
-import com.woden.wms_backend.dto.BaseIngresoDTO;
+import com.woden.wms_backend.dto.BaseDTO;
 import com.woden.wms_backend.models.Entity.BaseIngresoModel;
 import com.woden.wms_backend.services.ClienteServices.BaseIngresoService;
 
@@ -29,7 +29,7 @@ public class BaseIngresoController extends BaseController<BaseIngresoModel, Inte
   @GetMapping("/getModelBaseIngreso")
   public ResponseEntity<?> getModelBaseIngreso(@RequestParam String base,
       @RequestParam String serial) {
-    BaseIngresoDTO model = baseIngresoService.getModel(base, serial);
+    BaseDTO model = baseIngresoService.getModel(base, serial);
     // if (model == null) {
     //   return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Codigo Sap no encontrado");
     // }

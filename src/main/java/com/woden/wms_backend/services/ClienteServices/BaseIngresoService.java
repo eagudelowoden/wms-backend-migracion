@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.woden.wms_backend.dto.BaseIngresoDTO;
+import com.woden.wms_backend.dto.BaseDTO;
 import com.woden.wms_backend.models.Entity.BaseIngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.BaseIngresoRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -15,13 +15,13 @@ public class BaseIngresoService extends BaseService<BaseIngresoModel, Integer> {
   @Autowired
   private BaseIngresoRepository baseIngresoRepository;
 
-  public BaseIngresoDTO getModel(String base, String serial) {
+  public BaseDTO getModel(String base, String serial) {
     List<Object[]> results = baseIngresoRepository.getModel(base, serial);
     if (results.isEmpty()) {
       return null; // O manejar el caso de no encontrar resultados
     }
     Object[] row = results.get(0);
-    BaseIngresoDTO model = new BaseIngresoDTO();
+    BaseDTO model = new BaseDTO();
     model.setSerial(row[0].toString());
     model.setCodigoSap(row[1].toString());
     model.setEstadoSap(row[2].toString());
