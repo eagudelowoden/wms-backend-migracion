@@ -266,4 +266,46 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
 
+    @PostMapping("/updateDeliveryAccesory") // Sugiero un nombre nuevo para no romper nada viejo
+    public ResponseEntity<?> updateDeliveryAccesoryBulk(@RequestBody Map<String, Object> requestBody) {
+        try {
+            // Obtenemos la lista de IDs del cuerpo de la petición
+            List<Integer> ids = (List<Integer>) requestBody.get("ids");
+            Integer destinoId = (Integer) requestBody.get("destinoId");
+            Integer palletId = (Integer) requestBody.get("palletId");
+            // Validamos que haya algo que procesar
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No se enviaron seriales"));
+            }
+            // Llamamos al nuevo servicio masivo
+            accesorioService.updateDeliveryAccesory(ids, destinoId, palletId);
+            return ResponseEntity.ok(Map.of("message", "Actualización masiva exitosa", "cantidad", ids.size()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error masivo: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/BackCleanEntry")
+    public ResponseEntity<?> BackCleanEntry(@RequestBody Map<String, Object> requestBody) {
+        try {
+            List<Integer> ids = (List<Integer>) requestBody.get("ids");
+            // Capturamos el palletId que viene de Angular
+
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "No se enviaron seriales"));
+            }
+            accesorioService.BackCleanEntry(ids); // Pasamos ambos
+            return ResponseEntity.ok(Map.of("message", "Éxito", "cantidad", ids.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+
+
+
 }

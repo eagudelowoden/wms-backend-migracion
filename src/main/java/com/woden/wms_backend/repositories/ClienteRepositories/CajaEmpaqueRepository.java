@@ -69,4 +69,7 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     @Query(value = "EXEC pa_UpdateStatusAllBoxPacking :palletId, :estadoId, 4", nativeQuery = true)
     void updateStatusAllBoxPacking(@Param("palletId") Integer palletId, @Param("estadoId") Integer estadoId);
 
+    @Query(value = "EXEC pa_GetLastBoxPacking :palletId", nativeQuery = true)
+    Integer getLastBoxPacking(@Param("palletId") Integer palletId);
+
 }

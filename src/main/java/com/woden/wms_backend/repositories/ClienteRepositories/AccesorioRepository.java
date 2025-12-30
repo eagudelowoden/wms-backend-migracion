@@ -115,5 +115,24 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
     List<Object[]> searchDeliveryAccesory(@Param("palletId") Integer palletId);
 
 
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateDeliveryAccesory :id, :destinoId, :palletId", nativeQuery = true)
+    void updateDeliveryAccesory(
+            @Param("id") Integer id,
+            @Param("destinoId") Integer destinoId,
+            @Param("palletId") Integer palletId
+    );
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_BackCleanEntry :id, :filas OUT", nativeQuery = true)
+    void BackCleanEntry(@Param("id") Integer id,@Param("filas") Integer filas);
+
+
+
+
+
 
 }

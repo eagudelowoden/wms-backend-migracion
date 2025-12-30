@@ -379,6 +379,22 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return lista;
     }
 
+    @Transactional // Importante: Si falla uno, se cancelan todos (opcional según tu lógica)
+    public void updateDeliveryAccesory(List<Integer> ids, Integer destinoId, Integer palletId) {
+        // Iteramos AQUÍ en el servidor (milisegundos) en vez de en el cliente (segundos)
+        for (Integer id : ids) {
+            accesorioRepository.updateDeliveryAccesory(id, destinoId, palletId);
+        }
+    }
+
+    @Transactional
+    public void BackCleanEntry(List<Integer> ids) {
+        Integer filas = 4;
+        for (Integer id : ids) {
+            // Pasa ambos parámetros
+            accesorioRepository.BackCleanEntry(id, filas);
+        }
+    }
 
 
 

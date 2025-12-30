@@ -47,6 +47,7 @@ public class SecurityConfig {
     // configuration.setAllowedOriginPatterns(List.of("*"));
     configuration.setAllowedOrigins(List.of("http://18.217.246.39:8081",
         "https://wms.woden.com.co", "https://wms.woden.com.co:9000", "http://wms.woden.com.co",
+        "https://wmstest.woden.com.co", "https://wmstest.woden.com.co:9000", "http://wmstest.woden.com.co",
         "http://18.217.246.39:9000", "http://localhost:4200", "http://52.14.166.232:8443",
         "https://woden-wts-dev.arkade.com.co",
         "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*",
