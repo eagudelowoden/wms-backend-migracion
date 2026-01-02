@@ -15,4 +15,5 @@ public class EtiquetadoRequestDTO {
   private List<EtiquetaCampoModel> camposConfigurados; // Mapeo de campos
   private List<IngresoModel> listaSeriales; // Los datos de la tabla (10, 100, 500 registros)
   private EtiquetaDatosGeneralesDTO datosGenerales; // Datos fijos (Usuario, Fecha, etc)
+  private Boolean searchLabelVariables;
 }
