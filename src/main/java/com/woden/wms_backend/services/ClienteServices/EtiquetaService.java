@@ -1,7 +1,10 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,4 +46,19 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     return etiquetas;
   }
 
+  public List<Map<String, Object>> searchLabeled(String nombre, String tipo) {
+    List<Object[]> results = etiquetaRepository.searchLabeled(nombre, tipo);
+    if (results.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<Map<String, Object>> etiquetas = new ArrayList<>();
+
+    for (Object[] row : results) {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0]);
+      map.put("nombre", row[1]);
+      etiquetas.add(map);
+    }
+    return etiquetas;
+  }
 }

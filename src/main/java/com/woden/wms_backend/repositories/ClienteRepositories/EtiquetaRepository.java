@@ -16,4 +16,7 @@ public interface EtiquetaRepository extends BaseRepository<EtiquetaModel, Intege
 
   @Query(value = "EXEC pa_GetListLabel :tipo", nativeQuery = true)
   List<Object[]> getListLabel(@Param("tipo") String tipo);
+
+  @Query(value = "EXEC pa_SearchLabeled :nombre, :tipo", nativeQuery = true)
+  List<Object[]> searchLabeled(@Param("nombre") String nombre, @Param("tipo") String tipo);
 }

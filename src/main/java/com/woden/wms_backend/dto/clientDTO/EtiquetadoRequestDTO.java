@@ -10,10 +10,51 @@ import lombok.Data;
 
 @Data
 public class EtiquetadoRequestDTO {
-  private String rutaPlantillas; // Ruta base en el servidor
-  private EtiquetaModel etiqueta; // Info de la etiqueta (nombre, cant. impresión)
-  private List<EtiquetaCampoModel> camposConfigurados; // Mapeo de campos
-  private List<IngresoModel> listaSeriales; // Los datos de la tabla (10, 100, 500 registros)
-  private EtiquetaDatosGeneralesDTO datosGenerales; // Datos fijos (Usuario, Fecha, etc)
+  private String rutaPlantillas;
+  private EtiquetaModel etiqueta;
+  private List<EtiquetaCampoModel> camposConfigurados;
+  private List<IngresoModel> listaSeriales;
+  private EtiquetaDatosGeneralesDTO datosGenerales;
   private Boolean lecturaVariables;
+
+  // ✅ NUEVO: Datos adicionales que vienen del frontend (ya consultados)
+  private DatosAdicionalesDTO datosAdicionales;
+
+  @Data
+  public static class EtiquetaDatosGeneralesDTO {
+    private String fecha;
+    private String usuario;
+  }
+
+  /**
+   * Contiene TODOS los datos consultados del maestro para cada serial
+   * El frontend solo consulta y envía, el backend reemplaza
+   */
+  @Data
+  public static class DatosAdicionalesDTO {
+    // Datos del maestro (uno por cada serial, en el mismo orden que listaSeriales)
+    private List<DatosMaestroDTO> datosMaestro;
+  }
+
+  @Data
+  public static class DatosMaestroDTO {
+    // Identificación
+    private String serial;
+    private String codigoSap;
+
+    // Datos consultados del maestro
+    private String familia;
+    private String modelo;
+    private String codProveedor;
+    private String proveedor;
+
+    // Datos calculados
+    private String passModel; // Serial truncado a 12 chars
+    private String codeInModel; // Últimos 4 chars del MAC
+
+    private String variable1;
+    private String variable2;
+    private String variable3;
+    private String variable4;
+  }
 }

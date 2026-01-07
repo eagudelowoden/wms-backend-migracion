@@ -154,13 +154,15 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
   }
 
   public Integer updateStatusAllBoxPacking(Integer palletId, Integer estadoId) {
+    Integer filas = 4;
     try {
-      cajaEmpaqueRepository.updateStatusAllBoxPacking(palletId, estadoId);
-      return 1;
+      Integer result = cajaEmpaqueRepository.updateStatusAllBoxPacking(palletId, estadoId, filas);
+      return result != null && result > 0 ? 1 : 0;
     } catch (Exception e) {
       return 0;
     }
   }
+
   public Integer getLastBoxPacking(Integer palletId) {
     return cajaEmpaqueRepository.getLastBoxPacking(palletId);
   }

@@ -81,9 +81,6 @@ public class EtiquetadoController extends BaseController<EtiquetadoModel, Intege
       System.out.println("🔄 Generando ZPL para " + request.getListaSeriales().size() + " seriales");
       System.out.println("📂 Ruta plantillas: " + request.getRutaPlantillas());
       System.out.println("🏷️ Etiqueta: " + request.getEtiqueta().getNombre());
-      System.out.println("📊 Lectura Variable: "
-          + (request.getLecturaVariables() != null && request.getLecturaVariables() ? "ACTIVADA"
-              : "DESACTIVADA"));
 
       String zpl = etiquetadoService.generarCodigoZpl(request);
 
