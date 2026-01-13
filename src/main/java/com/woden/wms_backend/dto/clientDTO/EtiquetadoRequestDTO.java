@@ -13,7 +13,7 @@ public class EtiquetadoRequestDTO {
   private String rutaPlantillas;
   private EtiquetaModel etiqueta;
   private List<EtiquetaCampoModel> camposConfigurados;
-  private List<IngresoModel> listaSeriales;
+  private List<IngresoImpresionDTO> listaSeriales;
   private EtiquetaDatosGeneralesDTO datosGenerales;
   private Boolean lecturaVariables;
 
@@ -51,10 +51,25 @@ public class EtiquetadoRequestDTO {
     // Datos calculados
     private String passModel; // Serial truncado a 12 chars
     private String codeInModel; // Últimos 4 chars del MAC
+  }
 
+  @Data
+  public static class IngresoImpresionDTO {
+
+    private String serial;
+    private String mac;
+    private String codigoSap;
+    private String descripcion;
+    private String lote;
+    private String serial3;
+    private String serial4;
+    private String tipologia;
+
+    // 👇 variables SOLO de impresión
     private String variable1;
     private String variable2;
     private String variable3;
     private String variable4;
   }
+
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetadoRequestDTO;
 import com.woden.wms_backend.dto.clientDTO.EtiquetadoRequestDTO.DatosMaestroDTO;
+import com.woden.wms_backend.dto.clientDTO.EtiquetadoRequestDTO.IngresoImpresionDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetadoModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
@@ -23,6 +24,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
   @Autowired
   private EtiquetadoRepository etiquetadoRepository;
+
+  @Autowired
+  private IngresoService ingresoService;
 
   public Integer insertEtiquetado(String serial, String mac, String variable1, String variable2,
       String variable3, String variable4, Integer reImpresion, Integer usuarioId, String fecha) {
@@ -46,7 +50,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
     StringBuilder zplFinal = new StringBuilder();
 
-    List<IngresoModel> seriales = request.getListaSeriales();
+    List<IngresoImpresionDTO> seriales = request.getListaSeriales();
     int totalSeriales = seriales.size();
     int porImpresion = request.getEtiqueta().getImpresion();
 
@@ -72,10 +76,10 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
         DatosMaestroDTO d = datosMaestro.get(i);
         System.out.println("   Serial " + (i + 1) + ": " + d.getSerial());
         System.out.println("      Familia: " + d.getFamilia());
-        System.out.println("      Variable1: '" + d.getVariable1() + "'");
-        System.out.println("      Variable2: '" + d.getVariable2() + "'");
-        System.out.println("      Variable3: '" + d.getVariable3() + "'");
-        System.out.println("      Variable4: '" + d.getVariable4() + "'");
+        // System.out.println(" Variable1: '" + d.getVariable1() + "'");
+        // System.out.println(" Variable2: '" + d.getVariable2() + "'");
+        // System.out.println(" Variable3: '" + d.getVariable3() + "'");
+        // System.out.println(" Variable4: '" + d.getVariable4() + "'");
       }
       System.out.println();
     }
@@ -92,17 +96,18 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       String zplCommand = plantilla;
 
       for (int i = 0; i < totalSeriales; i++) {
-        IngresoModel serial = seriales.get(i);
+        IngresoImpresionDTO impresion = seriales.get(i);
+        IngresoModel serial = ingresoService.getModelIngreso(seriales.get(i).getSerial());
 
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("🏷️  SERIAL " + (i + 1) + "/" + totalSeriales + ": " + serial.getSerial());
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
         if (i >= 9) {
-          zplCommand = procesarSerialConSwitch(zplCommand, serial, i,
+          zplCommand = procesarSerialConSwitch(zplCommand, serial, impresion, i,
               request.getCamposConfigurados(), datosMaestro, labelDate, usuario, usarLecturaVariables);
         } else {
-          zplCommand = procesarSerialNormal(zplCommand, serial, i,
+          zplCommand = procesarSerialNormal(zplCommand, serial, impresion, i,
               request.getCamposConfigurados(), datosMaestro, labelDate, usuario, usarLecturaVariables);
         }
 
@@ -132,15 +137,16 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
         String zplCommand = plantilla;
 
         for (int j = 0; j < porImpresion; j++) {
-          IngresoModel serial = seriales.get(contador);
+          IngresoImpresionDTO impresion = seriales.get(contador);
+          IngresoModel serial = ingresoService.getModelIngreso(impresion.getSerial());
 
           System.out.println("🏷️  SERIAL " + (contador + 1) + " [Pos " + (j + 1) + "]: " + serial.getSerial());
 
           if (j >= 9) {
-            zplCommand = procesarSerialConSwitch(zplCommand, serial, contador,
+            zplCommand = procesarSerialConSwitch(zplCommand, serial, impresion, contador,
                 request.getCamposConfigurados(), datosMaestro, labelDate, usuario, usarLecturaVariables);
           } else {
-            zplCommand = procesarSerialNormal(zplCommand, serial, j,
+            zplCommand = procesarSerialNormal(zplCommand, serial, impresion, j,
                 request.getCamposConfigurados(), datosMaestro, labelDate, usuario, usarLecturaVariables);
           }
 
@@ -163,15 +169,17 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
         String zplCommand = plantilla;
 
         for (int i = 0; i < residuo; i++) {
-          IngresoModel serial = seriales.get(contador);
+          IngresoImpresionDTO impresion = seriales.get(contador);
+          IngresoModel serial = ingresoService.getModelIngreso(impresion.getSerial());
 
           System.out.println("🏷️  SERIAL " + (contador + 1) + " [Residuo " + (i + 1) + "]: " + serial.getSerial());
+          System.out.println("SERIAL: " + (contador + 1) + serial);
 
           if (i >= 9) {
-            zplCommand = procesarSerialConSwitch(zplCommand, serial, contador,
+            zplCommand = procesarSerialConSwitch(zplCommand, serial, impresion, contador,
                 request.getCamposConfigurados(), datosMaestro, labelDate, usuario, usarLecturaVariables);
           } else {
-            zplCommand = procesarSerialNormal(zplCommand, serial, i,
+            zplCommand = procesarSerialNormal(zplCommand, serial, impresion, i,
                 request.getCamposConfigurados(), datosMaestro, labelDate, usuario, usarLecturaVariables);
           }
 
@@ -192,157 +200,246 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   /**
    * ✅ PROCESA SERIAL NORMAL (índices 0-8)
    */
-  private String procesarSerialNormal(String zpl, IngresoModel serial, int index,
-      List<EtiquetaCampoModel> campos, List<DatosMaestroDTO> datosMaestro,
-      String labelDate, String usuario, boolean usarLecturaVariables) {
+  /**
+ * ✅ PROCESA SERIAL NORMAL (índices 0-8)
+ */
+private String procesarSerialNormal(String zpl,
+    IngresoModel serial,
+    IngresoImpresionDTO impresion,
+    int index,
+    List<EtiquetaCampoModel> campos,
+    List<DatosMaestroDTO> datosMaestro,
+    String labelDate,
+    String usuario,
+    boolean usarLecturaVariables) {
 
-    String sufijo = String.valueOf(index + 1);
+  String sufijo = String.valueOf(index + 1);
 
-    System.out.println("   ➜ Sufijo: " + sufijo);
-    System.out.println("   📋 PASO 1: Campos configurados");
+  System.out.println("   ➜ Sufijo: " + sufijo);
+  System.out.println("   📋 PASO 1: Campos configurados (siempre se reemplazan)");
 
-    // 1. Campos configurados
-    for (EtiquetaCampoModel campo : campos) {
-      String nombreVar = campo.getNombre() + sufijo;
-      String valor = obtenerValorPorColumna(serial, campo.getValor());
-      System.out.println("      • " + nombreVar + " = '" + valor + "'");
-      zpl = zpl.replace(nombreVar, valor);
-    }
-
-    // 2. Variables estándar (SIEMPRE)
-    System.out.println("   📋 PASO 2: Variables estándar");
-    String fechaVal = labelDate != null ? labelDate : "";
-    String unitSerial3Val = serial.getSerial3() != null ? serial.getSerial3() : "";
-    String unitSerial4Val = serial.getSerial4() != null ? serial.getSerial4() : "";
-
-    System.out.println("      • fecha" + sufijo + " = '" + fechaVal + "'");
-    System.out.println("      • unitSerial3" + sufijo + " = '" + unitSerial3Val + "'");
-    System.out.println("      • unitSerial4" + sufijo + " = '" + unitSerial4Val + "'");
-
-    zpl = zpl.replace("fecha" + sufijo, fechaVal);
-    zpl = zpl.replace("unitSerial3" + sufijo, unitSerial3Val);
-    zpl = zpl.replace("unitSerial4" + sufijo, unitSerial4Val);
-
-    // 3. Variables adicionales
-    if (usarLecturaVariables && datosMaestro != null && index < datosMaestro.size()) {
-      System.out.println("   📋 PASO 3: Variables adicionales (lectura ACTIVA)");
-      DatosMaestroDTO datos = datosMaestro.get(index);
-      zpl = updateZplCommand(zpl, sufijo, serial, datos, usuario, labelDate);
-    } else {
-      System.out.println("   📋 PASO 3: OMITIDO (lectura INACTIVA)");
-    }
-
-    return zpl;
+  // 1. ✅ Campos configurados - SIEMPRE se reemplazan con sus valores
+  for (EtiquetaCampoModel campo : campos) {
+    String nombreVar = campo.getNombre() + sufijo; // Ej: "codigo1", "descripcion1"
+    String valor = getValueAtColumn(impresion, campo.getValor()); // Columna 0-5
+    System.out.println("      - " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
+    zpl = zpl.replace(nombreVar, valor);
   }
 
-  /**
-   * ✅ PROCESA SERIAL CON SWITCH (índices >= 9)
-   */
-  private String procesarSerialConSwitch(String zpl, IngresoModel serial, int index,
-      List<EtiquetaCampoModel> campos, List<DatosMaestroDTO> datosMaestro,
-      String labelDate, String usuario, boolean usarLecturaVariables) {
+  // 2. Variables estándar (SIEMPRE)
+  System.out.println("   📋 PASO 2: Variables estándar");
+  String fechaVal = labelDate != null ? labelDate : "";
+  String unitSerial3Val = serial.getSerial3() != null ? serial.getSerial3() : "";
+  String unitSerial4Val = serial.getSerial4() != null ? serial.getSerial4() : "";
 
-    String sufijo = obtenerSufijoSwitch(index);
+  System.out.println("      • fecha" + sufijo + " = '" + fechaVal + "'");
+  System.out.println("      • unitSerial3" + sufijo + " = '" + unitSerial3Val + "'");
+  System.out.println("      • unitSerial4" + sufijo + " = '" + unitSerial4Val + "'");
 
-    System.out.println("   ➜ Sufijo (switch): " + sufijo);
-    System.out.println("   📋 PASO 1: Campos configurados (switch)");
+  zpl = zpl.replace("fecha" + sufijo, fechaVal);
+  zpl = zpl.replace("unitSerial3" + sufijo, unitSerial3Val);
+  zpl = zpl.replace("unitSerial4" + sufijo, unitSerial4Val);
 
-    for (EtiquetaCampoModel campo : campos) {
-      String nombreVar = campo.getNombre() + sufijo;
-      String valor = obtenerValorPorColumna(serial, campo.getValor());
-      System.out.println("      • " + nombreVar + " = '" + valor + "'");
-      zpl = zpl.replace(nombreVar, valor);
-    }
-
-    if (usarLecturaVariables && datosMaestro != null && index < datosMaestro.size()) {
-      System.out.println("   📋 PASO 2: Variables adicionales (switchCase)");
-      DatosMaestroDTO datos = datosMaestro.get(index);
-      zpl = updateZplCommand(zpl, sufijo, serial, datos, usuario, labelDate);
-    } else {
-      System.out.println("   📋 PASO 2: Variables básicas solamente");
-      zpl = zpl.replace("fecha" + sufijo, labelDate != null ? labelDate : "");
-      zpl = zpl.replace("unitSerial3" + sufijo, serial.getSerial3() != null ? serial.getSerial3() : "");
-      zpl = zpl.replace("unitSerial4" + sufijo, serial.getSerial4() != null ? serial.getSerial4() : "");
-    }
-
-    return zpl;
-  }
-
-  /**
-   * ✅ UPDATE ZPL COMMAND - TODAS LAS VARIABLES
-   */
-  private String updateZplCommand(String zpl, String sufijo, IngresoModel serial,
-      DatosMaestroDTO datos, String usuario, String labelDate) {
-
-    System.out.println("      🔄 updateZplCommand() - Reemplazando:");
-
-    // Variables del maestro
-    zpl = zpl.replace("familia" + sufijo, datos.getFamilia() != null ? datos.getFamilia() : "");
-    System.out.println("         ✓ familia" + sufijo + " = '" + datos.getFamilia() + "'");
-
-    zpl = zpl.replace("descripcion" + sufijo, cortarString(serial.getDescripcion(), 35));
-    zpl = zpl.replace("fecha" + sufijo, labelDate != null ? labelDate : "");
-    zpl = zpl.replace("codigosap" + sufijo, serial.getCodigoSap() != null ? serial.getCodigoSap() : "");
-    zpl = zpl.replace("usuario" + sufijo, usuario != null ? usuario : "");
-    zpl = zpl.replace("tipologia" + sufijo, serial.getTipologia() != null ? serial.getTipologia() : "");
-    zpl = zpl.replace("modelo" + sufijo, datos.getModelo() != null ? datos.getModelo() : "");
-    zpl = zpl.replace("codProveedor" + sufijo, datos.getCodProveedor() != null ? datos.getCodProveedor() : "");
-    zpl = zpl.replace("proveedor" + sufijo, datos.getProveedor() != null ? datos.getProveedor() : "");
-    zpl = zpl.replace("lote" + sufijo, serial.getLote() != null ? serial.getLote() : "");
-    zpl = zpl.replace("passModel" + sufijo, datos.getPassModel() != null ? datos.getPassModel() : "");
-    zpl = zpl.replace("codeinModel" + sufijo, datos.getCodeInModel() != null ? datos.getCodeInModel() : "");
-    zpl = zpl.replace("unitSerial3" + sufijo, serial.getSerial3() != null ? serial.getSerial3() : "");
-    zpl = zpl.replace("unitSerial4" + sufijo, serial.getSerial4() != null ? serial.getSerial4() : "");
-
-    // ✅ CRÍTICO: Variables 1-4 con underscore
-    String var1 = datos.getVariable1() != null ? datos.getVariable1() : "";
-    String var2 = datos.getVariable2() != null ? datos.getVariable2() : "";
-    String var3 = datos.getVariable3() != null ? datos.getVariable3() : "";
-    String var4 = datos.getVariable4() != null ? datos.getVariable4() : "";
-
-    System.out.println("         ✓ variable1_" + sufijo + " = '" + var1 + "'");
-    System.out.println("         ✓ variable2_" + sufijo + " = '" + var2 + "'");
-    System.out.println("         ✓ variable3_" + sufijo + " = '" + var3 + "'");
-    System.out.println("         ✓ variable4_" + sufijo + " = '" + var4 + "'");
-
+  // 3. ✅ Variables adicionales CON FORMATO variable1_, variable2_, etc.
+  // SOLO si lecturaVariables está activo
+  if (usarLecturaVariables && datosMaestro != null && index < datosMaestro.size()) {
+    System.out.println("   📋 PASO 3: Variables adicionales con formato variable1_, variable2_ (lectura ACTIVA)");
+    DatosMaestroDTO datos = datosMaestro.get(index);
+    zpl = updateZplCommand(zpl, sufijo, serial, impresion, datos, usuario, labelDate);
+  } else {
+    System.out.println("   📋 PASO 3: Variables con formato variable1_, variable2_ NO se reemplazan (lectura INACTIVA)");
+    // ✅ CRÍTICO: Aquí también reemplazamos variable1_, variable2_, etc.
+    // pero con los valores de impresion (sin consultar maestro)
+    String var1 = impresion.getVariable1() != null ? impresion.getVariable1() : "";
+    String var2 = impresion.getVariable2() != null ? impresion.getVariable2() : "";
+    String var3 = impresion.getVariable3() != null ? impresion.getVariable3() : "";
+    String var4 = impresion.getVariable4() != null ? impresion.getVariable4() : "";
+    
+    System.out.println("      • variable1_" + sufijo + " = '" + var1 + "' (sin lectura maestro)");
+    System.out.println("      • variable2_" + sufijo + " = '" + var2 + "' (sin lectura maestro)");
+    System.out.println("      • variable3_" + sufijo + " = '" + var3 + "' (sin lectura maestro)");
+    System.out.println("      • variable4_" + sufijo + " = '" + var4 + "' (sin lectura maestro)");
+    
     zpl = zpl.replace("variable1_" + sufijo, var1);
     zpl = zpl.replace("variable2_" + sufijo, var2);
     zpl = zpl.replace("variable3_" + sufijo, var3);
     zpl = zpl.replace("variable4_" + sufijo, var4);
-
-    return zpl;
   }
 
-  private String obtenerSufijoSwitch(int index) {
-    if (index == 9)
-      return "0";
-    if (index >= 10)
-      return String.valueOf((char) ('A' + (index - 10)));
-    return String.valueOf(index + 1);
+  return zpl;
+}
+
+/**
+ * ✅ PROCESA SERIAL CON SWITCH (índices >= 9)
+ */
+private String procesarSerialConSwitch(String zpl,
+    IngresoModel serial,
+    IngresoImpresionDTO impresion,
+    int index,
+    List<EtiquetaCampoModel> campos,
+    List<DatosMaestroDTO> datosMaestro,
+    String labelDate,
+    String usuario,
+    boolean usarLecturaVariables) {
+
+  String sufijo = getSwitchCaseSuffix(index);
+
+  System.out.println("   ➜ Sufijo (switch): " + sufijo);
+  System.out.println("   📋 PASO 1: Campos configurados (switch)");
+
+  // 1. Campos configurados
+  for (EtiquetaCampoModel campo : campos) {
+    String nombreVar = campo.getNombre() + sufijo;
+    String valor = getValueAtColumn(impresion, campo.getValor());
+    System.out.println("      • " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
+    zpl = zpl.replace(nombreVar, valor);
   }
 
-  private String obtenerValorPorColumna(IngresoModel model, String columnaIndex) {
-    switch (columnaIndex) {
-      case "0":
-        return model.getSerial() != null ? model.getSerial() : "";
-      case "1":
-        return model.getMac() != null ? model.getMac() : "";
-      case "3":
-        return model.getSerial3() != null ? model.getSerial3() : "";
-      case "4":
-        return model.getSerial4() != null ? model.getSerial4() : "";
-      case "5":
-        return model.getTipologia() != null ? model.getTipologia() : "";
-      case "6":
-        return model.getCodigoSap() != null ? model.getCodigoSap() : "";
-      case "7":
-        return model.getDescripcion() != null ? model.getDescripcion() : "";
-      case "8":
-        return model.getLote() != null ? model.getLote() : "";
-      default:
-        return "";
-    }
+  // 2. Variables adicionales
+  if (usarLecturaVariables && datosMaestro != null && index < datosMaestro.size()) {
+    System.out.println("   📋 PASO 2: Variables adicionales (switchCase)");
+    DatosMaestroDTO datos = datosMaestro.get(index);
+    zpl = updateZplCommand(zpl, sufijo, serial, impresion, datos, usuario, labelDate);
+  } else {
+    System.out.println("   📋 PASO 2: Variables básicas + variable1_X (sin lectura maestro)");
+    
+    zpl = zpl.replace("fecha" + sufijo, labelDate != null ? labelDate : "");
+    zpl = zpl.replace("unitSerial3" + sufijo, serial.getSerial3() != null ? serial.getSerial3() : "");
+    zpl = zpl.replace("unitSerial4" + sufijo, serial.getSerial4() != null ? serial.getSerial4() : "");
+    
+    // ✅ También variable1_, variable2_, etc.
+    String var1 = impresion.getVariable1() != null ? impresion.getVariable1() : "";
+    String var2 = impresion.getVariable2() != null ? impresion.getVariable2() : "";
+    String var3 = impresion.getVariable3() != null ? impresion.getVariable3() : "";
+    String var4 = impresion.getVariable4() != null ? impresion.getVariable4() : "";
+    
+    zpl = zpl.replace("variable1_" + sufijo, var1);
+    zpl = zpl.replace("variable2_" + sufijo, var2);
+    zpl = zpl.replace("variable3_" + sufijo, var3);
+    zpl = zpl.replace("variable4_" + sufijo, var4);
   }
+
+  return zpl;
+}
+
+/**
+ * ✅ OBTIENE VALOR POR COLUMNA
+ * Usado SOLO para campos configurados en PASO 1
+ * 
+ * Mapeo de columnas en IngresoImpresionDTO:
+ * 0 = serial
+ * 1 = mac
+ * 2 = variable1
+ * 3 = variable2
+ * 4 = variable3
+ * 5 = variable4
+ */
+private String getValueAtColumn(IngresoImpresionDTO impresion, String columnaIndex) {
+  
+  System.out.println("      🔍 getValueAtColumn(): columna=" + columnaIndex);
+  
+  switch (columnaIndex) {
+    case "0":
+      System.out.println("         ✅ Retornando serial: '" + impresion.getSerial() + "'");
+      return impresion.getSerial() != null ? impresion.getSerial() : "";
+      
+    case "1":
+      System.out.println("         ✅ Retornando mac: '" + impresion.getMac() + "'");
+      return impresion.getMac() != null ? impresion.getMac() : "";
+      
+    case "2":
+      System.out.println("         ✅ Retornando variable1: '" + impresion.getVariable1() + "'");
+      return impresion.getVariable1() != null ? impresion.getVariable1() : "";
+      
+    case "3":
+      System.out.println("         ✅ Retornando variable2: '" + impresion.getVariable2() + "'");
+      return impresion.getVariable2() != null ? impresion.getVariable2() : "";
+      
+    case "4":
+      System.out.println("         ✅ Retornando variable3: '" + impresion.getVariable3() + "'");
+      return impresion.getVariable3() != null ? impresion.getVariable3() : "";
+      
+    case "5":
+      System.out.println("         ✅ Retornando variable4: '" + impresion.getVariable4() + "'");
+      return impresion.getVariable4() != null ? impresion.getVariable4() : "";
+      
+    default:
+      System.out.println("         ⚠️ Columna desconocida, retornando ''");
+      return "";
+  }
+}
+
+/**
+ * ✅ UPDATE ZPL COMMAND - TODAS LAS VARIABLES ADICIONALES
+ * Este método reemplaza SOLO las variables con formato especial:
+ * - familia, descripcion, fecha, codigosap, usuario, tipologia, etc.
+ * - variable1_, variable2_, variable3_, variable4_ (con underscore)
+ */
+private String updateZplCommand(String zpl,
+    String sufijo,
+    IngresoModel serial,
+    IngresoImpresionDTO impresion,
+    DatosMaestroDTO datos,
+    String usuario,
+    String labelDate) {
+
+  System.out.println("      🔄 updateZplCommand() - Reemplazando variables del maestro:");
+
+  // Variables del maestro
+  zpl = zpl.replace("familia" + sufijo, datos.getFamilia() != null ? datos.getFamilia() : "");
+  System.out.println("         ✓ familia" + sufijo + " = '" + datos.getFamilia() + "'");
+
+  zpl = zpl.replace("descripcion" + sufijo, cortarString(serial.getDescripcion(), 35));
+  zpl = zpl.replace("fecha" + sufijo, labelDate != null ? labelDate : "");
+  zpl = zpl.replace("codigosap" + sufijo, serial.getCodigoSap() != null ? serial.getCodigoSap() : "");
+  zpl = zpl.replace("usuario" + sufijo, usuario != null ? usuario : "");
+  zpl = zpl.replace("tipologia" + sufijo, serial.getTipologia() != null ? serial.getTipologia() : "");
+  zpl = zpl.replace("modelo" + sufijo, datos.getModelo() != null ? datos.getModelo() : "");
+  zpl = zpl.replace("codProveedor" + sufijo, datos.getCodProveedor() != null ? datos.getCodProveedor() : "");
+  zpl = zpl.replace("proveedor" + sufijo, datos.getProveedor() != null ? datos.getProveedor() : "");
+  zpl = zpl.replace("lote" + sufijo, serial.getLote() != null ? serial.getLote() : "");
+  zpl = zpl.replace("passModel" + sufijo, datos.getPassModel() != null ? datos.getPassModel() : "");
+  zpl = zpl.replace("codeinModel" + sufijo, datos.getCodeInModel() != null ? datos.getCodeInModel() : "");
+  zpl = zpl.replace("unitSerial3" + sufijo, serial.getSerial3() != null ? serial.getSerial3() : "");
+  zpl = zpl.replace("unitSerial4" + sufijo, serial.getSerial4() != null ? serial.getSerial4() : "");
+
+  // ✅ CRÍTICO: Variables 1-4 con underscore (formato variable1_)
+  // Cuando lecturaVariables está activo, usa los valores de impresion
+  String var1 = impresion.getVariable1() != null ? impresion.getVariable1() : "";
+  String var2 = impresion.getVariable2() != null ? impresion.getVariable2() : "";
+  String var3 = impresion.getVariable3() != null ? impresion.getVariable3() : "";
+  String var4 = impresion.getVariable4() != null ? impresion.getVariable4() : "";
+
+  System.out.println("         ✓ variable1_" + sufijo + " = '" + var1 + "'");
+  System.out.println("         ✓ variable2_" + sufijo + " = '" + var2 + "'");
+  System.out.println("         ✓ variable3_" + sufijo + " = '" + var3 + "'");
+  System.out.println("         ✓ variable4_" + sufijo + " = '" + var4 + "'");
+
+  zpl = zpl.replace("variable1_" + sufijo, var1);
+  zpl = zpl.replace("variable2_" + sufijo, var2);
+  zpl = zpl.replace("variable3_" + sufijo, var3);
+  zpl = zpl.replace("variable4_" + sufijo, var4);
+
+  return zpl;
+}
+
+/**
+ * ✅ OBTENER SUFIJO PARA SWITCH CASE
+ * índice 9 -> "0", 10 -> "A", 11 -> "B", etc.
+ */
+private String getSwitchCaseSuffix(int index) {
+  if (index == 9) return "0";
+  if (index >= 10) return String.valueOf((char) ('A' + (index - 10)));
+  return String.valueOf(index + 1);
+}
+
+/**
+ * Método auxiliar para cortar strings
+ */
+private String cortarString(String str, int len) {
+  if (str == null) return "";
+  return str.length() > len ? str.substring(0, len) : str;
+}
 
   private String leerPlantilla(String base, String nombre, int cantidad) {
     String path = base + File.separator + nombre + File.separator + "codigo" + cantidad + ".prn";
@@ -361,9 +458,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     }
   }
 
-  private String cortarString(String str, int len) {
-    if (str == null)
-      return "";
-    return str.length() > len ? str.substring(0, len) : str;
-  }
+  // private String cortarString(String str, int len) {
+  //   if (str == null)
+  //     return "";
+  //   return str.length() > len ? str.substring(0, len) : str;
+  // }
 }
