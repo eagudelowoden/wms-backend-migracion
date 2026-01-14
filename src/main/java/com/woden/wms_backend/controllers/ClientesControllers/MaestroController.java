@@ -1,6 +1,5 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -195,6 +194,24 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
     @GetMapping("/getProviderDescriptionMaster")
     public ResponseEntity<String> getProviderDescriptionMaster(@RequestParam String codigoSap) {
         String result = maestroService.getProviderDescriptionMaster(codigoSap);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/getMasterNameById")
+    public ResponseEntity<String> getMasterNameById(@RequestParam Integer id) {
+        String result = maestroService.getMasterNameById(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/getMasterDescriptionById")
+    public ResponseEntity<String> getMasterDescriptionById(@RequestParam Integer id) {
+        String result = maestroService.getMasterDescriptionById(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/getMasterDetailById")
+    public ResponseEntity<String> getMasterDetailById(@RequestParam Integer id) {
+        String result = maestroService.getMasterDetailById(id);
         return ResponseEntity.ok(result);
     }
 }

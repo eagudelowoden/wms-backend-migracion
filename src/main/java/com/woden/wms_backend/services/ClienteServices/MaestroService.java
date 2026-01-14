@@ -167,4 +167,22 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
         .orElse(null);
   }
 
+  public String getMasterNameById(Integer id) {
+    return maestroRepository.getMasterNameById(id).stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  public String getMasterDescriptionById(Integer id) {
+    return maestroRepository.getMasterDescriptionById(id).stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  public String getMasterDetailById(Integer id) {
+    return maestroRepository.getMasterDetailById(id).stream()
+        .findFirst()
+        .orElse(null);
+  }
+
 }

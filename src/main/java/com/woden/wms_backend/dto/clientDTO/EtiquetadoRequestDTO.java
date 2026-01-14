@@ -32,15 +32,19 @@ public class EtiquetadoRequestDTO {
   @Data
   public static class DatosMaestroDTO {
     private String serial;
-    private String codigoSap;
 
     private String familia;
+    private String fecha;
+    private String usuario;
     private String modelo;
     private String codProveedor;
     private String proveedor;
-
     private String passModel;
     private String codeInModel;
+    private String modelDescripcion;
+    private String modelCodigo;
+    private String modelDetalle;
+
   }
 
   @Data

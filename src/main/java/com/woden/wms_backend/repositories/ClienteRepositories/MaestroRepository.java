@@ -110,4 +110,13 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
 	@Query(value = "EXEC pa_GetProviderDescriptionMaster :descripcion", nativeQuery = true)
 	List<Object[]> getProviderDescriptionMaster(@Param("descripcion") String codigoSap);
+
+	@Query(value = "EXEC pa_GetMasterNameById :id", nativeQuery = true)
+	List<String> getMasterNameById(@Param("id") Integer id);
+
+	@Query(value = "EXEC pa_GetMasterDescriptionById :id", nativeQuery = true)
+	List<String> getMasterDescriptionById(@Param("id") Integer id);
+
+	@Query(value = "EXEC pa_GetMasterDetailById :id", nativeQuery = true)
+	List<String> getMasterDetailById(@Param("id") Integer id);
 }
