@@ -113,7 +113,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
         System.out.println();
       }
 
-      zplFinal.append(zplCommand);
+      zplFinal.append(zplCommand).append("\n^XZ###DELIMITER_ZPL###^XA\n");
 
     } else {
       // 🔹 CASO 2: Múltiples hojas
@@ -152,7 +152,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
           contador++;
         }
 
-        zplFinal.append(zplCommand);
+        zplFinal.append(zplCommand).append("\n###DELIMITER_ZPL###\n");
       }
 
       if (residuo > 0) {
@@ -185,7 +185,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
           contador++;
         }
 
-        zplFinal.append(zplCommand);
+        zplFinal.append(zplCommand).append("\n###DELIMITER_ZPL###\n");
       }
     }
 
@@ -405,7 +405,8 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     zpl = zpl.replace("passModel" + sufijo, datos.getPassModel() != null ? datos.getPassModel() : "");
     zpl = zpl.replace("codeinModel" + sufijo, datos.getCodeInModel() != null ? datos.getCodeInModel() : "");
     zpl = zpl.replace("modelCodigo" + sufijo, datos.getModelCodigo() != null ? datos.getModelCodigo() : "");
-    zpl = zpl.replace("modelDescripcion" + sufijo, datos.getModelDescripcion() != null ? datos.getModelDescripcion() : "");
+    zpl = zpl.replace("modelDescripcion" + sufijo,
+        datos.getModelDescripcion() != null ? datos.getModelDescripcion() : "");
     zpl = zpl.replace("modelDetalle" + sufijo, datos.getModelDetalle() != null ? datos.getModelDetalle() : "");
     zpl = zpl.replace("unitSerial3" + sufijo, serial.getSerial3() != null ? serial.getSerial3() : "");
     zpl = zpl.replace("unitSerial4" + sufijo, serial.getSerial4() != null ? serial.getSerial4() : "");
