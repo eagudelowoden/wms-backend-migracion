@@ -94,19 +94,24 @@ jobs:
               
               # 5. EJECUTAR NUEVO JAR
               Write-Host "Starting backend service on port $port..."
-              $logFileOut = Join-Path $deployPath "backend-$timestamp.log"
-              $logFileErr = Join-Path $deployPath "backend-$timestamp-error.log"
               
-              # Crear un script batch para ejecutar el JAR de forma desacoplada
-              $batchScript = Join-Path $tempPath "start_backend_$timestamp.bat"
+              # Ejecutar JAR en background usando WMI (método más robusto en Windows)
+              $javaPath = (Get-Command javaw).Source
+              $arguments = "-jar `"$targetPath`""
               
-              # Crear contenido del batch línea por línea
-              "@echo off" | Out-File -FilePath $batchScript -Encoding ASCII
-              "cd /d `"$deployPath`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
-              "start /B javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
+              $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
+              $processStartup.ShowWindow = 0  # Hidden window
               
-              # Ejecutar el batch
-              Start-Process -FilePath $batchScript -WindowStyle Hidden
+              $processClass = [wmiclass]"Win32_Process"
+              $result = $processClass.Create("$javaPath $arguments", $deployPath, $processStartup)
+              
+              if ($result.ReturnValue -eq 0) {
+                  $newPid = $result.ProcessId
+                  Write-Host "Backend process started successfully with PID: $newPid"
+              } else {
+                  Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
+                  exit 1
+              }
               
               # Esperar y verificar que el puerto está en uso (con reintentos)
               Write-Host "Waiting for backend service to start..."
@@ -135,9 +140,33 @@ jobs:
                   Write-Warning "Check logs for details: $logFileOut"
               }
               
-              # Limpiar script batch temporal
-              Start-Sleep -Seconds 2
-              Remove-Item -Path $batchScript -Force -ErrorAction SilentlyContinue
+              # Esperar y verificar que el puerto está en uso (con reintentos)
+              Write-Host "Waiting for backend service to start..."
+              $maxAttempts = 12
+              $attempt = 0
+              $started = $false
+              
+              while ($attempt -lt $maxAttempts -and -not $started) {
+                  Start-Sleep -Seconds 5
+                  $attempt++
+                  
+                  $checkPort = netstat -ano | Select-String ":$port.*LISTENING"
+                  
+                  if ($checkPort) {
+                      $started = $true
+                      Write-Host "Backend service started successfully and listening on port $port (attempt $attempt)."
+                  } else {
+                      Write-Host "  Attempt $attempt/$maxAttempts - Port $port not listening yet..."
+                  }
+              }
+              
+              if (-not $started) {
+                  Write-Warning "Service may still be starting. Port $port is not listening after $maxAttempts attempts."
+                  Write-Warning "Check the application manually or review process with PID: $newPid"
+              }
+              
+              # Limpiar script batch temporal (si existe)
+              Remove-Item -Path "$tempPath\start_backend_*.bat" -Force -ErrorAction SilentlyContinue
               
               Write-Host "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
           } else {
