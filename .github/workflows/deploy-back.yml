@@ -19,9 +19,9 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: "21"
-          distribution: "temurin"
-          cache: "maven"
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
 
       - name: Build with Maven (skip tests)
         run: mvn -B clean package -DskipTests
@@ -43,13 +43,27 @@ jobs:
 
           # 1. DETENER PROCESO EN PUERTO 9000
           Write-Host "Checking for process on port \$port..."
-          \$process = Get-NetTCPConnection -LocalPort \$port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
-
-          if (\$process) {
-              Write-Host "Found process PID: \$process. Stopping..."
-              Stop-Process -Id \$process -Force
-              Start-Sleep -Seconds 3
-              Write-Host "Process stopped successfully."
+          \$connection = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
+          
+          if (\$connection) {
+              \$pid = \$connection.OwningProcess
+              
+              # Filtrar PIDs inválidos (0, negativos, etc.)
+              if (\$pid -gt 0) {
+                  # Verificar que sea realmente Java
+                  \$processInfo = Get-Process -Id \$pid -ErrorAction SilentlyContinue
+                  
+                  if (\$processInfo -and \$processInfo.ProcessName -match 'java') {
+                      Write-Host "Found Java process PID: \$pid (\$(\$processInfo.ProcessName)). Stopping..."
+                      Stop-Process -Id \$pid -Force
+                      Start-Sleep -Seconds 5
+                      Write-Host "Process stopped successfully."
+                  } else {
+                      Write-Host "WARNING: Process on port \$port is not Java (PID: \$pid). Skipping..."
+                  }
+              } else {
+                  Write-Host "WARNING: Invalid PID detected (\$pid). Skipping..."
+              }
           } else {
               Write-Host "No process running on port \$port."
           }
@@ -62,7 +76,7 @@ jobs:
 
           # 3. MOVER JAR ANTERIOR A BACKUPS
           \$currentJar = Get-ChildItem -Path \$deployPath -Filter "wms-backend-*.jar" | Select-Object -First 1
-
+          
           if (\$currentJar) {
               \$backupName = "\$(\$currentJar.BaseName)_\$timestamp.jar"
               \$backupPath = Join-Path \$backupRoot \$backupName
@@ -76,7 +90,7 @@ jobs:
 
           # 4. MOVER NUEVO JAR DESDE TEMP
           \$newJar = Get-ChildItem -Path \$tempPath -Filter "wms-backend-*.jar" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-
+          
           if (\$newJar) {
               \$targetPath = Join-Path \$deployPath \$newJar.Name
               Write-Host "Moving new JAR: \$(\$newJar.Name)"
