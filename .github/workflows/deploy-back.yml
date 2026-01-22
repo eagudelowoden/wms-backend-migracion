@@ -3,8 +3,10 @@ name: Deploy BACKEND TEST
 on:
   push:
     branches: [develop]
+    # Quitamos el filtro 'paths' porque todo el repo es backend
     # paths:
-    #   - "wms-backend/**"
+    #   - 'wms-backend/**'
+  workflow_dispatch:
 
 jobs:
   deploy-backend:
@@ -14,32 +16,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Configurar Java 21 (Actualizado según tu versión)
+      # 1. Configurar Java 21
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: "21"
-          distribution: "temurin" # Temurin es compatible con Oracle/Hotspot
+          distribution: "temurin"
           cache: "maven"
 
-      # 2. Compilar
+      # 2. Compilar (YA NO HACEMOS CD, estamos en la raíz)
       - name: Build with Maven
         run: |
-          cd wms-backend
           mvn clean package -DskipTests
 
-      # 3. Subir el JAR nuevo
+      # 3. Subir el JAR (Ruta ajustada: target/*.jar)
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
           key: ${{ secrets.TEST_SSH_KEY }}
-          source: "wms-backend/target/*.jar"
+          # El jar está directo en target/, no en wms-backend/target/
+          source: "target/*.jar"
           target: "C:/Windows/Temp/"
-          strip_components: 2
+          strip_components: 1 # Ajustado a 1 porque ahora es solo target/archivo.jar
 
-      # 4. Script Maestro (Stop -> Backup -> Start sin consola)
+      # 4. Script Maestro (Stop -> Backup -> Start)
       - name: Stop, Backup & Restart
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -58,7 +60,7 @@ jobs:
               
               Write-Host '=== INICIANDO DESPLIEGUE BACKEND (JAVA 21) ==='
 
-              # 1. MATAR PROCESO (Busca por puerto 9000)
+              # 1. MATAR PROCESO
               Write-Host '🛑 Buscando proceso en puerto' \$port '...'
               \$processParams = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
               if (\$processParams) {
@@ -87,21 +89,17 @@ jobs:
                   Write-Host '🚀 Moviendo nuevo JAR...'
                   Move-Item -Path \$tempJar.FullName -Destination \$currentJar -Force
               } else {
-                  Write-Error '❌ NO SE ENCONTRÓ EL JAR. ABORTANDO.'
+                  Write-Error '❌ NO SE ENCONTRÓ EL JAR EN TEMP.'
                   exit 1
               }
 
-              # 4. INICIAR SIN CONSOLA (SOLUCIÓN AL CONGELAMIENTO)
+              # 4. INICIAR SIN CONSOLA (JAVAW)
               Write-Host '🔥 Iniciando Spring Boot en puerto' \$port '...'
-              
-              # Archivo donde se guardarán los logs (ya que no habrá ventana negra)
               \$logFile = Join-Path \$deployDir 'backend.log'
-              
-              # Usamos 'javaw' en lugar de 'java'. La 'w' significa Windowless (Sin ventana).
-              # Start-Process lanza esto independiente, así que GitHub termina y el JAR sigue corriendo.
               \$argList = '-jar', \$currentJar, \"--server.port=\$port\"
               
+              # Javaw corre en background, el action terminará exitosamente de inmediato
               Start-Process 'javaw' -ArgumentList \$argList -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
               
-              Write-Host '✅ Proceso iniciado en segundo plano. No se congelará.'
+              Write-Host '✅ Proceso lanzado en segundo plano.'
             "
