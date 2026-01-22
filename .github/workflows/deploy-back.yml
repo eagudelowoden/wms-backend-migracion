@@ -94,11 +94,14 @@ jobs:
               
               # 5. EJECUTAR NUEVO JAR
               Write-Host "Starting backend service on port \$port..."
-              \$logFile = Join-Path \$deployPath "backend-\$timestamp.log"
+              \$logFileOut = Join-Path \$deployPath "backend-\$timestamp.log"
+              \$logFileErr = Join-Path \$deployPath "backend-\$timestamp-error.log"
               
-              Start-Process -FilePath "java" -ArgumentList "-jar", \$targetPath -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
+              Start-Process -FilePath "java" -ArgumentList "-jar", \$targetPath -RedirectStandardOutput \$logFileOut -RedirectStandardError \$logFileErr -WindowStyle Hidden
               
-              Write-Host "Backend service started. Logs: \$logFile"
+              Write-Host "Backend service started."
+              Write-Host "  Output log: \$logFileOut"
+              Write-Host "  Error log: \$logFileErr"
               Write-Host "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
           } else {
               Write-Error "ERROR: No new JAR found in Temp folder!"
