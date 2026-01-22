@@ -103,8 +103,7 @@ jobs:
               @echo off
               cd /d "\$deployPath"
               start /B javaw -jar "\$targetPath" > "\$logFileOut" 2> "\$logFileErr"
-              "@
-              \$batchContent | Out-File -FilePath \$batchScript -Encoding ASCII
+              "@\$batchContent | Out-File -FilePath \$batchScript -Encoding ASCII
               
               # Ejecutar el batch
               Start-Process -FilePath \$batchScript -WindowStyle Hidden
