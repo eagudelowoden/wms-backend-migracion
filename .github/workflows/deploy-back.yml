@@ -42,31 +42,27 @@ jobs:
           \$timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
 
           # 1. DETENER PROCESO EN PUERTO 9000
-          Write-Host "Checking for process on port \$port..."
-          \$connection = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
-          
-          if (\$connection) {
-              \$pid = \$connection.OwningProcess
-              
-              # Filtrar PIDs inválidos (0, negativos, etc.)
-              if (\$pid -gt 0) {
-                  # Verificar que sea realmente Java
-                  \$processInfo = Get-Process -Id \$pid -ErrorAction SilentlyContinue
-                  
-                  if (\$processInfo -and \$processInfo.ProcessName -match 'java') {
-                      Write-Host "Found Java process PID: \$pid (\$(\$processInfo.ProcessName)). Stopping..."
-                      Stop-Process -Id \$pid -Force
-                      Start-Sleep -Seconds 5
-                      Write-Host "Process stopped successfully."
-                  } else {
-                      Write-Host "WARNING: Process on port \$port is not Java (PID: \$pid). Skipping..."
-                  }
-              } else {
-                  Write-Host "WARNING: Invalid PID detected (\$pid). Skipping..."
-              }
-          } else {
-              Write-Host "No process running on port \$port."
-          }
+          # Usando netstat (más robusto en algunos servidores Windows)
+            Write-Host "Checking for process on port $port..."
+            $netstatOutput = netstat -ano | Select-String ":$port.*LISTENING"
+
+            if ($netstatOutput) {
+                $line = $netstatOutput[0].ToString().Trim()
+                $pid = ($line -split '\s+')[-1]
+                
+                if ($pid -match '^\d+$' -and [int]$pid -gt 0) {
+                    $processInfo = Get-Process -Id $pid -ErrorAction SilentlyContinue
+                    
+                    if ($processInfo) {
+                        Write-Host "Found process PID: $pid ($($processInfo.ProcessName)). Stopping..."
+                        taskkill /F /PID $pid
+                        Start-Sleep -Seconds 5
+                        Write-Host "Process stopped."
+                    }
+                }
+            } else {
+                Write-Host "No process listening on port $port."
+            }
 
           # 2. CREAR CARPETA DE BACKUPS SI NO EXISTE
           if (-not (Test-Path \$backupRoot)) {
