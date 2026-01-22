@@ -97,34 +97,72 @@ jobs:
               $logFileOut = Join-Path $deployPath "backend-$timestamp.log"
               $logFileErr = Join-Path $deployPath "backend-$timestamp-error.log"
               
-              # Crear un script batch para ejecutar el JAR de forma desacoplada
-              $batchScript = Join-Path $tempPath "start_backend_$timestamp.bat"
+              # Verificar que Java está disponible
+              $javaPath = (Get-Command javaw -ErrorAction SilentlyContinue).Source
+              if (-not $javaPath) {
+                  Write-Error "javaw not found in PATH. Please install Java or add it to PATH."
+                  exit 1
+              }
+              Write-Host "Using Java: $javaPath"
               
-              # Crear contenido del batch línea por línea
-              "@echo off" | Out-File -FilePath $batchScript -Encoding ASCII
-              "cd /d `"$deployPath`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
-              "start /B javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
+              # Verificar que el JAR existe
+              if (-not (Test-Path $targetPath)) {
+                  Write-Error "JAR file not found: $targetPath"
+                  exit 1
+              }
+              Write-Host "JAR file confirmed: $targetPath"
               
-              # Ejecutar el batch
-              Start-Process -FilePath $batchScript -WindowStyle Hidden
+              # Método directo sin batch - Más simple y confiable
+              Write-Host "Launching Java process..."
               
-              # Esperar y verificar que el puerto está en uso
-              Start-Sleep -Seconds 5
-              $checkPort = netstat -ano | Select-String ":$port.*LISTENING"
+              # Cambiar al directorio de deployment
+              Set-Location -Path $deployPath
               
-              if ($checkPort) {
-                  Write-Host "Backend service started successfully and listening on port $port."
-                  Write-Host "  Output log: $logFileOut"
-                  Write-Host "  Error log: $logFileErr"
-              } else {
-                  Write-Warning "Process started but port $port is not listening yet. Check logs for details."
+              # Ejecutar usando cmd para asegurar que quede en background
+              $cmdArgs = "/c start /B javaw -jar `"$targetPath`" > `"$logFileOut`" 2>&1"
+              Start-Process -FilePath "cmd.exe" -ArgumentList $cmdArgs -WindowStyle Hidden -WorkingDirectory $deployPath
+              
+              # Esperar un poco más para que Java inicie
+              Write-Host "Waiting for service to start..."
+              Start-Sleep -Seconds 8
+              
+              # Verificar múltiples veces si el puerto está activo
+              $maxAttempts = 3
+              $portActive = $false
+              
+              for ($i = 1; $i -le $maxAttempts; $i++) {
+                  Write-Host "Verification attempt $i of $maxAttempts..."
+                  $checkPort = netstat -ano | Select-String ":$port.*LISTENING"
+                  
+                  if ($checkPort) {
+                      $portActive = $true
+                      $activePid = ($checkPort[0].ToString().Trim() -split '\s+')[-1]
+                      Write-Host "SUCCESS: Backend service is listening on port $port (PID: $activePid)"
+                      break
+                  }
+                  
+                  if ($i -lt $maxAttempts) {
+                      Start-Sleep -Seconds 3
+                  }
               }
               
-              # Limpiar script batch temporal
-              Start-Sleep -Seconds 2
-              Remove-Item -Path $batchScript -Force -ErrorAction SilentlyContinue
+              if (-not $portActive) {
+                  Write-Warning "WARNING: Port $port is not listening after $($maxAttempts * 3) seconds."
+                  Write-Warning "Please check the logs:"
+                  Write-Host "  Output log: $logFileOut"
+                  Write-Host "  Error log: $logFileErr"
+                  
+                  # Mostrar los primeros errores si existen
+                  if (Test-Path $logFileErr) {
+                      Write-Host "`nFirst lines of error log:"
+                      Get-Content $logFileErr -First 10 -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $_" }
+                  }
+              } else {
+                  Write-Host "  Output log: $logFileOut"
+                  Write-Host "  Error log: $logFileErr"
+              }
               
-              Write-Host "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
+              Write-Host "=== DEPLOYMENT COMPLETED ==="
           } else {
               Write-Error "ERROR: No new JAR found in Temp folder!"
               exit 1
