@@ -1,54 +1,50 @@
-name: Deploy BACKEND TEST
+name: Deploy BACKEND DEBUG
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
   workflow_dispatch:
 
 jobs:
-  deploy-backend:
+  deploy-backend-debug:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # -------------------------------------------------------------
-      # 1. JAVA + CACHÉ (Aquí está la magia de la velocidad)
-      # -------------------------------------------------------------
+      # 1. SETUP JAVA
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven' # <--- ESTO EVITA DESCARGAR TODO SIEMPRE
+          java-version: "21"
+          distribution: "temurin"
+          cache: "maven"
 
-      # -------------------------------------------------------------
-      # 2. COMPILAR (Modo Batch para menos ruido)
-      # -------------------------------------------------------------
+      # 2. BUILD (Con Logs)
       - name: Build with Maven
         run: |
-          # -B: Batch mode (No logs de progreso de descarga)
-          # -DskipTests: Salta tests para velocidad
           mvn -B clean package -DskipTests
+          echo "=========================================="
+          echo "🔍 VERIFICANDO ARCHIVO JAR GENERADO:"
+          ls -l target/
+          echo "=========================================="
 
-      # -------------------------------------------------------------
-      # 3. SUBIR JAR (Asegúrate de haber creado los SECRETOS en este repo)
-      # -------------------------------------------------------------
+      # 3. SUBIR JAR (Quitamos el filtro de extensión para ver si sube algo)
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
           key: ${{ secrets.TEST_SSH_KEY }}
+          # Intentamos subir explícitamente el JAR
           source: "target/*.jar"
-          target: "C:/Windows/Temp/" 
+          target: "C:/Windows/Temp/"
           strip_components: 1
+          debug: true # Activa logs detallados del SCP
 
-      # -------------------------------------------------------------
-      # 4. SCRIPT REINICIO (Stop -> Backup -> Start Background)
-      # -------------------------------------------------------------
-      - name: Stop, Backup & Restart
+      # 4. SCRIPT DE DIAGNÓSTICO EN SERVIDOR
+      - name: Debug on Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.TEST_HOST }}
@@ -56,54 +52,67 @@ jobs:
           key: ${{ secrets.TEST_SSH_KEY }}
           script: |
             powershell -Command "
-              \$ErrorActionPreference = 'SilentlyContinue'
+              # Quitamos el SilentlyContinue global para ver errores
+              \$ErrorActionPreference = 'Stop'
               
-              \$deployDir = 'C:\nginx-1.27.1\html\front'
-              \$backupDir = 'C:\nginx-1.27.1\html\front\_backups\back'
-              \$jarName   = 'wms-backend-test.jar'
-              \$port      = 9000
+              Write-Host '=== 🕵️ INICIANDO DIAGNÓSTICO EN SERVIDOR ==='
               
-              Write-Host '=== INICIANDO DESPLIEGUE BACKEND ==='
-
-              # 1. MATAR PROCESO
-              Write-Host '🛑 Buscando proceso en puerto' \$port '...'
-              \$processParams = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
-              if (\$processParams) {
-                  \$pidTarget = \$processParams.OwningProcess
-                  Write-Host '   Deteniendo PID:' \$pidTarget
-                  Stop-Process -Id \$pidTarget -Force
-                  Start-Sleep -Seconds 3
-              }
-
-              # 2. BACKUP
-              \$currentJar = Join-Path \$deployDir \$jarName
-              if (Test-Path \$currentJar) {
-                  Write-Host '📦 Creando Backup...'
-                  if (-not (Test-Path \$backupDir)) { New-Item -ItemType Directory -Path \$backupDir -Force | Out-Null }
+              # 1. VERIFICAR SI LLEGÓ EL ARCHIVO
+              Write-Host '1. Buscando archivos en C:\Windows\Temp\ ...'
+              \$tempFiles = Get-ChildItem 'C:\Windows\Temp\*.jar'
+              
+              if (\$tempFiles) {
+                  Write-Host '✅ ARCHIVO ENCONTRADO EN TEMP:'
+                  \$tempFiles | Format-Table Name, LastWriteTime -AutoSize
                   
-                  \$timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
-                  \$backupName = 'backup_' + \$timestamp + '.jar'
-                  \$backupPath = Join-Path \$backupDir \$backupName
+                  # Tomamos el más reciente
+                  \$nuevoJar = \$tempFiles | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+                  Write-Host '👉 Se usará este archivo:' \$nuevoJar.Name
                   
-                  Move-Item -Path \$currentJar -Destination \$backupPath -Force
-              }
-
-              # 3. MOVER EL NUEVO JAR
-              \$tempJar = Get-ChildItem 'C:\Windows\Temp\*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-              if (\$tempJar) {
-                  Write-Host '🚀 Moviendo nuevo JAR...'
-                  Move-Item -Path \$tempJar.FullName -Destination \$currentJar -Force
+                  # ---------------------------------------------------------
+                  # INTENTO DE DESPLIEGUE REAL
+                  # ---------------------------------------------------------
+                  \$deployDir = 'C:\nginx-1.27.1\html\front'
+                  \$jarName   = 'wms-backend-test.jar'
+                  \$targetPath = Join-Path \$deployDir \$jarName
+                  
+                  Write-Host '2. Destino final:' \$targetPath
+                  
+                  # Parar proceso (Con try/catch para no fallar si no existe)
+                  try {
+                      \$port = 9000
+                      Write-Host '🛑 Buscando proceso en puerto' \$port
+                      \$proc = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction Stop
+                      if (\$proc) {
+                          Stop-Process -Id \$proc.OwningProcess -Force
+                          Write-Host '   Proceso detenido.'
+                          Start-Sleep -Seconds 2
+                      }
+                  } catch {
+                      Write-Host '   (No había nada corriendo en el puerto 9000)'
+                  }
+                  
+                  # Mover archivo
+                  Write-Host '🚀 Moviendo archivo...'
+                  Move-Item -Path \$nuevoJar.FullName -Destination \$targetPath -Force
+                  
+                  # Verificar si se movió
+                  if (Test-Path \$targetPath) {
+                      Write-Host '✅ Archivo movido exitosamente.'
+                      
+                      # Iniciar
+                      Write-Host '🔥 Iniciando JAVAW...'
+                      \$log = Join-Path \$deployDir 'backend.log'
+                      \$args = '-jar', \$targetPath, \"--server.port=9000\"
+                      Start-Process 'javaw' -ArgumentList \$args -RedirectStandardOutput \$log -RedirectStandardError \$log -WindowStyle Hidden
+                      Write-Host '✅ Comando de inicio enviado.'
+                  } else {
+                      Write-Error '❌ ERROR CRÍTICO: El archivo no aparece en la carpeta destino después de moverlo.'
+                  }
+                  
               } else {
-                  Write-Error '❌ NO SE ENCONTRÓ EL JAR.'
-                  exit 1
+                  Write-Error '❌ ERROR: No hay archivos .jar en C:\Windows\Temp\. El SCP falló o subió a otro lado.'
+                  Write-Host 'Contenido actual de Temp:'
+                  Get-ChildItem 'C:\Windows\Temp\' | Select-Object Name
               }
-
-              # 4. INICIAR (JAVAW)
-              Write-Host '🔥 Iniciando Spring Boot...'
-              \$logFile = Join-Path \$deployDir 'backend.log'
-              \$argList = '-jar', \$currentJar, \"--server.port=\$port\"
-              
-              Start-Process 'javaw' -ArgumentList \$argList -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
-              
-              Write-Host '✅ Listo.'
             "
