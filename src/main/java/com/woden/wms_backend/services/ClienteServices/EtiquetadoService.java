@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -454,19 +457,39 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   }
 
   private String leerPlantilla(String base, String nombre, int cantidad) {
-    String path = base + File.separator + nombre + File.separator + "codigo" + cantidad + ".prn";
-    System.out.println("\n📁 Leyendo: " + path);
+    // Construir ruta usando Paths (maneja automáticamente los separadores)
+    System.out.println("\n🔍 DEBUG:");
+    System.out.println("   Base recibida: [" + base + "]");
+    System.out.println("   Nombre recibido: [" + nombre + "]");
+    System.out.println("   Cantidad: " + cantidad);
+    System.out.println("   File.separator: [" + File.separator + "]");
 
-    try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-      StringBuilder sb = new StringBuilder();
-      String linea;
-      while ((linea = br.readLine()) != null) {
-        sb.append(linea).append("\n");
+    String path1 = base + File.separator + nombre + File.separator + "codigo" + cantidad + ".prn";
+    System.out.println("   Path construida: [" + path1 + "]");
+    System.out.println("   Path length: " + path1.length());
+
+    File archivo = new File(path1);
+    System.out.println("   Ruta absoluta: " + archivo.getAbsolutePath());
+    System.out.println("   Existe: " + archivo.exists());
+    Path path = Paths.get(base, nombre, "codigo" + cantidad + ".prn");
+
+    System.out.println("\n📁 Leyendo: " + path.toAbsolutePath());
+
+    try {
+      // Verificar que existe
+      if (!Files.exists(path)) {
+        System.err.println("❌ Archivo no existe: " + path);
+        throw new RuntimeException("Plantilla no encontrada: " + path);
       }
-      System.out.println("   ✅ Cargada: " + sb.length() + " chars\n");
-      return sb.toString();
+
+      // Leer el contenido
+      String contenido = Files.readString(path);
+      System.out.println("   ✅ Cargada: " + contenido.length() + " chars\n");
+      return contenido;
+
     } catch (IOException e) {
-      throw new RuntimeException("Plantilla no encontrada: " + path);
+      System.err.println("❌ Error leyendo: " + e.getMessage());
+      throw new RuntimeException("Plantilla no encontrada: " + path, e);
     }
   }
 
