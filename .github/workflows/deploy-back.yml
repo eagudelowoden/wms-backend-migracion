@@ -1,41 +1,49 @@
-name: Deploy BACKEND (Unlock Fix)
+name: Deploy BACKEND TEST
 
 on:
   push:
-    branches: [develop]
-  workflow_dispatch:
+    branches: [ develop ]
+    # paths:
+    #   - 'wms-backend/**' # Solo se activa si tocas el backend
 
 jobs:
-  deploy-backend-fix:
+  deploy-backend:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      # 1. Configurar Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "21"
-          distribution: "temurin"
-          cache: "maven"
+          java-version: '17' # Ajusta a tu versión de Java (17, 21, etc.)
+          distribution: 'temurin'
+          cache: 'maven'
 
-      - name: Build
-        run: mvn -B clean package -DskipTests
+      # 2. Compilar (Saltando Tests como pediste)
+      - name: Build with Maven
+        run: |
+          cd wms-backend
+          mvn clean package -DskipTests
 
-      # 1. Subir a Temp (Ya sabemos que esto funciona)
+      # 3. Subir el JAR nuevo a una carpeta Temporal
+      # Lo renombramos a "new-backend.jar" para facilitar el script
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
           key: ${{ secrets.TEST_SSH_KEY }}
-          source: "target/*.jar"
-          target: "C:/Windows/Temp/"
-          strip_components: 1
+          # Busca cualquier .jar en target
+          source: "wms-backend/target/*.jar"
+          target: "C:/Windows/Temp/" 
+          # Esto elimina la estructura de carpetas (wms-backend/target) al copiar
+          strip_components: 2
 
-      # 2. SCRIPT ROBUSTO (Manejo de Bloqueos)
-      - name: Stop, Unlock & Deploy
+      # 4. Script Maestro: Stop -> Backup -> Start
+      - name: Stop, Backup & Restart
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.TEST_HOST }}
@@ -43,84 +51,63 @@ jobs:
           key: ${{ secrets.TEST_SSH_KEY }}
           script: |
             powershell -Command "
-              \$ErrorActionPreference = 'Stop'
-              Write-Host '=== 🚀 INICIANDO ACTUALIZACIÓN BACKEND ==='
-
-              \$destDir  = 'C:\nginx-1.27.1\html\front'
-              \$destFile = 'wms-backend-test.jar'
-              \$fullDest = Join-Path \$destDir \$destFile
-              \$port     = 9000
+              \$ErrorActionPreference = 'SilentlyContinue' # No fallar si no hay proceso corriendo
               
-              # ---------------------------------------------------------
-              # PASO 1: MATAR EL PROCESO AGRESIVAMENTE
-              # ---------------------------------------------------------
-              Write-Host '🛑 1. Deteniendo servicio en puerto' \$port
-              try {
-                  \$procs = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
-                  if (\$procs) {
-                      foreach (\$p in \$procs) {
-                          Write-Host '   Matando PID:' \$p.OwningProcess
-                          Stop-Process -Id \$p.OwningProcess -Force -ErrorAction SilentlyContinue
-                      }
-                      # ESPERA CRÍTICA: Dar tiempo a Windows para soltar el archivo
-                      Write-Host '   ⏳ Esperando 5 segundos para liberar el archivo...'
-                      Start-Sleep -Seconds 5
-                  } else {
-                      Write-Host '   (No se encontró proceso en puerto 9000, seguimos)'
-                  }
-              } catch {
-                  Write-Host '   ⚠️ Advertencia al intentar detener proceso:' \$_
+              # --- VARIABLES ---
+              \$deployDir = 'C:\nginx-1.27.1\html\front'
+              \$backupDir = 'C:\nginx-1.27.1\html\front\_backups\back'
+              \$jarName   = 'wms-backend-test.jar' # Nombre FIJO que usaremos para correr
+              \$port      = 9000
+              
+              Write-Host '=== INICIANDO DESPLIEGUE BACKEND ==='
+
+              # 1. BUSCAR Y MATAR PROCESO EN PUERTO 9000
+              Write-Host '🛑 Buscando proceso en puerto' \$port '...'
+              \$processParams = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
+              if (\$processParams) {
+                  \$pidTarget = \$processParams.OwningProcess
+                  Write-Host '   Encontrado PID:' \$pidTarget '- Deteniendo...'
+                  Stop-Process -Id \$pidTarget -Force
+                  Start-Sleep -Seconds 3 # Esperar a que suelte el archivo
+              } else {
+                  Write-Host '   No hay nada corriendo en el puerto' \$port
               }
 
-              # ---------------------------------------------------------
-              # PASO 2: INTENTAR MOVER EL ARCHIVO (Con reintentos)
-              # ---------------------------------------------------------
-              Write-Host '📦 2. Buscando nuevo JAR en Temp...'
+              # 2. HACER BACKUP DEL JAR ACTUAL
+              \$currentJar = Join-Path \$deployDir \$jarName
+              if (Test-Path \$currentJar) {
+                  Write-Host '📦 Creando Backup...'
+                  if (-not (Test-Path \$backupDir)) { New-Item -ItemType Directory -Path \$backupDir -Force | Out-Null }
+                  
+                  \$timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
+                  \$backupName = 'backup_' + \$timestamp + '.jar'
+                  \$backupPath = Join-Path \$backupDir \$backupName
+                  
+                  Move-Item -Path \$currentJar -Destination \$backupPath -Force
+                  Write-Host '   Backup guardado en:' \$backupPath
+              }
+
+              # 3. MOVER EL NUEVO JAR (Desde Temp)
+              # Buscamos el jar que subimos (cualquier nombre) y lo movemos como el nombre FIJO
               \$tempJar = Get-ChildItem 'C:\Windows\Temp\*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
               
-              if (!\$tempJar) {
-                  Write-Error '❌ ERROR: No hay JAR en C:\Windows\Temp. El SCP falló.'
+              if (\$tempJar) {
+                  Write-Host '🚀 Moviendo nuevo JAR:' \$tempJar.Name
+                  Move-Item -Path \$tempJar.FullName -Destination \$currentJar -Force
+              } else {
+                  Write-Error '❌ NO SE ENCONTRÓ EL JAR EN TEMP. ABORTANDO.'
                   exit 1
               }
 
-              Write-Host '👉 Nuevo archivo:' \$tempJar.Name
+              # 4. INICIAR EL NUEVO SERVICIO
+              Write-Host '🔥 Iniciando Spring Boot en puerto' \$port '...'
+              # Usamos Start-Process para que sea independiente de la sesión SSH
+              # Redirigimos logs a un archivo para que puedas ver si falla al arrancar
+              \$logFile = Join-Path \$deployDir 'backend.log'
               
-              # Intentamos mover. Si falla por bloqueo, reintentamos una vez más.
-              try {
-                  Write-Host '🔄 Intentando mover archivo al destino...'
-                  Move-Item -Path \$tempJar.FullName -Destination \$fullDest -Force
-                  Write-Host '✅ Archivo movido exitosamente.'
-              } catch {
-                  Write-Host '⚠️ FALLÓ EL PRIMER INTENTO DE MOVER (¿Archivo bloqueado?)'
-                  Write-Host '   Error: ' \$_
-                  
-                  Write-Host '⏳ Esperando 5 segundos más e intentando forzar...'
-                  Start-Sleep -Seconds 5
-                  
-                  # Intento de rescate: Forzar borrado del viejo primero
-                  try {
-                      if (Test-Path \$fullDest) { Remove-Item \$fullDest -Force }
-                      Move-Item -Path \$tempJar.FullName -Destination \$fullDest -Force
-                      Write-Host '✅ SEGUNDO INTENTO EXITOSO.'
-                  } catch {
-                      Write-Error '❌ ERROR FATAL: No se puede reemplazar el archivo. Windows lo tiene bloqueado. Reinicia el servidor manual o mata java.exe.'
-                      exit 1
-                  }
-              }
-
-              # ---------------------------------------------------------
-              # PASO 3: EJECUTAR EN SEGUNDO PLANO
-              # ---------------------------------------------------------
-              Write-Host '🔥 3. Iniciando Spring Boot...'
-              \$logPath = Join-Path \$destDir 'backend.log'
+              \$argList = '-jar', \$currentJar, \"--server.port=\$port\"
               
-              # Usamos Start-Process con Passthru para confirmar que arrancó
-              \$process = Start-Process 'javaw' -ArgumentList '-jar', \$fullDest, \"--server.port=\$port\" -RedirectStandardOutput \$logPath -RedirectStandardError \$logPath -WindowStyle Hidden -PassThru
+              Start-Process 'java' -ArgumentList \$argList -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
               
-              if (\$process.Id) {
-                  Write-Host '✅ ÉXITO: Nuevo proceso corriendo con PID:' \$process.Id
-                  Write-Host '   Logs en:' \$logPath
-              } else {
-                  Write-Error '❌ El proceso JAVAW no devolvió un PID. Puede haber fallado al arrancar.'
-              }
+              Write-Host '✅ Proceso iniciado. Revisa backend.log si hay errores.'
             "
