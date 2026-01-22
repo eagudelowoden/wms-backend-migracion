@@ -1,10 +1,9 @@
-name: Deploy BACKEND TEST
+name: Deploy BACKEND (Final Fix)
 
 on:
   push:
-    branches: [ develop ]
-    # paths:
-    #   - 'wms-backend/**' # Solo se activa si tocas el backend
+    branches: [develop]
+  workflow_dispatch:
 
 jobs:
   deploy-backend:
@@ -14,36 +13,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Configurar Java
-      - name: Set up JDK 17
+      # 1. SETUP JAVA Y BUILD
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17' # Ajusta a tu versión de Java (17, 21, etc.)
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: "21"
+          distribution: "temurin"
+          cache: "maven"
 
-      # 2. Compilar (Saltando Tests como pediste)
       - name: Build with Maven
-        run: |
-          cd wms-backend
-          mvn clean package -DskipTests
+        run: mvn -B clean package -DskipTests
 
-      # 3. Subir el JAR nuevo a una carpeta Temporal
-      # Lo renombramos a "new-backend.jar" para facilitar el script
+      # 2. SUBIR JAR A CARPETA TEMPORAL (Usamos Temp para evitar bloqueos)
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
           key: ${{ secrets.TEST_SSH_KEY }}
-          # Busca cualquier .jar en target
-          source: "wms-backend/target/*.jar"
-          target: "C:/Windows/Temp/" 
-          # Esto elimina la estructura de carpetas (wms-backend/target) al copiar
-          strip_components: 2
+          source: "target/*.jar"
+          target: "C:/Windows/Temp/"
+          strip_components: 1
 
-      # 4. Script Maestro: Stop -> Backup -> Start
-      - name: Stop, Backup & Restart
+      # 3. SCRIPT DE DESPLIEGUE (Corregido para detectar cualquier JAR)
+      - name: Deploy on Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.TEST_HOST }}
@@ -51,63 +44,88 @@ jobs:
           key: ${{ secrets.TEST_SSH_KEY }}
           script: |
             powershell -Command "
-              \$ErrorActionPreference = 'SilentlyContinue' # No fallar si no hay proceso corriendo
-              
-              # --- VARIABLES ---
+              \$ErrorActionPreference = 'Stop'
+              Write-Host '=== 🚀 INICIANDO DESPLIEGUE BACKEND ==='
+
+              # --- CONFIGURACIÓN ---
               \$deployDir = 'C:\nginx-1.27.1\html\front'
               \$backupDir = 'C:\nginx-1.27.1\html\front\_backups\back'
-              \$jarName   = 'wms-backend-test.jar' # Nombre FIJO que usaremos para correr
               \$port      = 9000
               
-              Write-Host '=== INICIANDO DESPLIEGUE BACKEND ==='
+              # Nombre FINAL que tendrá el archivo (Estandarizamos para evitar caos de nombres)
+              \$finalName = 'wms-backend-test.jar' 
+              \$targetJarPath = Join-Path \$deployDir \$finalName
 
-              # 1. BUSCAR Y MATAR PROCESO EN PUERTO 9000
+              # ==========================================
+              # 1. MATAR PROCESO EN PUERTO 9000
+              # ==========================================
               Write-Host '🛑 Buscando proceso en puerto' \$port '...'
-              \$processParams = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
-              if (\$processParams) {
-                  \$pidTarget = \$processParams.OwningProcess
-                  Write-Host '   Encontrado PID:' \$pidTarget '- Deteniendo...'
-                  Stop-Process -Id \$pidTarget -Force
-                  Start-Sleep -Seconds 3 # Esperar a que suelte el archivo
-              } else {
-                  Write-Host '   No hay nada corriendo en el puerto' \$port
-              }
-
-              # 2. HACER BACKUP DEL JAR ACTUAL
-              \$currentJar = Join-Path \$deployDir \$jarName
-              if (Test-Path \$currentJar) {
-                  Write-Host '📦 Creando Backup...'
-                  if (-not (Test-Path \$backupDir)) { New-Item -ItemType Directory -Path \$backupDir -Force | Out-Null }
-                  
-                  \$timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
-                  \$backupName = 'backup_' + \$timestamp + '.jar'
-                  \$backupPath = Join-Path \$backupDir \$backupName
-                  
-                  Move-Item -Path \$currentJar -Destination \$backupPath -Force
-                  Write-Host '   Backup guardado en:' \$backupPath
-              }
-
-              # 3. MOVER EL NUEVO JAR (Desde Temp)
-              # Buscamos el jar que subimos (cualquier nombre) y lo movemos como el nombre FIJO
-              \$tempJar = Get-ChildItem 'C:\Windows\Temp\*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
               
-              if (\$tempJar) {
-                  Write-Host '🚀 Moviendo nuevo JAR:' \$tempJar.Name
-                  Move-Item -Path \$tempJar.FullName -Destination \$currentJar -Force
+              # Usamos netstat y taskkill que son más agresivos
+              \$netstat = netstat -ano | Select-String \":\$port\"
+              if (\$netstat) {
+                  foreach (\$line in \$netstat) {
+                      # Extraemos el PID de la línea de texto de netstat
+                      \$parts = \$line.ToString().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)
+                      \$pidToKill = \$parts[\$parts.Length - 1]
+                      
+                      Write-Host \"   🔫 Matando PID detectado: \$pidToKill\"
+                      taskkill /F /PID \$pidToKill | Out-Null
+                  }
+                  # Esperamos a que Windows libere los archivos
+                  Start-Sleep -Seconds 5
               } else {
-                  Write-Error '❌ NO SE ENCONTRÓ EL JAR EN TEMP. ABORTANDO.'
+                  Write-Host '   (Puerto libre, nada que matar)'
+              }
+
+              # ==========================================
+              # 2. BACKUP (Cualquier JAR que exista)
+              # ==========================================
+              if (-not (Test-Path \$backupDir)) { 
+                  New-Item -ItemType Directory -Path \$backupDir -Force | Out-Null 
+                  Write-Host '📁 Carpeta de backups creada.'
+              }
+
+              # Buscamos CUALQUIER .jar en la carpeta de despliegue
+              \$oldJars = Get-ChildItem -Path \$deployDir -Filter *.jar
+
+              if (\$oldJars) {
+                  \$timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
+                  foreach (\$jar in \$oldJars) {
+                      \$backupName = \$jar.BaseName + '_' + \$timestamp + '.jar'
+                      \$backupPath = Join-Path \$backupDir \$backupName
+                      
+                      Write-Host \"📦 Moviendo al backup: \$(\$jar.Name)\"
+                      Move-Item -Path \$jar.FullName -Destination \$backupPath -Force
+                  }
+              } else {
+                  Write-Host '⚠️ No se encontraron JARs antiguos para respaldar.'
+              }
+
+              # ==========================================
+              # 3. MOVER EL NUEVO JAR
+              # ==========================================
+              # Buscamos el jar más nuevo en Temp
+              \$tempJar = Get-ChildItem 'C:\Windows\Temp\*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+              if (\$tempJar) {
+                  Write-Host \"🚀 Instalando nuevo JAR: \$(\$tempJar.Name)\"
+                  Write-Host \"   Destino: \$targetJarPath\"
+                  Move-Item -Path \$tempJar.FullName -Destination \$targetJarPath -Force
+              } else {
+                  Write-Error '❌ ERROR: No llegó ningún archivo JAR a la carpeta Temp.'
                   exit 1
               }
 
-              # 4. INICIAR EL NUEVO SERVICIO
-              Write-Host '🔥 Iniciando Spring Boot en puerto' \$port '...'
-              # Usamos Start-Process para que sea independiente de la sesión SSH
-              # Redirigimos logs a un archivo para que puedas ver si falla al arrancar
+              # ==========================================
+              # 4. EJECUTAR (Sin argumentos extras, lee properties)
+              # ==========================================
+              Write-Host '🔥 Iniciando servicio...'
               \$logFile = Join-Path \$deployDir 'backend.log'
               
-              \$argList = '-jar', \$currentJar, \"--server.port=\$port\"
+              # Usamos javaw para que corra en background sin colgar la consola
+              # NO pasamos --server.port, dejamos que tome el properties
+              Start-Process 'javaw' -ArgumentList '-jar', \$targetJarPath -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
               
-              Start-Process 'java' -ArgumentList \$argList -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
-              
-              Write-Host '✅ Proceso iniciado. Revisa backend.log si hay errores.'
+              Write-Host '✅ Despliegue finalizado exitosamente.'
             "
