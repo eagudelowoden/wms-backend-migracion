@@ -23,8 +23,20 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
+      # Caché adicional para el repositorio local de Maven
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Download dependencies
+        run: mvn dependency:go-offline -B
+
       - name: Build with Maven (skip tests)
-        run: mvn -B clean package -DskipTests
+        run: mvn -B clean package -DskipTests -o
 
       # -------------------------------------------------------------
       # PASO 2: GENERAR SCRIPT DE DESPLIEGUE
