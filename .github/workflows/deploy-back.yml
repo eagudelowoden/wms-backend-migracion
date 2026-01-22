@@ -2,10 +2,7 @@ name: Deploy BACKEND TEST
 
 on:
   push:
-    branches: [develop]
-    # Quitamos el filtro 'paths' porque todo el repo es backend
-    # paths:
-    #   - 'wms-backend/**'
+    branches: [ develop ]
   workflow_dispatch:
 
 jobs:
@@ -16,32 +13,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Configurar Java 21
+      # -------------------------------------------------------------
+      # 1. JAVA + CACHÉ (Aquí está la magia de la velocidad)
+      # -------------------------------------------------------------
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: "21"
-          distribution: "temurin"
-          cache: "maven"
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven' # <--- ESTO EVITA DESCARGAR TODO SIEMPRE
 
-      # 2. Compilar (YA NO HACEMOS CD, estamos en la raíz)
+      # -------------------------------------------------------------
+      # 2. COMPILAR (Modo Batch para menos ruido)
+      # -------------------------------------------------------------
       - name: Build with Maven
         run: |
-          mvn clean package -DskipTests
+          # -B: Batch mode (No logs de progreso de descarga)
+          # -DskipTests: Salta tests para velocidad
+          mvn -B clean package -DskipTests
 
-      # 3. Subir el JAR (Ruta ajustada: target/*.jar)
+      # -------------------------------------------------------------
+      # 3. SUBIR JAR (Asegúrate de haber creado los SECRETOS en este repo)
+      # -------------------------------------------------------------
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
           key: ${{ secrets.TEST_SSH_KEY }}
-          # El jar está directo en target/, no en wms-backend/target/
           source: "target/*.jar"
-          target: "C:/Windows/Temp/"
-          strip_components: 1 # Ajustado a 1 porque ahora es solo target/archivo.jar
+          target: "C:/Windows/Temp/" 
+          strip_components: 1
 
-      # 4. Script Maestro (Stop -> Backup -> Start)
+      # -------------------------------------------------------------
+      # 4. SCRIPT REINICIO (Stop -> Backup -> Start Background)
+      # -------------------------------------------------------------
       - name: Stop, Backup & Restart
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -52,20 +58,19 @@ jobs:
             powershell -Command "
               \$ErrorActionPreference = 'SilentlyContinue'
               
-              # --- VARIABLES ---
               \$deployDir = 'C:\nginx-1.27.1\html\front'
               \$backupDir = 'C:\nginx-1.27.1\html\front\_backups\back'
               \$jarName   = 'wms-backend-test.jar'
               \$port      = 9000
               
-              Write-Host '=== INICIANDO DESPLIEGUE BACKEND (JAVA 21) ==='
+              Write-Host '=== INICIANDO DESPLIEGUE BACKEND ==='
 
               # 1. MATAR PROCESO
               Write-Host '🛑 Buscando proceso en puerto' \$port '...'
               \$processParams = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
               if (\$processParams) {
                   \$pidTarget = \$processParams.OwningProcess
-                  Write-Host '   Encontrado PID:' \$pidTarget '- Deteniendo...'
+                  Write-Host '   Deteniendo PID:' \$pidTarget
                   Stop-Process -Id \$pidTarget -Force
                   Start-Sleep -Seconds 3
               }
@@ -89,17 +94,16 @@ jobs:
                   Write-Host '🚀 Moviendo nuevo JAR...'
                   Move-Item -Path \$tempJar.FullName -Destination \$currentJar -Force
               } else {
-                  Write-Error '❌ NO SE ENCONTRÓ EL JAR EN TEMP.'
+                  Write-Error '❌ NO SE ENCONTRÓ EL JAR.'
                   exit 1
               }
 
-              # 4. INICIAR SIN CONSOLA (JAVAW)
-              Write-Host '🔥 Iniciando Spring Boot en puerto' \$port '...'
+              # 4. INICIAR (JAVAW)
+              Write-Host '🔥 Iniciando Spring Boot...'
               \$logFile = Join-Path \$deployDir 'backend.log'
               \$argList = '-jar', \$currentJar, \"--server.port=\$port\"
               
-              # Javaw corre en background, el action terminará exitosamente de inmediato
               Start-Process 'javaw' -ArgumentList \$argList -RedirectStandardOutput \$logFile -RedirectStandardError \$logFile -WindowStyle Hidden
               
-              Write-Host '✅ Proceso lanzado en segundo plano.'
+              Write-Host '✅ Listo.'
             "
