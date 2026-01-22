@@ -43,29 +43,24 @@ jobs:
 
           # 1. DETENER PROCESO EN PUERTO 9000
           Write-Host "Checking for process on port \$port..."
-          \$connection = Get-NetTCPConnection -LocalPort \$port -State Listen -ErrorAction SilentlyContinue
+          \$netstatOutput = netstat -ano | Select-String ":\$port.*LISTENING"
 
-          if (\$connection) {
-              \$pid = \$connection.OwningProcess
+          if (\$netstatOutput) {
+              \$line = \$netstatOutput[0].ToString().Trim()
+              \$processPid = (\$line -split '\s+')[-1]
               
-              # Filtrar PIDs inválidos (0, negativos, etc.)
-              if (\$pid -gt 0) {
-                  # Verificar que sea realmente Java
-                  \$processInfo = Get-Process -Id \$pid -ErrorAction SilentlyContinue
+              if (\$processPid -match '^\d+\$' -and [int]\$processPid -gt 0) {
+                  \$processInfo = Get-Process -Id \$processPid -ErrorAction SilentlyContinue
                   
-                  if (\$processInfo -and \$processInfo.ProcessName -match 'java') {
-                      Write-Host "Found Java process PID: \$pid (\$(\$processInfo.ProcessName)). Stopping..."
-                      Stop-Process -Id \$pid -Force
+                  if (\$processInfo) {
+                      Write-Host "Found process PID: \$processPid (\$(\$processInfo.ProcessName)). Stopping..."
+                      taskkill /F /PID \$processPid
                       Start-Sleep -Seconds 5
-                      Write-Host "Process stopped successfully."
-                  } else {
-                      Write-Host "WARNING: Process on port \$port is not Java (PID: \$pid). Skipping..."
+                      Write-Host "Process stopped."
                   }
-              } else {
-                  Write-Host "WARNING: Invalid PID detected (\$pid). Skipping..."
               }
           } else {
-              Write-Host "No process running on port \$port."
+              Write-Host "No process listening on port \$port."
           }
 
           # 2. CREAR CARPETA DE BACKUPS SI NO EXISTE
