@@ -107,6 +107,41 @@ jobs:
               # 5. EJECUTAR NUEVO JAR
               Write-Host "Starting backend service on port $port..."
               
+              # Definir rutas de logs
+            $logDir = Join-Path $deployPath "logs"
+            if (-not (Test-Path $logDir)) {
+                New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+            }
+
+            $logFileOut = Join-Path $logDir "backend_$timestamp.log"
+            $logFileErr = Join-Path $logDir "backend_error_$timestamp.log"
+
+            # Crear script batch temporal para redirigir logs
+            $batchScript = @"
+            @echo off
+            cd /d "$deployPath"
+            javaw -jar "$targetPath" > "$logFileOut" 2> "$logFileErr"
+            "@
+
+            $batchPath = Join-Path $tempPath "start_backend_$timestamp.bat"
+            Set-Content -Path $batchPath -Value $batchScript -Encoding ASCII
+
+            # Ejecutar batch en background
+            $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
+            $processStartup.ShowWindow = 0  # Hidden window
+
+            $processClass = [wmiclass]"Win32_Process"
+            $result = $processClass.Create("cmd.exe /c `"$batchPath`"", $deployPath, $processStartup)
+
+            if ($result.ReturnValue -eq 0) {
+                $newPid = $result.ProcessId
+                Write-Host "Backend process started successfully with PID: $newPid"
+                Write-Host "  Output log: $logFileOut"
+                Write-Host "  Error log: $logFileErr"
+            } else {
+                Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
+                exit 1
+            }
               # Ejecutar JAR en background usando WMI (método más robusto en Windows)
               $javaPath = (Get-Command javaw).Source
               $arguments = "-jar `"$targetPath`""
