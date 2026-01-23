@@ -513,9 +513,4 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       throw new RuntimeException("Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
     }
   }
-  // private String cortarString(String str, int len) {
-  // if (str == null)
-  // return "";
-  // return str.length() > len ? str.substring(0, len) : str;
-  // }
 }
