@@ -457,32 +457,32 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   }
 
   private String leerPlantilla(String base, String nombre, int cantidad) {
-    // Construir ruta usando Paths (maneja automáticamente los separadores)
-    System.out.println("\n🔍 DEBUG:");
+    Path path = Paths.get(base, nombre, "codigo" + cantidad + ".prn");
+
+    System.out.println("\n🔍 DEBUG PATH:");
     System.out.println("   Base recibida: [" + base + "]");
     System.out.println("   Nombre recibido: [" + nombre + "]");
     System.out.println("   Cantidad: " + cantidad);
-    System.out.println("   File.separator: [" + File.separator + "]");
+    System.out.println("   Path construido: [" + path + "]");
+    System.out.println("   Path absoluto: [" + path.toAbsolutePath() + "]");
+    System.out.println("   Path normalizado: [" + path.normalize() + "]");
+    System.out.println("   Existe: " + Files.exists(path));
 
-    String path1 = base + File.separator + nombre + File.separator + "codigo" + cantidad + ".prn";
-    System.out.println("   Path construida: [" + path1 + "]");
-    System.out.println("   Path length: " + path1.length());
-
-    File archivo = new File(path1);
-    System.out.println("   Ruta absoluta: " + archivo.getAbsolutePath());
-    System.out.println("   Existe: " + archivo.exists());
-    Path path = Paths.get(base, nombre, "codigo" + cantidad + ".prn");
-
-    System.out.println("\n📁 Leyendo: " + path.toAbsolutePath());
+    if (Files.exists(path)) {
+      try {
+        System.out.println("   Es archivo: " + Files.isRegularFile(path));
+        System.out.println("   Es legible: " + Files.isReadable(path));
+      } catch (Exception e) {
+        System.err.println("   Error verificando archivo: " + e.getMessage());
+      }
+    }
 
     try {
-      // Verificar que existe
       if (!Files.exists(path)) {
         System.err.println("❌ Archivo no existe: " + path);
         throw new RuntimeException("Plantilla no encontrada: " + path);
       }
 
-      // Leer el contenido
       String contenido = Files.readString(path);
       System.out.println("   ✅ Cargada: " + contenido.length() + " chars\n");
       return contenido;
@@ -492,7 +492,6 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       throw new RuntimeException("Plantilla no encontrada: " + path, e);
     }
   }
-
   // private String cortarString(String str, int len) {
   // if (str == null)
   // return "";
