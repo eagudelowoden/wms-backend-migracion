@@ -466,6 +466,8 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       baseLimpia = "\\\\" + baseLimpia;
     }
 
+    baseLimpia = "C:\\Users\\A.DEVELOPER\\Documents\\etiquetado\\plantillas";
+
     System.out.println("\n🔍 DEBUG PATH:");
     System.out.println("   Base original: [" + base + "]");
     System.out.println("   Base limpia: [" + baseLimpia + "]");
@@ -498,29 +500,19 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       }
     }
 
-    String ruta = "C:\\Users\\A.DEVELOPER\\Documents\\etiquetado\\codigo1.prn";
-    // Leer contenido
-    // String contenido = new String(Files.readAllBytes(archivoPlantilla.toPath()));
-    // System.out.println(" ✅ Cargada: " + contenido.length() + " chars\n");
-    return ruta;
-    // try {
-    // // if (!archivoPlantilla.exists()) {
-    // // throw new RuntimeException("❌ Plantilla no encontrada: " +
-    // archivoPlantilla.getAbsolutePath());
-    // // }
-    // String ruta =
-    // "\\\\10.128.0.28\\archivos\\ENV\\PRD\\etiquetas\\LEGACY-COSTARICA\\prns\\etiquetado\\ETIQUETA
-    // TEST\\codigo1.prn";
-    // // Leer contenido
-    // // String contenido = new
-    // String(Files.readAllBytes(archivoPlantilla.toPath()));
-    // // System.out.println(" ✅ Cargada: " + contenido.length() + " chars\n");
-    // return ruta;
+    try {
+      if (!archivoPlantilla.exists()) {
+        throw new RuntimeException("❌ Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath());
+      }
 
-    // } catch (IOException e) {
-    // System.err.println("❌ Error leyendo: " + e.getMessage());
-    // throw new RuntimeException("Plantilla no encontrada: " +
-    // archivoPlantilla.getAbsolutePath(), e);
-    // }
+      // Leer contenido
+      String contenido = new String(Files.readAllBytes(archivoPlantilla.toPath()));
+      System.out.println("   ✅ Cargada: " + contenido.length() + " chars\n");
+      return contenido;
+
+    } catch (IOException e) {
+      System.err.println("❌ Error leyendo: " + e.getMessage());
+      throw new RuntimeException("Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
+    }
   }
 }
