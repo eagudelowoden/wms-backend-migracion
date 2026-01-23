@@ -457,39 +457,60 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   }
 
   private String leerPlantilla(String base, String nombre, int cantidad) {
-    Path path = Paths.get(base, nombre, "codigo" + cantidad + ".prn");
+    // 🔧 LIMPIAR: Convertir múltiples barras a simples
+    String baseLimpia = base.replace("\\\\\\\\", "\\\\") // 4 barras -> 2 barras
+        .replace("\\\\", "\\"); // 2 barras -> 1 barra
+
+    // Asegurar formato UNC correcto (debe empezar con \\)
+    if (!baseLimpia.startsWith("\\\\")) {
+      baseLimpia = "\\\\" + baseLimpia;
+    }
 
     System.out.println("\n🔍 DEBUG PATH:");
-    System.out.println("   Base recibida: [" + base + "]");
-    System.out.println("   Nombre recibido: [" + nombre + "]");
+    System.out.println("   Base original: [" + base + "]");
+    System.out.println("   Base limpia: [" + baseLimpia + "]");
+    System.out.println("   Nombre: [" + nombre + "]");
     System.out.println("   Cantidad: " + cantidad);
-    System.out.println("   Path construido: [" + path + "]");
-    System.out.println("   Path absoluto: [" + path.toAbsolutePath() + "]");
-    System.out.println("   Path normalizado: [" + path.normalize() + "]");
-    System.out.println("   Existe: " + Files.exists(path));
 
-    if (Files.exists(path)) {
-      try {
-        System.out.println("   Es archivo: " + Files.isRegularFile(path));
-        System.out.println("   Es legible: " + Files.isReadable(path));
-      } catch (Exception e) {
-        System.err.println("   Error verificando archivo: " + e.getMessage());
+    // Construir con File (más compatible con UNC)
+    File archivoPlantilla = new File(baseLimpia, nombre);
+    archivoPlantilla = new File(archivoPlantilla, "codigo" + cantidad + ".prn");
+
+    System.out.println("   Ruta construida: [" + archivoPlantilla.getAbsolutePath() + "]");
+    System.out.println("   Existe: " + archivoPlantilla.exists());
+    System.out.println("   Es archivo: " + archivoPlantilla.isFile());
+    System.out.println("   Puede leer: " + archivoPlantilla.canRead());
+
+    // Si no existe, listar directorio padre para debug
+    if (!archivoPlantilla.exists()) {
+      File directorioPadre = archivoPlantilla.getParentFile();
+      System.out.println("   📂 Directorio padre: " + directorioPadre);
+      System.out.println("   📂 Padre existe: " + directorioPadre.exists());
+
+      if (directorioPadre.exists()) {
+        System.out.println("   📂 Contenido del directorio:");
+        File[] archivos = directorioPadre.listFiles();
+        if (archivos != null) {
+          for (File f : archivos) {
+            System.out.println("      - " + f.getName());
+          }
+        }
       }
     }
 
     try {
-      if (!Files.exists(path)) {
-        System.err.println("❌ Archivo no existe: " + path);
-        throw new RuntimeException("Plantilla no encontrada: " + path);
+      if (!archivoPlantilla.exists()) {
+        throw new RuntimeException("❌ Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath());
       }
 
-      String contenido = Files.readString(path);
+      // Leer contenido
+      String contenido = new String(Files.readAllBytes(archivoPlantilla.toPath()));
       System.out.println("   ✅ Cargada: " + contenido.length() + " chars\n");
       return contenido;
 
     } catch (IOException e) {
       System.err.println("❌ Error leyendo: " + e.getMessage());
-      throw new RuntimeException("Plantilla no encontrada: " + path, e);
+      throw new RuntimeException("Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
     }
   }
   // private String cortarString(String str, int len) {
