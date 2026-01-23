@@ -466,7 +466,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       baseLimpia = "\\\\" + baseLimpia;
     }
 
-    baseLimpia = "C:\\Users\\A.DEVELOPER\\Documents\\etiquetado\\plantillas";
+    baseLimpia = "C:\\Users\\A.DEVELOPER\\Documents\\etiquetado";
 
     System.out.println("\n🔍 DEBUG PATH:");
     System.out.println("   Base original: [" + base + "]");
