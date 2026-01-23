@@ -510,7 +510,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
     } catch (IOException e) {
       System.err.println("❌ Error leyendo: " + e.getMessage());
-      throw new RuntimeException("Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
+      throw new RuntimeException("- RUEBAPlantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
     }
   }
 }
