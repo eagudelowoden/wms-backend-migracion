@@ -105,7 +105,9 @@ jobs:
               Write-Host "JAR deployed to: $targetPath"
               
               # 5. EJECUTAR NUEVO JAR
-            Write-Host "Starting# Definir rutas de logs
+            Write-Host "Starting backend service on port $port..."
+
+            # Definir rutas de logs
             $logDir = Join-Path $deployPath "logs"
             if (-not (Test-Path $logDir)) {
                 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
@@ -114,11 +116,11 @@ jobs:
             $logFileOut = Join-Path $logDir "backend_$timestamp.log"
             $logFileErr = Join-Path $logDir "backend_error_$timestamp.log"
 
-            # Crear script batch temporal para redirigir logs (sin here-string)
-            $batchScript = "@echo off`r`ncd /d `"$deployPath`"`r`njavaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`""
-
+            # Crear script batch temporal
             $batchPath = Join-Path $tempPath "start_backend_$timestamp.bat"
-            Set-Content -Path $batchPath -Value $batchScript -Encoding ASCII
+            "@echo off" | Out-File -FilePath $batchPath -Encoding ASCII
+            "cd /d $deployPath" | Out-File -FilePath $batchPath -Append -Encoding ASCII
+            "javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchPath -Append -Encoding ASCII
 
             # Ejecutar batch en background
             $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
