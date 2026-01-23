@@ -499,9 +499,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     }
 
     try {
-      // if (!archivoPlantilla.exists()) {
-      //   throw new RuntimeException("❌ Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath());
-      // }
+      if (!archivoPlantilla.exists()) {
+        throw new RuntimeException("❌ Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath());
+      }
 
       // Leer contenido
       String contenido = new String(Files.readAllBytes(archivoPlantilla.toPath()));
@@ -510,12 +510,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
     } catch (IOException e) {
       System.err.println("❌ Error leyendo: " + e.getMessage());
-      throw new RuntimeException("- RUEBAPlantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
+      throw new RuntimeException("Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
     }
   }
-  // private String cortarString(String str, int len) {
-  // if (str == null)
-  // return "";
-  // return str.length() > len ? str.substring(0, len) : str;
-  // }
 }
