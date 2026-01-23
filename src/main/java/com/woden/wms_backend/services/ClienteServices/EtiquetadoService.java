@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -454,25 +457,70 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   }
 
   private String leerPlantilla(String base, String nombre, int cantidad) {
-    String path = base + File.separator + nombre + File.separator + "codigo" + cantidad + ".prn";
-    System.out.println("\n📁 Leyendo: " + path);
+    // 🔧 LIMPIAR: Convertir múltiples barras a simples
+    String baseLimpia = base.replace("\\\\\\\\", "\\\\") // 4 barras -> 2 barras
+        .replace("\\\\", "\\"); // 2 barras -> 1 barra
 
-    try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-      StringBuilder sb = new StringBuilder();
-      String linea;
-      while ((linea = br.readLine()) != null) {
-        sb.append(linea).append("\n");
-      }
-      System.out.println("   ✅ Cargada: " + sb.length() + " chars\n");
-      return sb.toString();
-    } catch (IOException e) {
-      throw new RuntimeException("Plantilla no encontrada: " + path);
+    // Asegurar formato UNC correcto (debe empezar con \\)
+    if (!baseLimpia.startsWith("\\\\")) {
+      baseLimpia = "\\\\" + baseLimpia;
     }
-  }
 
-  // private String cortarString(String str, int len) {
-  // if (str == null)
-  // return "";
-  // return str.length() > len ? str.substring(0, len) : str;
-  // }
+    System.out.println("\n🔍 DEBUG PATH:");
+    System.out.println("   Base original: [" + base + "]");
+    System.out.println("   Base limpia: [" + baseLimpia + "]");
+    System.out.println("   Nombre: [" + nombre + "]");
+    System.out.println("   Cantidad: " + cantidad);
+
+    // Construir con File (más compatible con UNC)
+    File archivoPlantilla = new File(baseLimpia, nombre);
+    archivoPlantilla = new File(archivoPlantilla, "codigo" + cantidad + ".prn");
+
+    System.out.println("   Ruta construida: [" + archivoPlantilla.getAbsolutePath() + "]");
+    System.out.println("   Existe: " + archivoPlantilla.exists());
+    System.out.println("   Es archivo: " + archivoPlantilla.isFile());
+    System.out.println("   Puede leer: " + archivoPlantilla.canRead());
+
+    // Si no existe, listar directorio padre para debug
+    if (!archivoPlantilla.exists()) {
+      File directorioPadre = archivoPlantilla.getParentFile();
+      System.out.println("   📂 Directorio padre: " + directorioPadre);
+      System.out.println("   📂 Padre existe: " + directorioPadre.exists());
+
+      if (directorioPadre.exists()) {
+        System.out.println("   📂 Contenido del directorio:");
+        File[] archivos = directorioPadre.listFiles();
+        if (archivos != null) {
+          for (File f : archivos) {
+            System.out.println("      - " + f.getName());
+          }
+        }
+      }
+    }
+
+    String ruta = "\\\\10.128.0.28\\archivos\\ENV\\PRD\\etiquetas\\LEGACY-COSTARICA\\prns\\etiquetado\\ETIQUETA TEST\\codigo1.prn";
+    // Leer contenido
+    // String contenido = new String(Files.readAllBytes(archivoPlantilla.toPath()));
+    // System.out.println(" ✅ Cargada: " + contenido.length() + " chars\n");
+    return ruta;
+    // try {
+    // // if (!archivoPlantilla.exists()) {
+    // // throw new RuntimeException("❌ Plantilla no encontrada: " +
+    // archivoPlantilla.getAbsolutePath());
+    // // }
+    // String ruta =
+    // "\\\\10.128.0.28\\archivos\\ENV\\PRD\\etiquetas\\LEGACY-COSTARICA\\prns\\etiquetado\\ETIQUETA
+    // TEST\\codigo1.prn";
+    // // Leer contenido
+    // // String contenido = new
+    // String(Files.readAllBytes(archivoPlantilla.toPath()));
+    // // System.out.println(" ✅ Cargada: " + contenido.length() + " chars\n");
+    // return ruta;
+
+    // } catch (IOException e) {
+    // System.err.println("❌ Error leyendo: " + e.getMessage());
+    // throw new RuntimeException("Plantilla no encontrada: " +
+    // archivoPlantilla.getAbsolutePath(), e);
+    // }
+  }
 }
