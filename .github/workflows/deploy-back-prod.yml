@@ -34,9 +34,9 @@ jobs:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
-          source: "wms-backend/target/*.jar"
+          source: "target/*.jar"
           target: "C:/Windows/Temp/"
-          strip_components: 2
+          # strip_components: 2
 
       # 4. Script Maestro: Stop -> Backup -> Start (HIDDEN)
       - name: Remote Restart Logic
