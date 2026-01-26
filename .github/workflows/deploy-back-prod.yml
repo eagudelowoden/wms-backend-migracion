@@ -32,9 +32,9 @@ jobs:
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.HOST_HOST }}
-          username: ${{ secrets.HOST_USER }}
-          key: ${{ secrets.HOST_SSH_KEY }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
           source: "wms-backend/target/*.jar"
           target: "C:/Windows/Temp/"
           strip_components: 2
@@ -43,9 +43,9 @@ jobs:
       - name: Remote Restart Logic
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST_HOST }}
-          username: ${{ secrets.HOST_USER }}
-          key: ${{ secrets.HOST_SSH_KEY }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
           script: |
             powershell -Command "
               \$ErrorActionPreference = 'SilentlyContinue'
