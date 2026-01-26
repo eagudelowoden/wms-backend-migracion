@@ -1,10 +1,10 @@
-name: Deploy BACKEND TEST
+name: Deploy BACKEND PROD
 
 on:
   push:
-    branches: [ develop ]
+    branches: [production]
     paths:
-      - 'wms-backend/**' # Solo se ejecuta si cambias cosas en la carpeta del back
+      - "wms-backend/**" # Solo se ejecuta si cambias cosas en la carpeta del back
 
 jobs:
   deploy-backend:
@@ -18,9 +18,9 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
 
       # 2. Compilar (Saltando tests para rapidez)
       - name: Build with Maven
@@ -32,9 +32,9 @@ jobs:
       - name: Upload JAR to Temp
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.TEST_HOST }}
-          username: ${{ secrets.TEST_USER }}
-          key: ${{ secrets.TEST_SSH_KEY }}
+          host: ${{ secrets.HOST_HOST }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.HOST_SSH_KEY }}
           source: "wms-backend/target/*.jar"
           target: "C:/Windows/Temp/"
           strip_components: 2
@@ -43,17 +43,17 @@ jobs:
       - name: Remote Restart Logic
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.TEST_HOST }}
-          username: ${{ secrets.TEST_USER }}
-          key: ${{ secrets.TEST_SSH_KEY }}
+          host: ${{ secrets.HOST_HOST }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.HOST_SSH_KEY }}
           script: |
             powershell -Command "
               \$ErrorActionPreference = 'SilentlyContinue'
               
               # --- CONFIGURACIÓN ---
-              \$deployDir = 'C:\nginx-1.27.1\html\front'
-              \$backupDir = 'C:\nginx-1.27.1\html\front\_backups\back'
-              \$jarName   = 'wms-backend-test.jar' # Nombre ESTÁNDAR para que el script siempre sepa cual correr
+              \$deployDir = 'C:\WMS Web API\wms-prd\wms-frontend'
+              \$backupDir = 'C:\WMS Web API\wms-prd\wms-frontend\_backups\back'
+              \$jarName   = 'wms-backend-prd.jar' # Nombre ESTÁNDAR para que el script siempre sepa cual correr
               \$port      = 9000
               \$logFile   = Join-Path \$deployDir 'backend.log'
 
@@ -81,9 +81,9 @@ jobs:
               # ---------------------------------------------------------
               \$currentJarPath = Join-Path \$deployDir \$jarName
               
-              if (Test-Path \$currentJarPath) {
+              if (Prod-Path \$currentJarPath) {
                   Write-Host '📦 Creando Backup...'
-                  if (-not (Test-Path \$backupDir)) { New-Item -ItemType Directory -Path \$backupDir -Force | Out-Null }
+                  if (-not (Prod-Path \$backupDir)) { New-Item -ItemType Directory -Path \$backupDir -Force | Out-Null }
                   
                   \$timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
                   # Guardamos el backup con el nombre original o con fecha
@@ -101,7 +101,7 @@ jobs:
               
               if (\$newJar) {
                   Write-Host '✨ Instalando nuevo JAR:' \$newJar.Name
-                  # Lo movemos y renombramos al nombre ESTÁNDAR (wms-backend-test.jar)
+                  # Lo movemos y renombramos al nombre ESTÁNDAR (wms-backend-prod.jar)
                   Move-Item -Path \$newJar.FullName -Destination \$currentJarPath -Force
               } else {
                   Write-Error '❌ ERROR CRÍTICO: No se encontró el JAR en Temp.'
