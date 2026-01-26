@@ -522,7 +522,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     List<String> serial = serialRaw.stream().map(Object::toString).toList();
 
     for (String s : serial) {
-      ingresoService.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, s);
+      ingresoService.updateStateEntryNotUsuarioDiagnosed(estadoId, palletId, fecha, s);
     }
     return ResponseEntity.ok(1);
   }
