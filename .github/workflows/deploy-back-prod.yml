@@ -3,8 +3,8 @@ name: Deploy BACKEND PROD
 on:
   push:
     branches: [production]
-    paths:
-      - "wms-backend/**" # Solo se ejecuta si cambias cosas en la carpeta del back
+    # paths:
+    #   - "wms-backend/**" # Solo se ejecuta si cambias cosas en la carpeta del back
 
 jobs:
   deploy-backend:
