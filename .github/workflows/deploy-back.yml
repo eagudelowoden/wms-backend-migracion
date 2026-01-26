@@ -24,8 +24,7 @@ jobs:
 
       # 2. Compilar (Saltando tests para rapidez)
       - name: Build with Maven
-        run: |
-          cd wms-backend
+        run: 
           mvn clean package -DskipTests
 
       # 3. Subir JAR a Temporal (C:\Windows\Temp)
