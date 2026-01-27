@@ -47,8 +47,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
           Write-Host "=== STARTING BACKEND DEPLOYMENT ==="
 
-          $deployPath = "C:\WMS Web API\wms-prd\wms-frontend"
-          $backupRoot = "C:\WMS Web API\wms-prd\wms-frontend\_backups\back"
+          $deployPath = "C:\WMS Web API\wms-prd"
+          $backupRoot = "C:\WMS Web API\wms-prd\_backups\back"
           $tempPath = "C:\Windows\Temp"
           $port = 9000
           $timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
