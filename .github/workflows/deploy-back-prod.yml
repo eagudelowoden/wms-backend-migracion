@@ -47,8 +47,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
           Write-Host "=== STARTING BACKEND DEPLOYMENT ==="
 
-          $deployPath = "C:\WMS Web API\wms-prd"
-          $backupRoot = "C:\WMS Web API\wms-prd\_backups\back"
+          $deployPath = "C:\WMS Web API\wms-prd\wms-frontend"
+          $backupRoot = "C:\WMS Web API\wms-prd\wms-frontend\_backups\back"
           $tempPath = "C:\Windows\Temp"
           $port = 9000
           $timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
@@ -111,23 +111,29 @@ jobs:
               $logFileOut = Join-Path $deployPath "backend-$timestamp.log"
               $logFileErr = Join-Path $deployPath "backend-$timestamp-error.log"
               
-              # Ejecutar JAR en background redirigiendo logs
-              $javaPath = (Get-Command javaw).Source
-              $arguments = "-jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`""
+              # Crear script batch temporal para ejecutar el JAR
+              $batchScript = Join-Path $tempPath "start_backend_prod.bat"
+              "@echo off" | Out-File -FilePath $batchScript -Encoding ASCII
+              "cd /d `"$deployPath`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
+              "start `"WMS Backend`" /B javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
               
+              # Ejecutar el batch usando WMI
               $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
               $processStartup.ShowWindow = 0  # Hidden window
               
               $processClass = [wmiclass]"Win32_Process"
-              # Usar cmd.exe para manejar la redirección de salida
-              $cmdLine = "cmd.exe /c `"$javaPath -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"`""
-              $result = $processClass.Create($cmdLine, $deployPath, $processStartup)
+              $result = $processClass.Create("cmd.exe /c `"$batchScript`"", $deployPath, $processStartup)
               
               if ($result.ReturnValue -eq 0) {
-                  $newPid = $result.ProcessId
-                  Write-Host "Backend process started successfully with PID: $newPid"
+                  Write-Host "Backend launch command executed successfully"
                   Write-Host "  Output log: $logFileOut"
                   Write-Host "  Error log: $logFileErr"
+                  
+                  # Esperar un momento para que el proceso hijo se cree
+                  Start-Sleep -Seconds 3
+                  
+                  # Limpiar batch temporal
+                  Remove-Item -Path $batchScript -Force -ErrorAction SilentlyContinue
               } else {
                   Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
                   exit 1
@@ -155,7 +161,8 @@ jobs:
               
               if (-not $started) {
                   Write-Warning "Service may still be starting. Port $port is not listening after $maxAttempts attempts."
-                  Write-Warning "Check the application manually or review process with PID: $newPid"
+                  Write-Warning "Check logs for details: $logFileOut"
+                  Write-Warning "Verify Java process manually with: Get-Process javaw"
               }
               
               Write-Host "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
