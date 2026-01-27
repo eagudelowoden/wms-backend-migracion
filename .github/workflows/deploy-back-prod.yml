@@ -47,8 +47,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
           Write-Host "=== STARTING BACKEND DEPLOYMENT ==="
 
-          $deployPath = "C:\WMS Web API\wms-prd"
-          $backupRoot = "C:\WMS Web API\wms-prd\_backups\back"
+          $deployPath = "C:\WMS Web API\wms-prd\wms-frontend"
+          $backupRoot = "C:\WMS Web API\wms-prd\wms-frontend\_backups\back"
           $tempPath = "C:\Windows\Temp"
           $port = 9000
           $timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
@@ -107,19 +107,27 @@ jobs:
               # 5. EJECUTAR NUEVO JAR
               Write-Host "Starting backend service on port $port..."
               
-              # Ejecutar JAR en background usando WMI (método más robusto en Windows)
+              # Crear archivos de log
+              $logFileOut = Join-Path $deployPath "backend-$timestamp.log"
+              $logFileErr = Join-Path $deployPath "backend-$timestamp-error.log"
+              
+              # Ejecutar JAR en background redirigiendo logs
               $javaPath = (Get-Command javaw).Source
-              $arguments = "-jar `"$targetPath`""
+              $arguments = "-jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`""
               
               $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
               $processStartup.ShowWindow = 0  # Hidden window
               
               $processClass = [wmiclass]"Win32_Process"
-              $result = $processClass.Create("$javaPath $arguments", $deployPath, $processStartup)
+              # Usar cmd.exe para manejar la redirección de salida
+              $cmdLine = "cmd.exe /c `"$javaPath -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"`""
+              $result = $processClass.Create($cmdLine, $deployPath, $processStartup)
               
               if ($result.ReturnValue -eq 0) {
                   $newPid = $result.ProcessId
                   Write-Host "Backend process started successfully with PID: $newPid"
+                  Write-Host "  Output log: $logFileOut"
+                  Write-Host "  Error log: $logFileErr"
               } else {
                   Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
                   exit 1
