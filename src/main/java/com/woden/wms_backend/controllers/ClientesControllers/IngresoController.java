@@ -522,7 +522,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     List<String> serial = serialRaw.stream().map(Object::toString).toList();
 
     for (String s : serial) {
-      ingresoService.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, s);
+      ingresoService.updateStateEntryNotUsuarioDiagnosed(estadoId, palletId, fecha, s);
     }
     return ResponseEntity.ok(1);
   }
@@ -752,6 +752,40 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       }
     } catch (Exception e) {
       System.err.println("❌ Error en controlador updateEntryDispatch: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @PostMapping("/insertSerialInventory")
+  public ResponseEntity<?> insertSerialInventory(@RequestBody Map<String, Object> dto) {
+    try {
+      String serial = (String) dto.get("serial");
+      String codigoSap = (String) dto.get("codigoSap");
+      String palletNumero = (String) dto.get("palletNumero");
+      Integer usuarioId = Integer.valueOf(dto.get("usuarioId").toString());
+
+      Object result = ingresoService.insertSerialInventory(serial, codigoSap, palletNumero, usuarioId);
+
+      if (result instanceof Integer) {
+        return ResponseEntity.ok(result);
+      } else {
+        return ResponseEntity.badRequest().body(result);
+      }
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador insertSerialInventory: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/getSerialsByPalletInventory")
+  public ResponseEntity<?> getSerialsByPalletInventory(@RequestParam String pallet) {
+    try {
+      List<Map<String, Object>> serials = ingresoService.getSerialsByPalletInventory(pallet);
+      return ResponseEntity.ok(serials);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador getSerialsByPalletInventory: " + e.getMessage());
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }

@@ -11,6 +11,4 @@ public class WmsBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(WmsBackendApplication.class, args);
 	}
-
-
 }

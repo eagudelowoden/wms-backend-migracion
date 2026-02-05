@@ -83,10 +83,12 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
   }
 
   @PostMapping("/insertDispatchAccesory")
-  public ResponseEntity<Integer> insertDispatchAccesory(@RequestBody List<AccesorioModel> accesorios,
+  public ResponseEntity<Integer> insertDispatchAccesory(
+      @RequestBody List<AccesorioModel> accesorios,
       @RequestParam Integer estadoId,
       @RequestParam Integer usuarioId,
       @RequestParam String pedidoSap) {
+
     int resultadoGlobal = 1;
 
     try {
@@ -98,16 +100,20 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
             accesorio.getTipoOrigenId(),
             accesorio.getOrigenId(),
             accesorio.getPalletId(),
-            estadoId,
+            estadoId, // Ya lo tenías
+            accesorio.getEstadoLimpiezaId(), // VERIFICA que este campo exista en AccesorioModel
             accesorio.getDocumento(),
             accesorio.getObservacion(),
             accesorio.getGuia(),
-            accesorio.getFecha() != null ? accesorio.getFecha().toString() : null,
             usuarioId,
+            accesorio.getFecha() != null ? accesorio.getFecha().toString() : null, // fechaIngreso
+            accesorio.getSerialEmpaque(), // VERIFICA que este campo exista
             accesorio.getCaja(),
+            pedidoSap, // Ya lo tenías como parámetro
             accesorio.getFechaLimpieza(),
             accesorio.getFechaEmpaque(),
             accesorio.getUsuarioLimpiezaId());
+
         if (result == null || result == 0) {
           resultadoGlobal = 0;
         }

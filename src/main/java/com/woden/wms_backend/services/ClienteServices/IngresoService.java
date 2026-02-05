@@ -581,36 +581,37 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         ingreso.setMac((String) obj[2]);
         ingreso.setSerial3((String) obj[3]);
         ingreso.setSerial4((String) obj[4]);
-        ingreso.setCodigoSap((String) obj[5]);
-        ingreso.setCodigoSapId((Integer) obj[6]);
-        ingreso.setDescripcion((String) obj[7]);
-        ingreso.setEstado((String) obj[8]);
-        ingreso.setEstadoId((Integer) obj[9]);
-        ingreso.setUsuario((String) obj[10]);
-        ingreso.setCajaEmpaqueId((Integer) obj[11]);
-        ingreso.setCajaEmpaque((String) obj[12]);
-        ingreso.setCajaDespacho((String) obj[13]);
-        ingreso.setPallet((String) obj[14]);
-        ingreso.setPalletId((Integer) obj[15]);
-        ingreso.setPosicion((String) obj[16]);
-        ingreso.setNivel((String) obj[17]);
-        ingreso.setNivelId((Integer) obj[18]);
-        ingreso.setTipoOrigenId((Integer) obj[19]);
-        ingreso.setOrigenId((Integer) obj[20]);
-        ingreso.setTipologiaId((Integer) obj[21]);
-        ingreso.setTipologia((String) obj[22]);
-        ingreso.setPalletIdIngreso((Integer) obj[23]);
-        ingreso.setFecha(obj[24] != null ? ((Timestamp) obj[24]).toString() : null);
-        ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[25]));
-        ingreso.setFalla((String) obj[26]);
-        ingreso.setLoteId((Integer) obj[27]);
-        ingreso.setPalletIdEmpaque((Integer) obj[28]);
-        ingreso.setLote((String) obj[29]);
-        ingreso.setSmartCardId((Integer) obj[30]);
-        ingreso.setSmartCard((String) obj[31]);
-        ingreso.setCajaIngresoId((Integer) obj[32]);
-        ingreso.setCajaIngreso((String) obj[33]);
-        ingreso.setModeloId((Integer) obj[34]);
+        ingreso.setSerial5((String) obj[5]);
+        ingreso.setCodigoSap((String) obj[6]);
+        ingreso.setCodigoSapId((Integer) obj[7]);
+        ingreso.setDescripcion((String) obj[8]);
+        ingreso.setEstado((String) obj[9]);
+        ingreso.setEstadoId((Integer) obj[10]);
+        ingreso.setUsuario((String) obj[11]);
+        ingreso.setCajaEmpaqueId((Integer) obj[12]);
+        ingreso.setCajaEmpaque((String) obj[13]);
+        ingreso.setCajaDespacho((String) obj[14]);
+        ingreso.setPallet((String) obj[15]);
+        ingreso.setPalletId((Integer) obj[16]);
+        ingreso.setPosicion((String) obj[17]);
+        ingreso.setNivel((String) obj[18]);
+        ingreso.setNivelId((Integer) obj[19]);
+        ingreso.setTipoOrigenId((Integer) obj[20]);
+        ingreso.setOrigenId((Integer) obj[21]);
+        ingreso.setTipologiaId((Integer) obj[22]);
+        ingreso.setTipologia((String) obj[23]);
+        ingreso.setPalletIdIngreso((Integer) obj[24]);
+        ingreso.setFecha(obj[25] != null ? ((Timestamp) obj[25]).toString() : null);
+        ingreso.setGarantiaFabricante(TypeMapper.toBoolean(obj[26]));
+        ingreso.setFalla((String) obj[27]);
+        ingreso.setLoteId((Integer) obj[28]);
+        ingreso.setPalletIdEmpaque((Integer) obj[29]);
+        ingreso.setLote((String) obj[30]);
+        ingreso.setSmartCardId((Integer) obj[31]);
+        ingreso.setSmartCard((String) obj[32]);
+        ingreso.setCajaIngresoId((Integer) obj[33]);
+        ingreso.setCajaIngreso((String) obj[34]);
+        ingreso.setModeloId((Integer) obj[35]);
         ingreso.setModelo((String) obj[35]);
 
         ingresos.add(ingreso);
@@ -841,5 +842,39 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       e.printStackTrace();
       return 0;
     }
+  }
+
+  public Object insertSerialInventory(String serial, String codigoSap, String palletNumero, Integer usuarioId) {
+    try {
+      ingresoRepository.insertSerialInventory(serial, codigoSap, palletNumero, usuarioId);
+      return 1;
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+  }
+
+  public List<Map<String, Object>> getSerialsByPalletInventory(String pallet) {
+    List<Object[]> results = ingresoRepository.getSerialsByPalletInventory(pallet);
+    List<Map<String, Object>> serials = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, Object> entry = new HashMap<>();
+      entry.put("id", (Integer) result[0]);
+      entry.put("serial", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("codigoSapReal", (String) result[3]);
+      entry.put("pallet", (String) result[4]);
+      entry.put("palletReal", (String) result[5]);
+      entry.put("estadoId", (String) result[6]);
+      entry.put("estadoSap", (String) result[7]);
+      entry.put("estadoRR", (String) result[8]);
+      entry.put("ajuste", (String) result[9]);
+      entry.put("fecha", (Date) result[10]);
+      entry.put("usuarioId", (Integer) result[11]);
+      entry.put("serialId", (Integer) result[12]);
+      entry.put("mac", (String) result[13]);
+      entry.put("sobrante", (Boolean) result[14]);
+      serials.add(entry);
+    }
+    return serials;
   }
 }

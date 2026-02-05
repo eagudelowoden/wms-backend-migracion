@@ -49,22 +49,29 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 			@Param("fallaCosmeticaId") Integer fallaCosmeticaId,
 			@Param("fallaFuncionalId") Integer fallaFuncionalId);
 
-	@Query(value = "EXEC pa_InsertDispatchAccesory :id, :codigoSapId, :tipoAccesorio, :tipoOrigenId, :origenId, :palletId, :estadoLimpiezaId, :documento, :observacion, :guia, :fecha"
-			+
-			" :usuarioId, :caja, :fechaLimpieza, :fechaEmpaque, :usuarioLimpiezaId", nativeQuery = true)
-	void insertDispatchAccesory(@Param("id") Integer id,
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_InsertDispatchAccesory :id, :codigoSapId, :tipoAccesorio, :tipoOrigenId, " +
+			":origenId, :palletId, :estadoId, :estadoLimpiezaId, :documento, :observacion, :guia, " +
+			":usuarioId, :fechaIngreso, :serialEmpaque, :caja, :pedidoSap, :fechaLimpieza, " +
+			":fechaEmpaque, :usuarioLimpiezaId", nativeQuery = true)
+	void insertDispatchAccesory(
+			@Param("id") Integer id,
 			@Param("codigoSapId") Integer codigoSapId,
 			@Param("tipoAccesorio") String tipoAccesorio,
 			@Param("tipoOrigenId") Integer tipoOrigenId,
 			@Param("origenId") Integer origenId,
 			@Param("palletId") Integer palletId,
+			@Param("estadoId") Integer estadoId, // AGREGADO
 			@Param("estadoLimpiezaId") Integer estadoLimpiezaId,
 			@Param("documento") String documento,
 			@Param("observacion") String observacion,
 			@Param("guia") String guia,
-			@Param("fecha") String fecha,
 			@Param("usuarioId") Integer usuarioId,
+			@Param("fechaIngreso") String fechaIngreso, // AGREGADO
+			@Param("serialEmpaque") String serialEmpaque, // AGREGADO
 			@Param("caja") Integer caja,
+			@Param("pedidoSap") String pedidoSap, // AGREGADO
 			@Param("fechaLimpieza") String fechaLimpieza,
 			@Param("fechaEmpaque") String fechaEmpaque,
 			@Param("usuarioLimpiezaId") Integer usuarioLimpiezaId);

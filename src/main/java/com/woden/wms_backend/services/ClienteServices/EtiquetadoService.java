@@ -4,9 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -232,6 +229,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     System.out.println("   📋 PASO 2: Variables estándar");
 
     String fechaVal = labelDate != null ? labelDate : "";
+    String codeInModel = (serial.getMac() != null && serial.getMac().length() >= 4)
+        ? serial.getMac().substring(serial.getMac().length() - 4)
+        : (serial.getMac() != null ? serial.getMac() : "");
     String unitSerial3Val = serial.getSerial3() != null ? serial.getSerial3() : "";
     String unitSerial4Val = serial.getSerial4() != null ? serial.getSerial4() : "";
     String unitSerial5Val = serial.getSerial5() != null ? serial.getSerial5() : "";
@@ -240,7 +240,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     System.out.println("      • unitSerial3" + sufijo + " = '" + unitSerial3Val + "'");
     System.out.println("      • unitSerial4" + sufijo + " = '" + unitSerial4Val + "'");
     System.out.println("      • unitSerial5" + sufijo + " = '" + unitSerial5Val + "'");
+    System.out.println("      • codeInModel" + sufijo + " = '" + codeInModel + "'");
     zpl = zpl.replace("fecha" + sufijo, fechaVal);
+    zpl = zpl.replace("codeinModel" + sufijo, codeInModel);
     zpl = zpl.replace("unitSerial3" + sufijo, unitSerial3Val);
     zpl = zpl.replace("unitSerial4" + sufijo, unitSerial4Val);
     zpl = zpl.replace("unitSerial5" + sufijo, unitSerial5Val);
@@ -406,7 +408,6 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     zpl = zpl.replace("proveedor" + sufijo, datos.getProveedor() != null ? datos.getProveedor() : "");
     zpl = zpl.replace("lote" + sufijo, serial.getLote() != null ? serial.getLote() : "");
     zpl = zpl.replace("passModel" + sufijo, datos.getPassModel() != null ? datos.getPassModel() : "");
-    zpl = zpl.replace("codeinModel" + sufijo, datos.getCodeInModel() != null ? datos.getCodeInModel() : "");
     zpl = zpl.replace("modelCodigo" + sufijo, datos.getModelCodigo() != null ? datos.getModelCodigo() : "");
     zpl = zpl.replace("modelDescripcion" + sufijo,
         datos.getModelDescripcion() != null ? datos.getModelDescripcion() : "");
@@ -457,62 +458,25 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   }
 
   private String leerPlantilla(String base, String nombre, int cantidad) {
-    // 🔧 LIMPIAR: Convertir múltiples barras a simples
-    String baseLimpia = base.replace("\\\\\\\\", "\\\\") // 4 barras -> 2 barras
-        .replace("\\\\", "\\"); // 2 barras -> 1 barra
+    String path = base + File.separator + nombre + File.separator + "codigo" + cantidad + ".prn";
+    System.out.println("\n📁 Leyendo: " + path);
 
-    // Asegurar formato UNC correcto (debe empezar con \\)
-    if (!baseLimpia.startsWith("\\\\")) {
-      baseLimpia = "\\\\" + baseLimpia;
-    }
-
-    // baseLimpia = "C:\\Users\\A.DEVELOPER\\Documents\\etiquetado";
-
-    System.out.println("\n🔍 DEBUG PATH:");
-    System.out.println("   Base original: [" + base + "]");
-    System.out.println("   Base limpia: [" + baseLimpia + "]");
-    System.out.println("   Nombre: [" + nombre + "]");
-    System.out.println("   Cantidad: " + cantidad);
-
-    // Construir con File (más compatible con UNC)
-    File archivoPlantilla = new File(baseLimpia, nombre);
-    archivoPlantilla = new File(archivoPlantilla, "codigo" + cantidad + ".prn");
-
-    System.out.println("   Ruta construida: [" + archivoPlantilla.getAbsolutePath() + "]");
-    System.out.println("   Existe: " + archivoPlantilla.exists());
-    System.out.println("   Es archivo: " + archivoPlantilla.isFile());
-    System.out.println("   Puede leer: " + archivoPlantilla.canRead());
-
-    // Si no existe, listar directorio padre para debug
-    if (!archivoPlantilla.exists()) {
-      File directorioPadre = archivoPlantilla.getParentFile();
-      System.out.println("   📂 Directorio padre: " + directorioPadre);
-      System.out.println("   📂 Padre existe: " + directorioPadre.exists());
-
-      if (directorioPadre.exists()) {
-        System.out.println("   📂 Contenido del directorio:");
-        File[] archivos = directorioPadre.listFiles();
-        if (archivos != null) {
-          for (File f : archivos) {
-            System.out.println("      - " + f.getName());
-          }
-        }
+    try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+      StringBuilder sb = new StringBuilder();
+      String linea;
+      while ((linea = br.readLine()) != null) {
+        sb.append(linea).append("\n");
       }
-    }
-
-    try {
-      if (!archivoPlantilla.exists()) {
-        throw new RuntimeException("❌ Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath());
-      }
-
-      // Leer contenido
-      String contenido = new String(Files.readAllBytes(archivoPlantilla.toPath()));
-      System.out.println("   ✅ Cargada: " + contenido.length() + " chars\n");
-      return contenido;
-
+      System.out.println("   ✅ Cargada: " + sb.length() + " chars\n");
+      return sb.toString();
     } catch (IOException e) {
-      System.err.println("❌ Error leyendo: " + e.getMessage());
-      throw new RuntimeException("Plantilla no encontrada: " + archivoPlantilla.getAbsolutePath(), e);
+      throw new RuntimeException("Plantilla no encontrada: " + path);
     }
   }
+
+  // private String cortarString(String str, int len) {
+  // if (str == null)
+  // return "";
+  // return str.length() > len ? str.substring(0, len) : str;
+  // }
 }
