@@ -267,7 +267,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  
   public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
     List<Object[]> results = palletRepository.SearchPackingDeliveryPallet(numero, tipologia, tipo);
     return results.stream().map(obj -> {
@@ -297,6 +296,23 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     List<Map<String, String>> palletBox = new ArrayList<>();
     for (Object[] result : paged) {
+      Map<String, String> pallet = new HashMap<>();
+      pallet.put("id", String.valueOf(result[0]));
+      pallet.put("numero", String.valueOf(result[1]));
+      pallet.put("cantidadCaja", String.valueOf(result[2]));
+      pallet.put("descripcion", String.valueOf(result[3]));
+      pallet.put("tipologia", String.valueOf(result[4]));
+      palletBox.add(pallet);
+    }
+
+    return palletBox;
+  }
+
+  public List<Map<String, String>> searchPalletsBoxesAll(String numero, String destino) {
+    List<Object[]> results = palletRepository.SearchPalletBoxPalletWeb(numero, destino);
+
+    List<Map<String, String>> palletBox = new ArrayList<>();
+    for (Object[] result : results) {
       Map<String, String> pallet = new HashMap<>();
       pallet.put("id", String.valueOf(result[0]));
       pallet.put("numero", String.valueOf(result[1]));
@@ -491,4 +507,22 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return 1;
   }
 
+  public List<Map<String, Object>> getPalletsInventory(Integer usuarioId) {
+    List<Object[]> results = palletRepository.getPalletsInventory(usuarioId);
+    return results.stream().map(record -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", record[0]);
+      map.put("numero", record[1]);
+      map.put("cantidad", record[2]);
+      map.put("posicion", record[3]);
+      map.put("codigoSapId", record[4]);
+      map.put("codigoSap", record[5]);
+      map.put("descripcion", record[6]);
+      return map;
+    }).collect(Collectors.toList());
+  }
+
+  public Integer innactivatePalletInventory(Integer palletId) {
+    return palletRepository.innactivatePalletInventory(palletId);
+  }
 }

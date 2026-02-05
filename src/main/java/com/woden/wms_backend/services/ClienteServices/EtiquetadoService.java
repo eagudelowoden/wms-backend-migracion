@@ -229,6 +229,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     System.out.println("   📋 PASO 2: Variables estándar");
 
     String fechaVal = labelDate != null ? labelDate : "";
+    String codeInModel = (serial.getMac() != null && serial.getMac().length() >= 4)
+        ? serial.getMac().substring(serial.getMac().length() - 4)
+        : (serial.getMac() != null ? serial.getMac() : "");
     String unitSerial3Val = serial.getSerial3() != null ? serial.getSerial3() : "";
     String unitSerial4Val = serial.getSerial4() != null ? serial.getSerial4() : "";
     String unitSerial5Val = serial.getSerial5() != null ? serial.getSerial5() : "";
@@ -237,7 +240,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     System.out.println("      • unitSerial3" + sufijo + " = '" + unitSerial3Val + "'");
     System.out.println("      • unitSerial4" + sufijo + " = '" + unitSerial4Val + "'");
     System.out.println("      • unitSerial5" + sufijo + " = '" + unitSerial5Val + "'");
+    System.out.println("      • codeInModel" + sufijo + " = '" + codeInModel + "'");
     zpl = zpl.replace("fecha" + sufijo, fechaVal);
+    zpl = zpl.replace("codeinModel" + sufijo, codeInModel);
     zpl = zpl.replace("unitSerial3" + sufijo, unitSerial3Val);
     zpl = zpl.replace("unitSerial4" + sufijo, unitSerial4Val);
     zpl = zpl.replace("unitSerial5" + sufijo, unitSerial5Val);
@@ -403,7 +408,6 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     zpl = zpl.replace("proveedor" + sufijo, datos.getProveedor() != null ? datos.getProveedor() : "");
     zpl = zpl.replace("lote" + sufijo, serial.getLote() != null ? serial.getLote() : "");
     zpl = zpl.replace("passModel" + sufijo, datos.getPassModel() != null ? datos.getPassModel() : "");
-    zpl = zpl.replace("codeinModel" + sufijo, datos.getCodeInModel() != null ? datos.getCodeInModel() : "");
     zpl = zpl.replace("modelCodigo" + sufijo, datos.getModelCodigo() != null ? datos.getModelCodigo() : "");
     zpl = zpl.replace("modelDescripcion" + sufijo,
         datos.getModelDescripcion() != null ? datos.getModelDescripcion() : "");
