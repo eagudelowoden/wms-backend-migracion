@@ -6,6 +6,7 @@ import com.woden.wms_backend.services.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,9 +28,24 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
         // ⚙️ Si hay filas → ya existe / empacado
         return true;
     }
-
-
     public SmartCardService(SmartCardRepository repository) {
+    }
+
+    public void createSmartCard(Integer serialId, String serial, Integer codigoSapId, Integer usuarioId) {
+        try {
+            // Llamada al repository usando solo los 4 parámetros definidos en el @Procedure
+            smartCardRepository.createInsert(
+                    serialId,
+                    serial,
+                    codigoSapId,
+                    usuarioId
+            );
+
+        } catch (Exception e) {
+
+            // Opcional: lanzar una excepción personalizada para que el controlador la capture
+            throw new RuntimeException("Error en la base de datos al insertar SmartCard");
+        }
     }
 
 

@@ -43,6 +43,7 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
         return ResponseEntity.ok(1);
     }
 
+    /*
     @DeleteMapping("/eliminarSeriesEmpaque")
     public ResponseEntity<Integer> eliminarSeriesEmpaque(@RequestBody List<String> seriales) {
         if (seriales == null || seriales.isEmpty()) {
@@ -56,7 +57,23 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
 
         // logger.info("✅ Resultado de eliminarSeriesEmpaque: {}", status);
         return ResponseEntity.ok(status);
+    }*/
+    @PostMapping("/eliminar-transaccional")
+    public ResponseEntity<Integer> eliminarTransaccional(
+            @RequestParam Integer estadoId,
+            @RequestParam Integer usuarioId,
+            @RequestBody List<String> seriales) {
+
+        if (seriales == null || seriales.isEmpty()) {
+            return ResponseEntity.badRequest().body(0);
+        }
+
+        // Llamamos al método que orquestra ambas tablas bajo una sola transacción
+        int status = empaqueService.procesarEliminacionCompleta(estadoId, usuarioId, seriales);
+
+        return ResponseEntity.ok(status);
     }
+
 
     /*
      * @PostMapping("/updateSmartCard")
@@ -111,6 +128,7 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
     public ResponseEntity<?> createFullPacking(@RequestBody PackingTransactionDTO request) {
         try {
             // Llamamos al método transaccional que creaste
+            System.out.println("ID Recibido: " + request.getEstadoId());
             empaqueService.createPackingCompleto(request);
             return ResponseEntity.ok(1); // Retornamos éxito
         } catch (Exception e) {
