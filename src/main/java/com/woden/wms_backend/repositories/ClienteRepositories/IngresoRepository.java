@@ -321,6 +321,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("palletId") Integer palletId,
 			@Param("cajaDespachoId") Integer cajaDespachoId, @Param("usuarioMovimientoId") Integer usuarioMovimientoId,
 			@Param("loteId") Integer loteId, @Param("filas") Integer filas);
+
 	@Query(value = "EXEC pa_GetModelDispatch :palletId, :cajaId", nativeQuery = true)
 	List<Object[]> getModelDispatch(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId);
 
@@ -394,4 +395,65 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("serial") String serial,
 			@Param("loteId") Integer loteId,
 			@Param("filas") Integer filas);
+
+	@Modifying
+	@Transactional
+	@Query(value = "DECLARE @ingreso TABLE (CodigoSapId VARCHAR(50), PalletId INT, EstadoId INT, SerialId INT, Mac VARCHAR(50), Ajuste VARCHAR(200)); "
+			+
+			"INSERT INTO @ingreso " +
+			"SELECT TOP 1 " +
+			"cs.codigo AS CodigoSapId, " +
+			"ISNULL(p.numero,0) AS PalletId, " +
+			"i.estadoid AS EstadoId, " +
+			"i.Id AS SerialId, " +
+			"i.Mac AS Mac, " +
+			"CASE " +
+			"    WHEN i.estadoid = 11 THEN '' " +
+			"    ELSE CONCAT('Verificar estado en WMS, estado actual: ', e.Nombre) " +
+			"END AS Ajuste " +
+			"FROM Ingreso i " +
+			"INNER JOIN CodigoSap cs ON cs.Id = i.CodigoSapId " +
+			"LEFT JOIN Pallet p ON p.Id = i.PalletId " +
+			"INNER JOIN Estado e ON e.Id = i.EstadoId " +
+			"WHERE i.Serial = :serial; " +
+			"INSERT INTO Inventario (Serial, CodigoSap, CodigoSapReal, Pallet, PalletReal, EstadoId, EstadoSap, EstadoRR, Ajuste, Fecha, UsuarioId, SerialId, Mac, Sobrante) "
+			+
+			"SELECT " +
+			":serial, " +
+			":codigoSap, " +
+			"ISNULL(i.CodigoSapId, NULL), " +
+			":palletNumero, " +
+			"ISNULL(i.PalletId, NULL), " +
+			"ISNULL(i.EstadoId, 0), " +
+			"0, " +
+			"0, " +
+			"ISNULL(i.Ajuste, ''), " +
+			"GETDATE(), " +
+			":usuarioId, " +
+			"ISNULL(i.SerialId, NULL), " +
+			"ISNULL(i.Mac, NULL), " +
+			"1 " +
+			"FROM @ingreso i;", nativeQuery = true)
+	void insertSerialInventory(
+			@Param("serial") String serial,
+			@Param("codigoSap") String codigoSap,
+			@Param("palletNumero") String palletNumero,
+			@Param("usuarioId") Integer usuarioId);
+
+	@Query(value = "SELECT v.id, v.serial, v.codigoSapReal as codigoSap, v.codigoSapReal, v.pallet, v.palletReal," +
+			"e.Nombre as estadoId," +
+			"v.palletReal as estadoSap,  " +
+			"cs.Descripcion as estadoRR, " +
+			"v.ajuste, " +
+			"v.fecha, " +
+			"v.usuarioId, " +
+			"v.serialId, " +
+			"v.mac, " +
+			"v.sobrante " +
+			"FROM Inventario v " +
+			"INNER JOIN Estado e ON e.id = v.estadoid " +
+			"INNER JOIN Codigosap cs ON cs.codigo = v.codigoSapReal " +
+			"WHERE v.pallet = :pallet " +
+			"ORDER BY v.id DESC", nativeQuery = true)
+	List<Object[]> getSerialsByPalletInventory(String pallet);
 }

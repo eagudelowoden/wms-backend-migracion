@@ -30,16 +30,35 @@ public class DespachoService extends BaseService<DespachoModel, Integer> {
     }
   }
 
-  public Integer insertDispatchAccesory(Integer id, Integer codigoSapId, String tipoAccesorio, Integer tipoOrigenId,
-      Integer origenId, Integer palletId, Integer estadoLimpiezaId, String documento, String observacion, String guia,
-      String fecha, Integer usuarioId, Integer caja, String fechaLimpieza, String fechaEmpaque,
-      Integer usuarioLimpiezaId) {
+  public Integer insertDispatchAccesory(Integer id, Integer codigoSapId, String tipoAccesorio,
+      Integer tipoOrigenId, Integer origenId, Integer palletId, Integer estadoId,
+      Integer estadoLimpiezaId, String documento, String observacion, String guia,
+      Integer usuarioId, String fechaIngreso, String serialEmpaque, Integer caja,
+      String pedidoSap, String fechaLimpieza, String fechaEmpaque, Integer usuarioLimpiezaId) {
     try {
-      repository.insertDispatchAccesory(id, codigoSapId, tipoAccesorio, tipoOrigenId, origenId, palletId,
-          estadoLimpiezaId, documento, observacion, guia, fecha, usuarioId, caja, fechaLimpieza, fechaEmpaque,
+      repository.insertDispatchAccesory(
+          id,
+          codigoSapId,
+          tipoAccesorio,
+          tipoOrigenId,
+          origenId,
+          palletId,
+          estadoId, // AGREGADO
+          estadoLimpiezaId,
+          documento,
+          observacion,
+          guia,
+          usuarioId,
+          fechaIngreso, // AGREGADO
+          serialEmpaque, // AGREGADO
+          caja,
+          pedidoSap, // AGREGADO
+          fechaLimpieza,
+          fechaEmpaque,
           usuarioLimpiezaId);
       return 1;
     } catch (Exception e) {
+      e.printStackTrace();
       return 0;
     }
   }
