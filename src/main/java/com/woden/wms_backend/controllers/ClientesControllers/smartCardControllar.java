@@ -4,11 +4,15 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.SmartCardDTO;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
+import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
+import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.SmartCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +29,8 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
 
     @Autowired
     private  SmartCardService smartCardService;
+    @Autowired
+    private  EmpaqueService empaqueService;
 
 
     @GetMapping("/validateSmartCardInfo")
@@ -38,7 +44,7 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
         Integer estadoFinalId = (Integer) smartcard.get("estadoFinalId");
         String fallaId = (String) smartcard.get("fallaId");
         String serial = (String) smartcard.get("serial");
-        smartCardService.updateSmartCard(estadoFinalId, fallaId, serial);
+        empaqueService.updateSmartCard(estadoFinalId, fallaId, serial);
 
         return ResponseEntity.ok(1);
     }
