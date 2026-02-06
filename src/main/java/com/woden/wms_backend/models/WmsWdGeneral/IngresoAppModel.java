@@ -17,7 +17,7 @@ public class IngresoAppModel {
     private String sn;
     private String cmMac;
     // private String ssid;
-    // private String wifiPassword;
-    private String settingsPassword;
+    private String wifiPassword;
+    // private String settingsPassword;
     private Integer clienteId;
 }
