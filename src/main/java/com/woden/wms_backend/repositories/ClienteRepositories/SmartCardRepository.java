@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.repositories.BaseRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -26,10 +27,12 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("filas") int filas // <-- aquí también String
     );
 
+    @Procedure(procedureName = "pa_InsertSmartCard")
+    Integer createInsert(
+            @Param("SerialId") Integer serialId,
+            @Param("Serial") String serial,
+            @Param("CodigoSapId") Integer codigoSapId,
+            @Param("UsuarioId") Integer usuarioId
+    );
 
-
-
-
-
-    
 }

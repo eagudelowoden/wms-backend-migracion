@@ -16,6 +16,6 @@ public interface MovimientoRepository extends BaseRepository<MovimientoModel, In
   @Query(value = "select top(1)count(id)cantidad from Movimiento where usuarioId= :usuarioId", nativeQuery = true)
   Integer userCount(@Param("usuarioId") Integer usuarioId);
 
-  @Query(value = "EXEC pa_GetLastMovimient :palletId", nativeQuery = true)
+  @Query(value = "EXEC pa_GetLastMovimientAux :palletId", nativeQuery = true)
   Integer getLastMovimient(@Param("palletId") Integer palletId);
 }

@@ -34,63 +34,42 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
     // =========================================================================
     // 🚀 NUEVO MÉTODO UNIFICADO (Transaccional)
     // =========================================================================
-    @Transactional(rollbackFor = Exception.class) // Si algo falla, hace rollback de todo
+    @Transactional(rollbackFor = Exception.class)
     public void createPackingCompleto(PackingTransactionDTO dto) {
 
-        // A. Extraemos el modelo del empaque del DTO
-        EmpaqueModel empaque = dto.getEmpaque();
+        // 1. Verificación de seguridad
+        if (dto.getEstadoId() == null) {
+            throw new IllegalArgumentException("El estadoId es obligatorio para la transacción.");
+        }
 
-        // Validamos nulos como hacías en tu método original
-        // Primero verificamos que NO sea nulo, y luego que sea diferente de 0
-        Integer loteIdParam = (empaque.getLoteId() != null && empaque.getLoteId() != 0)
-                ? empaque.getLoteId()
-                : null;
-        Integer smartCardIdParam = (empaque.getSmartCardId() != null && empaque.getSmartCardId() != 0) ? empaque.getSmartCardId() : null;
-        String smartCardStr = (empaque.getSmartCard() != null) ? empaque.getSmartCard() : "0";
+        Integer loteIdParam = (dto.getLoteId() != null && dto.getLoteId() != 0) ? dto.getLoteId() : null;
+        Integer smartCardIdParam = (dto.getSmartCardId() != null && dto.getSmartCardId() != 0) ? dto.getSmartCardId() : null;
+        String smartCardStr = (dto.getSmartCard() != null) ? dto.getSmartCard() : "0";
 
-        // 1. INSERTAR EN EMPAQUE (Usando tu repositorio existente)
+        // 1. INSERTAR EN TABLA EMPAQUE
         empaqueRepository.createInsert(
-                empaque.getSerialId(),
-                empaque.getSerial(),
-                empaque.getMac(),
-                empaque.getCodigoSapId(),
-                empaque.getPalletId(),
-                empaque.getCajaEmpaqueId(),
-                empaque.getNivelId(),
-                empaque.getUsuarioId(),
-                LocalDateTime.now(), // O dto.getFecha() si viene del front
-                loteIdParam,
-                smartCardIdParam,
-                smartCardStr
+                dto.getSerialId(), dto.getSerial(), dto.getMac(), dto.getCodigoSapId(),
+                dto.getPalletId(), dto.getCajaEmpaqueId(), dto.getNivelId(),
+                dto.getUsuarioId(), java.time.LocalDateTime.now(),
+                loteIdParam, smartCardIdParam, smartCardStr
         );
 
-        // 2. ACTUALIZAR EL SMARTCARD (Destino 1: El registro del SmartCard en sí)
-        // Usamos los datos sueltos que vienen en el DTO para el update
+        // 2. ACTUALIZAR EQUIPO PRINCIPAL (Usamos dto.getEstadoId() que ya validamos)
         ingresoRepository.UpdatePackingEntrySmartCard(
-                dto.getEstadoId(),       // Estado (ej. EMPACADO)
-                dto.getPalletId(),
-                dto.getCajaEmpaqueId(),
-                dto.getUsuarioId(),
-                dto.getSmartCardCode(),  // Serial del SmartCard
-                loteIdParam,
-                smartCardIdParam,
-                smartCardStr
+                dto.getEstadoId(), dto.getPalletId(), dto.getCajaEmpaqueId(),
+                dto.getUsuarioId(), dto.getSerial(),
+                loteIdParam, smartCardIdParam, smartCardStr
         );
 
-        // 3. ACTUALIZAR EL PRODUCTO PRINCIPAL (Destino 2: Asignar SmartCard al producto)
-        ingresoRepository.UpdatePackingEntrySmartCard(
-                dto.getEstadoId(),
-                dto.getPalletId(),
-                dto.getCajaEmpaqueId(),
-                dto.getUsuarioId(),
-                dto.getSerial(),         // Serial del producto (decodificador, modem, etc)
-                loteIdParam,
-                smartCardIdParam,
-                smartCardStr
-        );
-
-        // No necesitamos catch aquí. Si falla, queremos que explote para que
-        // @Transactional deshaga el insert del paso 1.
+        // 3. ACTUALIZAR SMARTCARD (Si aplica)
+        // Usamos el código de la SmartCard para buscar el registro pero los mismos datos de destino
+        if (dto.getSmartCardCode() != null && !dto.getSmartCardCode().equals("0") && !dto.getSmartCardCode().isEmpty()) {
+            ingresoRepository.UpdatePackingEntrySmartCard(
+                    dto.getEstadoId(), dto.getPalletId(), dto.getCajaEmpaqueId(),
+                    dto.getUsuarioId(), dto.getSmartCardCode(),
+                    loteIdParam, smartCardIdParam, smartCardStr
+            );
+        }
     }
     // =========================================================================
 
@@ -112,6 +91,24 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             empaqueRepository.eliminarSeriesEmpaque(serial);
             count++;
         }
+        return count > 0 ? 1 : 0;
+    }
+    @Transactional(rollbackFor = Exception.class) // Vital para que si falla el último, desaga los anteriores
+    public int procesarEliminacionCompleta(Integer estadoId, Integer usuarioId, List<String> seriales) {
+        int count = 0;
+
+        for (String s : seriales) {
+            // 1. Actualizamos el estado en Ingreso (Llamada al SP)
+            // Como el SP recibe de a uno, el bucle debe estar aquí dentro de la transacción
+            ingresoRepository.UpdatePackingAllEntry(estadoId, usuarioId, s);
+
+            // 2. Eliminamos de la tabla de Empaque
+            empaqueRepository.eliminarSeriesEmpaque(s);
+
+            count++;
+        }
+
+        // Si el bucle termina sin errores, Spring hace el COMMIT de todo
         return count > 0 ? 1 : 0;
     }
 
