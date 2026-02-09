@@ -1,5 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -71,6 +73,33 @@ public class InventarioController extends BaseController<InventarioModel, Intege
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return ResponseEntity.badRequest().body(0);
+    }
+  }
+
+  @GetMapping("/getCountSurplus")
+  public ResponseEntity<Double> getCountSurplus() {
+    return ResponseEntity.ok(inventarioService.getCountSurplus());
+  }
+
+  @GetMapping("/getModel")
+  public ResponseEntity<InventarioModel> getModel(@RequestParam String serial) {
+    try {
+      InventarioModel model = inventarioService.getModel(serial);
+      return ResponseEntity.ok(model);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return ResponseEntity.badRequest().body(null);
+    }
+  }
+
+  @GetMapping("/getListStateInventory")
+  public ResponseEntity<List<String>> getListStateInventory() {
+    try {
+      List<String> list = inventarioService.getListStateInventory();
+      return ResponseEntity.ok(list);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return ResponseEntity.badRequest().body(null);
     }
   }
 }

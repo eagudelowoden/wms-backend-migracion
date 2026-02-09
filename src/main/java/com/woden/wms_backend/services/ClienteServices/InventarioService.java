@@ -1,5 +1,7 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,8 +64,27 @@ public class InventarioService extends BaseService<InventarioModel, Integer> {
     return percent;
   }
 
+  public Double getCountSurplus() {
+    Double count = inventarioRepository.getCountSurplus();
+    return count != null ? count : 0d;
+  }
+
   public Integer deleteSerialInventory(String serial) {
     Integer count = inventarioRepository.deleteSerialInventory(serial);
     return count != null ? count : 0;
+  }
+
+  public InventarioModel getModel(String serial) {
+    String usuario = inventarioRepository.getModel(serial);
+    if (usuario == null) {
+      return null;
+    }
+    InventarioModel model = new InventarioModel();
+    model.setUsuario(usuario);
+    return model;
+  }
+
+  public List<String> getListStateInventory() {
+    return inventarioRepository.getListStateInventory();
   }
 }

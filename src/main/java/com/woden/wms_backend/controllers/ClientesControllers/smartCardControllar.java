@@ -5,10 +5,18 @@ import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.SmartCardDTO;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
+import com.woden.wms_backend.services.ClienteServices.IngresoService;
+import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
 import com.woden.wms_backend.services.ClienteServices.SmartCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import com.woden.wms_backend.repositories.ClienteRepositories.SmartCardRepository;
 
@@ -26,6 +34,7 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
     private EmpaqueService empaqueService;
     @Autowired
     private  SmartCardService smartCardService;
+
 
 
     @GetMapping("/validateSmartCardInfo")

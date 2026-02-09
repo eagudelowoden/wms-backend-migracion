@@ -1,5 +1,7 @@
 package com.woden.wms_backend.repositories.ClienteRepositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,9 +37,18 @@ public interface InventarioRepository extends BaseRepository<InventarioModel, In
 
   @Query(value = "EXEC pa_GetPercentDiff", nativeQuery = true)
   Double getPercentDiff();
+  
+  @Query(value = "EXEC pa_GetCountSurplus", nativeQuery = true)
+  Double getCountSurplus();
 
   @Modifying
   @Transactional
   @Query(value = "DELETE FROM Inventario WHERE Serial = :serial", nativeQuery = true)
   Integer deleteSerialInventory(@Param("serial") String serial);
+
+  @Query(value = "select u.nombreUsuario from Inventario i inner join WmsWdGeneral.dbo.usuario u on i.usuarioId=u.id where i.serial=:serial", nativeQuery = true)
+  String getModel(@Param("serial") String serial);
+
+  @Query(value = "EXEC pa_GetListStateInventory", nativeQuery = true)
+  List<String> getListStateInventory();
 }
