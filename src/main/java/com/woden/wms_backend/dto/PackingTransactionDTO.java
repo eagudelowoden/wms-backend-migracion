@@ -1,75 +1,60 @@
 package com.woden.wms_backend.dto;
 
-import com.woden.wms_backend.models.Entity.EmpaqueModel;
-
 public class PackingTransactionDTO {
-    // Datos del Empaque nuevo (para el Insert)
-    private EmpaqueModel empaque;
-
-    // Datos para la actualización del SmartCard (lo que tenías suelto)
-    private Integer estadoId;
+    // 📦 Campos para el INSERT (Antes estaban dentro de empaque)
+    private Integer serialId;
+    private String serial;
+    private String mac;
+    private Integer codigoSapId;
     private Integer palletId;
     private Integer cajaEmpaqueId;
+    private Integer nivelId;
     private Integer usuarioId;
-    private String serial; // El serial principal
-    // El loteId y smartCardId pueden venir dentro de 'empaque',
-    // pero si son distintos, déjalos aquí.
+    private Integer loteId;
+    private Integer smartCardId;
+    private String smartCard;
+
+    // ⚡ Campos para los UPDATES (Los datos de control)
+    private Integer estadoId;
     private String smartCardCode;
 
-    public EmpaqueModel getEmpaque() {
-        return empaque;
-    }
+    // --- GETTERS Y SETTERS ---
+    public Integer getSerialId() { return serialId; }
+    public void setSerialId(Integer serialId) { this.serialId = serialId; }
 
-    public Integer getEstadoId() {
-        return estadoId;
-    }
+    public String getSerial() { return serial; }
+    public void setSerial(String serial) { this.serial = serial; }
 
-    public Integer getPalletId() {
-        return palletId;
-    }
+    public String getMac() { return mac; }
+    public void setMac(String mac) { this.mac = mac; }
 
-    public Integer getCajaEmpaqueId() {
-        return cajaEmpaqueId;
-    }
+    public Integer getCodigoSapId() { return codigoSapId; }
+    public void setCodigoSapId(Integer codigoSapId) { this.codigoSapId = codigoSapId; }
 
-    public Integer getUsuarioId() {
-        return usuarioId;
-    }
+    public Integer getPalletId() { return palletId; }
+    public void setPalletId(Integer palletId) { this.palletId = palletId; }
 
-    public String getSerial() {
-        return serial;
-    }
+    public Integer getCajaEmpaqueId() { return cajaEmpaqueId; }
+    public void setCajaEmpaqueId(Integer cajaEmpaqueId) { this.cajaEmpaqueId = cajaEmpaqueId; }
 
-    public String getSmartCardCode() {
-        return smartCardCode;
-    }
+    public Integer getNivelId() { return nivelId; }
+    public void setNivelId(Integer nivelId) { this.nivelId = nivelId; }
 
-    public void setEmpaque(EmpaqueModel empaque) {
-        this.empaque = empaque;
-    }
+    public Integer getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Integer usuarioId) { this.usuarioId = usuarioId; }
 
-    public void setEstadoId(Integer estadoId) {
-        this.estadoId = estadoId;
-    }
+    public Integer getLoteId() { return loteId; }
+    public void setLoteId(Integer loteId) { this.loteId = loteId; }
 
-    public void setPalletId(Integer palletId) {
-        this.palletId = palletId;
-    }
+    public Integer getSmartCardId() { return smartCardId; }
+    public void setSmartCardId(Integer smartCardId) { this.smartCardId = smartCardId; }
 
-    public void setCajaEmpaqueId(Integer cajaEmpaqueId) {
-        this.cajaEmpaqueId = cajaEmpaqueId;
-    }
+    public String getSmartCard() { return smartCard; }
+    public void setSmartCard(String smartCard) { this.smartCard = smartCard; }
 
-    public void setUsuarioId(Integer usuarioId) {
-        this.usuarioId = usuarioId;
-    }
+    public Integer getEstadoId() { return estadoId; }
+    public void setEstadoId(Integer estadoId) { this.estadoId = estadoId; }
 
-    public void setSerial(String serial) {
-        this.serial = serial;
-    }
-
-    public void setSmartCardCode(String smartCardCode) {
-        this.smartCardCode = smartCardCode;
-    }
-    // Getters y Setters...
+    public String getSmartCardCode() { return smartCardCode; }
+    public void setSmartCardCode(String smartCardCode) { this.smartCardCode = smartCardCode; }
 }
