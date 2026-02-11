@@ -877,4 +877,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
     return serials;
   }
+
+  public String getValidaStateInventory(String estado, String estadoInventario) {
+    return ingresoRepository.getValidaStateInventory(estado, estadoInventario);
+  }
 }
