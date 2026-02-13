@@ -128,8 +128,9 @@ public class ZplPrinterService {
     zpl = zpl.replace("usuario", Objects.toString(datos.getUsuario(), ""));
     zpl = zpl.replace("tipologia", Objects.toString(datos.getTipologia(), ""));
     zpl = zpl.replace("modelo", Objects.toString(datos.getModelo(), ""));
-    zpl = zpl.replace("codProveedor", Objects.toString(datos.getCodProveedor(), ""));
-    zpl = zpl.replace("proveedor", Objects.toString(datos.getProveedor(), ""));
+    // zpl = zpl.replace("codProveedor", Objects.toString(datos.getCodProveedor(),
+    // ""));
+    // zpl = zpl.replace("proveedor", Objects.toString(datos.getProveedor(), ""));
     zpl = zpl.replace("lote", Objects.toString(datos.getLote(), ""));
     zpl = zpl.replace("pNumberBox", Objects.toString(datos.getNumberBox(), ""));
     zpl = zpl.replace("pallet", Objects.toString(datos.getPallet(), ""));
@@ -140,6 +141,14 @@ public class ZplPrinterService {
       zpl = zpl.replace("smartCardSerial", Objects.toString(datos.getSmartCardSerial(), ""));
       zpl = zpl.replace("smartCardCodigoSap", Objects.toString(datos.getSmartCardCodigoSap(), ""));
       zpl = zpl.replace("smartCardDescripcion", Objects.toString(datos.getSmartCardDescripcion(), ""));
+    }
+
+    if (datos.getEtiquetaUnitaria() != null) {
+      zpl = zpl.replace("codProveedor", Objects.toString(datos.getCodProveedor(), ""));
+      zpl = zpl.replace("proveedor", Objects.toString(datos.getProveedor(), ""));
+      zpl = zpl.replace("modelCodigo", Objects.toString(datos.getModelCodigo(), ""));
+      zpl = zpl.replace("modelDescripcion", Objects.toString(datos.getModelDescripcion(), ""));
+      zpl = zpl.replace("modelDetalle", Objects.toString(datos.getModelDetalle(), ""));
     }
 
     return zpl;
