@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.woden.wms_backend.models.Entity.DespachoModel;
 import com.woden.wms_backend.repositories.BaseRepository;
-
 import jakarta.transaction.Transactional;
 
 @Repository
@@ -16,7 +15,7 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 	@Transactional
 	@Query(value = "EXEC pa_InsertDispatch :id, :serial, :mac,:codigoSapId, :palletId,:palletIdIngreso, :cajaDespachoId, :estadoId, :tipoOrigenId, :origenId, :tipologiaId, :nivelId, :tramite, :documento, "
 			+
-			" :guia, :falla, :prealertaId, :cruce, :novedad, :usuarioId, :fecha, :pedidoSap, :smartCardId, :smartCard, :loteId, :serial3, :cajaIngresoId, :numeroSmartcard, :fallaCosmeticaId, :fallaFuncionalId", nativeQuery = true)
+			" :guia, :falla, :prealertaId, :cruce, :novedad, :usuarioId, :fecha, :pedidoSap, :smartCardId, :smartCard, :loteId, :serial3, :cajaIngresoId, :numeroSmartcard, :fallaCosmeticaId, :fallaFuncionalId, :causa", nativeQuery = true)
 	void insertDispatch(
 			@Param("id") Integer id,
 			@Param("serial") String serial,
@@ -47,6 +46,7 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 			@Param("cajaIngresoId") Integer cajaIngresoId,
 			@Param("numeroSmartcard") String numeroSmartcard,
 			@Param("fallaCosmeticaId") Integer fallaCosmeticaId,
+			@Param("causa") String causa,
 			@Param("fallaFuncionalId") Integer fallaFuncionalId);
 
 	@Modifying
