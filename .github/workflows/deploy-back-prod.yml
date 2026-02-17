@@ -36,7 +36,7 @@ jobs:
       #   run: mvn dependency:go-offline -B
 
       - name: Build with Maven (skip tests)
-        run: mvn -B clean package -DskipTests -o
+        run: mvn -B clean package -DskipTests
 
       # -------------------------------------------------------------
       # PASO 2: GENERAR SCRIPT DE DESPLIEGUE
