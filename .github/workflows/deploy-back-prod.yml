@@ -35,7 +35,6 @@ jobs:
       # - name: Download dependencies
       #   run: mvn dependency:go-offline -B
 
-      
       - name: Build with Maven (skip tests)
         run: mvn -B clean package -DskipTests
 
