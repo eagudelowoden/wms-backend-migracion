@@ -79,6 +79,20 @@
 			<version>0.12.3</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Source: https://mvnrepository.com/artifact/de.codecentric/spring-boot-admin-starter-client -->
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version>3.2.2</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- Source: https://mvnrepository.com/artifact/de.codecentric/spring-boot-admin-server-ui -->
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-server-ui</artifactId>
+			<version>3.2.2</version>
+			<scope>compile</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

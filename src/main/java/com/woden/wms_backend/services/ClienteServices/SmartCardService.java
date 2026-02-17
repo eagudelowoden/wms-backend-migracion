@@ -1,5 +1,6 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import com.woden.wms_backend.dto.SmartCardDTO;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.SmartCardRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -31,20 +32,17 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
     public SmartCardService(SmartCardRepository repository) {
     }
 
-    public void createSmartCard(Integer serialId, String serial, Integer codigoSapId, Integer usuarioId) {
+    // En tu Servicio Java
+    public void createSmartCard(SmartCardDTO dto) {
         try {
-            // Llamada al repository usando solo los 4 parámetros definidos en el @Procedure
             smartCardRepository.createInsert(
-                    serialId,
-                    serial,
-                    codigoSapId,
-                    usuarioId
+                    dto.getSerialId(), // Asegúrate que este no sea null
+                    dto.getSerial(),
+                    dto.getCodigoSapId(),
+                    dto.getUsuarioId()
             );
-
         } catch (Exception e) {
-
-            // Opcional: lanzar una excepción personalizada para que el controlador la capture
-            throw new RuntimeException("Error en la base de datos al insertar SmartCard");
+            throw new RuntimeException("Error en la base de datos: " + e.getMessage());
         }
     }
 

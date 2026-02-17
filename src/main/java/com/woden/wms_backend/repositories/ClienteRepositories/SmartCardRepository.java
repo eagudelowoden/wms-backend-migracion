@@ -1,5 +1,7 @@
 package com.woden.wms_backend.repositories.ClienteRepositories;
 
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
@@ -27,12 +29,13 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("filas") int filas // <-- aquí también String
     );
 
-    @Procedure(procedureName = "pa_InsertSmartCard")
-    Integer createInsert(
+    @Modifying // Indica que es una operación de escritura (INSERT/UPDATE)
+    @Transactional // Asegura la integridad de la transacción
+    @Query(value = "EXEC pa_InsertSmartCard :SerialId, :Serial, :CodigoSapId, :UsuarioId", nativeQuery = true)
+    void createInsert(
             @Param("SerialId") Integer serialId,
             @Param("Serial") String serial,
             @Param("CodigoSapId") Integer codigoSapId,
             @Param("UsuarioId") Integer usuarioId
     );
-
 }
