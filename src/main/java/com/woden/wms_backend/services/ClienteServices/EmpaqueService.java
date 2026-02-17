@@ -11,10 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional; // <--- 2. NUEVO IMPORT VITAL
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
@@ -83,6 +85,54 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         } catch (Exception e) {
             logger.error("Error al insertar empaque: {}", e.getMessage(), e);
         }
+    }
+
+
+
+    @Transactional(noRollbackFor = RuntimeException.class)
+    public void createEmpaqueWEB(Integer serialId, String serial, String mac, Integer codigoSapId,
+                                 Integer palletId, Integer cajaEmpaqueId, Integer nivelId,
+                                 Integer usuarioId, LocalDateTime fecha, Integer loteId,
+                                 Integer smartCardId, String smartCard) {
+
+        // Limpieza de nulos
+        Integer loteParam = (loteId != null && loteId != 0) ? loteId : null;
+        Integer scIdParam = (smartCardId != null && smartCardId != 0) ? smartCardId : null;
+        String scParam = (smartCard != null && !smartCard.trim().isEmpty() && !smartCard.equals("0")) ? smartCard : null;
+
+        try {
+            // La Native Query devolverá el valor de @FilasOut a través del SELECT final
+            Integer filasAfectadas = empaqueRepository.executeInsertPacking(
+                    serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId,
+                    nivelId, usuarioId, fecha, loteParam, scIdParam, scParam
+            );
+
+            if (filasAfectadas == null || filasAfectadas == 0) {
+                throw new RuntimeException("La serie ya fue procesada o no existe.");
+            }
+
+            logger.info("✅ Empaque registrado. Filas: {}", filasAfectadas);
+
+        } catch (Exception e) {
+            // Extraemos "Serie No empacada, Por favor Reintentar."
+            String mensajeParaAngular = extraerMensajeLimpio(e);
+            logger.error("❌ Error en DB: {}", mensajeParaAngular);
+
+            // Re-lanzamos el mensaje exacto
+            throw new RuntimeException(mensajeParaAngular);
+        }
+    }
+
+    private String extraerMensajeLimpio(Exception e) {
+        String msg = e.getMessage();
+        // Si el error viene de SQL Server, suele traer el mensaje entre corchetes o al final
+        if (msg != null && msg.contains("Serie No empacada")) {
+            return "Serie No empacada, Por favor Reintentar.";
+        }
+
+        Throwable cause = e;
+        while (cause.getCause() != null) cause = cause.getCause();
+        return cause.getMessage();
     }
 
     public int eliminarSeriesEmpaque(List<String> seriales) {
