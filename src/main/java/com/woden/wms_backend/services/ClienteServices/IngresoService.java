@@ -24,6 +24,7 @@ import com.woden.wms_backend.controllers.ClientesControllers.JasperReportControl
 import com.woden.wms_backend.dto.IngresoDTO;
 import com.woden.wms_backend.dto.IngresoIlegibleDTO;
 import com.woden.wms_backend.dto.IngresoTransitoDTO;
+import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.IngresoModelDTO;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.IlegibleRepository;
@@ -691,6 +692,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setNumeroSmartcard((String) obj[24]);
       ingreso.setFallaCosmeticaId((Integer) obj[25]);
       ingreso.setFallaFuncionalId((Integer) obj[26]);
+      ingreso.setCausa((String) obj[27]);
       ingresos.add(ingreso);
     }
     return ingresos;
@@ -880,5 +882,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public String getValidaStateInventory(String estado, String estadoInventario) {
     return ingresoRepository.getValidaStateInventory(estado, estadoInventario);
+  }
+
+  public EntryProgressDTO getEntryProgress(Integer palletId, Integer estadoId) {
+    List<Object[]> result = ingresoRepository.getEntryProgress(palletId, estadoId);
+
+    if (result == null || result.isEmpty()) {
+      return new EntryProgressDTO(0, 0, 0);
+    }
+
+    Object[] row = result.get(0);
+
+    Integer totalCount = row[0] != null ? ((Number) row[0]).intValue() : 0;
+    Integer totalProcessed = row[1] != null ? ((Number) row[1]).intValue() : 0;
+    Integer totalRemaining = row[2] != null ? ((Number) row[2]).intValue() : 0;
+
+    return new EntryProgressDTO(totalCount, totalProcessed, totalRemaining);
   }
 }
