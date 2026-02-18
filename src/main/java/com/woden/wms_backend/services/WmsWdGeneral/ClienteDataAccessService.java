@@ -24,7 +24,7 @@ public class ClienteDataAccessService {
 
   @Cacheable("baseEmpaqueOn")
   public Integer getBaseEmpaqueON(int id) {
-      return clienteRepository.getBaseEmpaqueON(id);
+    return clienteRepository.getBaseEmpaqueON(id);
   }
 
   public Integer getBaseNoDisponibleON(int id) {
@@ -48,16 +48,16 @@ public class ClienteDataAccessService {
   }
 
   public Integer getsmartCardInfoON(int id) {
-       Boolean result = clienteRepository.getsmartCardInfoON(id);
-       return result != null ? (result ? 1 : 0) : null;
+    Boolean result = clienteRepository.getsmartCardInfoON(id);
+    return result != null ? (result ? 1 : 0) : null;
   }
 
   public Integer updateBaseEmpaqueON(int id, int baseEmpaqueON) {
-      return clienteRepository.updateBaseEmpaqueON(baseEmpaqueON, id);
+    return clienteRepository.updateBaseEmpaqueON(baseEmpaqueON, id);
   }
 
-
-
-
+  public Boolean getEtiquetaUnitariaON(int id) {
+    return clienteRepository.getEtiquetaUnitariaON(id);
+  }
 
 }

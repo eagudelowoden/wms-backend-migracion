@@ -790,6 +790,19 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @GetMapping("/getValidaStateInventory")
+  public ResponseEntity<?> getValidaStateInventory(@RequestParam String estado,
+      @RequestParam String estadoInventario) {
+    try {
+      String result = ingresoService.getValidaStateInventory(estado, estadoInventario);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador getValidaStateInventory: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
 }
 
 @Data

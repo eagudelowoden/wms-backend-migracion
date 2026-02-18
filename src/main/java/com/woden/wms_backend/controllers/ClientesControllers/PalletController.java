@@ -384,4 +384,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @GetMapping("/searchReceivePartsPallet")
+  public ResponseEntity<List<Map<String, Object>>> searchReceivePartsPallet(
+      @RequestParam String destino,
+      @RequestParam String numero) {
+    List<Map<String, Object>> pallets = palletService.searchReceivePartsPallet(destino, numero);
+    return ResponseEntity.ok(pallets);
+  }
 }

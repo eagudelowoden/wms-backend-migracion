@@ -525,4 +525,19 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   public Integer innactivatePalletInventory(Integer palletId) {
     return palletRepository.innactivatePalletInventory(palletId);
   }
+
+  public List<Map<String, Object>> searchReceivePartsPallet(String destino, String numero) {
+    List<Object[]> results = palletRepository.searchReceivePartsPallet(destino, numero);
+    return results.stream().map(record -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", record[0]);
+      map.put("numero", record[1]);
+      map.put("cantidad", record[2]);
+      map.put("posicion", record[3]);
+      map.put("codigoSapId", record[4]);
+      map.put("codigoSap", record[5]);
+      map.put("descripcion", record[6]);
+      return map;
+    }).collect(Collectors.toList());
+  }
 }
