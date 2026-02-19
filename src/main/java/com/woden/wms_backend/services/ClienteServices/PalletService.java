@@ -540,4 +540,44 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       return map;
     }).collect(Collectors.toList());
   }
+
+  public List<Map<String, Object>> searchGeneralInventoryPallet(String numero, String estado, Integer usuarioId) {
+    List<Object[]> results = palletRepository.searchGeneralInventoryPallet(numero, estado, usuarioId);
+    return results.stream().map(record -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", record[0]);
+      map.put("numero", record[1]);
+      map.put("cantidad", record[2]);
+      map.put("posicion", record[3]);
+      map.put("codigoSapId", record[4]);
+      map.put("codigoSap", record[5]);
+      map.put("descripcion", record[6]);
+      return map;
+    }).collect(Collectors.toList());
+  }
+
+  public Integer updateStateInventoryPallet(Integer palletId, Integer estadoInventario) {
+    try {
+      Integer filas = 4;
+      palletRepository.updateStateInventoryPallet(palletId, estadoInventario, filas);
+      return 1;
+    } catch (Exception e) {
+      return 0;
+    }
+  }
+
+  public List<Map<String, Object>> searchGeneralSettingsPallet(String nuemro, String estado) {
+    List<Object[]> results = palletRepository.searchGeneralSettingsPallet(nuemro, estado);
+    return results.stream().map(record -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", record[0]);
+      map.put("numero", record[1]);
+      map.put("cantidad", record[2]);
+      map.put("posicion", record[3]);
+      map.put("codigoSapId", record[4]);
+      map.put("codigoSap", record[5]);
+      map.put("descripcion", record[6]);
+      return map;
+    }).collect(Collectors.toList());
+  }
 }
