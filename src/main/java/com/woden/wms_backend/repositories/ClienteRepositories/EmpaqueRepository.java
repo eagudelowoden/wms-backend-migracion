@@ -29,6 +29,28 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("SmartCardId") Integer smartCardId,
       @Param("SmartCard") String smartCard);
 
+  @Transactional
+  @Query(value = "DECLARE @FilasOut INT; " +
+          "EXEC [dbo].[pa_InsertPackingWebD] " +
+          ":SerialId, :Serial, :Mac, :CodigoSapId, :PalletId, :CajaEmpaqueId, " +
+          ":NivelId, :UsuarioId, :Fecha, :LoteId, :SmartCardId, :SmartCard, " +
+          "@FilasOut OUTPUT; " +
+          "SELECT @FilasOut;", nativeQuery = true)
+  Integer executeInsertPacking(
+          @Param("SerialId") Integer serialId,
+          @Param("Serial") String serial,
+          @Param("Mac") String mac,
+          @Param("CodigoSapId") Integer codigoSapId,
+          @Param("PalletId") Integer palletId,
+          @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
+          @Param("NivelId") Integer nivelId,
+          @Param("UsuarioId") Integer usuarioId,
+          @Param("Fecha") LocalDateTime fecha,
+          @Param("LoteId") Integer loteId,
+          @Param("SmartCardId") Integer smartCardId,
+          @Param("SmartCard") String smartCard
+  );
+
   @Procedure(procedureName = "pa_DeletePacking")
   void eliminarSeriesEmpaque(@Param("serial") String serial);
 

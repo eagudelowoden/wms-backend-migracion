@@ -4,11 +4,14 @@ import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
 import com.woden.wms_backend.dto.PackingTransactionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.woden.wms_backend.controllers.BaseController;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,20 +78,6 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
     }
 
 
-    /*
-     * @PostMapping("/updateSmartCard")
-     * public ResponseEntity<?> updateSmartCard(@RequestBody Map<String,
-     * List<Map<String, Object>>> requestBody) {
-     * List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-     * for (Map<String, Object> ingreso : ingresos) {
-     * Integer smartCardId = (Integer) ingreso.get("smartCardId");
-     * String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
-     * String serial = (String) ingreso.get("serial");
-     * empaqueService.updateSmartCard(smartCardId, smartCardNuevo,serial);
-     * }
-     * return ResponseEntity.ok(1);
-     * }
-     */
 
     @PostMapping("/updateSmartCard")
     public ResponseEntity<?> updateSmartCard(@RequestBody Map<String, Object> empaque) {
@@ -134,6 +123,48 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
         } catch (Exception e) {
             e.printStackTrace(); // Para ver el error en consola si falla
             return ResponseEntity.badRequest().body("Error al crear packing: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/insertPackingWeb")
+    public ResponseEntity<?> insertPacking(@RequestBody EmpaqueModel empaque) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Validamos que la fecha no sea nula antes de pasarla al servicio
+            LocalDateTime fechaProceso = (empaque.getFecha() != null)
+                    ? empaque.getFecha()
+                    : LocalDateTime.now();
+
+            // Llamada al servicio usando los campos de tu EmpaqueModel
+            empaqueService.createEmpaqueWEB(
+                    empaque.getSerialId(),
+                    empaque.getSerial(),
+                    empaque.getMac(),
+                    empaque.getCodigoSapId(),
+                    empaque.getPalletId(),
+                    empaque.getCajaEmpaqueId(),
+                    empaque.getNivelId(),
+                    empaque.getUsuarioId(),
+                    fechaProceso,
+                    empaque.getLoteId(),
+                    empaque.getSmartCardId(),
+                    empaque.getSmartCard()
+            );
+
+            response.put("success", true);
+            response.put("message", "Empaque registrado correctamente para el serial: " + empaque.getSerial());
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            // Este error viene del throw new RuntimeException en tu servicio
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error inesperado: " + e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
