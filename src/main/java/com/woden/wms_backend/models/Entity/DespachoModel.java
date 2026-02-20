@@ -43,5 +43,6 @@ public class DespachoModel {
     private Integer cajaIngresoId;
     private String numeroSmartcard;
     private Integer fallaCosmeticaId;
+    private String causa;
     private Integer fallaFuncionalId;
 }
