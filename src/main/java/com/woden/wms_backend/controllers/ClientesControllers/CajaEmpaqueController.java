@@ -66,6 +66,21 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         List<Map<String, String>> seriales = cajaEmpaqueService.searchPalletBoxEntry(estado, palletId, cajaEmpaqueId);
         return ResponseEntity.ok(seriales);
     }
+    @GetMapping("/searchPalletBoxValidate") // Sugiero cambiar el nombre para diferenciarlo
+    public ResponseEntity<?> searchPalletBoxValidate(
+            @RequestParam String estado,
+            @RequestParam Integer palletId,
+            @RequestParam Integer cajaEmpaqueId) {
+
+        // Llamamos al nuevo método del servicio que incluye los campos de validación
+        List<Map<String, String>> seriales = cajaEmpaqueService.searchPalletBoxValidate(estado, palletId, cajaEmpaqueId);
+
+        if (seriales.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(seriales);
+    }
 
     @PostMapping("/createBoxPacking")
     public ResponseEntity<?> createEntity(@RequestBody CajaEmpaqueModel requestBody) {
