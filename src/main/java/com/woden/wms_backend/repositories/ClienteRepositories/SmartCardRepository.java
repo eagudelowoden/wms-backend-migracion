@@ -38,4 +38,15 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("CodigoSapId") Integer codigoSapId,
             @Param("UsuarioId") Integer usuarioId
     );
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateEstadoSmartCardAsign :serial, :usuarioId, :filas OUT", nativeQuery = true)
+    void updateEstadoPreasignado(
+            @Param("serial") String serial,
+            @Param("usuarioId") Integer usuarioId,
+            @Param("filas") Integer filas);
+
+    @Query(value = "EXEC pa_GetSmartcardAsingUserWeb :usuarioId", nativeQuery = true)
+    List<Object[]> getSmartcardsPreasignadas(@Param("usuarioId") Integer usuarioId);
 }

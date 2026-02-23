@@ -33,14 +33,14 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
   @Query(value = "SELECT smartCardInfoON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getsmartCardInfoON(@Param("id") int id);
 
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE Cliente SET BaseEmpaqueON = :baseEmpaqueON WHERE Id = :id", nativeQuery = true)
-    int updateBaseEmpaqueON(@Param("baseEmpaqueON") int baseEmpaqueON, @Param("id") int id);
+  @Modifying
+  @Transactional
+  @Query(value = "UPDATE Cliente SET BaseEmpaqueON = :baseEmpaqueON WHERE Id = :id", nativeQuery = true)
+  int updateBaseEmpaqueON(@Param("baseEmpaqueON") int baseEmpaqueON, @Param("id") int id);
 
+  @Query(value = "SELECT CASE WHEN BaseEmpaqueON = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Integer getBaseEmpaqueON(@Param("id") int id);
 
-    @Query(value = "SELECT CASE WHEN BaseEmpaqueON = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
-    Integer getBaseEmpaqueON(@Param("id") int id);
-
-
+  @Query(value = "SELECT etiquetaUnitariaON FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Boolean getEtiquetaUnitariaON(@Param("id") int id);
 }

@@ -186,6 +186,22 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
   @Modifying
   @Transactional
-  @Query (value ="UPDATE Pallet SET EstadoInventario=0 WHERE Id=:palletId", nativeQuery = true)
+  @Query(value = "UPDATE Pallet SET EstadoInventario=0 WHERE Id=:palletId", nativeQuery = true)
   Integer innactivatePalletInventory(@Param("palletId") Integer palletId);
+
+  @Query(value = "EXEC pa_SearchReceivePartsPallet :destino, :numero", nativeQuery = true)
+  List<Object[]> searchReceivePartsPallet(@Param("destino") String destino, @Param("numero") String numero);
+
+  @Query(value = "EXEC pa_SearchGeneralInventoryPallet :numero, :estado, :usuarioId", nativeQuery = true)
+  List<Object[]> searchGeneralInventoryPallet(@Param("numero") String numero, @Param("estado") String estado,
+      @Param("usuarioId") Integer usuarioId);
+
+  @Transactional
+  @Modifying
+  @Query(value = "EXEC pa_UpdateStateInventoryPallet :palletId, :estadoInventario, :filas OUT", nativeQuery = true)
+  Integer updateStateInventoryPallet(@Param("palletId") Integer palletId,
+      @Param("estadoInventario") Integer estadoInventario, @Param("filas") Integer filas);
+
+  @Query(value = "EXEC pa_SearchGeneralSettingsPallet :numero, :estado", nativeQuery = true)
+  List<Object[]> searchGeneralSettingsPallet(@Param("numero") String numero, @Param("estado") String estado);
 }

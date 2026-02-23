@@ -72,4 +72,16 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
                     .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+    @PostMapping("/preasignarSmartCard")
+    public ResponseEntity<?> preasignar(@RequestBody Map<String, Object> data) {
+        String serial = (String) data.get("serial");
+        Integer usuarioId = (Integer) data.get("usuarioId");
+
+        Integer resultado = smartCardService.updateToPreasignado(serial, usuarioId);
+        return ResponseEntity.ok(resultado);
+    }
+    @GetMapping("/getPreasignadas/{usuarioId}")
+    public ResponseEntity<List<Map<String, Object>>> getPreasignadas(@PathVariable Integer usuarioId) {
+        return ResponseEntity.ok(smartCardService.getPreasignadas(usuarioId));
+    }
 }

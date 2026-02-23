@@ -84,4 +84,9 @@ public class ClienteDataAccessController {
     return ResponseEntity.ok(response);
   }
 
+  @GetMapping("/getEtiquetaUnitariaON/{id}")
+  public ResponseEntity<Boolean> getEtiquetaUnitariaON(@PathVariable Integer id) {
+    Boolean etiquetaUnitariaON = clienteService.getEtiquetaUnitariaON(id);
+    return ResponseEntity.ok(etiquetaUnitariaON);
+  }
 }

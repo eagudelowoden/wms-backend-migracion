@@ -366,8 +366,13 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   public ResponseEntity<Integer> sendAllPallet(
       @RequestParam Integer destinoId,
       @RequestParam Integer palletId) {
-    palletService.sendAllPallet(destinoId, palletId);
-    return ResponseEntity.ok(1);
+    try {
+      palletService.sendAllPallet(destinoId, palletId);
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
   }
 
   @GetMapping("/getPalletsInventory")
@@ -381,7 +386,61 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       Integer count = palletService.innactivatePalletInventory(palletId);
       return ResponseEntity.ok(count);
     } catch (Exception e) {
+      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/searchReceivePartsPallet")
+  public ResponseEntity<List<Map<String, Object>>> searchReceivePartsPallet(
+      @RequestParam String destino,
+      @RequestParam String numero) {
+    try {
+    List<Map<String, Object>> pallets = palletService.searchReceivePartsPallet(destino, numero);
+    return ResponseEntity.ok(pallets);
+  } catch (Exception e) {
+    e.printStackTrace();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+  }
+  }
+
+  @GetMapping("/searchGeneralInventoryPallet")
+  public ResponseEntity<List<Map<String, Object>>> searchGeneralInventoryPallet(
+      @RequestParam String numero,
+      @RequestParam String estado,
+      @RequestParam Integer usuarioId) {
+    try {
+      List<Map<String, Object>> pallets = palletService.searchGeneralInventoryPallet(numero, estado, usuarioId);
+      return ResponseEntity.ok(pallets);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+  }
+
+  @PostMapping("/updateStateInventoryPallet")
+  public ResponseEntity<Integer> updateStateInventoryPallet(
+      @RequestParam Integer palletId,
+      @RequestParam Integer estadoInventario) {
+    try {
+      Integer result = palletService.updateStateInventoryPallet(palletId, estadoInventario);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/searchGeneralSettingsPallet")
+  public ResponseEntity<List<Map<String, Object>>> searchGeneralSettingsPallet(
+      @RequestParam String numero,
+      @RequestParam String estado) {
+    try {
+      List<Map<String, Object>> pallets = palletService.searchGeneralSettingsPallet(numero, estado);
+      return ResponseEntity.ok(pallets);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
   }
 }

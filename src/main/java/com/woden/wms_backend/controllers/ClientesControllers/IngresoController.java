@@ -28,6 +28,7 @@ import com.woden.wms_backend.dto.IngresoTransitoDTO;
 import com.woden.wms_backend.dto.RegularizarLoteSerialDTO;
 import com.woden.wms_backend.dto.RegularizarSapDTO;
 import com.woden.wms_backend.dto.RegularizarSapSerialIngresoDTO;
+import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.SendIngresoDTO;
 import com.woden.wms_backend.dto.clientDTO.SendStorageEntryDTO;
 import com.woden.wms_backend.models.Entity.IngresoModel;
@@ -788,6 +789,31 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       System.err.println("❌ Error en controlador getSerialsByPalletInventory: " + e.getMessage());
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/getValidaStateInventory")
+  public ResponseEntity<?> getValidaStateInventory(@RequestParam String estado,
+      @RequestParam String estadoInventario) {
+    try {
+      String result = ingresoService.getValidaStateInventory(estado, estadoInventario);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador getValidaStateInventory: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/getEntryProgress")
+  public ResponseEntity<EntryProgressDTO> getEntryProgress(
+      @RequestParam Integer palletId,
+      @RequestParam Integer estadoId) {
+    try {
+      EntryProgressDTO progress = ingresoService.getEntryProgress(palletId, estadoId);
+      return ResponseEntity.ok(progress);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 }

@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SmartCardService extends BaseService<SmartCardModel, Integer> {
@@ -44,6 +47,33 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
         } catch (Exception e) {
             throw new RuntimeException("Error en la base de datos: " + e.getMessage());
         }
+    }
+    public Integer updateToPreasignado(String serial, Integer usuarioId) {
+        Integer filas = 0;
+        smartCardRepository.updateEstadoPreasignado(serial, usuarioId, filas);
+        return filas;
+    }
+
+    public List<Map<String, Object>> getPreasignadas(Integer usuarioId) {
+        List<Object[]> results = smartCardRepository.getSmartcardsPreasignadas(usuarioId);
+        List<Map<String, Object>> lista = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", row[0]);
+            map.put("serial", row[1]);
+            map.put("mac", row[2]);
+            map.put("codigoSap", row[3]);
+            map.put("descripcion", row[4]);
+            map.put("usuarioAsignado", row[5]);
+            map.put("nivelId", row[6]);
+            map.put("loteId", row[7]);
+            map.put("lote", row[8]);
+            map.put("modelo", row[9]);
+            map.put("fecha", row[10]);
+            lista.add(map);
+        }
+        return lista;
     }
 
 

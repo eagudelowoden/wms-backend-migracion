@@ -73,6 +73,7 @@ public class IngresoModel {
     private Integer modeloId;
     private Integer fallaCosmeticaId;
     private Integer fallaFuncionalId;
+    private String causa;
     private String fecha;
     @Transient // ❌ No está en la BD
     private String cajaEmpaque;
