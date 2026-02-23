@@ -1,10 +1,16 @@
-// package com.woden.wms_backend.repositories.ClienteRepositories;
+package com.woden.wms_backend.repositories.ClienteRepositories;
 
-// import org.springframework.stereotype.Repository;
+import java.util.List;
 
-// import com.woden.wms_backend.repositories.BaseRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-// @Repository
-//   public interface CosmeticaRepository extends BaseRepository<T, Integer> {
-  
-// }
+import com.woden.wms_backend.models.Entity.CosmeticaModel;
+import com.woden.wms_backend.repositories.BaseRepository;
+
+@Repository
+public interface CosmeticaRepository extends BaseRepository<CosmeticaModel, Integer> {
+
+  @Query(value = "EXEC pa_SearchCosmeticaEntry", nativeQuery = true)
+  public List<Object[]> searchCosmeticaEntry();
+}
