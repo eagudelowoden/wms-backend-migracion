@@ -53,6 +53,11 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
         smartCardRepository.updateEstadoPreasignado(serial, usuarioId, filas);
         return filas;
     }
+    public Integer updateEstadosSmartcard(Integer estadoFinalId, Integer fallaId, String serial) {
+        Integer filas = 0;
+        smartCardRepository.updateEstadosSmartcard(estadoFinalId, fallaId, serial);
+        return filas;
+    }
 
     public List<Map<String, Object>> getPreasignadas(Integer usuarioId) {
         List<Object[]> results = smartCardRepository.getSmartcardsPreasignadas(usuarioId);

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.repositories.BaseRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -49,4 +48,12 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
 
     @Query(value = "EXEC pa_GetSmartcardAsingUserWeb :usuarioId", nativeQuery = true)
     List<Object[]> getSmartcardsPreasignadas(@Param("usuarioId") Integer usuarioId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateSmartCard :estadoFinalId, :fallaId, :serial", nativeQuery = true)
+    void updateEstadosSmartcard(
+            @Param("estadoFinalId") Integer estadoFinalId,
+            @Param("fallaId") Integer fallaId,
+            @Param("serial") String serial);
 }

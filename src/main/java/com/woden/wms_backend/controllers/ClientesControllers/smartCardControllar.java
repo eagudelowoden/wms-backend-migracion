@@ -84,4 +84,14 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
     public ResponseEntity<List<Map<String, Object>>> getPreasignadas(@PathVariable Integer usuarioId) {
         return ResponseEntity.ok(smartCardService.getPreasignadas(usuarioId));
     }
+    @PostMapping("/updateEstadosSmartcard")
+    public ResponseEntity<?> updateEstadosSmartcard(@RequestBody Map<String, Object> data) {
+        Integer estadoFinalId = (Integer) data.get("estadoFinalId");
+        Integer fallaId = (Integer) data.get("fallaId");
+        String serial = (String) data.get("serial");
+
+        Integer resultado = smartCardService.updateEstadosSmartcard(estadoFinalId, fallaId,serial);
+        return ResponseEntity.ok(resultado);
+    }
+
 }
