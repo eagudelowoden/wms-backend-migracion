@@ -28,14 +28,14 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("filas") int filas // <-- aquí también String
     );
 
-    @Modifying // Indica que es una operación de escritura (INSERT/UPDATE)
-    @Transactional // Asegura la integridad de la transacción
-    @Query(value = "EXEC pa_InsertSmartCard :SerialId, :Serial, :CodigoSapId, :UsuarioId", nativeQuery = true)
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_InsertSmartCard @SerialId = :serialId, @Serial = :serial, @CodigoSapId = :codigoSapId, @UsuarioId = :usuarioId", nativeQuery = true)
     void createInsert(
-            @Param("SerialId") Integer serialId,
-            @Param("Serial") String serial,
-            @Param("CodigoSapId") Integer codigoSapId,
-            @Param("UsuarioId") Integer usuarioId
+            @Param("serialId") Integer serialId,
+            @Param("serial") String serial,
+            @Param("codigoSapId") Integer codigoSapId,
+            @Param("usuarioId") Integer usuarioId
     );
 
     @Modifying
