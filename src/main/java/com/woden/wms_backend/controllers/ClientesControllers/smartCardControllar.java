@@ -93,5 +93,10 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
         Integer resultado = smartCardService.updateEstadosSmartcard(estadoFinalId, fallaId,serial);
         return ResponseEntity.ok(resultado);
     }
+    @GetMapping("/searchEntregaSmartcard")
+    public ResponseEntity<List<Map<String, Object>>> searchEntry(
+            @RequestParam(name = "estadoFinal") String estado) { // Aquí mapeas el nombre exacto
+        return ResponseEntity.ok(smartCardService.searchSmartCardEntry(estado));
+    }
 
 }

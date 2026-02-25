@@ -30,7 +30,7 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertSmartCard @SerialId = :serialId, @Serial = :serial, @CodigoSapId = :codigoSapId, @UsuarioId = :usuarioId", nativeQuery = true)
+    @Query(value = "EXEC pa_InsertSmartCardWeb @SerialId = :serialId, @Serial = :serial, @CodigoSapId = :codigoSapId, @UsuarioId = :usuarioId", nativeQuery = true)
     void createInsert(
             @Param("serialId") Integer serialId,
             @Param("serial") String serial,
@@ -56,4 +56,9 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("estadoFinalId") Integer estadoFinalId,
             @Param("fallaId") Integer fallaId,
             @Param("serial") String serial);
+
+    @Query(value = "EXEC pa_SearchSmartCardEntry :estadoFinal", nativeQuery = true)
+    List<Object[]> searchSmartCardEntry(@Param("estadoFinal") String estadoFinal);
+
+
 }

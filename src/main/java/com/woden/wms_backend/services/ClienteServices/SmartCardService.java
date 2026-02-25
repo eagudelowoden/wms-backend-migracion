@@ -80,6 +80,29 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
         }
         return lista;
     }
+    public List<Map<String, Object>> searchSmartCardEntry(String estadoFinal) {
+        // 1. Llamada al repositorio (asumiendo que el método devuelve List<Object[]>)
+        List<Object[]> results = smartCardRepository.searchSmartCardEntry(estadoFinal);
+        List<Map<String, Object>> lista = new ArrayList<>();
+
+        // 2. Mapeo manual de la fila (Object[]) a un Mapa
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+
+            // El orden depende de cómo el SP lanza el SELECT
+            map.put("serial", row[0]);
+            map.put("codigo", row[1]);
+            map.put("descripcion", row[2]);
+            map.put("falla", row[3]);
+            map.put("estado", row[4]);
+
+            lista.add(map);
+        }
+
+        return lista;
+    }
+
+
 
 
 }
