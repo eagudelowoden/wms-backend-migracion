@@ -2,6 +2,7 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 
 
 import com.woden.wms_backend.controllers.BaseController;
+import com.woden.wms_backend.dto.ProcesarSmartCardDTO;
 import com.woden.wms_backend.dto.SmartCardDTO;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
@@ -97,6 +98,28 @@ public class smartCardControllar  extends BaseController<SmartCardModel, Integer
     public ResponseEntity<List<Map<String, Object>>> searchEntry(
             @RequestParam(name = "estadoFinal") String estado) { // Aquí mapeas el nombre exacto
         return ResponseEntity.ok(smartCardService.searchSmartCardEntry(estado));
+    }
+
+    @PostMapping("/procesarGuardadoCompleto")
+    public ResponseEntity<Integer> procesarGuardadoCompleto(@RequestBody ProcesarSmartCardDTO dto) {
+        try {
+            // Validaciones básicas de seguridad antes de procesar
+            if (dto.getSmartCard() == null || dto.getSerial() == null) {
+                return ResponseEntity.badRequest().body(0);
+            }
+
+            // Llamada al servicio que tiene el @Transactional
+            smartCardService.procesarGuardadoCompleto(dto);
+
+            // Si llega aquí, todo salió bien
+            return ResponseEntity.ok(1);
+
+        } catch (Exception e) {
+            // Log del error para depuración en consola
+            System.err.println("Error en procesarGuardadoCompleto: " + e.getMessage());
+            // Retornamos 0 para que el frontend sepa que hubo un fallo
+            return ResponseEntity.ok(0);
+        }
     }
 
 }

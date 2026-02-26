@@ -1,9 +1,13 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import com.woden.wms_backend.dto.ProcesarSmartCardDTO;
 import com.woden.wms_backend.dto.SmartCardDTO;
+import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.models.Entity.SmartCardModel;
+import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.SmartCardRepository;
 import com.woden.wms_backend.services.BaseService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +22,11 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
 
 
     @Autowired
-        private  SmartCardRepository smartCardRepository;
+    private  SmartCardRepository smartCardRepository;
+
+    @Autowired
+    private IngresoService  ingresoService;
+
 
     public boolean validateSmartCardInfo(String smartCard) {
         int filas = 0;
@@ -48,14 +56,51 @@ public class SmartCardService extends BaseService<SmartCardModel, Integer> {
             throw new RuntimeException("Error en la base de datos: " + e.getMessage());
         }
     }
-    public Integer updateToPreasignado(String serial, Integer usuarioId) {
-        Integer filas = 0;
-        smartCardRepository.updateEstadoPreasignado(serial, usuarioId, filas);
-        return filas;
-    }
     public Integer updateEstadosSmartcard(Integer estadoFinalId, Integer fallaId, String serial) {
         Integer filas = 0;
         smartCardRepository.updateEstadosSmartcard(estadoFinalId, fallaId, serial);
+        return filas;
+    }
+    @Transactional
+    public void procesarGuardadoCompleto(ProcesarSmartCardDTO dto) {
+        try {
+            // 1. Insertar en SmartCardWeb (pa_InsertSmartCardWeb)
+            smartCardRepository.createInsert(
+                    dto.getSmartCard().getSerialId(),
+                    dto.getSmartCard().getSerial(),
+                    dto.getSmartCard().getCodigoSapId(),
+                    dto.getSmartCard().getUsuarioId()
+            );
+
+            // 2. Actualizar diagnósticos (pa_UpdateSmartCard)
+            smartCardRepository.updateEstadosSmartcard(
+                    dto.getEstadoFinalId(),
+                    dto.getFallaId(),
+                    dto.getSerial()
+            );
+
+            // 3. ACTUALIZAR INVENTARIO (pa_UpdateStateAllEntry)
+            if (dto.getIngresos() != null && !dto.getIngresos().isEmpty()) {
+                for (IngresoModel ingreso : dto.getIngresos()) {
+                    // CORRECCIÓN: Pasamos los 3 argumentos en el orden correcto
+                    ingresoService.updateStateAllEntry(
+                            ingreso.getEstadoId(),           // 1. Integer estadoId
+                            ingreso.getUsuarioIdMovimiento(), // 2. Integer usuarioId
+                            ingreso.getSerial()              // 3. String serial
+                    );
+                }
+            }
+
+        } catch (Exception e) {
+            // Al lanzar RuntimeException, Spring hace Rollback de los pasos 1, 2 y 3 si alguno falla
+            e.printStackTrace();
+            throw new RuntimeException("Fallo en la transacción única: " + e.getMessage());
+        }
+    }
+
+    public Integer updateToPreasignado(String serial, Integer usuarioId) {
+        Integer filas = 0;
+        smartCardRepository.updateEstadoPreasignado(serial, usuarioId, filas);
         return filas;
     }
 
