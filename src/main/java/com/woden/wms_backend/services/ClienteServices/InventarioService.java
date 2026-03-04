@@ -1,7 +1,9 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -159,5 +161,24 @@ public class InventarioService extends BaseService<InventarioModel, Integer> {
       e.printStackTrace();
       return 0;
     }
+  }
+
+  public List<Map<String, Object>> searchSettings(String palletReal) {
+    List<Object[]> results = inventarioRepository.searchSettings(palletReal);
+    List<Map<String, Object>> formattedResults = new ArrayList<>();
+    for (Object[] row : results) {
+      Map<String, Object> map = new HashMap<>();
+      map.put("serial", row[0].toString());
+      map.put("codigoSap", row[1].toString());
+      map.put("codigoSapReal", row[2].toString());
+      map.put("pallet", row[3].toString());
+      map.put("palletReal", row[4].toString());
+      map.put("estado", row[5].toString());
+      map.put("estadoSap", row[6].toString());
+      map.put("estadoRR", row[7].toString());
+      map.put("ajuste", row[8].toString());
+      formattedResults.add(map);
+    }
+    return formattedResults;
   }
 }

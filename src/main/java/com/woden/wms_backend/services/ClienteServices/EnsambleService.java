@@ -46,6 +46,7 @@ public class EnsambleService extends BaseService<EnsambleModel, Integer> {
   public List<Map<String, Object>> getAssembleUser(Integer usuarioId) {
     List<Object[]> results = ensambleRepository.getAssembleUser(usuarioId);
 
+    System.out.println(results);
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 
     for (Object[] row : results) {
@@ -53,9 +54,9 @@ public class EnsambleService extends BaseService<EnsambleModel, Integer> {
       map.put("id", row[0].toString());
       map.put("serial", row[1].toString());
       map.put("mac", row[2].toString());
-      map.put("serial3", row[3].toString() != null ? row[3].toString() : "");
-      map.put("serial4", row[4].toString() != null ? row[4].toString() : "");
-      map.put("serial5", row[5].toString() != null ? row[5].toString() : "");
+      map.put("serial3", row[3] != null ? row[3].toString() : "");
+      map.put("serial4", row[4] != null ? row[4].toString() : "");
+      map.put("serial5", row[5] != null ? row[5].toString() : "");
       map.put("codigoSap", row[6].toString());
       map.put("descripcion", row[7].toString());
       map.put("usuarioAsignado", row[8] != null ? row[8].toString() : "");

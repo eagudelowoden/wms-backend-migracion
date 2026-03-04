@@ -30,6 +30,10 @@ public class DiagnosticoService {
   @Transactional
   public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId,
       String variable1, String variable2, String variable3, String variable4) {
+        System.out.println(variable1);
+        System.out.println(variable2);
+        System.out.println(variable3);
+        System.out.println(variable4);
     repository.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
   }
 
