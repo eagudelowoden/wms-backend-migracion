@@ -52,6 +52,7 @@ public class ReparacionController extends BaseController<ReparacionModel, Intege
       service.deleteRepair(seriales);
       return ResponseEntity.ok(1);
     } catch (Exception e) {
+      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
