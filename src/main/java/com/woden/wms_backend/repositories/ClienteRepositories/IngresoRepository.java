@@ -115,6 +115,13 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("palletId") Integer palletId,
 			@Param("cajaId") Integer cajaId);
 
+	@Query(value = "EXEC pa_SearchPalletBoxValidate :estado, :palletId, :cajaId", nativeQuery = true)
+	List<Object[]> searchPalletBoxValidate(
+			@Param("estado") String estado,
+			@Param("palletId") Integer palletId,
+			@Param("cajaId") Integer cajaId);
+
+
 	/// repetido
 	@Modifying
 	@Transactional
