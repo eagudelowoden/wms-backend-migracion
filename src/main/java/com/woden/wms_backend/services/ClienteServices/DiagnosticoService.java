@@ -108,4 +108,20 @@ public class DiagnosticoService {
     }
     return formattedResults;
   }
+
+  public List<Map<String, Object>> getDiagnosticVariables(String serial) {
+    List<Object[]> results = repository.getDiagnosticVariables(serial);
+
+    List<Map<String, Object>> formattedResults = new ArrayList<>();
+
+    for (Object[] row : results) {
+      Map<String, Object> map = new HashMap<>();
+      map.put("variable1", row[0].toString());
+      map.put("variable2", row[1].toString());
+      map.put("variable3", row[2].toString());
+      map.put("variable4", row[3].toString());
+      formattedResults.add(map);
+    }
+    return formattedResults;
+  }
 }

@@ -19,4 +19,5 @@ public class EtiquetaModel {
     private Integer impresion;
     private Integer codigoSapId;
     private String codigoSapCombo;
+    private Boolean activo;
 }
