@@ -122,6 +122,32 @@ public class ZplPrinterService {
   }
 
   private String reemplazarDatosGenerales(String zpl, EtiquetaDatosGeneralesDTO datos) {
+
+
+    // 🔍 DEBUG - Ver todos los datos que llegan
+    System.out.println("========== DEBUG EtiquetaDatosGeneralesDTO ==========");
+    System.out.println("familia:              " + datos.getFamilia());
+    System.out.println("descripcion:          " + datos.getDescripcion());
+    System.out.println("codigosap:            " + datos.getCodigosap());
+    System.out.println("usuario:              " + datos.getUsuario());
+    System.out.println("tipologia:            " + datos.getTipologia());
+    System.out.println("modelo:               " + datos.getModelo());
+    System.out.println("codProveedor:         " + datos.getCodProveedor());
+    System.out.println("proveedor:            " + datos.getProveedor());
+    System.out.println("lote:                 " + datos.getLote());
+    System.out.println("numberBox:            " + datos.getNumberBox());
+    System.out.println("pallet:               " + datos.getPallet());
+    System.out.println("caja:                 " + datos.getCaja());
+    System.out.println("fecha:                " + datos.getFecha());
+    System.out.println("smartCardSerial:      " + datos.getSmartCardSerial());
+    System.out.println("smartCardCodigoSap:   " + datos.getSmartCardCodigoSap());
+    System.out.println("smartCardDescripcion: " + datos.getSmartCardDescripcion());
+    System.out.println("etiquetaUnitaria:     " + datos.getEtiquetaUnitaria());
+    System.out.println("modelCodigo:          " + datos.getModelCodigo());
+    System.out.println("modelDescripcion:     " + datos.getModelDescripcion());
+    System.out.println("modelDetalle:         " + datos.getModelDetalle());
+    System.out.println("=====================================================");
+
     zpl = zpl.replace("familia", Objects.toString(datos.getFamilia(), ""));
     zpl = zpl.replace("descripcion", Objects.toString(datos.getDescripcion(), ""));
     zpl = zpl.replace("codigosap", Objects.toString(datos.getCodigosap(), ""));
