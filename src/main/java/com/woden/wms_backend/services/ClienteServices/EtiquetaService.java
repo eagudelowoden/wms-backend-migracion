@@ -30,6 +30,7 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     etiqueta.setImpresion((Integer) obj[3]);
     etiqueta.setCodigoSapId((Integer) obj[4]);
     etiqueta.setCodigoSapCombo((String) obj[5] + "|" + (String) obj[6]);
+    etiqueta.setActivo((Boolean) obj[7]);
     return etiqueta;
   }
 
