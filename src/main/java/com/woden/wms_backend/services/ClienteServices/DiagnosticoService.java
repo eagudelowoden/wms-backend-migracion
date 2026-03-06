@@ -30,6 +30,10 @@ public class DiagnosticoService {
   @Transactional
   public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId,
       String variable1, String variable2, String variable3, String variable4) {
+        System.out.println(variable1);
+        System.out.println(variable2);
+        System.out.println(variable3);
+        System.out.println(variable4);
     repository.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
   }
 
@@ -100,6 +104,22 @@ public class DiagnosticoService {
       map.put("lote", row[10] != null ? row[10].toString() : "");
       map.put("pqrs", row[11] != null ? row[11].toString() : "");
       map.put("fecha", row[12] != null ? row[12].toString() : "");
+      formattedResults.add(map);
+    }
+    return formattedResults;
+  }
+
+  public List<Map<String, Object>> getDiagnosticVariables(String serial) {
+    List<Object[]> results = repository.getDiagnosticVariables(serial);
+
+    List<Map<String, Object>> formattedResults = new ArrayList<>();
+
+    for (Object[] row : results) {
+      Map<String, Object> map = new HashMap<>();
+      map.put("variable1", row[0].toString());
+      map.put("variable2", row[1].toString());
+      map.put("variable3", row[2].toString());
+      map.put("variable4", row[3].toString());
       formattedResults.add(map);
     }
     return formattedResults;

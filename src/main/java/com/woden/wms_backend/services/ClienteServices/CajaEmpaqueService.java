@@ -117,6 +117,45 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     return serialesBOx;
   }
 
+  public List<Map<String, String>> searchPalletBoxValidate(String estado, Integer palletId, Integer cajaEmpaqueId) {
+    // 1. Llamamos al NUEVO repositorio que apunta al nuevo SP
+    List<Object[]> results = ingresoRepository.searchPalletBoxValidate(estado, palletId, cajaEmpaqueId);
+    List<Map<String, String>> serialesBOx = new ArrayList<>();
+
+    for (Object[] result : results) {
+      Map<String, String> seriales = new HashMap<>();
+
+      // Mapeo técnico original (Índices 0 al 10)
+      seriales.put("serial", result[0] != null ? result[0].toString() : "");
+      seriales.put("mac", result[1] != null ? result[1].toString() : "");
+      seriales.put("smartCard", result[2] != null ? result[2].toString() : "");
+      seriales.put("numeroSmartcard", result[3] != null ? result[3].toString() : "");
+      seriales.put("serial3", result[4] != null ? result[4].toString() : "");
+      seriales.put("serial4", result[5] != null ? result[5].toString() : "");
+      seriales.put("codigo", result[6] != null ? result[6].toString() : "");
+      seriales.put("descripcion", result[7] != null ? result[7].toString() : "");
+      seriales.put("nivel", result[8] != null ? result[8].toString() : "");
+      seriales.put("lote", result[9] != null ? result[9].toString() : "");
+      seriales.put("modelo", result[10] != null ? result[10].toString() : "");
+
+      // NUEVOS CAMPOS DE VALIDACIÓN (Basados en el SP de Daniel Agudelo)
+      // 11 -> existeEnEmpaque (1 o 0)
+      seriales.put("existeEnEmpaque", result[11] != null ? result[11].toString() : "0");
+
+      // DATOS LEGIBLES DE INGRESO (Índices 12 y 13)
+      seriales.put("numPalletIngreso", result[12] != null ? result[12].toString() : "");
+      seriales.put("numCajaIngreso", result[13] != null ? result[13].toString() : "");
+
+      // DATOS LEGIBLES DE EMPAQUE (Índices 14 y 15)
+      seriales.put("numPalletEmpaque", result[14] != null ? result[14].toString() : "N/A");
+      seriales.put("numCajaEmpaque", result[15] != null ? result[15].toString() : "N/A");
+
+      serialesBOx.add(seriales);
+    }
+    return serialesBOx;
+  }
+
+
   public void create(String numero, Integer palletId, Integer estadoId,
       Integer usuarioId, LocalDateTime fecha) {
     cajaEmpaqueRepository.create(numero, palletId, estadoId, usuarioId, fecha);

@@ -57,6 +57,10 @@ public class PrealertaService extends BaseService<PrealertaModel, Integer> {
 
   @Transactional
   public void updatePrealerta(Integer prealertaId) {
-    prealertaRepository.updatePrealerta(prealertaId);
+    try {
+      prealertaRepository.updatePrealerta(prealertaId);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

@@ -1,6 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -138,7 +139,7 @@ public class InventarioController extends BaseController<InventarioModel, Intege
     }
   }
 
-    @PostMapping("/createInventory")
+  @PostMapping("/createInventory")
   public ResponseEntity<Integer> create(@RequestBody InventarioModel inventario) {
     try {
       Integer count = inventarioService.create(inventario);
@@ -146,6 +147,17 @@ public class InventarioController extends BaseController<InventarioModel, Intege
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return ResponseEntity.badRequest().body(0);
+    }
+  }
+
+  @GetMapping("/searchSettings")
+  public ResponseEntity<List<Map<String, Object>>> searchSettings(@RequestParam String palletReal) {
+    try {
+      List<Map<String, Object>> list = inventarioService.searchSettings(palletReal);
+      return ResponseEntity.ok(list);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return ResponseEntity.badRequest().body(null);
     }
   }
 }
