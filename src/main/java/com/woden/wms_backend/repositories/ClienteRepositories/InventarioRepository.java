@@ -60,7 +60,7 @@ public interface InventarioRepository extends BaseRepository<InventarioModel, In
   @Query(value = "DELETE FROM Inventario ", nativeQuery = true)
   Integer cleanTable();
 
-  @Query(value = "select i.serial,e.nombre as estado,i.codigoSap,i.pallet,i.estadoSap,i.estadoRR,i.ajuste from Inventario i inner join WmsWdGeneral.dbo.estado e on i.estadoId=e.id where pallet=:pallet", nativeQuery = true)
+  @Query(value = "EXEC pa_SearchInventory :pallet", nativeQuery = true)
   List<Object[]> searchInventory(@Param("pallet") String pallet);
 
   @Modifying
@@ -73,7 +73,7 @@ public interface InventarioRepository extends BaseRepository<InventarioModel, In
       @Param("usuarioId") Integer usuarioId,
       @Param("serialId") Integer serialId, @Param("mac") String mac, @Param("sobrante") Boolean sobrante);
 
-  @Query(value = "select i.serial,i.codigoSap,i.codigoSapReal,i.pallet,i.palletReal,e.nombre as estado,i.estadoSap,i.estadoRR,i.ajuste from Inventario i inner join WmsWdgeneral.dbo.estado e on i.estadoId=e.id where i.palletReal = :palletReal", nativeQuery = true)
-  List<Object[]> searchSettings(@Param("palletReal") String palletReal);
+  @Query(value = "EXEC pa_SearchSettings :pallet", nativeQuery = true)
+  List<Object[]> searchSettings(@Param("pallet") String pallet);
 
 }
