@@ -816,6 +816,18 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
+
+  @GetMapping("/searchScrapEntry")
+  public ResponseEntity<?> searchScrapEntry(@RequestParam String estado) {
+    try {
+      List<Map<String, Object>> scrapEntries = ingresoService.searchScrapEntry(estado);
+      return ResponseEntity.ok(scrapEntries);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador searchScrapEntry: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
 }
 
 @Data

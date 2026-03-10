@@ -471,4 +471,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	List<Object[]> getEntryProgress(
 			@Param("palletId") Integer palletId,
 			@Param("estadoId") Integer estadoId);
+
+	@Query(value = "EXEC pa_SearchScrapEntry :estado", nativeQuery = true)
+	List<Object[]> searchScrapEntry(@Param("estado") String estado);
 }
