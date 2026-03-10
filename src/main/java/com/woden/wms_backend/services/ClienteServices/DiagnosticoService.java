@@ -116,10 +116,10 @@ public class DiagnosticoService {
 
     for (Object[] row : results) {
       Map<String, Object> map = new HashMap<>();
-      map.put("variable1", row[0].toString());
-      map.put("variable2", row[1].toString());
-      map.put("variable3", row[2].toString());
-      map.put("variable4", row[3].toString());
+      map.put("variable1", row[0] != null ? row[0].toString() : "");
+      map.put("variable2", row[1] != null ? row[1].toString() : "");
+      map.put("variable3", row[2] != null ? row[2].toString() : "");
+      map.put("variable4", row[3] != null ? row[3].toString() : "");
       formattedResults.add(map);
     }
     return formattedResults;
