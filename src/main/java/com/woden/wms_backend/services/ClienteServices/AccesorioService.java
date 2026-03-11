@@ -96,8 +96,8 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         accesoriosId.forEach(accesorioId -> accesorioRepository.updatePalletAccesory(accesorioId, palletId));
     }
 
-    public List<AccesorioSeparateDTO> searchSeparatePalletAccesory(Integer cantidad, Integer palletId) {
-        List<Object[]> resultados = accesorioRepository.searchSeparatePalletAccesory(cantidad, palletId);
+    public List<AccesorioSeparateDTO> searchSeparatePalletAccesory(Integer cantidad, Integer palletId, Integer palletDestinoId) {
+        List<Object[]> resultados = accesorioRepository.searchSeparatePalletAccesory(cantidad, palletId, palletDestinoId);  
         List<AccesorioSeparateDTO> accesorios = new ArrayList<>();
 
         for (Object[] fila : resultados) {

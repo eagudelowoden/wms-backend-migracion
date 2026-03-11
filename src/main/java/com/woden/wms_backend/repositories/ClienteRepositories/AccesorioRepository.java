@@ -48,8 +48,8 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   @Query(value = "EXEC pa_UpdatePalletAccesory :accesorioId, :palletId", nativeQuery = true)
   void updatePalletAccesory(@Param("accesorioId") Integer accesorioId, @Param("palletId") Integer palletId);
 
-  @Query(value = "EXEC pa_SearchSeparatePalletAccesory :cantidad, :palletId", nativeQuery = true)
-  List<Object[]> searchSeparatePalletAccesory(@Param("cantidad") Integer cantidad, @Param("palletId") Integer palletId);
+  @Query(value = "EXEC pa_SearchSeparatePalletAccesory :cantidad, :palletId, :PalletDestinoId", nativeQuery = true)
+  List<Object[]> searchSeparatePalletAccesory(@Param("cantidad") Integer cantidad, @Param("palletId") Integer palletId, @Param("PalletDestinoId") Integer PalletDestinoId);
 
   @Modifying
   @Transactional
