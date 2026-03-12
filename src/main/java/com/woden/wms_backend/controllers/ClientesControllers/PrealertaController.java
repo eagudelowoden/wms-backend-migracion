@@ -46,5 +46,4 @@ public class PrealertaController {
     prealertaService.updatePrealerta(prealertaId);
     return ResponseEntity.ok().build();
   }
-  
 }
