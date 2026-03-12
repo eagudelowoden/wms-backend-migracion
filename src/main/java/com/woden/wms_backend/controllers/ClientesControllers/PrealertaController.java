@@ -40,11 +40,11 @@ public class PrealertaController {
   public ResponseEntity<Integer> getDifferencePrealerta(@PathVariable int prealertaId) {
     return ResponseEntity.ok(prealertaService.getDifferencePrealerta(prealertaId));
   }
-/*
+
   @PutMapping("/updatePrealerta/{prealertaId}")
   public ResponseEntity<Void> updatePrealerta(@PathVariable int prealertaId) {
     prealertaService.updatePrealerta(prealertaId);
-    return ResponseEntity.ok().build(); // 200 OK
+    return ResponseEntity.ok().build();
   }
-  */
+  
 }
