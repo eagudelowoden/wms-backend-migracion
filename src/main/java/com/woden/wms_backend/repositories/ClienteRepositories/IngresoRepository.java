@@ -474,4 +474,12 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "EXEC pa_SearchScrapEntry :estado", nativeQuery = true)
 	List<Object[]> searchScrapEntry(@Param("estado") String estado);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateScrapAll :serial, :usuarioIdMovimiento, :novedad, :estadoId", nativeQuery = true)
+	void updateScrapAll(@Param("estadoId") Integer estadoId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("serial") String serial,
+			@Param("novedad") String novedad);
 }

@@ -913,4 +913,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
     return scrapEntries;
   }
+
+  public void updateScrapAll(Integer estadoId, Integer usuarioIdMovimiento, String serial, String novedad) {
+    ingresoRepository.updateScrapAll(estadoId, usuarioIdMovimiento, serial, novedad);
+  }
 }

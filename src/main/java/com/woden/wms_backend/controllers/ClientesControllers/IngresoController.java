@@ -828,6 +828,27 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @PostMapping("/updateScrapAll")
+  public ResponseEntity<Integer> updateScrapAll(
+    @RequestBody List<IngresoModel> seriales
+  ) {
+    try {
+      for (IngresoModel serial : seriales) {
+        ingresoService.updateScrapAll(
+          serial.getEstadoId(),
+          serial.getUsuarioIdMovimiento(),
+          serial.getSerial(),
+          serial.getNovedad()
+        );
+      }
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador updateScrapAll: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
 }
 
 @Data
