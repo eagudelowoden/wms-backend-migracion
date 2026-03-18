@@ -33,7 +33,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
   @Query(value = "DECLARE @FilasOut INT; " +
           "EXEC [dbo].[pa_InsertPackingWebD] " +
           ":SerialId, :Serial, :Mac, :CodigoSapId, :PalletId, :CajaEmpaqueId, " +
-          //":EstadoId, " +
+          ":EstadoId, " +
           ":NivelId, :UsuarioId, :Fecha, :LoteId, :SmartCardId, :SmartCard, " +
           "@FilasOut OUTPUT; " +
           "SELECT @FilasOut;", nativeQuery = true)
@@ -44,7 +44,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
           @Param("CodigoSapId") Integer codigoSapId,
           @Param("PalletId") Integer palletId,
           @Param("CajaEmpaqueId") Integer cajaEmpaqueId,
-          //@Param("EstadoId") Integer estadoId,
+          @Param("EstadoId") Integer estadoId,
           @Param("NivelId") Integer nivelId,
           @Param("UsuarioId") Integer usuarioId,
           @Param("Fecha") LocalDateTime fecha,
