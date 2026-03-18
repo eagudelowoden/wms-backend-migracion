@@ -91,7 +91,9 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
 
     @Transactional
     public void createEmpaqueWEB(Integer serialId, String serial, String mac, Integer codigoSapId,
-                                 Integer palletId, Integer cajaEmpaqueId, Integer nivelId,
+                                 Integer palletId, Integer cajaEmpaqueId,
+                                 //Integer estadoId,
+                                 Integer nivelId,
                                  Integer usuarioId, LocalDateTime fecha, Integer loteId,
                                  Integer smartCardId, String smartCard) {
 
@@ -104,6 +106,7 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             // La Native Query devolverá el valor de @FilasOut a través del SELECT final
             Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                     serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId,
+                    //estadoId,
                     nivelId, usuarioId, fecha, loteParam, scIdParam, scParam
             );
 
