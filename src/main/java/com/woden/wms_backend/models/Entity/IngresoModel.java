@@ -87,4 +87,14 @@ public class IngresoModel {
     private String cajaDespacho;
     private String Lote;
     private String modelo;
+    private String modelCodigo;
+    private String modelDescripcion;
+    private String modelDetalle;
+    private String smartCardSerial;
+    private String smartCardCodigoSap;
+    private String smartCardDescripcion;
+    private String etiquetaUnitaria;
+    private String serialSmartCard;
+    private String serialCode;
+
 }
