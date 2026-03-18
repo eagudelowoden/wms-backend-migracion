@@ -31,7 +31,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
 
   @Transactional
   @Query(value = "DECLARE @FilasOut INT; " +
-          "EXEC [dbo].[pa_InsertPacking] " +
+          "EXEC [dbo].[pa_InsertPackingWebD] " +
           ":SerialId, :Serial, :Mac, :CodigoSapId, :PalletId, :CajaEmpaqueId, " +
           ":NivelId, :UsuarioId, :Fecha, :LoteId, :SmartCardId, :SmartCard, " +
           "@FilasOut OUTPUT; " +
