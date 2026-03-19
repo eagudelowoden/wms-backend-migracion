@@ -108,8 +108,12 @@ public class ZplPrinterService {
   }
 
   private String obtenerValorCampo(IngresoModel ingreso, String nombreCampo) {
+    // ✅ "virtual" en la plantilla = smartCard del serial individual
+    if (nombreCampo.equalsIgnoreCase("virtual")) {
+      return ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "";
+    }
+
     try {
-      // Convierte el nombre a formato de propiedad (por si viene en mayúsculas)
       String propiedad = nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
       Field field = ingreso.getClass().getDeclaredField(propiedad);
       field.setAccessible(true);
