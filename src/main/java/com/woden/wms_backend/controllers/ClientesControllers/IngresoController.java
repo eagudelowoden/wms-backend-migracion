@@ -849,6 +849,30 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+  @GetMapping("/getScrapUser")
+  public ResponseEntity<?> getScrapUser(@RequestParam Integer usuarioIdMovimiento) {
+    try {
+      List<Map<String, Object>> scrapEntries = ingresoService.getScrapUser(usuarioIdMovimiento);
+      return ResponseEntity.ok(scrapEntries);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador getScrapUser: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @GetMapping("/getEtiquetadoUser")
+  public ResponseEntity<?> getEtiquetadoUser(@RequestParam Integer usuarioIdMovimiento) {
+    try {
+      List<Map<String, Object>> etiquetadoEntries = ingresoService.getEtiquetadoUser(usuarioIdMovimiento);
+      return ResponseEntity.ok(etiquetadoEntries);
+    } catch (Exception e) {
+      System.err.println("❌ Error en controlador getEtiquetadoUser: " + e.getMessage());
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
 }
 
 @Data

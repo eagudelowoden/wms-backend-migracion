@@ -917,4 +917,50 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   public void updateScrapAll(Integer estadoId, Integer usuarioIdMovimiento, String serial, String novedad) {
     ingresoRepository.updateScrapAll(estadoId, usuarioIdMovimiento, serial, novedad);
   }
+
+  public List<Map<String, Object>> getScrapUser(Integer usuarioIdMovimiento) {
+    List<Object[]> results = ingresoRepository.getScrapUser(usuarioIdMovimiento);
+    List<Map<String, Object>> scrapEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Object[] row = result;
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0].toString());
+      map.put("serial", row[1].toString());
+      map.put("mac", row[2].toString());
+      map.put("serial3", row[3] != null ? row[3].toString() : "");
+      map.put("serial4", row[4] != null ? row[4].toString() : "");
+      map.put("serial5", row[5] != null ? row[5].toString() : "");
+      map.put("codigoSap", row[6].toString());
+      map.put("descripcion", row[7].toString());
+      map.put("usuarioAsignado", row[8] != null ? row[8].toString() : "");
+      map.put("nivelId", row[9] != null ? Integer.parseInt(row[9].toString()) : null);
+      map.put("loteId", row[10] != null ? Integer.parseInt(row[10].toString()) : null);
+      map.put("lote", row[11] != null ? row[11].toString() : "");
+      map.put("modelo", row[12] != null ? row[12].toString() : "");
+      map.put("fecha", row[13] != null ? row[13].toString() : "");
+      scrapEntries.add(map);
+    }
+    return scrapEntries;
+  }
+
+  public List<Map<String, Object>> getEtiquetadoUser(Integer usuarioIdMovimiento) {
+    List<Object[]> results = ingresoRepository.getEtiquetadoUser(usuarioIdMovimiento);
+    List<Map<String, Object>> etiquetadoEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Object[] row = result;
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0].toString());
+      map.put("serial", row[1].toString());
+      map.put("mac", row[2].toString());
+      map.put("serial3", row[3] != null ? row[3].toString() : "");
+      map.put("serial4", row[4] != null ? row[4].toString() : "");
+      map.put("serial5", row[5] != null ? row[5].toString() : "");
+      map.put("codigoSap", row[6].toString());
+      map.put("descripcion", row[7].toString());
+      map.put("estado", row[8] != null ? row[8].toString() : "");
+      map.put("fecha", row[8] != null ? row[8].toString() : "");
+      etiquetadoEntries.add(map);
+    }
+    return etiquetadoEntries;
+  }
 }

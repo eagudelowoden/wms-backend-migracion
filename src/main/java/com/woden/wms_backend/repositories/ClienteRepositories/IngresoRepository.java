@@ -121,7 +121,6 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("palletId") Integer palletId,
 			@Param("cajaId") Integer cajaId);
 
-
 	/// repetido
 	@Modifying
 	@Transactional
@@ -482,4 +481,10 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
 			@Param("serial") String serial,
 			@Param("novedad") String novedad);
+
+	@Query(value = "EXEC pa_GetScrapUser :usuarioIdMovimiento", nativeQuery = true)
+	List<Object[]> getScrapUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
+
+	@Query(value = "EXEC pa_GetEtiquetadoUser :usuarioIdMovimiento", nativeQuery = true)
+	List<Object[]> getEtiquetadoUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
 }
