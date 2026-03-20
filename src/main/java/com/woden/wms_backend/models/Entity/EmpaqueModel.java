@@ -22,6 +22,7 @@ public class EmpaqueModel {
     private Integer codigoSapId;
     private Integer palletId;
     private Integer cajaEmpaqueId;
+    private Integer estadoId;
     private Integer nivelId;
     private Integer usuarioId;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") // 👈 importante para que JSON la parsee bien
