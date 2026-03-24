@@ -580,4 +580,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       return map;
     }).collect(Collectors.toList());
   }
+
+  public Boolean getPalletNumero(String palletNumero) {
+    return palletRepository.getPalletNumero(palletNumero);
+  }
 }
