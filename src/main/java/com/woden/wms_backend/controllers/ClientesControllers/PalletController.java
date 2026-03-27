@@ -396,12 +396,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       @RequestParam String destino,
       @RequestParam String numero) {
     try {
-    List<Map<String, Object>> pallets = palletService.searchReceivePartsPallet(destino, numero);
-    return ResponseEntity.ok(pallets);
-  } catch (Exception e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-  }
+      List<Map<String, Object>> pallets = palletService.searchReceivePartsPallet(destino, numero);
+      return ResponseEntity.ok(pallets);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
   }
 
   @GetMapping("/searchGeneralInventoryPallet")
@@ -441,6 +441,17 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+  }
+
+  @GetMapping("/getPalletNumero")
+  public ResponseEntity<Boolean> getPalletNumero(@RequestParam String palletNumero) {
+    try {
+      Boolean result = palletService.getPalletNumero(palletNumero);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
   }
 }
