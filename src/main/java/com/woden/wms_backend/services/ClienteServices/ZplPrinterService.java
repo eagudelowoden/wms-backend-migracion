@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-// import javax.print.*;
-// import javax.print.attribute.*;
-// import javax.print.attribute.standard.*;
-
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
 import javax.print.PrintException;
@@ -42,12 +38,23 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 @Service
 public class ZplPrinterService {
 
+  // ✅ Helper central: reemplaza placeholder exacto, sin afectar variantes con sufijo
+  private String reemplazarSeguro(String zpl, String placeholder, String valor) {
+    String valorSeguro = java.util.regex.Matcher.quoteReplacement(
+            valor != null ? valor : ""
+    );
+    return zpl.replaceAll(
+            java.util.regex.Pattern.quote(placeholder) + "(?![0-9A-Za-z])",
+            valorSeguro
+    );
+  }
+
   public String generarZpl(
-      String plantillaBasePath,
-      EtiquetaModel etiqueta,
-      List<EtiquetaCampoModel> campos,
-      List<IngresoModel> seriales,
-      EtiquetaDatosGeneralesDTO datosGenerales) {
+          String plantillaBasePath,
+          EtiquetaModel etiqueta,
+          List<EtiquetaCampoModel> campos,
+          List<IngresoModel> seriales,
+          EtiquetaDatosGeneralesDTO datosGenerales) {
 
     StringBuilder zplFinal = new StringBuilder();
 
@@ -55,15 +62,13 @@ public class ZplPrinterService {
     int porImpresion = etiqueta.getImpresion();
     int cociente = totalSeriales / porImpresion;
     int residuo = totalSeriales % porImpresion;
-
     int contador = 0;
 
     // 🧱 1. Procesar bloques completos
     for (int i = 0; i < cociente; i++) {
-      String plantillaPath = String.format("%s\\%s\\codigo%d.prn", plantillaBasePath, etiqueta.getNombre(),
-          porImpresion);
+      String plantillaPath = String.format("%s\\%s\\codigo%d.prn",
+              plantillaBasePath, etiqueta.getNombre(), porImpresion);
       String zpl = leerPlantilla(plantillaPath);
-
       zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + porImpresion), campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zplFinal.append(zpl).append("\n^XZ###DELIMITER_ZPL###^XA\n");
@@ -72,14 +77,15 @@ public class ZplPrinterService {
 
     // 🧩 2. Procesar bloque restante (residuo)
     if (residuo > 0) {
-      String plantillaPath = String.format("%s\\%s\\codigo%d.prn", plantillaBasePath, etiqueta.getNombre(), residuo);
+      String plantillaPath = String.format("%s\\%s\\codigo%d.prn",
+              plantillaBasePath, etiqueta.getNombre(), residuo);
       String zpl = leerPlantilla(plantillaPath);
       zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + residuo), campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zplFinal.append(zpl);
     }
-    return zplFinal.toString();
 
+    return zplFinal.toString();
   }
 
   private String leerPlantilla(String ruta) {
@@ -91,14 +97,17 @@ public class ZplPrinterService {
   }
 
   private String reemplazarCampos(String zpl, List<IngresoModel> seriales, List<EtiquetaCampoModel> campos) {
+
+    // ✅ Ordenar campos de más largo a más corto para evitar reemplazos parciales
+    List<EtiquetaCampoModel> camposOrdenados = campos.stream()
+            .sorted((a, b) -> b.getNombre().length() - a.getNombre().length())
+            .collect(java.util.stream.Collectors.toList());
+
     for (int i = 0; i < seriales.size(); i++) {
       IngresoModel ingreso = seriales.get(i);
-
-      for (EtiquetaCampoModel ecm : campos) {
+      for (EtiquetaCampoModel ecm : camposOrdenados) {
         String key = getKey(i, ecm.getNombre());
-        String nombreCampo = ecm.getNombre();
-        String valorCampo = obtenerValorCampo(ingreso, nombreCampo);
-
+        String valorCampo = obtenerValorCampo(ingreso, ecm.getNombre());
         if (valorCampo != null) {
           zpl = zpl.replace(key, valorCampo);
         }
@@ -108,8 +117,24 @@ public class ZplPrinterService {
   }
 
   private String obtenerValorCampo(IngresoModel ingreso, String nombreCampo) {
+
+    // ✅ "virtual" → serial3 si existe (LH02), sino smartCard (LH01)
+    if (nombreCampo.equalsIgnoreCase("virtual")) {
+      String serial3 = ingreso.getSerial3();
+      boolean tieneSerial3 = serial3 != null
+              && !serial3.isEmpty()
+              && !serial3.equalsIgnoreCase("nan")
+              && !serial3.equals("0");
+      return tieneSerial3 ? serial3 : (ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "");
+    }
+
+    // ✅ "smartCardSerial" → smartCard del ingreso individual
+    if (nombreCampo.equalsIgnoreCase("smartCardSerial")) {
+      return ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "";
+    }
+
+    // ✅ Reflexión para los demás campos
     try {
-      // Convierte el nombre a formato de propiedad (por si viene en mayúsculas)
       String propiedad = nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
       Field field = ingreso.getClass().getDeclaredField(propiedad);
       field.setAccessible(true);
@@ -123,8 +148,6 @@ public class ZplPrinterService {
 
   private String reemplazarDatosGenerales(String zpl, EtiquetaDatosGeneralesDTO datos) {
 
-
-    // 🔍 DEBUG - Ver todos los datos que llegan
     System.out.println("========== DEBUG EtiquetaDatosGeneralesDTO ==========");
     System.out.println("familia:              " + datos.getFamilia());
     System.out.println("descripcion:          " + datos.getDescripcion());
@@ -148,47 +171,40 @@ public class ZplPrinterService {
     System.out.println("modelDetalle:         " + datos.getModelDetalle());
     System.out.println("=====================================================");
 
-    zpl = zpl.replace("familia", Objects.toString(datos.getFamilia(), ""));
-    zpl = zpl.replace("descripcion", Objects.toString(datos.getDescripcion(), ""));
-    zpl = zpl.replace("codigosap", Objects.toString(datos.getCodigosap(), ""));
-    zpl = zpl.replace("usuario", Objects.toString(datos.getUsuario(), ""));
-    zpl = zpl.replace("tipologia", Objects.toString(datos.getTipologia(), ""));
-    zpl = zpl.replace("modelo", Objects.toString(datos.getModelo(), ""));
-    // zpl = zpl.replace("codProveedor", Objects.toString(datos.getCodProveedor(),
-    // ""));
-    // zpl = zpl.replace("proveedor", Objects.toString(datos.getProveedor(), ""));
-    zpl = zpl.replace("lote", Objects.toString(datos.getLote(), ""));
-    zpl = zpl.replace("pNumberBox", Objects.toString(datos.getNumberBox(), ""));
-    zpl = zpl.replace("pallet", Objects.toString(datos.getPallet(), ""));
-    zpl = zpl.replace("caja", "Caja: " + Objects.toString(datos.getCaja(), ""));
-    zpl = zpl.replace("fecha", Objects.toString(datos.getFecha(), ""));
-
+    // ✅ Primero los más específicos (smartCard* y model*) para evitar colisiones
     if (datos.getSmartCardSerial() != null) {
-      zpl = zpl.replace("smartCardSerial", Objects.toString(datos.getSmartCardSerial(), ""));
-      zpl = zpl.replace("smartCardCodigoSap", Objects.toString(datos.getSmartCardCodigoSap(), ""));
-      zpl = zpl.replace("smartCardDescripcion", Objects.toString(datos.getSmartCardDescripcion(), ""));
+      zpl = reemplazarSeguro(zpl, "smartCardSerial",      datos.getSmartCardSerial());
+      zpl = reemplazarSeguro(zpl, "smartCardCodigoSap",   datos.getSmartCardCodigoSap());
+      zpl = reemplazarSeguro(zpl, "smartCardDescripcion", datos.getSmartCardDescripcion());
     }
 
     if (datos.getEtiquetaUnitaria() != null) {
-      zpl = zpl.replace("codProveedor", Objects.toString(datos.getCodProveedor(), ""));
-      zpl = zpl.replace("proveedor", Objects.toString(datos.getProveedor(), ""));
-      zpl = zpl.replace("modelCodigo", Objects.toString(datos.getModelCodigo(), ""));
-      zpl = zpl.replace("modelDescripcion", Objects.toString(datos.getModelDescripcion(), ""));
-      zpl = zpl.replace("modelDetalle", Objects.toString(datos.getModelDetalle(), ""));
+      zpl = reemplazarSeguro(zpl, "codProveedor",     datos.getCodProveedor());
+      zpl = reemplazarSeguro(zpl, "proveedor",        datos.getProveedor());
+      zpl = reemplazarSeguro(zpl, "modelCodigo",      datos.getModelCodigo());
+      zpl = reemplazarSeguro(zpl, "modelDescripcion", datos.getModelDescripcion());
+      zpl = reemplazarSeguro(zpl, "modelDetalle",     datos.getModelDetalle());
     }
+
+    // ✅ Luego los generales
+    zpl = reemplazarSeguro(zpl, "familia",    datos.getFamilia());
+    zpl = reemplazarSeguro(zpl, "descripcion", datos.getDescripcion());
+    zpl = reemplazarSeguro(zpl, "codigosap",  datos.getCodigosap());
+    zpl = reemplazarSeguro(zpl, "usuario",    datos.getUsuario());
+    zpl = reemplazarSeguro(zpl, "tipologia",  datos.getTipologia());
+    zpl = reemplazarSeguro(zpl, "modelo",     datos.getModelo());
+    zpl = reemplazarSeguro(zpl, "lote",       datos.getLote());
+    zpl = reemplazarSeguro(zpl, "pNumberBox", datos.getNumberBox());
+    zpl = reemplazarSeguro(zpl, "pallet",     datos.getPallet());
+    zpl = reemplazarSeguro(zpl, "caja",       "Caja: " + Objects.toString(datos.getCaja(), ""));
+    zpl = reemplazarSeguro(zpl, "fecha",      datos.getFecha());
 
     return zpl;
   }
 
   private String getKey(int index, String nombre) {
-    if (index < 9) {
-      return nombre + (index + 1);
-    }
-
-    if (index == 9) {
-      return nombre + "0";
-    }
-
+    if (index < 9)  return nombre + (index + 1);
+    if (index == 9) return nombre + "0";
     char letra = (char) ('A' + (index - 10));
     return nombre + letra;
   }
@@ -198,15 +214,12 @@ public class ZplPrinterService {
     DocFlavor docFormat = DocFlavor.BYTE_ARRAY.AUTOSENSE;
     SimpleDoc doc = new SimpleDoc(by, docFormat, null);
 
-    // Mostrar selector de impresora (opcional)
     PrinterJob pj = PrinterJob.getPrinterJob();
     if (pj.printDialog()) {
       String impresora = pj.getPrintService().getName();
-
       HashAttributeSet attributeSet = new HashAttributeSet();
       attributeSet.add(new PrinterName(impresora, Locale.getDefault()));
       PrintService[] services = PrintServiceLookup.lookupPrintServices(docFormat, attributeSet);
-
       if (services.length > 0) {
         DocPrintJob printJob = services[0].createPrintJob();
         printJob.print(doc, new HashPrintRequestAttributeSet());
@@ -220,29 +233,20 @@ public class ZplPrinterService {
     PDDocument doc = new PDDocument();
     PDPage page = new PDPage(PDRectangle.LETTER);
     doc.addPage(page);
-
     PDPageContentStream content = new PDPageContentStream(doc, page);
-
-    // Aquí dibujamos el texto ZPL crudo como ejemplo
-    // Para un render real, se puede usar librerías que conviertan ZPL a imagen y
-    // luego a PDF
     content.beginText();
     content.setFont(PDType1Font.COURIER, 8);
     content.setLeading(12f);
     content.newLineAtOffset(20, 700);
-
     for (String line : zpl.split("\n")) {
       content.showText(line);
       content.newLine();
     }
-
     content.endText();
     content.close();
-
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     doc.save(baos);
     doc.close();
-
     return baos;
   }
 }
