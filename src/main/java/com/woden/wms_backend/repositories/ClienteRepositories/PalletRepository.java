@@ -204,4 +204,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
   @Query(value = "EXEC pa_SearchGeneralSettingsPallet :numero, :estado", nativeQuery = true)
   List<Object[]> searchGeneralSettingsPallet(@Param("numero") String numero, @Param("estado") String estado);
+
+  @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
+  Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
 }
