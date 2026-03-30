@@ -236,11 +236,11 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
             accesorio.setDocumento((String) obj[7]);
             accesorio.setObservacion((String) obj[8]);
             accesorio.setGuia((String) obj[9]);
-            accesorio.setFecha(obj[10] != null ? ((String) obj[10]).toString() : null);
+            accesorio.setFecha(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
             accesorio.setSerialEmpaque((String) obj[11]);
             accesorio.setCaja((Integer) obj[12]);
-            accesorio.setFechaLimpieza(obj[13] != null ? ((String) obj[13]).toString() : null);
-            accesorio.setFechaEmpaque(obj[14] != null ? ((String) obj[14]).toString() : null);
+            accesorio.setFechaLimpieza(obj[13] != null ? ((Timestamp) obj[13]).toString() : null);
+            accesorio.setFechaEmpaque(obj[14] != null ? ((Timestamp) obj[14]).toString() : null);
             accesorio.setUsuarioLimpiezaId((Integer) obj[15]);
             accesorios.add(accesorio);
         }
