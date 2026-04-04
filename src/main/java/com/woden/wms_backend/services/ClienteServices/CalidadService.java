@@ -110,6 +110,15 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         return true;
     }
 
+    public int validateQualityByPallet(Integer palletId) {
+        try {
+            Integer result = calidadRepository.validateQualityByPallet(palletId);
+            return result != null ? result : 0;
+        } catch (Exception e) {
+            // SP no existe o error → dejar pasar
+            return 0;
+        }
+    }
 
 
 
