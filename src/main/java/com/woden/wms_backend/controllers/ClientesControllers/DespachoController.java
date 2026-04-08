@@ -85,46 +85,75 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
 
   @PostMapping("/insertDispatchAccesory")
   public ResponseEntity<Integer> insertDispatchAccesory(
-      @RequestBody List<AccesorioModel> accesorios,
-      @RequestParam Integer estadoId,
-      @RequestParam Integer usuarioId,
-      @RequestParam String pedidoSap) {
+          @RequestBody List<AccesorioModel> accesorios,
+          @RequestParam Integer estadoId,
+          @RequestParam Integer usuarioId,
+          @RequestParam String pedidoSap) {
 
     int resultadoGlobal = 1;
 
     try {
-      for (AccesorioModel accesorio : accesorios) {
-        Integer result = despachoService.insertDispatchAccesory(
-            accesorio.getId(),
-            accesorio.getCodigoSapId(),
-            accesorio.getTipoAccesorio(),
-            accesorio.getTipoOrigenId(),
-            accesorio.getOrigenId(),
-            accesorio.getPalletId(),
-            estadoId, // Ya lo tenías
-            accesorio.getEstadoLimpiezaId(), // VERIFICA que este campo exista en AccesorioModel
-            accesorio.getDocumento(),
-            accesorio.getObservacion(),
-            accesorio.getGuia(),
-            usuarioId,
-            accesorio.getFecha() != null ? accesorio.getFecha().toString() : null, // fechaIngreso
-            accesorio.getSerialEmpaque(), // VERIFICA que este campo exista
-            accesorio.getCaja(),
-            pedidoSap, // Ya lo tenías como parámetro
-            accesorio.getFechaLimpieza(),
-            accesorio.getFechaEmpaque(),
-            accesorio.getUsuarioLimpiezaId());
+      Integer result = despachoService.insertDispatchAccesory(
+              accesorios,
+              estadoId,
+              usuarioId,
+              pedidoSap
+      );
 
-        if (result == null || result == 0) {
-          resultadoGlobal = 0;
-        }
+      if (result == null || result == 0) {
+        resultadoGlobal = 0;
       }
 
       return ResponseEntity.ok(resultadoGlobal);
+
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
+
+//  @PostMapping("/insertDispatchAccesory")
+//  public ResponseEntity<Integer> insertDispatchAccesory(
+//      @RequestBody List<AccesorioModel> accesorios,
+//      @RequestParam Integer estadoId,
+//      @RequestParam Integer usuarioId,
+//      @RequestParam String pedidoSap) {
+//
+//    int resultadoGlobal = 1;
+//
+//    try {
+//      for (AccesorioModel accesorio : accesorios) {
+//        Integer result = despachoService.insertDispatchAccesory(
+//            accesorio.getId(),
+//            accesorio.getCodigoSapId(),
+//            accesorio.getTipoAccesorio(),
+//            accesorio.getTipoOrigenId(),
+//            accesorio.getOrigenId(),
+//            accesorio.getPalletId(),
+//            estadoId, // Ya lo tenías
+//            accesorio.getEstadoLimpiezaId(), // VERIFICA que este campo exista en AccesorioModel
+//            accesorio.getDocumento(),
+//            accesorio.getObservacion(),
+//            accesorio.getGuia(),
+//            usuarioId,
+//            accesorio.getFecha() != null ? accesorio.getFecha().toString() : null, // fechaIngreso
+//            accesorio.getSerialEmpaque(), // VERIFICA que este campo exista
+//            accesorio.getCaja(),
+//            pedidoSap, // Ya lo tenías como parámetro
+//            accesorio.getFechaLimpieza(),
+//            accesorio.getFechaEmpaque(),
+//            accesorio.getUsuarioLimpiezaId());
+//
+//        if (result == null || result == 0) {
+//          resultadoGlobal = 0;
+//        }
+//      }
+//
+//      return ResponseEntity.ok(resultadoGlobal);
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+//    }
+//  }
 
 }

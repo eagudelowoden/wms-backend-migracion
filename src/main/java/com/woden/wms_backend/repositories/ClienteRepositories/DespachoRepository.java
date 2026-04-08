@@ -11,7 +11,8 @@ import com.woden.wms_backend.repositories.BaseRepository;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface DespachoRepository extends BaseRepository<DespachoModel, Integer> {
+public interface DespachoRepository extends BaseRepository<DespachoModel, Integer>, DespachoRepositoryCustom {
+
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_InsertDispatch :id, :serial, :mac,:codigoSapId, :palletId,:palletIdIngreso, :cajaDespachoId, :estadoId, :tipoOrigenId, :origenId, :tipologiaId, :nivelId, :tramite, :documento, "
@@ -47,8 +48,8 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 			@Param("cajaIngresoId") Integer cajaIngresoId,
 			@Param("numeroSmartcard") String numeroSmartcard,
 			@Param("fallaCosmeticaId") Integer fallaCosmeticaId,
-			@Param("causa") String causa,
-			@Param("fallaFuncionalId") Integer fallaFuncionalId);
+			@Param("fallaFuncionalId") Integer fallaFuncionalId,
+			@Param("causa") String causa);
 
 	@Modifying
 	@Transactional

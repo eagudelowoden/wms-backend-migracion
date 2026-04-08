@@ -1,11 +1,14 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import com.woden.wms_backend.models.Entity.AccesorioModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.models.Entity.DespachoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.DespachoRepository;
 import com.woden.wms_backend.services.BaseService;
+
+import java.util.List;
 
 @Service
 public class DespachoService extends BaseService<DespachoModel, Integer> {
@@ -22,7 +25,7 @@ public class DespachoService extends BaseService<DespachoModel, Integer> {
       repository.insertDispatch(id, serial, mac, codigoSapId, palletId, palletIdIngreso, cajaDespachoId, estadoId,
           tipoOrigenId, origenId, tipologiaId, nivelId, tramite, documento, guia, falla, prealertaId, cruce, novedad,
           usuarioId, fecha, pedidoSap, smartCardId, smartCard, loteId, serial3, cajaIngresoId, numeroSmartcard,
-          fallaCosmeticaId, causa, fallaFuncionalId);
+          fallaCosmeticaId,fallaFuncionalId ,causa);
       return 1;
     } catch (Exception e) {
       System.out.println(e);
@@ -30,36 +33,50 @@ public class DespachoService extends BaseService<DespachoModel, Integer> {
     }
   }
 
-  public Integer insertDispatchAccesory(Integer id, Integer codigoSapId, String tipoAccesorio,
-      Integer tipoOrigenId, Integer origenId, Integer palletId, Integer estadoId,
-      Integer estadoLimpiezaId, String documento, String observacion, String guia,
-      Integer usuarioId, String fechaIngreso, String serialEmpaque, Integer caja,
-      String pedidoSap, String fechaLimpieza, String fechaEmpaque, Integer usuarioLimpiezaId) {
-    try {
-      repository.insertDispatchAccesory(
-          id,
-          codigoSapId,
-          tipoAccesorio,
-          tipoOrigenId,
-          origenId,
-          palletId,
-          estadoId, // AGREGADO
-          estadoLimpiezaId,
-          documento,
-          observacion,
-          guia,
-          usuarioId,
-          fechaIngreso, // AGREGADO
-          serialEmpaque, // AGREGADO
-          caja,
-          pedidoSap, // AGREGADO
-          fechaLimpieza,
-          fechaEmpaque,
-          usuarioLimpiezaId);
-      return 1;
-    } catch (Exception e) {
-      e.printStackTrace();
-      return 0;
-    }
+  public Integer insertDispatchAccesory(
+          List<AccesorioModel> accesorios,
+          Integer estadoId,
+          Integer usuarioId,
+          String pedidoSap) {
+
+    return repository.insertDispatchAccesoryBatch(
+            accesorios,
+            estadoId,
+            usuarioId,
+            pedidoSap
+    );
   }
+
+//  public Integer insertDispatchAccesory(Integer id, Integer codigoSapId, String tipoAccesorio,
+//      Integer tipoOrigenId, Integer origenId, Integer palletId, Integer estadoId,
+//      Integer estadoLimpiezaId, String documento, String observacion, String guia,
+//      Integer usuarioId, String fechaIngreso, String serialEmpaque, Integer caja,
+//      String pedidoSap, String fechaLimpieza, String fechaEmpaque, Integer usuarioLimpiezaId) {
+//    try {
+//      repository.insertDispatchAccesory(
+//          id,
+//          codigoSapId,
+//          tipoAccesorio,
+//          tipoOrigenId,
+//          origenId,
+//          palletId,
+//          estadoId, // AGREGADO
+//          estadoLimpiezaId,
+//          documento,
+//          observacion,
+//          guia,
+//          usuarioId,
+//          fechaIngreso, // AGREGADO
+//          serialEmpaque, // AGREGADO
+//          caja,
+//          pedidoSap, // AGREGADO
+//          fechaLimpieza,
+//          fechaEmpaque,
+//          usuarioLimpiezaId);
+//      return 1;
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      return 0;
+//    }
+//  }
 }
