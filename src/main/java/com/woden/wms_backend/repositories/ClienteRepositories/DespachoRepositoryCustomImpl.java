@@ -26,7 +26,7 @@ public class DespachoRepositoryCustomImpl implements DespachoRepositoryCustom {
 
         String sql = "{call pa_InsertDispatchAccesory(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
         Connection conn = null;
-
+//METODO PARA DESPACHAR DE MANERA MASIVA
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
