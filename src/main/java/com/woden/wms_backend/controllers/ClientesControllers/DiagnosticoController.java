@@ -3,6 +3,8 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,8 @@ import com.woden.wms_backend.services.ClienteServices.DiagnosticoService;
 @RestController
 @RequestMapping("/client/diagnostico")
 public class DiagnosticoController {
+  private static final Logger logger = LoggerFactory.getLogger(DiagnosticoController.class);
+
   @Autowired
   private DiagnosticoService service;
 
@@ -54,17 +58,12 @@ public class DiagnosticoController {
 
   @PostMapping("/updateDiagnostico")
   public ResponseEntity<?> updateDiagnostico(@RequestBody List<Map<String, Object>> requestList) {
+    logger.info("[DIAGNOSTICO-PROCESO] Recibida solicitud para actualizar diagnóstico de {} seriales", requestList.size());
     try {
-      for (Map<String, Object> request : requestList) {
-        Integer estadoFinalId = (Integer) request.get("estadoFinalId");
-        Integer fallaId = (Integer) request.get("fallaId");
-        String serial = (String) request.get("serial");
-        Integer estadoCalidadId = (Integer) request.get("estadoCalidadId");
-
-        service.updateDiagnostico(estadoFinalId, fallaId, serial, estadoCalidadId);
-      }
+      service.updateDiagnosticos(requestList);
       return ResponseEntity.ok(1);
     } catch (Exception e) {
+      logger.error("[DIAGNOSTICO-PROCESO] Error actualizando diagnósticos: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }

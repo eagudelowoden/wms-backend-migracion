@@ -262,16 +262,12 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/updateStateAllEntry")
   public ResponseEntity<?> updateStateAllEntry(@RequestBody List<Map<String, Object>> requestList) {
+    logger.info("[updateStateAllEntries] Recibida solicitud para actualizar {} seriales", requestList.size());
     try {
-      for (Map<String, Object> requestBody : requestList) {
-        Integer estadoId = (Integer) requestBody.get("estadoId");
-        Integer usuarioId = (Integer) requestBody.get("usuarioIdMovimiento");
-        String serial = (String) requestBody.get("serial");
-
-        ingresoService.updateStateAllEntry(estadoId, usuarioId, serial);
-      }
+      ingresoService.updateStateAllEntries(requestList);
       return ResponseEntity.ok(1);
     } catch (Exception e) {
+      logger.error("[updateStateAllEntries] Error actualizando seriales: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }

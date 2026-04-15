@@ -402,6 +402,19 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateStateAllEntry(estadoId, usuarioId, serial);
   }
 
+  @Transactional
+  public void updateStateAllEntries(List<Map<String, Object>> requestList) {
+    int procesados = 0;
+    for (Map<String, Object> requestBody : requestList) {
+      Integer estadoId = (Integer) requestBody.get("estadoId");
+      Integer usuarioId = (Integer) requestBody.get("usuarioIdMovimiento");
+      String serial = (String) requestBody.get("serial");
+      ingresoRepository.updateStateAllEntry(estadoId, usuarioId, serial);
+      procesados++;
+    }
+    logger.info("[updateStateAllEntries] {} seriales actualizados", procesados);
+  }
+
   public List<Map<String, String>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
     List<Object[]> results = ingresoRepository.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
     List<Map<String, String>> diagnosticEntries = new ArrayList<>();
