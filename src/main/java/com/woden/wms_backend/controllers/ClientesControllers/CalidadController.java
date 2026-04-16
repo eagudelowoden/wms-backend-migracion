@@ -120,7 +120,16 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
         }
     }
 
-
+    @GetMapping("/validateQualityByPallet")
+    public ResponseEntity<Integer> validateQualityByPallet(
+            @RequestParam Integer palletId) {
+        try {
+            int result = calidadService.validateQualityByPallet(palletId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.ok(0); // si falla, deja pasar
+        }
+    }
 
 
 

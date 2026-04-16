@@ -65,6 +65,10 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
     );
 
 
+    @Query(value = "EXEC pa_ValidateQualityByPallet :palletId", nativeQuery = true)
+    Integer validateQualityByPallet(@Param("palletId") Integer palletId);
+
+
 }
 
 

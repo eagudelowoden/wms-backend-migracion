@@ -40,8 +40,9 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       @PathVariable Boolean kitEntryOn) {
     Map<String, String> response = new HashMap<>();
     try {
-      palletService.createPallet(pallet, kitEntryOn);
+      String numeroPallet = palletService.createPallet(pallet, kitEntryOn);
       response.put("message", "Pallet creado exitosamente.");
+      response.put("numero", numeroPallet);
       return ResponseEntity.ok(response); // Devuelve un JSON en lugar de un String
     } catch (Exception e) {
       response.put("error", "Error al crear el pallet: " + e.getMessage());
@@ -442,6 +443,29 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
+  }
+
+  @PostMapping("/reservePallet")
+  public ResponseEntity<Map<String, Object>> reservePallet(@RequestBody Map<String, Integer> body) {
+    Map<String, Object> result = palletService.reservePallet(
+        body.get("origenId"),
+        body.get("destinoId"),
+        body.get("usuarioId"));
+    return ResponseEntity.ok(result);
+  }
+
+  @PostMapping("/updatePalletData")
+  public ResponseEntity<Map<String, String>> updatePalletData(@RequestBody Map<String, Integer> body) {
+    palletService.updatePalletData(
+        body.get("palletId"),
+        body.get("codigoSapId"),
+        body.get("tipologiaId"),
+        body.get("posicionId"),
+        body.get("loteId"),
+        body.get("usuarioId"));
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "Pallet actualizado correctamente");
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/getPalletNumero")

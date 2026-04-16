@@ -51,8 +51,9 @@ public class SecurityConfig {
         "https://wms.woden.com.co", "https://wms.woden.com.co:9000", "http://wms.woden.com.co",
         "https://wmstest.woden.com.co", "https://wmstest.woden.com.co:9000", "http://wmstest.woden.com.co",
         "https://wmstestecu.woden.com.co", "https://wmstestecu.woden.com.co:9005", "http://wmstestecu.woden.com.co",
-        "http://18.217.246.39:9000", "http://localhost:4200", "http://52.14.166.232:8443", "http://52.14.166.232:9005",
-        "https://woden-wts-dev.arkade.com.co","http://localhost:9001",
+        "http://18.217.246.39:9000", "http://localhost:4200", "http://52.14.166.232:8443",
+         "http://52.14.166.232:8084","http://52.14.166.232:8084", "http://52.14.166.232:9005",
+        "https://woden-wts-dev.arkade.com.co","http://localhost:9001","http://localhost:8084",
         "https://wmstest.woden.com.co/admin",
         "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*",
         "http://woden-wts-dev.arkade.com.co:443"));

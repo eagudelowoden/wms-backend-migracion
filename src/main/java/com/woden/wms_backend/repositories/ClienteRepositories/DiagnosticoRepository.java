@@ -27,7 +27,6 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
             @Param("variable4") String variable4);
 
     @Modifying
-    @Transactional
     @Query(value = "EXEC pa_UpdateDiagnostic :estadoFinalId, :fallaId, :serial, :estadoCalidadId", nativeQuery = true)
     void updateDiagnostico(
             @Param("estadoFinalId") Integer estadoFinalId,
