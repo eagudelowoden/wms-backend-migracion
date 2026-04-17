@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -25,8 +24,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   @Autowired
   private PalletRepository palletRepository;
-  @Autowired
-  private IngresoRepository ingresoRepository;
   @Autowired
   private CodigoSapRepository codigoSapRepository;
   @Autowired
@@ -193,10 +190,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return pallets;
   }
 
-  public void cerrarPallet(Integer palletId, Integer destinoId, Integer tipologiaId, Integer posicionId,
-      Integer estado) {
-    Integer filas = 0;
-    palletRepository.sendPallet(destinoId, tipologiaId, posicionId, estado, palletId, filas);
+  public void cerrarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
+      Integer posicionId, Integer usuarioId, Integer opcion) {
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estadoId, usuarioId, opcion, 0, 0);
   }
 
   public Integer getCount(Integer palletId, String tabla) {
@@ -286,15 +282,18 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   public boolean confirmarPalletTransito(ConfirmarPalletDTO dto) {
-    ingresoRepository.sendIngreso(dto.getDestinoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0,
-        0);
-    palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    palletRepository.enviarPallet(
+        dto.getPalletId(), dto.getDestinoId(), dto.getDestinoId(),
+        dto.getTipologiaId(), dto.getPosicionId(), 1,
+        dto.getUsuarioId(), 0, 0, 0);
     return true;
   }
 
   public boolean abrirPalletTransito(AbrirPalletDTO dto) {
-    ingresoRepository.sendIngreso(dto.getOrigenId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0, 0);
-    palletRepository.sendPallet(dto.getOrigenId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    palletRepository.enviarPallet(
+        dto.getPalletId(), dto.getOrigenId(), dto.getOrigenId(),
+        dto.getTipologiaId(), dto.getPosicionId(), 1,
+        dto.getUsuarioId(), 0, 0, 0);
     return true;
   }
 

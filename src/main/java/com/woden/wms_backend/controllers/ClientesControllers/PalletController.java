@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
 
 @RestController
@@ -32,8 +31,6 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @Autowired
   private PalletService palletService;
-  @Autowired
-  private IngresoService ingresoService;
 
   @PostMapping("/create/{kitEntryOn}")
   public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet,
@@ -94,10 +91,10 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
     Map<String, String> response = new HashMap<>();
     try {
-      ingresoService.sendEntry(dto.getPalletId(), dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(),
-          dto.getOpcion());
-      palletService.cerrarPallet(dto.getPalletId(), dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(),
-          dto.getEstadoId());
+      palletService.cerrarPallet(
+          dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
+          dto.getTipologiaId(), dto.getPosicionId(),
+          dto.getUsuarioId(), dto.getOpcion());
 
       response.put("message", "Pallet cerrado correctamente");
       return ResponseEntity.ok(response);
