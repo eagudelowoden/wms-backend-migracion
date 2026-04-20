@@ -215,10 +215,10 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   List<Object[]> searchModels(@Param("palletId") Integer palletId);
 
 
-  // REEMPLAZAR el método sendModels existente por este:
+
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId, 0", nativeQuery = true)
+  @Query(value = "DECLARE @out int; EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId, @out OUTPUT", nativeQuery = true)
   void sendModels(
           @Param("estadoId")        Integer estadoId,
           @Param("usuarioId")       Integer usuarioId,
