@@ -6,6 +6,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.woden.wms_backend.dto.*;
+import com.woden.wms_backend.repositories.ClienteRepositories.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,12 +18,10 @@ import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.dto.ModeloPalletDto;
 import com.woden.wms_backend.dto.SendModelsDto;
 import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.util.TypeMapper;
+
+
 
 @Service
 public class PalletService extends BaseService<PalletModel, Integer> {
@@ -33,6 +34,13 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private CodigoSapRepository codigoSapRepository;
   @Autowired
   private MaestroRepository maestroRepository;
+
+  @Autowired
+  private PosicionService posicionService;
+  @Autowired
+  private PosicionRepository  posicionRepository;
+
+  private static final Logger log = LoggerFactory.getLogger(PalletService.class);
 
 
 
@@ -648,30 +656,60 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   public List<ModeloPalletDto> searchModels(Integer palletId) {
     List<Object[]> rows = palletRepository.searchModels(palletId);
     List<ModeloPalletDto> result = new ArrayList<>();
-
     for (Object[] row : rows) {
       ModeloPalletDto dto = new ModeloPalletDto();
-      dto.setCodigoSap(row[0] != null ? row[0].toString() : "");  // "codigo"
-      dto.setCantidad(row[1] != null ? Integer.valueOf(row[1].toString()) : 0); // "cantidad"
-      dto.setPosicion(null); // el usuario la selecciona en frontend
+      dto.setCodigoSap(row[0] != null ? row[0].toString() : "");
+      dto.setCantidad(row[1] != null ? Integer.valueOf(row[1].toString()) : 0);
+      dto.setPosicion(null);
       result.add(dto);
     }
     return result;
   }
 
-
+  @Transactional
   public int sendModels(SendModelsDto dto) {
     try {
+      // 1. Validar si ya existe el pallet en esa posición
+      List<Object[]> existente = palletRepository.getModelByNumber(dto.getPosicionNumero());
+
+      Integer palletDestinoId;
+
+      if (existente == null || existente.isEmpty()) {
+        // Buscar datos maestros necesarios para el nuevo pallet
+        Integer codigoSapMultimodelo = codigoSapRepository.getIdByCodigo("MULTIMODELO");
+        Integer tipologiaLibre = maestroRepository.getIdByDescripcionAndTipo("LIBRE UTILIZACION", "Tipologias");
+        Integer posicionId = posicionRepository.getIdByNumero(dto.getPosicionNumero());
+
+        // Insertar nuevo pallet
+        palletRepository.insertPallet(
+                dto.getPosicionNumero(),
+                posicionId,
+                codigoSapMultimodelo,
+                tipologiaLibre,
+                0, 0,
+                dto.getUsuarioId(),
+                null
+        );
+        // Obtener el ID del pallet recién creado
+        palletDestinoId = palletRepository.getIdPallet(dto.getPosicionNumero());
+      } else {
+        // Si ya existe, usamos el ID que viene del DTO o lo buscamos
+        palletDestinoId = palletRepository.getIdPallet(dto.getPosicionNumero());
+      }
+
+      // 2. Ejecutar la transferencia de modelos
       palletRepository.sendModels(
               dto.getDestinoId(),
               dto.getUsuarioId(),
-              dto.getPalletDestinoId(),
+              palletDestinoId,
               dto.getPalletOrigenId(),
               dto.getCodigoSapId()
       );
+
       return 1;
     } catch (Exception e) {
-      e.printStackTrace();
+
+      log.error("Error en sendModels: ", e); // Mejor usar un logger
       return 0;
     }
   }

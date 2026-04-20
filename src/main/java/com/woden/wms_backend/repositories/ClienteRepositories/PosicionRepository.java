@@ -19,4 +19,7 @@ public interface PosicionRepository extends BaseRepository<PosicionModel, Intege
 
   @Query(value = "select id from Posicion where numero= :numero", nativeQuery = true)
   Integer getId(@Param("numero") String numero);
+
+  @Query(value = "SELECT id FROM Posicion WHERE numero = :numero", nativeQuery = true)
+  Integer getIdByNumero(@Param("numero") String numero);
 }

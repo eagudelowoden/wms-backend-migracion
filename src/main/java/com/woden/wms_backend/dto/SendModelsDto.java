@@ -10,4 +10,5 @@ public class SendModelsDto {
     private Integer destinoId;
     private Integer palletDestinoId;
     private Integer usuarioId;
+    private String posicionNumero;
 }

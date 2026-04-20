@@ -215,8 +215,11 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   List<Object[]> searchModels(@Param("palletId") Integer palletId);
 
 
-  @Query(value = "EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId", nativeQuery = true)
-  Integer sendModels(
+  // REEMPLAZAR el método sendModels existente por este:
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId, 0", nativeQuery = true)
+  void sendModels(
           @Param("estadoId")        Integer estadoId,
           @Param("usuarioId")       Integer usuarioId,
           @Param("palletDestinoId") Integer palletDestinoId,
@@ -224,6 +227,8 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
           @Param("codigoSapId")     Integer codigoSapId
   );
 
+  @Query(value = "EXEC pa_GetModelPalletByNumber :numero", nativeQuery = true)
+  List<Object[]> getModelByNumber(@Param("numero") String numero);
 
   /**
    * PASO 1 de 2 — Incrementa atómicamente el consecutivo en ConsecutivoPallet.
