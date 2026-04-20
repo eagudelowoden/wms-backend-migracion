@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
+import com.woden.wms_backend.dto.ModeloPalletDto;
+import com.woden.wms_backend.dto.SendModelsDto;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
@@ -31,6 +33,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private CodigoSapRepository codigoSapRepository;
   @Autowired
   private MaestroRepository maestroRepository;
+
+
+
 
   public PalletModel getModel(int id) {
     List<Object[]> results = palletRepository.getPalletById(id);
@@ -637,5 +642,37 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public Boolean getPalletNumero(String palletNumero) {
     return palletRepository.getPalletNumero(palletNumero);
+  }
+
+
+  public List<ModeloPalletDto> searchModels(Integer palletId) {
+    List<Object[]> rows = palletRepository.searchModels(palletId);
+    List<ModeloPalletDto> result = new ArrayList<>();
+
+    for (Object[] row : rows) {
+      ModeloPalletDto dto = new ModeloPalletDto();
+      dto.setCodigoSap(row[0] != null ? row[0].toString() : "");  // "codigo"
+      dto.setCantidad(row[1] != null ? Integer.valueOf(row[1].toString()) : 0); // "cantidad"
+      dto.setPosicion(null); // el usuario la selecciona en frontend
+      result.add(dto);
+    }
+    return result;
+  }
+
+
+  public int sendModels(SendModelsDto dto) {
+    try {
+      palletRepository.sendModels(
+              dto.getDestinoId(),
+              dto.getUsuarioId(),
+              dto.getPalletDestinoId(),
+              dto.getPalletOrigenId(),
+              dto.getCodigoSapId()
+      );
+      return 1;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return 0;
+    }
   }
 }

@@ -478,4 +478,29 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
   }
+
+
+  @GetMapping("/searchModels")
+  public ResponseEntity<List<ModeloPalletDto>> searchModels(
+          @RequestParam Integer palletId) {
+    try {
+      List<ModeloPalletDto> modelos = palletService.searchModels(palletId);
+      return ResponseEntity.ok(modelos);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @PostMapping("/sendModels")
+  public ResponseEntity<Integer> sendModels(
+          @RequestBody SendModelsDto dto) {
+    try {
+      int result = palletService.sendModels(dto);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.badRequest().body(0);
+    }
+  }
 }

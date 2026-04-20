@@ -211,6 +211,20 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
   Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
 
+  @Query(value = "EXEC pa_SearchModelsPallet :palletId", nativeQuery = true)
+  List<Object[]> searchModels(@Param("palletId") Integer palletId);
+
+
+  @Query(value = "EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId", nativeQuery = true)
+  Integer sendModels(
+          @Param("estadoId")        Integer estadoId,
+          @Param("usuarioId")       Integer usuarioId,
+          @Param("palletDestinoId") Integer palletDestinoId,
+          @Param("palletId")        Integer palletId,
+          @Param("codigoSapId")     Integer codigoSapId
+  );
+
+
   /**
    * PASO 1 de 2 — Incrementa atómicamente el consecutivo en ConsecutivoPallet.
    *
