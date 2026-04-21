@@ -143,6 +143,7 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
                     empaque.getCodigoSapId(),
                     empaque.getPalletId(),
                     empaque.getCajaEmpaqueId(),
+                    empaque.getEstadoId(),
                     empaque.getNivelId(),
                     empaque.getUsuarioId(),
                     fechaProceso,

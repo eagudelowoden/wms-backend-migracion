@@ -21,19 +21,28 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
 
   public EtiquetaModel getModelLabel(String nombre) {
     List<Object[]> results = etiquetaRepository.getModelLabel(nombre);
-    EtiquetaModel etiqueta = new EtiquetaModel();
+
+    if (results == null || results.isEmpty()) {
+      throw new RuntimeException("No se encontró etiqueta con nombre: " + nombre);
+    }
 
     Object[] obj = results.get(0);
+    EtiquetaModel etiqueta = new EtiquetaModel();
+
     etiqueta.setId((Integer) obj[0]);
     etiqueta.setNombre((String) obj[1]);
     etiqueta.setTipo((String) obj[2]);
     etiqueta.setImpresion((Integer) obj[3]);
     etiqueta.setCodigoSapId((Integer) obj[4]);
     etiqueta.setCodigoSapCombo((String) obj[5] + "|" + (String) obj[6]);
-    etiqueta.setActivo((Boolean) obj[7]);
+
+
+    if (obj.length > 7) {
+      etiqueta.setActivo((Boolean) obj[7]);
+    }
+
     return etiqueta;
   }
-
   public List<EtiquetaListDTO> getListLabel(String tipo) {
     List<Object[]> results = etiquetaRepository.getListLabel(tipo);
     if (results.isEmpty()) {

@@ -31,6 +31,9 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("usuarioId") Integer usuarioId,
       @Param("loteId") Integer loteId);
 
+  @Query(value = "SELECT TOP 1 numero FROM Pallet ORDER BY id DESC", nativeQuery = true)
+  String getLastInsertedPalletNumber();
+
   @Query(value = "EXEC pa_SearchEntryPallet :numero, :destino, :usuarioId", nativeQuery = true)
   List<Object[]> searchEntry(
       @Param("numero") String numero,
@@ -204,4 +207,59 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
   @Query(value = "EXEC pa_SearchGeneralSettingsPallet :numero, :estado", nativeQuery = true)
   List<Object[]> searchGeneralSettingsPallet(@Param("numero") String numero, @Param("estado") String estado);
+
+  @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
+  Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_EnviarPallet :palletId, :destinoId, :estadoId, :tipologiaId, :posicionId, :estado, :usuarioId, :opcion, :filasIngreso OUT, :filasPallet OUT", nativeQuery = true)
+  void enviarPallet(
+      @Param("palletId") Integer palletId,
+      @Param("destinoId") Integer destinoId,
+      @Param("estadoId") Integer estadoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("posicionId") Integer posicionId,
+      @Param("estado") Integer estado,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("opcion") Integer opcion,
+      @Param("filasIngreso") Integer filasIngreso,
+      @Param("filasPallet") Integer filasPallet);
+
+  /**
+   * PASO 1 de 2 — Incrementa atómicamente el consecutivo en ConsecutivoPallet.
+   *
+   * WITH (HOLDLOCK) hace que el MERGE corra en modo SERIALIZABLE para esa fila:
+   * si dos usuarios llegan al mismo tiempo, el segundo espera a que el primero
+   * confirme su transacción antes de poder incrementar. Imposible obtener duplicados.
+   *
+   * Si no existe fila para hoy la crea con UltimoNumero = 1.
+   * Se debe llamar antes de getNextPalletNumber() dentro de la misma transacción.
+   */
+  @Modifying
+  @Query(value = """
+      MERGE WmsWdGeneral.dbo.ConsecutivoPallet WITH (HOLDLOCK) AS t
+      USING (SELECT CAST(GETDATE() AS DATE) AS hoy) AS s
+        ON t.Fecha = s.hoy
+      WHEN MATCHED THEN
+        UPDATE SET UltimoNumero = UltimoNumero + 1
+      WHEN NOT MATCHED THEN
+        INSERT (Fecha, UltimoNumero) VALUES (s.hoy, 1);
+      """, nativeQuery = true)
+  void incrementarConsecutivoPallet();
+
+  /**
+   * PASO 2 de 2 — Lee el consecutivo ya incrementado y devuelve el número de pallet
+   * completo: yyMMdd (6 chars) + consecutivo relleno a 6 dígitos = 12 chars.
+   * Ejemplo: 260416000350
+   *
+   * Llamar siempre después de incrementarConsecutivoPallet() en la misma transacción.
+   */
+  @Query(value = """
+      SELECT FORMAT(GETDATE(), 'yyMMdd')
+           + RIGHT('000000' + CAST(UltimoNumero AS VARCHAR(6)), 6)
+      FROM WmsWdGeneral.dbo.ConsecutivoPallet
+      WHERE Fecha = CAST(GETDATE() AS DATE)
+      """, nativeQuery = true)
+  String getNextPalletNumber();
 }

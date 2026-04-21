@@ -24,4 +24,10 @@ public class EtiquetaDatosGeneralesDTO {
     private String smartCardCodigoSap;
     private String smartCardDescripcion;
     private String etiquetaUnitaria;
+    private String serialSmartCard;
+    private String serialCode;
+
+
+
+
 }

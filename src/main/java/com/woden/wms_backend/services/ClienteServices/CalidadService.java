@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,10 +27,7 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
   private CalidadRepository calidadRepository;
 
   @Autowired
-  private  PalletRepository palletRepository;
-
-  @Autowired
-  private IngresoRepository ingresoRepository;
+  private PalletRepository palletRepository;
 
   public CalidadService(CalidadRepository repository) {
   }
@@ -104,12 +100,22 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         }
     }
     public boolean sendCalidad(ConfirmarPalletDTO dto) {
-        ingresoRepository.sendIngreso(dto.getDestinoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0,
-                0);
-        palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+        palletRepository.enviarPallet(
+                dto.getPalletId(), dto.getDestinoId(), dto.getDestinoId(),
+                dto.getTipologiaId(), dto.getPosicionId(), 1,
+                dto.getUsuarioId(), 0, 0, 0);
         return true;
     }
 
+    public int validateQualityByPallet(Integer palletId) {
+        try {
+            Integer result = calidadRepository.validateQualityByPallet(palletId);
+            return result != null ? result : 0;
+        } catch (Exception e) {
+            // SP no existe o error → dejar pasar
+            return 0;
+        }
+    }
 
 
 

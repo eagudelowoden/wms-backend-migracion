@@ -48,8 +48,8 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   @Query(value = "EXEC pa_UpdatePalletAccesory :accesorioId, :palletId", nativeQuery = true)
   void updatePalletAccesory(@Param("accesorioId") Integer accesorioId, @Param("palletId") Integer palletId);
 
-  @Query(value = "EXEC pa_SearchSeparatePalletAccesory :cantidad, :palletId", nativeQuery = true)
-  List<Object[]> searchSeparatePalletAccesory(@Param("cantidad") Integer cantidad, @Param("palletId") Integer palletId);
+  @Query(value = "EXEC pa_SearchSeparatePalletAccesory :cantidad, :palletId, :PalletDestinoId", nativeQuery = true)
+  List<Object[]> searchSeparatePalletAccesory(@Param("cantidad") Integer cantidad, @Param("palletId") Integer palletId, @Param("PalletDestinoId") Integer PalletDestinoId);
 
   @Modifying
   @Transactional
@@ -57,7 +57,7 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   void UpdateSerialAccesory(@Param("serialNuevo") String serialNuevo, @Param("serialAnterior") String serialAnterior,
       @Param("filas") Integer filas);
 
-  @Query(value = "EXEC pa_SearchPackingCodigoSapAccesory :estado, :palletId, :codigoSapId", nativeQuery = true)
+    @Query(value = "EXEC pa_SearchPackingCodigoSapAccesory :estado, :palletId, :codigoSapId", nativeQuery = true)
   List<Object[]> searchPackingCodigoSapAccesory(@Param("estado") String estado, @Param("palletId") Integer palletId,
       @Param("codigoSapId") Integer codigoSapId);
 
@@ -136,5 +136,6 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   @Transactional
   @Query(value = "EXEC pa_BackCleanEntry :id, :filas OUT", nativeQuery = true)
   void BackCleanEntry(@Param("id") Integer id, @Param("filas") Integer filas);
+
 
 }

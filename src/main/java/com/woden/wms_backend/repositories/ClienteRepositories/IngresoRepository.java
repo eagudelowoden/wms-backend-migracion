@@ -121,7 +121,6 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("palletId") Integer palletId,
 			@Param("cajaId") Integer cajaId);
 
-
 	/// repetido
 	@Modifying
 	@Transactional
@@ -471,4 +470,21 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	List<Object[]> getEntryProgress(
 			@Param("palletId") Integer palletId,
 			@Param("estadoId") Integer estadoId);
+
+	@Query(value = "EXEC pa_SearchScrapEntry :estado", nativeQuery = true)
+	List<Object[]> searchScrapEntry(@Param("estado") String estado);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_UpdateScrapAll :serial, :usuarioIdMovimiento, :novedad, :estadoId", nativeQuery = true)
+	void updateScrapAll(@Param("estadoId") Integer estadoId,
+			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
+			@Param("serial") String serial,
+			@Param("novedad") String novedad);
+
+	@Query(value = "EXEC pa_GetScrapUser :usuarioIdMovimiento", nativeQuery = true)
+	List<Object[]> getScrapUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
+
+	@Query(value = "EXEC pa_GetEtiquetadoUser :usuarioIdMovimiento", nativeQuery = true)
+	List<Object[]> getEtiquetadoUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
 }

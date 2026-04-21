@@ -66,7 +66,6 @@ public class EnsambleService extends BaseService<EnsambleModel, Integer> {
       map.put("modelo", row[12] != null ? row[12].toString() : "");
       map.put("fecha", row[13] != null ? row[13].toString() : "");
       formattedResults.add(map);
-      System.out.println(map);
     }
     return formattedResults;
   }

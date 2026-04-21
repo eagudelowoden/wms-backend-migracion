@@ -60,12 +60,29 @@ public class DiagnosticoService {
     }
   }
 
+  @Transactional
   public void updateDiagnostico(Integer estadoFinalId, Integer fallaId, String serial, Integer estadoCalidadId) {
     try {
       repository.updateDiagnostico(estadoFinalId, fallaId, serial, estadoCalidadId);
     } catch (Exception e) {
       System.out.println("Error: " + e.getMessage());
     }
+  }
+
+  @Transactional
+  public void updateDiagnosticos(List<Map<String, Object>> requestList) {
+    System.out.println("[DIAGNOSTICO-PROCESO] Iniciando actualización diagnóstico de " + requestList.size() + " seriales");
+    int procesados = 0;
+    for (Map<String, Object> request : requestList) {
+      Integer estadoFinalId = (Integer) request.get("estadoFinalId");
+      Integer fallaId = (Integer) request.get("fallaId");
+      String serial = (String) request.get("serial");
+      Integer estadoCalidadId = (Integer) request.get("estadoCalidadId");
+      System.out.println("[DIAGNOSTICO-PROCESO] Procesando diagnóstico " + (procesados + 1) + "/" + requestList.size() + ": serial=" + serial + " estadoFinalId=" + estadoFinalId + " fallaId=" + fallaId);
+      repository.updateDiagnostico(estadoFinalId, fallaId, serial, estadoCalidadId);
+      procesados++;
+    }
+    System.out.println("[DIAGNOSTICO-PROCESO] Diagnósticos actualizados correctamente: " + procesados + "/" + requestList.size());
   }
 
   public Integer getFailureIdDiagnostic(Integer serialId) {

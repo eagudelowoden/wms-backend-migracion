@@ -57,6 +57,7 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
     }
 
     @PostMapping("/switch-client")
+
     public ResponseEntity<?> switchClient(@RequestBody ClientSwitchRequest request) {
         // Validar que el usuario tenga acceso a este cliente
         ClienteModel client = clienteService.getById(request.getClientId());

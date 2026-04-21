@@ -402,6 +402,19 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.updateStateAllEntry(estadoId, usuarioId, serial);
   }
 
+  @Transactional
+  public void updateStateAllEntries(List<Map<String, Object>> requestList) {
+    int procesados = 0;
+    for (Map<String, Object> requestBody : requestList) {
+      Integer estadoId = (Integer) requestBody.get("estadoId");
+      Integer usuarioId = (Integer) requestBody.get("usuarioIdMovimiento");
+      String serial = (String) requestBody.get("serial");
+      ingresoRepository.updateStateAllEntry(estadoId, usuarioId, serial);
+      procesados++;
+    }
+    logger.info("[updateStateAllEntries] {} seriales actualizados", procesados);
+  }
+
   public List<Map<String, String>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
     List<Object[]> results = ingresoRepository.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
     List<Map<String, String>> diagnosticEntries = new ArrayList<>();
@@ -898,5 +911,69 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Integer totalRemaining = row[2] != null ? ((Number) row[2]).intValue() : 0;
 
     return new EntryProgressDTO(totalCount, totalProcessed, totalRemaining);
+  }
+
+  public List<Map<String, Object>> searchScrapEntry(String estado) {
+    List<Object[]> results = ingresoRepository.searchScrapEntry(estado);
+    List<Map<String, Object>> scrapEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Map<String, Object> entry = new HashMap<>();
+      entry.put("serial", (String) result[0]);
+      entry.put("mac", (String) result[1]);
+      entry.put("codigoSap", (String) result[2]);
+      entry.put("descripcion", (String) result[3]);
+      scrapEntries.add(entry);
+    }
+    return scrapEntries;
+  }
+
+  public void updateScrapAll(Integer estadoId, Integer usuarioIdMovimiento, String serial, String novedad) {
+    ingresoRepository.updateScrapAll(estadoId, usuarioIdMovimiento, serial, novedad);
+  }
+
+  public List<Map<String, Object>> getScrapUser(Integer usuarioIdMovimiento) {
+    List<Object[]> results = ingresoRepository.getScrapUser(usuarioIdMovimiento);
+    List<Map<String, Object>> scrapEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Object[] row = result;
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0].toString());
+      map.put("serial", row[1].toString());
+      map.put("mac", row[2].toString());
+      map.put("serial3", row[3] != null ? row[3].toString() : "");
+      map.put("serial4", row[4] != null ? row[4].toString() : "");
+      map.put("serial5", row[5] != null ? row[5].toString() : "");
+      map.put("codigoSap", row[6].toString());
+      map.put("descripcion", row[7].toString());
+      map.put("usuarioAsignado", row[8] != null ? row[8].toString() : "");
+      map.put("nivelId", row[9] != null ? Integer.parseInt(row[9].toString()) : null);
+      map.put("loteId", row[10] != null ? Integer.parseInt(row[10].toString()) : null);
+      map.put("lote", row[11] != null ? row[11].toString() : "");
+      map.put("modelo", row[12] != null ? row[12].toString() : "");
+      map.put("fecha", row[13] != null ? row[13].toString() : "");
+      scrapEntries.add(map);
+    }
+    return scrapEntries;
+  }
+
+  public List<Map<String, Object>> getEtiquetadoUser(Integer usuarioIdMovimiento) {
+    List<Object[]> results = ingresoRepository.getEtiquetadoUser(usuarioIdMovimiento);
+    List<Map<String, Object>> etiquetadoEntries = new ArrayList<>();
+    for (Object[] result : results) {
+      Object[] row = result;
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0].toString());
+      map.put("serial", row[1].toString());
+      map.put("mac", row[2].toString());
+      map.put("serial3", row[3] != null ? row[3].toString() : "");
+      map.put("serial4", row[4] != null ? row[4].toString() : "");
+      map.put("serial5", row[5] != null ? row[5].toString() : "");
+      map.put("codigoSap", row[6].toString());
+      map.put("descripcion", row[7].toString());
+      map.put("estado", row[8] != null ? row[8].toString() : "");
+      map.put("fecha", row[8] != null ? row[8].toString() : "");
+      etiquetadoEntries.add(map);
+    }
+    return etiquetadoEntries;
   }
 }

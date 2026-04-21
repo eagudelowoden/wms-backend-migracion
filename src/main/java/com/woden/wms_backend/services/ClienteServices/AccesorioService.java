@@ -96,8 +96,8 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         accesoriosId.forEach(accesorioId -> accesorioRepository.updatePalletAccesory(accesorioId, palletId));
     }
 
-    public List<AccesorioSeparateDTO> searchSeparatePalletAccesory(Integer cantidad, Integer palletId) {
-        List<Object[]> resultados = accesorioRepository.searchSeparatePalletAccesory(cantidad, palletId);
+    public List<AccesorioSeparateDTO> searchSeparatePalletAccesory(Integer cantidad, Integer palletId, Integer palletDestinoId) {
+        List<Object[]> resultados = accesorioRepository.searchSeparatePalletAccesory(cantidad, palletId, palletDestinoId);  
         List<AccesorioSeparateDTO> accesorios = new ArrayList<>();
 
         for (Object[] fila : resultados) {
@@ -220,6 +220,11 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
         return formattedResults;
     }
+    private String toDateString(Object obj) {
+        if (obj == null) return null;
+        if (obj instanceof Timestamp) return ((Timestamp) obj).toString();
+        return obj.toString(); // Si es String u otro tipo
+    }
 
     public List<AccesorioModel> getModelDispatchAccesory(Integer palletId) {
         List<AccesorioModel> accesorios = new ArrayList<>();
@@ -232,16 +237,16 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
             accesorio.setTipoOrigenId((Integer) obj[3]);
             accesorio.setOrigenId((Integer) obj[4]);
             accesorio.setPalletId((Integer) obj[5]);
-            accesorio.setEstadoLimpiezaId((Integer) obj[6]);
+            accesorio.setEstadoLimpiezaId(obj[6]  != null ? ((Number) obj[6]).intValue()  : 0);
             accesorio.setDocumento((String) obj[7]);
             accesorio.setObservacion((String) obj[8]);
             accesorio.setGuia((String) obj[9]);
-            accesorio.setFecha(obj[10] != null ? ((Timestamp) obj[10]).toString() : null);
+            accesorio.setFecha(toDateString(obj[10]));
             accesorio.setSerialEmpaque((String) obj[11]);
             accesorio.setCaja((Integer) obj[12]);
-            accesorio.setFechaLimpieza(obj[13] != null ? ((Timestamp) obj[13]).toString() : null);
-            accesorio.setFechaEmpaque(obj[14] != null ? ((Timestamp) obj[14]).toString() : null);
-            accesorio.setUsuarioLimpiezaId((Integer) obj[15]);
+            accesorio.setFechaLimpieza(toDateString(obj[13]));
+            accesorio.setFechaEmpaque(toDateString(obj[14]));
+            accesorio.setUsuarioLimpiezaId(obj[15] != null ? ((Number) obj[15]).intValue(): 0);
             accesorios.add(accesorio);
         }
         return accesorios;

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
 
 @RestController
@@ -32,16 +31,15 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @Autowired
   private PalletService palletService;
-  @Autowired
-  private IngresoService ingresoService;
 
   @PostMapping("/create/{kitEntryOn}")
   public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet,
       @PathVariable Boolean kitEntryOn) {
     Map<String, String> response = new HashMap<>();
     try {
-      palletService.createPallet(pallet, kitEntryOn);
+      String numeroPallet = palletService.createPallet(pallet, kitEntryOn);
       response.put("message", "Pallet creado exitosamente.");
+      response.put("numero", numeroPallet);
       return ResponseEntity.ok(response); // Devuelve un JSON en lugar de un String
     } catch (Exception e) {
       response.put("error", "Error al crear el pallet: " + e.getMessage());
@@ -89,19 +87,19 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     return ResponseEntity.ok(cantidad);
   }
 
-  @PostMapping("/cerrar")
-  public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
-    Map<String, String> response = new HashMap<>();
+  @PostMapping("/enviarPallet")
+  public ResponseEntity<Map<String, Object>> enviarPallet(@RequestBody EnviarPalletDTO dto) {
+    Map<String, Object> response = new HashMap<>();
     try {
-      ingresoService.sendEntry(dto.getPalletId(), dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(),
-          dto.getOpcion());
-      palletService.cerrarPallet(dto.getPalletId(), dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(),
-          dto.getEstadoId());
+      palletService.enviarPallet(
+          dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
+          dto.getTipologiaId(), dto.getPosicionId(),
+          dto.getUsuarioId(), dto.getOpcion(), dto.getEstado());
 
-      response.put("message", "Pallet cerrado correctamente");
+      response.put("success", true);
       return ResponseEntity.ok(response);
     } catch (Exception e) {
-      response.put("message", "Error al cerrar el pallet: " + e.getMessage());
+      response.put("error", "Error al enviar el pallet: " + e.getMessage());
       return ResponseEntity.status(500).body(response);
     }
   }
@@ -396,12 +394,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       @RequestParam String destino,
       @RequestParam String numero) {
     try {
-    List<Map<String, Object>> pallets = palletService.searchReceivePartsPallet(destino, numero);
-    return ResponseEntity.ok(pallets);
-  } catch (Exception e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-  }
+      List<Map<String, Object>> pallets = palletService.searchReceivePartsPallet(destino, numero);
+      return ResponseEntity.ok(pallets);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
   }
 
   @GetMapping("/searchGeneralInventoryPallet")
@@ -441,6 +439,40 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+  }
+
+  @PostMapping("/reservePallet")
+  public ResponseEntity<Map<String, Object>> reservePallet(@RequestBody Map<String, Integer> body) {
+    Map<String, Object> result = palletService.reservePallet(
+        body.get("origenId"),
+        body.get("destinoId"),
+        body.get("usuarioId"));
+    return ResponseEntity.ok(result);
+  }
+
+  @PostMapping("/updatePalletData")
+  public ResponseEntity<Map<String, String>> updatePalletData(@RequestBody Map<String, Integer> body) {
+    palletService.updatePalletData(
+        body.get("palletId"),
+        body.get("codigoSapId"),
+        body.get("tipologiaId"),
+        body.get("posicionId"),
+        body.get("loteId"),
+        body.get("usuarioId"));
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "Pallet actualizado correctamente");
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/getPalletNumero")
+  public ResponseEntity<Boolean> getPalletNumero(@RequestParam String palletNumero) {
+    try {
+      Boolean result = palletService.getPalletNumero(palletNumero);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
   }
 }

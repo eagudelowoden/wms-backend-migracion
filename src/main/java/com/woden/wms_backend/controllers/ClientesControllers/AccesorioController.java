@@ -97,8 +97,8 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
     @GetMapping("/searchSeparatePalletAccesory")
-    public ResponseEntity<List<AccesorioSeparateDTO>> searchSeparatePalletAccesory(@RequestParam Integer cantidad, @RequestParam Integer palletId) {
-        List<AccesorioSeparateDTO> lista = accesorioService.searchSeparatePalletAccesory(cantidad, palletId);
+    public ResponseEntity<List<AccesorioSeparateDTO>> searchSeparatePalletAccesory(@RequestParam Integer cantidad, @RequestParam Integer palletId, @RequestParam Integer palletDestinoId) {
+        List<AccesorioSeparateDTO> lista = accesorioService.searchSeparatePalletAccesory(cantidad, palletId, palletDestinoId);
         return ResponseEntity.ok(lista);
     }
 

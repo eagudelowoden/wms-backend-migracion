@@ -89,9 +89,11 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
 
 
 
-    @Transactional(noRollbackFor = RuntimeException.class)
+    @Transactional
     public void createEmpaqueWEB(Integer serialId, String serial, String mac, Integer codigoSapId,
-                                 Integer palletId, Integer cajaEmpaqueId, Integer nivelId,
+                                 Integer palletId, Integer cajaEmpaqueId,
+                                 Integer estadoId,
+                                 Integer nivelId,
                                  Integer usuarioId, LocalDateTime fecha, Integer loteId,
                                  Integer smartCardId, String smartCard) {
 
@@ -104,6 +106,7 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             // La Native Query devolverá el valor de @FilasOut a través del SELECT final
             Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                     serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId,
+                    estadoId,
                     nivelId, usuarioId, fecha, loteParam, scIdParam, scParam
             );
 
@@ -124,15 +127,19 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
     }
 
     private String extraerMensajeLimpio(Exception e) {
-        String msg = e.getMessage();
-        // Si el error viene de SQL Server, suele traer el mensaje entre corchetes o al final
-        if (msg != null && msg.contains("Serie No empacada")) {
-            return "Serie No empacada, Por favor Reintentar.";
-        }
-
         Throwable cause = e;
         while (cause.getCause() != null) cause = cause.getCause();
-        return cause.getMessage();
+
+        String msg = cause.getMessage();
+
+        // SQL Server suele enviar los mensajes de RAISERROR con prefijos.
+        // Intentamos limpiar si contiene el texto del error 50000
+        if (msg != null && msg.contains("Error -")) {
+            // Esto cortará después del guion si viene como "Runtime Error: Error - Equipo..."
+            return msg.substring(msg.indexOf("Error -")).trim();
+        }
+
+        return msg != null ? msg : "Error desconocido en base de datos";
     }
 
     public int eliminarSeriesEmpaque(List<String> seriales) {
