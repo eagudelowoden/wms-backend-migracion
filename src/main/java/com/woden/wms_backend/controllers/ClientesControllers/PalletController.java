@@ -87,19 +87,19 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     return ResponseEntity.ok(cantidad);
   }
 
-  @PostMapping("/cerrar")
-  public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
-    Map<String, String> response = new HashMap<>();
+  @PostMapping("/enviarPallet")
+  public ResponseEntity<Map<String, Object>> enviarPallet(@RequestBody EnviarPalletDTO dto) {
+    Map<String, Object> response = new HashMap<>();
     try {
-      palletService.cerrarPallet(
+      palletService.enviarPallet(
           dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
           dto.getTipologiaId(), dto.getPosicionId(),
-          dto.getUsuarioId(), dto.getOpcion());
+          dto.getUsuarioId(), dto.getOpcion(), dto.getEstado());
 
-      response.put("message", "Pallet cerrado correctamente");
+      response.put("success", true);
       return ResponseEntity.ok(response);
     } catch (Exception e) {
-      response.put("message", "Error al cerrar el pallet: " + e.getMessage());
+      response.put("error", "Error al enviar el pallet: " + e.getMessage());
       return ResponseEntity.status(500).body(response);
     }
   }

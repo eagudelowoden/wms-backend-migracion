@@ -190,9 +190,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return pallets;
   }
 
-  public void cerrarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
-      Integer posicionId, Integer usuarioId, Integer opcion) {
-    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estadoId, usuarioId, opcion, 0, 0);
+  public void enviarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
+      Integer posicionId, Integer usuarioId, Integer opcion, Integer estado) {
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estado, usuarioId, opcion, 0, 0);
   }
 
   public Integer getCount(Integer palletId, String tabla) {
