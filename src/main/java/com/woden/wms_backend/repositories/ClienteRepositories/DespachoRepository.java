@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.woden.wms_backend.models.Entity.DespachoModel;
 import com.woden.wms_backend.repositories.BaseRepository;
-
 import jakarta.transaction.Transactional;
 
 @Repository

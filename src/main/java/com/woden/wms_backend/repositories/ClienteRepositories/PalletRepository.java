@@ -211,6 +211,21 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
   Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
 
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_EnviarPallet :palletId, :destinoId, :estadoId, :tipologiaId, :posicionId, :estado, :usuarioId, :opcion, :filasIngreso OUT, :filasPallet OUT", nativeQuery = true)
+  void enviarPallet(
+      @Param("palletId") Integer palletId,
+      @Param("destinoId") Integer destinoId,
+      @Param("estadoId") Integer estadoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("posicionId") Integer posicionId,
+      @Param("estado") Integer estado,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("opcion") Integer opcion,
+      @Param("filasIngreso") Integer filasIngreso,
+      @Param("filasPallet") Integer filasPallet);
+
   @Query(value = "EXEC pa_SearchModelsPallet :palletId", nativeQuery = true)
   List<Object[]> searchModels(@Param("palletId") Integer palletId);
 

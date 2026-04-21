@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
 
 @RestController
@@ -90,19 +89,19 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     return ResponseEntity.ok(cantidad);
   }
 
-  @PostMapping("/cerrar")
-  public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
-    Map<String, String> response = new HashMap<>();
+  @PostMapping("/enviarPallet")
+  public ResponseEntity<Map<String, Object>> enviarPallet(@RequestBody EnviarPalletDTO dto) {
+    Map<String, Object> response = new HashMap<>();
     try {
-      ingresoService.sendEntry(dto.getPalletId(), dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(),
-          dto.getOpcion());
-      palletService.cerrarPallet(dto.getPalletId(), dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(),
-          dto.getEstadoId());
+      palletService.enviarPallet(
+          dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
+          dto.getTipologiaId(), dto.getPosicionId(),
+          dto.getUsuarioId(), dto.getOpcion(), dto.getEstado());
 
-      response.put("message", "Pallet cerrado correctamente");
+      response.put("success", true);
       return ResponseEntity.ok(response);
     } catch (Exception e) {
-      response.put("message", "Error al cerrar el pallet: " + e.getMessage());
+      response.put("error", "Error al enviar el pallet: " + e.getMessage());
       return ResponseEntity.status(500).body(response);
     }
   }
@@ -476,6 +475,23 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+    }
+  }
+
+  @PostMapping("/cerrar")
+  public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
+    Map<String, String> response = new HashMap<>();
+    try {
+      palletService.cerrarPallet(
+          dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
+          dto.getTipologiaId(), dto.getPosicionId(),
+          dto.getUsuarioId(), dto.getOpcion());
+
+      response.put("message", "Pallet cerrado correctamente");
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      response.put("message", "Error al cerrar el pallet: " + e.getMessage());
+      return ResponseEntity.status(500).body(response);
     }
   }
 
