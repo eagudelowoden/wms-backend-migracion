@@ -637,4 +637,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   public Boolean getPalletNumero(String palletNumero) {
     return palletRepository.getPalletNumero(palletNumero);
   }
+
+  public void cerrarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
+      Integer posicionId, Integer usuarioId, Integer opcion) {
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estadoId, usuarioId, opcion, 0, 0);
+  }
 }

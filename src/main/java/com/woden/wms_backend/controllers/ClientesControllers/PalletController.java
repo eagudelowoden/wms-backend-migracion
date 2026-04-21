@@ -475,4 +475,21 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
     }
   }
+
+  @PostMapping("/cerrar")
+  public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
+    Map<String, String> response = new HashMap<>();
+    try {
+      palletService.cerrarPallet(
+          dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
+          dto.getTipologiaId(), dto.getPosicionId(),
+          dto.getUsuarioId(), dto.getOpcion());
+
+      response.put("message", "Pallet cerrado correctamente");
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      response.put("message", "Error al cerrar el pallet: " + e.getMessage());
+      return ResponseEntity.status(500).body(response);
+    }
+  }
 }
