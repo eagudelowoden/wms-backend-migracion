@@ -125,22 +125,22 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ingreso");
   }
 
-  @GetMapping("/getModelSerial/{serial}")
-  public ResponseEntity<IngresoModel> getModelSerial(@PathVariable String serial) {
+  @GetMapping("/getModelSerial")
+  public ResponseEntity<IngresoModel> getModelSerial(@RequestParam String serial) {
     IngresoModel ingreso = ingresoService.getModelIngreso(serial);
-    return ResponseEntity.ok(ingreso); // 👈 si ingreso es null, igual devuelve 200 OK
+    return ResponseEntity.ok(ingreso);
   }
 
   @GetMapping("/getSerialByMac/{mac}")
-  public String getSerialByMac(@PathVariable String mac) {
+  public ResponseEntity<String> getSerialByMac(@PathVariable String mac) {
     String serial = ingresoService.getSerialByMac(mac);
-    return serial;
+    return ResponseEntity.ok(serial);
   }
 
   @GetMapping("/getReingresos/{serial}")
-  public Integer getReingresos(@PathVariable String serial) {
+  public ResponseEntity<Integer> getReingresos(@PathVariable String serial) {
     Integer reingresos = ingresoService.getReingresos(serial);
-    return reingresos;
+    return ResponseEntity.ok(reingresos);
   }
 
   @GetMapping("/getProactiveRepair/{serial}")
