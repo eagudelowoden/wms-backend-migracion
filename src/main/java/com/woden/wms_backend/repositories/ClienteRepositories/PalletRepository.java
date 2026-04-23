@@ -223,7 +223,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
    */
   @Modifying
   @Query(value = """
-      MERGE WmsWdGeneral.dbo.ConsecutivoPallet WITH (HOLDLOCK) AS t
+      MERGE WmsWdGeneral.dbo.ConsecutivoPallet2 WITH (HOLDLOCK) AS t
       USING (SELECT CAST(GETDATE() AS DATE) AS hoy) AS s
         ON t.Fecha = s.hoy
       WHEN MATCHED THEN
@@ -243,7 +243,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = """
       SELECT FORMAT(GETDATE(), 'yyMMdd')
            + RIGHT('000000' + CAST(UltimoNumero AS VARCHAR(6)), 6)
-      FROM WmsWdGeneral.dbo.ConsecutivoPallet
+      FROM WmsWdGeneral.dbo.ConsecutivoPallet2
       WHERE Fecha = CAST(GETDATE() AS DATE)
       """, nativeQuery = true)
   String getNextPalletNumber();
