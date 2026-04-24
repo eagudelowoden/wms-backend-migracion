@@ -15,275 +15,224 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
-    @Query(value = "EXEC pa_GetModelPallet :id", nativeQuery = true)
-    List<Object[]> getPalletById(@Param("id") int id);
+  @Query(value = "EXEC pa_GetModelPallet :id", nativeQuery = true)
+  List<Object[]> getPalletById(@Param("id") int id);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_InsertPallet :numero, :posicionId, :codigoSapId, :tipologiaId, :origenId, :destinoId, :usuarioId, :loteId", nativeQuery = true)
-    void insertPallet(
-            @Param("numero") String numero,
-            @Param("posicionId") Integer posicionId,
-            @Param("codigoSapId") Integer codigoSapId,
-            @Param("tipologiaId") Integer tipologiaId,
-            @Param("origenId") Integer origenId,
-            @Param("destinoId") Integer destinoId,
-            @Param("usuarioId") Integer usuarioId,
-            @Param("loteId") Integer loteId);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_InsertPallet :numero, :posicionId, :codigoSapId, :tipologiaId, :origenId, :destinoId, :usuarioId, :loteId", nativeQuery = true)
+  void insertPallet(
+      @Param("numero") String numero,
+      @Param("posicionId") Integer posicionId,
+      @Param("codigoSapId") Integer codigoSapId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("origenId") Integer origenId,
+      @Param("destinoId") Integer destinoId,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("loteId") Integer loteId);
 
-    @Query(value = "SELECT TOP 1 numero FROM Pallet ORDER BY id DESC", nativeQuery = true)
-    String getLastInsertedPalletNumber();
+  @Query(value = "SELECT TOP 1 numero FROM Pallet ORDER BY id DESC", nativeQuery = true)
+  String getLastInsertedPalletNumber();
 
-    @Query(value = "EXEC pa_SearchEntryPallet :numero, :destino, :usuarioId", nativeQuery = true)
-    List<Object[]> searchEntry(
-            @Param("numero") String numero,
-            @Param("destino") String destino,
-            @Param("usuarioId") int usuarioId);
+  @Query(value = "EXEC pa_SearchEntryPallet :numero, :destino, :usuarioId", nativeQuery = true)
+  List<Object[]> searchEntry(
+      @Param("numero") String numero,
+      @Param("destino") String destino,
+      @Param("usuarioId") int usuarioId);
 
-    @Query(value = "EXEC pa_SearchAccesoryPallet :numero, :destino, :usuarioId", nativeQuery = true)
-    List<Object[]> searchAccesory(
-            @Param("numero") String numero,
-            @Param("destino") String destino,
-            @Param("usuarioId") int usuarioId);
+  @Query(value = "EXEC pa_SearchAccesoryPallet :numero, :destino, :usuarioId", nativeQuery = true)
+  List<Object[]> searchAccesory(
+      @Param("numero") String numero,
+      @Param("destino") String destino,
+      @Param("usuarioId") int usuarioId);
 
-    @Query(value = "EXEC pa_SearchTransitPallet :numero", nativeQuery = true)
-    List<Object[]> searchTransitPallet(@Param("numero") String numero);
+  @Query(value = "EXEC pa_SearchTransitPallet :numero", nativeQuery = true)
+  List<Object[]> searchTransitPallet(@Param("numero") String numero);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_SendPallet :destinoId, :tipologiaId, :posicionId, :estado, :palletId, :filas OUT", nativeQuery = true)
-    void sendPallet(
-            @Param("destinoId") Integer destinoId,
-            @Param("tipologiaId") Integer tipologiaId,
-            @Param("posicionId") Integer posicionId,
-            @Param("estado") Integer estado,
-            @Param("palletId") Integer palletId,
-            @Param("filas") Integer filas);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_SendPallet :destinoId, :tipologiaId, :posicionId, :estado, :palletId, :filas OUT", nativeQuery = true)
+  void sendPallet(
+      @Param("destinoId") Integer destinoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("posicionId") Integer posicionId,
+      @Param("estado") Integer estado,
+      @Param("palletId") Integer palletId,
+      @Param("filas") Integer filas);
 
-    @Query(value = "EXEC pa_GetCountPallet :palletId, :tabla", nativeQuery = true)
-    Integer getCountPallet(
-            @Param("palletId") Integer palletId,
-            @Param("tabla") String tabla);
+  @Query(value = "EXEC pa_GetCountPallet :palletId, :tabla", nativeQuery = true)
+  Integer getCountPallet(
+      @Param("palletId") Integer palletId,
+      @Param("tabla") String tabla);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_DeletePallet :palletId", nativeQuery = true)
-    void deletePallet(@Param("palletId") Integer palletId);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_DeletePallet :palletId", nativeQuery = true)
+  void deletePallet(@Param("palletId") Integer palletId);
 
-    @Query(value = "EXEC pa_GetBoxPallet :palletId, :tabla", nativeQuery = true)
-    Integer getBoxPallet(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
+  @Query(value = "EXEC pa_GetBoxPallet :palletId, :tabla", nativeQuery = true)
+  Integer getBoxPallet(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdateBatchPalletEntry :loteId, :usuarioIdMovimiento, :palletId, :filas OUT", nativeQuery = true)
-    void updateBatchPallet(
-            @Param("palletId") int palletId,
-            @Param("loteId") int loteId,
-            @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
-            @Param("filas") int filas);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateBatchPalletEntry :loteId, :usuarioIdMovimiento, :palletId, :filas OUT", nativeQuery = true)
+  void updateBatchPallet(
+      @Param("palletId") int palletId,
+      @Param("loteId") int loteId,
+      @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
+      @Param("filas") int filas);
 
-    @Query(value = "EXEC pa_SearchReceivePallet :numero, :destino, :tipo", nativeQuery = true)
-    List<Object[]> searchReceivePallet(
-            @Param("numero") String numero,
-            @Param("destino") String destino,
-            @Param("tipo") String tipo);
+  @Query(value = "EXEC pa_SearchReceivePallet :numero, :destino, :tipo", nativeQuery = true)
+  List<Object[]> searchReceivePallet(
+      @Param("numero") String numero,
+      @Param("destino") String destino,
+      @Param("tipo") String tipo);
 
-    @Query(value = "EXEC pa_SearchPackingDeliveryPallet :numero, :tipologia, :tipo", nativeQuery = true)
-    List<Object[]> SearchPackingDeliveryPallet(
-            @Param("numero") String numero,
-            @Param("tipologia") String tipologia,
-            @Param("tipo") String tipo);
+  @Query(value = "EXEC pa_SearchPackingDeliveryPallet :numero, :tipologia, :tipo", nativeQuery = true)
+  List<Object[]> SearchPackingDeliveryPallet(
+      @Param("numero") String numero,
+      @Param("tipologia") String tipologia,
+      @Param("tipo") String tipo);
 
-    @Query(value = "EXEC pa_SearchPalletBoxPallet :numero, :destino", nativeQuery = true)
-    List<Object[]> SearchPalletBoxPallet(
-            @Param("numero") String numero,
-            @Param("destino") String destino);
+  @Query(value = "EXEC pa_SearchPalletBoxPallet :numero, :destino", nativeQuery = true)
+  List<Object[]> SearchPalletBoxPallet(
+      @Param("numero") String numero,
+      @Param("destino") String destino);
 
-    @Query(value = "EXEC pa_SearchPalletBoxPalletWeb :numero, :destino", nativeQuery = true)
-    List<Object[]> SearchPalletBoxPalletWeb(
-            @Param("numero") String numero,
-            @Param("destino") String destino);
+  @Query(value = "EXEC pa_SearchPalletBoxPalletWeb :numero, :destino", nativeQuery = true)
+  List<Object[]> SearchPalletBoxPalletWeb(
+      @Param("numero") String numero,
+      @Param("destino") String destino);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
-    Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
-            @Param("codigoSapId") Integer codigoSapId);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
+  Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
+      @Param("codigoSapId") Integer codigoSapId);
 
-    @Query(value = "EXEC pa_SearchStoragePallet :numero, :tipo, :tipoAccesorio", nativeQuery = true)
-    List<Object[]> searchStoragePallet(@Param("numero") String numero, @Param("tipo") String tipo,
-            @Param("tipoAccesorio") String tipoAccesorio);
+  @Query(value = "EXEC pa_SearchStoragePallet :numero, :tipo, :tipoAccesorio", nativeQuery = true)
+  List<Object[]> searchStoragePallet(@Param("numero") String numero, @Param("tipo") String tipo,
+      @Param("tipoAccesorio") String tipoAccesorio);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdatePositionPallet :palletId, :posicionId, :filas OUT", nativeQuery = true)
-    void updatePosition(@Param("palletId") Integer palletId,
-            @Param("posicionId") Integer posicionId, @Param("filas") Integer filas);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdatePositionPallet :palletId, :posicionId, :filas OUT", nativeQuery = true)
+  void updatePosition(@Param("palletId") Integer palletId,
+      @Param("posicionId") Integer posicionId, @Param("filas") Integer filas);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UpdateTipologyPallet :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
-    void updateTipologia(@Param("palletId") Integer palletId,
-            @Param("tipologiaId") Integer tipologiaId, @Param("filas") Integer filas);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateTipologyPallet :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
+  void updateTipologia(@Param("palletId") Integer palletId,
+      @Param("tipologiaId") Integer tipologiaId, @Param("filas") Integer filas);
 
-    // Inhabilitar pallet de empaque
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_InnactivatePallet :palletId, :filas OUT", nativeQuery = true)
-    void innactivatePallet(@Param("palletId") int palletId, @Param("filas") int filas);
+  // Inhabilitar pallet de empaque
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_InnactivatePallet :palletId, :filas OUT", nativeQuery = true)
+  void innactivatePallet(@Param("palletId") int palletId, @Param("filas") int filas);
 
-    @Query(value = "EXEC pa_SearchStorageGroupPalletAccesory :numero, :tipoAccesorio", nativeQuery = true)
-    List<Object[]> searchStorageGroupPalletAccesory(@Param("numero") String numero,
-            @Param("tipoAccesorio") String tipoAccesorio);
+  @Query(value = "EXEC pa_SearchStorageGroupPalletAccesory :numero, :tipoAccesorio", nativeQuery = true)
+  List<Object[]> searchStorageGroupPalletAccesory(@Param("numero") String numero,
+      @Param("tipoAccesorio") String tipoAccesorio);
 
-    @Query(value = "EXEC pa_SearchStorageGroupPalletAccesoryCreated :numero, :tipoAccesorio", nativeQuery = true)
-    List<Object[]> searchStorageGroupPalletAccesoryCreated(@Param("numero") String numero,
-            @Param("tipoAccesorio") String tipoAccesorio);
+  @Query(value = "EXEC pa_SearchStorageGroupPalletAccesoryCreated :numero, :tipoAccesorio", nativeQuery = true)
+  List<Object[]> searchStorageGroupPalletAccesoryCreated(@Param("numero") String numero,
+      @Param("tipoAccesorio") String tipoAccesorio);
 
-    @Query(value = "EXEC pa_SearchStorageGroupPallet :numero, :tipoEquipo", nativeQuery = true)
-    List<Object[]> searchStorageGroupPallet(@Param("numero") String numero,
-            @Param("tipoEquipo") String tipoEquipo);
+  @Query(value = "EXEC pa_SearchStorageGroupPallet :numero, :tipoEquipo", nativeQuery = true)
+  List<Object[]> searchStorageGroupPallet(@Param("numero") String numero,
+      @Param("tipoEquipo") String tipoEquipo);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_UnifyPallet :palletId", nativeQuery = true)
-    Integer unifyPallet(@Param("palletId") Integer palletId);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UnifyPallet :palletId", nativeQuery = true)
+  Integer unifyPallet(@Param("palletId") Integer palletId);
 
-    @Query(value = "EXEC pa_GetListPallet :destino", nativeQuery = true)
-    List<Object[]> getListPallets(@Param("destino") String destino);
+  @Query(value = "EXEC pa_GetListPallet :destino", nativeQuery = true)
+  List<Object[]> getListPallets(@Param("destino") String destino);
 
-    @Query(value = "pa_GetIdPallet :numero", nativeQuery = true)
-    Integer getIdPallet(@Param("numero") String numero);
+  @Query(value = "pa_GetIdPallet :numero", nativeQuery = true)
+  Integer getIdPallet(@Param("numero") String numero);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_updateSapCodePallet :palletId, :codigoSapId, :filas OUT", nativeQuery = true)
-    Integer updateSapCodePallet(@Param("palletId") Integer palletId, @Param("codigoSapId") Integer codigoSapId,
-            @Param("filas") Integer filas);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_updateSapCodePallet :palletId, :codigoSapId, :filas OUT", nativeQuery = true)
+  Integer updateSapCodePallet(@Param("palletId") Integer palletId, @Param("codigoSapId") Integer codigoSapId,
+      @Param("filas") Integer filas);
 
-    @Query(value = "EXEC pa_SearchQualityDeliveryPallet", nativeQuery = true)
-    List<Object[]> searchQualityDeliveryPallet();
+  @Query(value = "EXEC pa_SearchQualityDeliveryPallet", nativeQuery = true)
+  List<Object[]> searchQualityDeliveryPallet();
 
-    @Query(value = "EXEC pa_SearchPalletBoxDispatchPallet :numero", nativeQuery = true)
-    List<Object[]> searchPalletBoxDispatchPallet(@Param("numero") String numero);
+  @Query(value = "EXEC pa_SearchPalletBoxDispatchPallet :numero", nativeQuery = true)
+  List<Object[]> searchPalletBoxDispatchPallet(@Param("numero") String numero);
 
-    @Procedure(procedureName = "pa_SendAllPallet")
-    void sendAllPallet(
-            @Param("destinoId") Integer destinoId,
-            @Param("palletId") Integer palletId);
+  @Procedure(procedureName = "pa_SendAllPallet")
+  void sendAllPallet(
+      @Param("destinoId") Integer destinoId,
+      @Param("palletId") Integer palletId);
 
-    @Query(value = "SELECT " +
-            "p.Id, " +
-            "p.Numero, " +
-            "(SELECT COUNT(*) FROM Inventario i WHERE i.pallet = p.Numero) AS Cantidad, " +
-            "po.Numero AS Posicion, " +
-            "p.CodigoSapId, " +
-            "cs.Codigo AS CodigoSap, " +
-            "cs.Descripcion AS DescSap " +
-            "FROM Pallet p " +
-            "LEFT JOIN Posicion po ON p.PosicionId = po.Id " +
-            "LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId " +
-            "WHERE p.OrigenId = 104 AND EstadoInventario=1 AND p.UsuarioId = ? " +
-            "ORDER BY p.Id DESC", nativeQuery = true)
-    List<Object[]> getPalletsInventory(@Param("usuarioId") Integer usuarioId);
+  @Query(value = "SELECT " +
+      "p.Id, " +
+      "p.Numero, " +
+      "(SELECT COUNT(*) FROM Inventario i WHERE i.pallet = p.Numero) AS Cantidad, " +
+      "po.Numero AS Posicion, " +
+      "p.CodigoSapId, " +
+      "cs.Codigo AS CodigoSap, " +
+      "cs.Descripcion AS DescSap " +
+      "FROM Pallet p " +
+      "LEFT JOIN Posicion po ON p.PosicionId = po.Id " +
+      "LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId " +
+      "WHERE p.OrigenId = 104 AND EstadoInventario=1 AND p.UsuarioId = ? " +
+      "ORDER BY p.Id DESC", nativeQuery = true)
+  List<Object[]> getPalletsInventory(@Param("usuarioId") Integer usuarioId);
 
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE Pallet SET EstadoInventario=0 WHERE Id=:palletId", nativeQuery = true)
-    Integer innactivatePalletInventory(@Param("palletId") Integer palletId);
+  @Modifying
+  @Transactional
+  @Query(value = "UPDATE Pallet SET EstadoInventario=0 WHERE Id=:palletId", nativeQuery = true)
+  Integer innactivatePalletInventory(@Param("palletId") Integer palletId);
 
-    @Query(value = "EXEC pa_SearchReceivePartsPallet :destino, :numero", nativeQuery = true)
-    List<Object[]> searchReceivePartsPallet(@Param("destino") String destino, @Param("numero") String numero);
+  @Query(value = "EXEC pa_SearchReceivePartsPallet :destino, :numero", nativeQuery = true)
+  List<Object[]> searchReceivePartsPallet(@Param("destino") String destino, @Param("numero") String numero);
 
-    @Query(value = "EXEC pa_SearchGeneralInventoryPallet :numero, :estado, :usuarioId", nativeQuery = true)
-    List<Object[]> searchGeneralInventoryPallet(@Param("numero") String numero, @Param("estado") String estado,
-            @Param("usuarioId") Integer usuarioId);
+  @Query(value = "EXEC pa_SearchGeneralInventoryPallet :numero, :estado, :usuarioId", nativeQuery = true)
+  List<Object[]> searchGeneralInventoryPallet(@Param("numero") String numero, @Param("estado") String estado,
+      @Param("usuarioId") Integer usuarioId);
 
-    @Transactional
-    @Modifying
-    @Query(value = "EXEC pa_UpdateStateInventoryPallet :palletId, :estadoInventario, :filas OUT", nativeQuery = true)
-    Integer updateStateInventoryPallet(@Param("palletId") Integer palletId,
-            @Param("estadoInventario") Integer estadoInventario, @Param("filas") Integer filas);
+  @Transactional
+  @Modifying
+  @Query(value = "EXEC pa_UpdateStateInventoryPallet :palletId, :estadoInventario, :filas OUT", nativeQuery = true)
+  Integer updateStateInventoryPallet(@Param("palletId") Integer palletId,
+      @Param("estadoInventario") Integer estadoInventario, @Param("filas") Integer filas);
 
-    @Query(value = "EXEC pa_SearchGeneralSettingsPallet :numero, :estado", nativeQuery = true)
-    List<Object[]> searchGeneralSettingsPallet(@Param("numero") String numero, @Param("estado") String estado);
+  @Query(value = "EXEC pa_SearchGeneralSettingsPallet :numero, :estado", nativeQuery = true)
+  List<Object[]> searchGeneralSettingsPallet(@Param("numero") String numero, @Param("estado") String estado);
 
-    @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
-    Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
+  @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
+  Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
 
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC pa_EnviarPallet :palletId, :destinoId, :estadoId, :tipologiaId, :posicionId, :estado, :usuarioId, :opcion, :filasIngreso OUT, :filasPallet OUT", nativeQuery = true)
-    void enviarPallet(
-            @Param("palletId") Integer palletId,
-            @Param("destinoId") Integer destinoId,
-            @Param("estadoId") Integer estadoId,
-            @Param("tipologiaId") Integer tipologiaId,
-            @Param("posicionId") Integer posicionId,
-            @Param("estado") Integer estado,
-            @Param("usuarioId") Integer usuarioId,
-            @Param("opcion") Integer opcion,
-            @Param("filasIngreso") Integer filasIngreso,
-            @Param("filasPallet") Integer filasPallet);
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_EnviarPallet :palletId, :destinoId, :estadoId, :tipologiaId, :posicionId, :estado, :usuarioId, :opcion, :filasIngreso OUT, :filasPallet OUT", nativeQuery = true)
+  void enviarPallet(
+      @Param("palletId") Integer palletId,
+      @Param("destinoId") Integer destinoId,
+      @Param("estadoId") Integer estadoId,
+      @Param("tipologiaId") Integer tipologiaId,
+      @Param("posicionId") Integer posicionId,
+      @Param("estado") Integer estado,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("opcion") Integer opcion,
+      @Param("filasIngreso") Integer filasIngreso,
+      @Param("filasPallet") Integer filasPallet);
 
-    /**
-     * PASO 1 de 2 — Incrementa atómicamente el consecutivo en ConsecutivoPallet.
-     *
-     * UltimoNumero ahora almacena el número completo de 12 dígitos (BIGINT).
-     * Al crear una nueva fila para el minuto actual, compara el último número
-     * guardado en tabla vs el número base del minuto (yyMMddHHmm00) y arranca
-     * desde el mayor. Así, si el minuto anterior tuvo overflow y llegó a
-     * 260423142300, este minuto arranca desde 260423142301 y nunca hay duplicados.
-     *
-     * WITH (HOLDLOCK) garantiza que dos usuarios simultáneos nunca obtengan
-     * el mismo número — el segundo espera a que el primero confirme.
-     */
-    @Modifying
-    @Query(value = """
-            MERGE WmsWdGeneral.dbo.ConsecutivoPallet WITH (HOLDLOCK) AS t
-            USING (
-                SELECT DATEADD(MINUTE, DATEDIFF(MINUTE, 0, GETDATE()), 0) AS minutoActual
-            ) AS s
-              ON t.Minuto = s.minutoActual
-            WHEN MATCHED THEN
-              UPDATE SET UltimoNumero = UltimoNumero + 1
-            WHEN NOT MATCHED THEN
-              INSERT (Fecha, Minuto, UltimoNumero)
-              VALUES (
-                CAST(GETDATE() AS DATE),
-                s.minutoActual,
-                CASE
-                  WHEN (
-                        SELECT MAX(UltimoNumero)
-                        FROM WmsWdGeneral.dbo.ConsecutivoPallet
-                       ) >= CAST(FORMAT(GETDATE(), 'yyMMddHHmm') + '00' AS BIGINT)
-                  THEN (
-                        SELECT MAX(UltimoNumero)
-                        FROM WmsWdGeneral.dbo.ConsecutivoPallet
-                       ) + 1
-                  ELSE CAST(FORMAT(GETDATE(), 'yyMMddHHmm') + '00' AS BIGINT)
-                END
-              );
-            """, nativeQuery = true)
-    void incrementarConsecutivoPallet();
-
-    /**
-     * PASO 2 de 2 — Lee el UltimoNumero ya incrementado y lo devuelve como String
-     * de exactamente 12 dígitos.
-     *
-     * Ejemplos:
-     * - Pallet 1 del minuto 14:23 → 260423142300
-     * - Pallet 2 del minuto 14:23 → 260423142301
-     * - Pallet 101 del minuto 14:23 → 260423142400 (overflow natural, sin
-     * duplicados)
-     *
-     * Llamar siempre después de incrementarConsecutivoPallet() en la misma
-     * transacción.
-     */
-    @Query(value = """
-            SELECT CAST(UltimoNumero AS VARCHAR(20))
-            FROM WmsWdGeneral.dbo.ConsecutivoPallet
-            WHERE Minuto = DATEADD(MINUTE, DATEDIFF(MINUTE, 0, GETDATE()), 0)
-            """, nativeQuery = true)
-    String getNextPalletNumber();
+  /**
+   * Incrementa el consecutivo y retorna el número generado en una sola llamada.
+   * Delega en pa_IncrementarConsecutivoPallet para evitar el bug de MERGE
+   * que referenciaba la tabla target dentro del INSERT, causando updates
+   * incorrectos en filas de otros minutos al superar el valor xx99.
+   */
+  @Query(value = "EXEC WmsWdGeneral.dbo.pa_IncrementarConsecutivoPallet :minutoActual",
+      nativeQuery = true)
+  String incrementarYObtenerConsecutivo(@Param("minutoActual") String minutoActual);
 }
