@@ -21,6 +21,7 @@ import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
+import com.woden.wms_backend.services.ClienteServices.IngresoService;
 
 @RestController
 @RequestMapping("/client/pallets")
