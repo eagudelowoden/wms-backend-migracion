@@ -1,6 +1,8 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,13 +111,20 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   @Transactional
-  public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId) {
-    palletRepository.incrementarConsecutivoPallet(); // atómico: bloquea la fila con HOLDLOCK
-    String numero = palletRepository.getNextPalletNumber(); // lee el valor que acabamos de escribir
-    // Usar el primer CodigoSap disponible como placeholder (se actualizará al guardar)
+  public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId, String zonaHoraria) {
+    // En vez de ZonedDateTime, usa LocalDateTime directo en la zona horaria
+    LocalDateTime ahora = LocalDateTime.now(ZoneId.of(zonaHoraria));
+    String minutoActual = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    System.out.println("zonaHoraria recibida: " + zonaHoraria);
+    System.out.println("minutoActual generado: " + minutoActual);
+    System.out.println("hora UTC ahora: " + LocalDateTime.now());
+    String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
+    // Usar el primer CodigoSap disponible como placeholder (se actualizará al
+    // guardar)
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    // Usar la primera tipología disponible como placeholder (se actualizará al guardar)
+    // Usar la primera tipología disponible como placeholder (se actualizará al
+    // guardar)
     List<String> tipologias = maestroRepository.getListByTipo("tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
         ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
@@ -209,7 +218,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public void enviarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
       Integer posicionId, Integer usuarioId, Integer opcion, Integer estado) {
-    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estado, usuarioId, opcion, 0, 0);
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estado, usuarioId, opcion, 0,
+        0);
   }
 
   public Integer getCount(Integer palletId, String tabla) {
@@ -520,10 +530,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallets.add((String) row[0]);
     }
     return pallets;
-  }
-
-  public String getNextPalletNumber() {
-    return palletRepository.getNextPalletNumber();
   }
 
   public Integer getIdPallet(String numero) {

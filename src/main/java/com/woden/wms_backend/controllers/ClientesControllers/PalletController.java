@@ -446,11 +446,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   }
 
   @PostMapping("/reservePallet")
-  public ResponseEntity<Map<String, Object>> reservePallet(@RequestBody Map<String, Integer> body) {
+  public ResponseEntity<Map<String, Object>> reservePallet(@RequestBody Map<String, Object> body) {
     Map<String, Object> result = palletService.reservePallet(
-        body.get("origenId"),
-        body.get("destinoId"),
-        body.get("usuarioId"));
+        (Integer) body.get("origenId"),
+        (Integer) body.get("destinoId"),
+        (Integer) body.get("usuarioId"),
+        (String) body.get("zonaHoraria"));
     return ResponseEntity.ok(result);
   }
 
