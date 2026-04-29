@@ -1,0 +1,202 @@
+<!-- Created with Jaspersoft Studio version 7.0.2.final using JasperReports Library version 7.0.2-31532122640f516c6d17238ae0e41a08113d5ac0  -->
+<jasperReport name="report name" language="java" pageWidth="612" pageHeight="792" columnWidth="602" leftMargin="5" rightMargin="5" topMargin="5" bottomMargin="5" uuid="7d77d927-1c1d-4d04-8f0a-d054fd36f2cf">
+	<property name="ireport.zoom" value="1.0245201830476067"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="2"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="Fecha" class="java.lang.String">
+		<description><![CDATA[]]></description>
+	</parameter>
+	<parameter name="Pallet" class="java.lang.String"/>
+	<parameter name="CodigoSap" class="java.lang.String"/>
+	<parameter name="Modelo" class="java.lang.String"/>
+	<parameter name="Usuario" class="java.lang.String">
+		<description><![CDATA[]]></description>
+	</parameter>
+	<parameter name="Cantidad" class="java.lang.Integer"/>
+	<parameter name="Logo" class="java.io.InputStream">
+		<description><![CDATA[]]></description>
+	</parameter>
+	<parameter name="Icono" class="java.io.InputStream">
+		<description><![CDATA[]]></description>
+	</parameter>
+	<parameter name="Posicion" class="java.lang.String"/>
+	<parameter name="Tipologia" class="java.lang.String"/>
+	<parameter name="Origen" class="java.lang.String"/>
+	<parameter name="Destino" class="java.lang.String"/>
+	<parameter name="Cliente" class="java.lang.String"/>
+	<parameter name="BarcodeImage" class="java.io.InputStream"/>
+	<query language="sql"><![CDATA[]]></query>
+	<title height="782" splitType="Stretch">
+		<element kind="rectangle" uuid="71f83f3e-9ef5-4d51-bdc8-8abe84dc1ed2" x="0" y="0" width="120" height="78" backcolor="#354A5F"/>
+		<element kind="line" uuid="082a82f7-33eb-4820-a7b2-74e21a618f07" x="0" y="0" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="79a0aaa9-b03a-44af-ab27-b5b5cea8160d" x="0" y="78" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="72eaccb2-f53d-4e53-b798-f13a78a6e04a" x="0" y="1" width="1" height="77"/>
+		<element kind="staticText" uuid="bf6721c4-5688-4b4b-9f4e-a58c161f9b15" x="121" y="0" width="404" height="78" fontName="SansSerif" fontSize="18.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[FORMATO ALMACENAMIENTO PALLET]]></text>
+		</element>
+		<element kind="line" uuid="4c2b79bb-16e7-4582-832f-773c23685846" x="525" y="0" width="1" height="78">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		</element>
+		<element kind="line" uuid="b381e41a-6526-4bb5-9f17-d763974fb46f" x="602" y="0" width="1" height="79">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+		</element>
+		<element kind="line" uuid="eb9f47c8-ad92-4c6f-be4b-4a35f81ade3f" x="120" y="0" width="1" height="78">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		</element>
+		<element kind="staticText" uuid="1a73d395-328f-4cc7-90b0-43978ef67c1f" x="0" y="753" width="602" height="29" fontName="Tahoma" fontSize="10.0" bold="false" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Este documento es de uso exclusivo de Woden Colombia S.A.S, queda estrictamente prohibida su reproduccion total o parcial sin previa autorizacion.]]></text>
+		</element>
+		<element kind="line" uuid="9ed18faf-dbd3-4987-a2c8-cb122ac2d939" x="0" y="90" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="6c420869-4a51-4610-a520-56633e9be79d" x="0" y="160" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+		</element>
+		<element kind="line" uuid="2d633e8a-0591-44be-8077-2c7c24f42e27" x="0" y="200" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="58d8ac1f-4238-429a-b811-4df4ef07c28d" x="0" y="240" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="cb16302a-f5f5-4946-a9de-886ae995bd18" x="0" y="542" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="36aa25d3-e60a-48eb-a277-95c9ae770e2c" x="0" y="581" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+		</element>
+		<element kind="line" uuid="2bd41ef9-c277-43a8-ae1f-57ebdbe1dfbe" x="0" y="621" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+		</element>
+		<element kind="line" uuid="fd1df47d-8458-487c-a133-a7cedf2e4dd5" x="0" y="660" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+		</element>
+		<element kind="line" uuid="4f158cf0-f6ae-4ba4-92d2-8ed75e1d71e6" x="0" y="701" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+		</element>
+		<element kind="line" uuid="c307e83d-14fc-415e-b010-47ca3ea5a7e5" x="0" y="740" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+		</element>
+		<element kind="line" uuid="d3710315-5138-4eee-90f0-45e6a8a16b85" x="0" y="90" width="1" height="651">
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="39080f49-acbc-47aa-98bb-8252323a5b1b" x="603" y="90" width="1" height="651"/>
+		<element kind="line" uuid="7410ec12-ec2b-42a1-bc85-b00f20bf1534" x="250" y="90" width="1" height="650">
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+		</element>
+		<element kind="staticText" uuid="c4ba6aeb-85b0-4ee4-8232-9f8a2c9e9201" x="0" y="90" width="250" height="70" fontSize="38.0" bold="false" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[CLIENTE]]></text>
+		</element>
+		<element kind="staticText" uuid="f9e7dd2e-43c1-4708-a7e6-8ea2c8875fc8" x="0" y="160" width="251" height="39" fontSize="30.0" bold="false" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Posicion]]></text>
+		</element>
+		<element kind="staticText" uuid="ab73b357-3a81-4fa5-94c9-28a7cd0af5c4" x="0" y="200" width="250" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Fecha Creacion]]></text>
+		</element>
+		<element kind="staticText" uuid="1ecd01f8-682d-474a-97c7-b5fd1cff42a6" x="0" y="240" width="250" height="139" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[No. Pallet]]></text>
+		</element>
+		<element kind="staticText" uuid="226930aa-4ca7-499c-bb2a-3c30a947db9e" x="0" y="542" width="250" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Tipologia]]></text>
+		</element>
+		<element kind="staticText" uuid="ca8d972c-2733-493a-9a2e-7270df60e21f" x="0" y="582" width="250" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Codigo SAP]]></text>
+		</element>
+		<element kind="staticText" uuid="9d01cef2-261a-4346-ae84-4c349a2932b2" x="0" y="621" width="250" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Modelo]]></text>
+		</element>
+		<element kind="staticText" uuid="3eec0625-1039-4f39-9095-a249d5a192dd" x="0" y="662" width="250" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Usuario Creacion]]></text>
+		</element>
+		<element kind="staticText" uuid="f17e6eb7-5d6f-4b44-b028-ed3460a07775" x="0" y="701" width="250" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Cantidad]]></text>
+		</element>
+		<element kind="textField" uuid="f8f40ac8-7e76-4735-b21c-6afadf6322ff" x="251" y="201" width="351" height="40" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Fecha}]]></expression>
+		</element>
+		<element kind="textField" uuid="c82da968-ff90-4171-8953-72e4e1be6b41" x="250" y="581" width="352" height="40" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{CodigoSap}]]></expression>
+		</element>
+		<element kind="textField" uuid="01ca755f-f30e-4914-a44f-1722e583d130" x="250" y="621" width="352" height="38" fontSize="24.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Modelo}]]></expression>
+		</element>
+		<element kind="textField" uuid="7ef56105-150e-4e4d-9d96-51aab85bec2f" x="250" y="662" width="351" height="38" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Usuario}]]></expression>
+		</element>
+		<element kind="textField" uuid="68a81b81-35f3-43cd-b9d3-7492e7a69716" x="250" y="701" width="352" height="40" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Cantidad}]]></expression>
+		</element>
+		<element kind="image" uuid="f9586355-737d-40b0-954f-02b3a1acefc8" x="1" y="0" width="119" height="77" scaleImage="FillFrame">
+			<expression><![CDATA[$P{Logo}]]></expression>
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="image" uuid="45379837-1640-4159-9297-4d457dfd12bc" x="525" y="1" width="77" height="77" scaleImage="FillFrame">
+			<expression><![CDATA[$P{Icono}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="7043d279-e50a-48ba-b14b-fade7022b887" x="250" y="161" width="352" height="38" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Posicion}]]></expression>
+		</element>
+		<element kind="textField" uuid="72ac2036-ba68-49e5-9377-b4240ffa954f" x="250" y="542" width="352" height="39" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Tipologia}]]></expression>
+		</element>
+		<element kind="line" uuid="e38e987f-377f-40f9-af76-b48d01e7a69d" x="0" y="380" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+		</element>
+		<element kind="line" uuid="98e409f9-e0b8-4013-b4a5-9302a1ef0fcf" x="0" y="460" width="602" height="1">
+			<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="staticText" uuid="6e9fe459-9bf6-408e-ba5c-08a5ae5ba2ab" x="0" y="460" width="250" height="82" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Destino]]></text>
+		</element>
+		<element kind="staticText" uuid="ac2251d2-d4cc-404c-82c4-6cd7928abfeb" x="0" y="380" width="250" height="80" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Origen]]></text>
+		</element>
+		<element kind="textField" uuid="d928151c-1d1c-49a0-b548-6623aa540d5e" x="251" y="380" width="350" height="80" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Origen}]]></expression>
+		</element>
+		<element kind="textField" uuid="1b948dc6-ef48-4c25-8133-2f724e9c5ba2" x="250" y="460" width="352" height="82" fontSize="30.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Destino}]]></expression>
+		</element>
+		<element kind="textField" uuid="6310df17-581a-4526-82ad-c813b60ca1f5" x="250" y="90" width="351" height="70" fontSize="34.0" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{Cliente}]]></expression>
+		</element>
+		<element kind="image" uuid="d7863edd-8405-4e15-8f22-26d71d0efb97" key="" x="290" y="250" width="281" height="129" scaleImage="FillFrame" hImageAlign="Center" vImageAlign="Middle">
+			<expression><![CDATA[$P{BarcodeImage}]]></expression>
+			<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+		</element>
+	</title>
+</jasperReport>

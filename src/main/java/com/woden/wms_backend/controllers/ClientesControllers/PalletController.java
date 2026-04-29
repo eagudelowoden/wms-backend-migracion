@@ -515,9 +515,11 @@ public class PalletController extends BaseController<PalletModel, Integer> {
           @RequestBody SendModelsDto dto) {
     try {
       int result = palletService.sendModels(dto);
+        System.out.println(dto);
       return ResponseEntity.ok(result);
     } catch (Exception e) {
       e.printStackTrace();
+      System.out.println(dto);
       return ResponseEntity.badRequest().body(0);
     }
   }
