@@ -131,8 +131,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(ingreso);
   }
 
-  @GetMapping("/getSerialByMac/{mac}")
-  public ResponseEntity<String> getSerialByMac(@PathVariable String mac) {
+  @GetMapping("/getSerialByMac")
+  public ResponseEntity<String> getSerialByMac(@RequestParam String mac) {
     String serial = ingresoService.getSerialByMac(mac);
     return ResponseEntity.ok(serial);
   }
@@ -827,16 +827,14 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/updateScrapAll")
   public ResponseEntity<Integer> updateScrapAll(
-    @RequestBody List<IngresoModel> seriales
-  ) {
+      @RequestBody List<IngresoModel> seriales) {
     try {
       for (IngresoModel serial : seriales) {
         ingresoService.updateScrapAll(
-          serial.getEstadoId(),
-          serial.getUsuarioIdMovimiento(),
-          serial.getSerial(),
-          serial.getNovedad()
-        );
+            serial.getEstadoId(),
+            serial.getUsuarioIdMovimiento(),
+            serial.getSerial(),
+            serial.getNovedad());
       }
       return ResponseEntity.ok(1);
     } catch (Exception e) {
