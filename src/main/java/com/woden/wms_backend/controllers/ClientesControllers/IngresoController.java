@@ -137,14 +137,14 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(serial);
   }
 
-  @GetMapping("/getReingresos/{serial}")
-  public ResponseEntity<Integer> getReingresos(@PathVariable String serial) {
+  @GetMapping("/getReingresos")
+  public ResponseEntity<Integer> getReingresos(@RequestParam String serial) {
     Integer reingresos = ingresoService.getReingresos(serial);
     return ResponseEntity.ok(reingresos);
   }
 
-  @GetMapping("/getProactiveRepair/{serial}")
-  public ResponseEntity<Integer> getProactiveRepair(@PathVariable String serial) {
+  @GetMapping("/getProactiveRepair")
+  public ResponseEntity<Integer> getProactiveRepair(@RequestParam String serial) {
     Integer proactiveRepair = ingresoService.getProactiveRepair(serial);
     return ResponseEntity.ok(proactiveRepair);
   }
