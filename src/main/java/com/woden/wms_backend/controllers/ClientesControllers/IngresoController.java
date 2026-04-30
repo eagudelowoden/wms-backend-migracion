@@ -338,7 +338,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
-  @GetMapping("/updateChangeStateEntry")
+  @PostMapping("/updateChangeStateEntry")
   public ResponseEntity<?> updateChangeStateEntry(@RequestBody Map<String, Object> requestBody) {
     String serial1 = (String) requestBody.get("serial1");
     String serial2 = (String) requestBody.get("serial2");
