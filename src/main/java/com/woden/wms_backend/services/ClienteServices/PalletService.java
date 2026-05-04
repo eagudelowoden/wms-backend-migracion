@@ -2,12 +2,13 @@ package com.woden.wms_backend.services.ClienteServices;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.woden.wms_backend.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,6 +24,8 @@ import com.woden.wms_backend.util.TypeMapper;
 
 @Service
 public class PalletService extends BaseService<PalletModel, Integer> {
+
+  private static final Logger logger = LoggerFactory.getLogger(PalletService.class);
 
   @Autowired
   private PalletRepository palletRepository;
@@ -66,31 +69,28 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public String createPallet(PalletModel p, Boolean kitEntryOn) {
-    try {
-      Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
-      palletRepository.insertPallet(
-          p.getNumero(),
-          p.getPosicionId(),
-          p.getCodigoSapId(),
-          p.getTipologiaId(),
-          p.getOrigenId(),
-          p.getDestinoId(),
-          p.getUsuarioId(),
-          loteId);
-      String numeroPallet = palletRepository.getLastInsertedPalletNumber();
+    Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
+    palletRepository.insertPallet(
+        p.getNumero(),
+        p.getPosicionId(),
+        p.getCodigoSapId(),
+        p.getTipologiaId(),
+        p.getOrigenId(),
+        p.getDestinoId(),
+        p.getUsuarioId(),
+        loteId);
+    String numeroPallet = palletRepository.getLastInsertedPalletNumber();
 
-      if (kitEntryOn) {
-        String codigoSap = p.getCodigoSapId().toString();
-        List<Integer> familyId = codigoSapRepository.getFamilyId(codigoSap);
-        String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
-        int filas = 0;
-        maestroRepository.addCountPalletFamily(newFamilyNumber, familyId.get(0), filas);
-      }
-
-      return numeroPallet;
-    } catch (Exception e) {
-      throw e;
+    if (kitEntryOn) {
+      String codigoSap = p.getCodigoSapId().toString();
+      List<Integer> familyId = codigoSapRepository.getFamilyId(codigoSap);
+      String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
+      int filas = 0;
+      maestroRepository.addCountPalletFamily(newFamilyNumber, familyId.get(0), filas);
     }
+
+    logger.info("[createPallet] Pallet creado: {}", numeroPallet);
+    return numeroPallet;
   }
 
   @Transactional
@@ -98,16 +98,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     // En vez de ZonedDateTime, usa LocalDateTime directo en la zona horaria
     LocalDateTime ahora = LocalDateTime.now(ZoneId.of(zonaHoraria));
     String minutoActual = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    System.out.println("zonaHoraria recibida: " + zonaHoraria);
-    System.out.println("minutoActual generado: " + minutoActual);
-    System.out.println("hora UTC ahora: " + LocalDateTime.now());
+    logger.debug("[reservePallet] zonaHoraria={}, minutoActual={}", zonaHoraria, minutoActual);
     String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
-    // Usar el primer CodigoSap disponible como placeholder (se actualizará al
-    // guardar)
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    // Usar la primera tipología disponible como placeholder (se actualizará al
-    // guardar)
     List<String> tipologias = maestroRepository.getListByTipo("tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
         ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
@@ -123,6 +117,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     pallet.setActivo(true);
     pallet.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     PalletModel saved = palletRepository.save(pallet);
+    logger.info("[reservePallet] Pallet reservado: id={}, numero={}", saved.getId(), saved.getNumero());
     Map<String, Object> result = new HashMap<>();
     result.put("id", saved.getId());
     result.put("numero", saved.getNumero());
@@ -235,13 +230,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return true;
   }
 
-  public Integer deletePallet(Integer palletId) {
-    try {
-      palletRepository.deletePallet(palletId);
-      return 1;
-    } catch (Exception e) {
-      return 0;
-    }
+  public void deletePallet(Integer palletId) {
+    palletRepository.deletePallet(palletId);
+    logger.info("[deletePallet] Pallet eliminado: id={}", palletId);
   }
 
   private String getTablaDesdeTipo(String tipoEquipo, String tipo) {
@@ -410,8 +401,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return palletBox;
   }
 
-  public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
-    Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
+  public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId, Integer usuarioId) {
+    Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId, usuarioId);
     return result > 0;
   }
 
@@ -615,14 +606,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public Integer updateStateInventoryPallet(Integer palletId, Integer estadoInventario) {
-    try {
-      Integer filas = 4;
-      palletRepository.updateStateInventoryPallet(palletId, estadoInventario, filas);
-      return 1;
-    } catch (Exception e) {
-      return 0;
-    }
+  public void updateStateInventoryPallet(Integer palletId, Integer estadoInventario) {
+    palletRepository.updateStateInventoryPallet(palletId, estadoInventario, 4);
   }
 
   public List<Map<String, Object>> searchGeneralSettingsPallet(String nuemro, String estado) {
