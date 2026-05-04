@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/client/lote")
@@ -31,8 +32,8 @@ public class LoteController extends BaseController<LoteModel, Integer> {
         return ResponseEntity.ok(results);
     }
 
-    @GetMapping("/getIdByLote/{lote}")
-    public Integer getIdByLote(@PathVariable String lote) {
+    @GetMapping("/getIdByLote")
+    public Integer getIdByLote(@RequestParam String lote) {
         return loteService.getIdByLote(lote);
     }
 

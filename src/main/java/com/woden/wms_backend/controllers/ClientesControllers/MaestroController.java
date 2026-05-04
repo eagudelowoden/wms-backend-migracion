@@ -50,20 +50,20 @@ public class MaestroController extends BaseController<MaestroModel, Integer> {
         return ResponseEntity.ok(id);
     }
 
-    @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<String>> getListByTipo(@PathVariable String tipo) {
+    @GetMapping("/tipo")
+    public ResponseEntity<List<String>> getListByTipo(@RequestParam String tipo) {
         List<String> maestros = maestroService.getListByTipo(tipo);
         return ResponseEntity.ok(maestros);
     }
 
-    @GetMapping("/origenes/{tipo}")
-    public ResponseEntity<List<String>> getOrigenes(@PathVariable String tipo) {
+    @GetMapping("/origenes")
+    public ResponseEntity<List<String>> getOrigenes(@RequestParam String tipo) {
         List<String> origenes = maestroService.obtenerOrigenes(tipo);
         return ResponseEntity.ok(origenes);
     }
 
-    @GetMapping("/getModelMaster/{codigoSap}")
-    public ResponseEntity<List<String>> getModelMaster(@PathVariable String codigoSap) {
+    @GetMapping("/getModelMaster")
+    public ResponseEntity<List<String>> getModelMaster(@RequestParam String codigoSap) {
         List<String> results = maestroService.getModelMaster(codigoSap);
         return ResponseEntity.ok(results);
     }
