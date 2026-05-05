@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.models.Entity.PrealertaSerialModel;
@@ -18,9 +19,9 @@ public class PrealertaSerialController {
   @Autowired
   private PrealertaSerialService prealertaSerialService;
 
-  @GetMapping("/getModelPrealertaSerial/{id}/{serial}")
+  @GetMapping("/getModelPrealertaSerial/{id}")
   public ResponseEntity<PrealertaSerialModel> getPrealertaSerial(@PathVariable Integer id,
-      @PathVariable String serial) {
+      @RequestParam String serial) {
     PrealertaSerialModel prealerta = prealertaSerialService.getModelPreAlerta(id, serial);
     if (prealerta == null) {
       return ResponseEntity.noContent().build(); // 204 No Content
@@ -28,11 +29,11 @@ public class PrealertaSerialController {
     return ResponseEntity.ok(prealerta);
   }
 
-  @GetMapping("/count-register/{prealertaId}/{recogidaOn}/{tipo}")
+  @GetMapping("/count-register/{prealertaId}/{recogidaOn}")
   public ResponseEntity<Integer> countRegister(
       @PathVariable int prealertaId,
       @PathVariable int recogidaOn,
-      @PathVariable String tipo) {
+      @RequestParam String tipo) {
     int total = prealertaSerialService.countRegister(prealertaId, recogidaOn, tipo);
     return ResponseEntity.ok(total);
   }

@@ -44,21 +44,21 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
         return ResponseEntity.ok(codigoSapService.getListDescriptionSapCodeNoSerial(id));
     }
 
-    @GetMapping("/id/{codigo}")
-    public ResponseEntity<Map<String, Integer>> getIdByCodigoSap(@PathVariable String codigo) {
+    @GetMapping("/id")
+    public ResponseEntity<Map<String, Integer>> getIdByCodigoSap(@RequestParam String codigo) {
         int id = codigoSapService.getIdByCodigo(codigo);
         Map<String, Integer> response = new HashMap<>();
         response.put("id", id);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/idSerial/{tipo}")
-    public Integer getIdSerial(@PathVariable String tipo) {
+    @GetMapping("/idSerial")
+    public Integer getIdSerial(@RequestParam String tipo) {
         return codigoSapService.getIdSerial(tipo);
     }
 
-    @GetMapping("/idNoSerial/{tipo}")
-    public Integer getIdNoSerial(@PathVariable String tipo) {
+    @GetMapping("/idNoSerial")
+    public Integer getIdNoSerial(@RequestParam String tipo) {
         return codigoSapService.getIdNoSerial(tipo);
     }
 
@@ -72,8 +72,8 @@ public class CodigoSapController extends BaseController<CodigoSapModel, Integer>
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/getModel/{codigo}")
-    public ResponseEntity<CodigoSapModelDTO> obtenerCodigoSap(@PathVariable String codigo) {
+    @GetMapping("/getModel")
+    public ResponseEntity<CodigoSapModelDTO> obtenerCodigoSap(@RequestParam String codigo) {
         CodigoSapModelDTO codigoSap = codigoSapService.obtenerModeloPorCodigo(codigo);
         if (codigoSap == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
