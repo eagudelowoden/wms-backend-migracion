@@ -226,6 +226,25 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("filasIngreso") Integer filasIngreso,
       @Param("filasPallet") Integer filasPallet);
 
+  @Query(value = "EXEC pa_SearchModelsPallet :palletId", nativeQuery = true)
+  List<Object[]> searchModels(@Param("palletId") Integer palletId);
+
+
+
+  @Modifying
+  @Transactional
+  @Query(value = "DECLARE @out int; EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId, @out OUTPUT", nativeQuery = true)
+  void sendModels(
+          @Param("estadoId")        Integer estadoId,
+          @Param("usuarioId")       Integer usuarioId,
+          @Param("palletDestinoId") Integer palletDestinoId,
+          @Param("palletId")        Integer palletId,
+          @Param("codigoSapId")     Integer codigoSapId
+  );
+
+  @Query(value = "EXEC pa_GetModelPalletByNumber :numero", nativeQuery = true)
+  List<Object[]> getModelByNumber(@Param("numero") String numero);
+
   /**
    * Incrementa el consecutivo y retorna el número generado en una sola llamada.
    * Delega en pa_IncrementarConsecutivoPallet para evitar el bug de MERGE

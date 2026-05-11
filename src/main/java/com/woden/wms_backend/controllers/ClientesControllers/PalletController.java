@@ -21,6 +21,7 @@ import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
+import com.woden.wms_backend.services.ClienteServices.IngresoService;
 
 @RestController
 @RequestMapping("/client/pallets")
@@ -31,6 +32,8 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @Autowired
   private PalletService palletService;
+  @Autowired
+  private IngresoService ingresoService;
 
   @PostMapping("/create/{kitEntryOn}")
   public ResponseEntity<Map<String, String>> createPallet(@RequestBody PalletModel pallet,
@@ -477,6 +480,23 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     }
   }
 
+  @PostMapping("/cerrar")
+  public ResponseEntity<Map<String, String>> cerrarPallet(@RequestBody CerrarIngresoDTO dto) {
+    Map<String, String> response = new HashMap<>();
+    try {
+      palletService.cerrarPallet(
+          dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
+          dto.getTipologiaId(), dto.getPosicionId(),
+          dto.getUsuarioId(), dto.getOpcion());
+
+      response.put("message", "Pallet cerrado correctamente");
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      response.put("message", "Error al cerrar el pallet: " + e.getMessage());
+      return ResponseEntity.status(500).body(response);
+    }
+  }
+
 
   @GetMapping("/searchModels")
   public ResponseEntity<List<ModeloPalletDto>> searchModels(
@@ -495,9 +515,11 @@ public class PalletController extends BaseController<PalletModel, Integer> {
           @RequestBody SendModelsDto dto) {
     try {
       int result = palletService.sendModels(dto);
+        System.out.println(dto);
       return ResponseEntity.ok(result);
     } catch (Exception e) {
       e.printStackTrace();
+      System.out.println(dto);
       return ResponseEntity.badRequest().body(0);
     }
   }
