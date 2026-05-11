@@ -1,6 +1,8 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,7 +18,6 @@ import com.woden.wms_backend.dto.ModeloPalletDto;
 import com.woden.wms_backend.dto.SendModelsDto;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -27,8 +28,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   @Autowired
   private PalletRepository palletRepository;
-  @Autowired
-  private IngresoRepository ingresoRepository;
   @Autowired
   private CodigoSapRepository codigoSapRepository;
   @Autowired
@@ -100,13 +99,20 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   @Transactional
-  public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId) {
-    palletRepository.incrementarConsecutivoPallet(); // atómico: bloquea la fila con HOLDLOCK
-    String numero = palletRepository.getNextPalletNumber(); // lee el valor que acabamos de escribir
-    // Usar el primer CodigoSap disponible como placeholder (se actualizará al guardar)
+  public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId, String zonaHoraria) {
+    // En vez de ZonedDateTime, usa LocalDateTime directo en la zona horaria
+    LocalDateTime ahora = LocalDateTime.now(ZoneId.of(zonaHoraria));
+    String minutoActual = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    System.out.println("zonaHoraria recibida: " + zonaHoraria);
+    System.out.println("minutoActual generado: " + minutoActual);
+    System.out.println("hora UTC ahora: " + LocalDateTime.now());
+    String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
+    // Usar el primer CodigoSap disponible como placeholder (se actualizará al
+    // guardar)
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    // Usar la primera tipología disponible como placeholder (se actualizará al guardar)
+    // Usar la primera tipología disponible como placeholder (se actualizará al
+    // guardar)
     List<String> tipologias = maestroRepository.getListByTipo("tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
         ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
@@ -198,10 +204,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return pallets;
   }
 
-  public void cerrarPallet(Integer palletId, Integer destinoId, Integer tipologiaId, Integer posicionId,
-      Integer estado) {
-    Integer filas = 0;
-    palletRepository.sendPallet(destinoId, tipologiaId, posicionId, estado, palletId, filas);
+  public void enviarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
+      Integer posicionId, Integer usuarioId, Integer opcion, Integer estado) {
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estado, usuarioId, opcion, 0,
+        0);
   }
 
   public Integer getCount(Integer palletId, String tabla) {
@@ -291,15 +297,18 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   public boolean confirmarPalletTransito(ConfirmarPalletDTO dto) {
-    ingresoRepository.sendIngreso(dto.getDestinoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0,
-        0);
-    palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    palletRepository.enviarPallet(
+        dto.getPalletId(), dto.getDestinoId(), dto.getDestinoId(),
+        dto.getTipologiaId(), dto.getPosicionId(), 1,
+        dto.getUsuarioId(), 0, 0, 0);
     return true;
   }
 
   public boolean abrirPalletTransito(AbrirPalletDTO dto) {
-    ingresoRepository.sendIngreso(dto.getOrigenId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0, 0);
-    palletRepository.sendPallet(dto.getOrigenId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    palletRepository.enviarPallet(
+        dto.getPalletId(), dto.getOrigenId(), dto.getOrigenId(),
+        dto.getTipologiaId(), dto.getPosicionId(), 1,
+        dto.getUsuarioId(), 0, 0, 0);
     return true;
   }
 
@@ -509,10 +518,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallets.add((String) row[0]);
     }
     return pallets;
-  }
-
-  public String getNextPalletNumber() {
-    return palletRepository.getNextPalletNumber();
   }
 
   public Integer getIdPallet(String numero) {

@@ -125,26 +125,26 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
         : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ingreso");
   }
 
-  @GetMapping("/getModelSerial/{serial}")
-  public ResponseEntity<IngresoModel> getModelSerial(@PathVariable String serial) {
+  @GetMapping("/getModelSerial")
+  public ResponseEntity<IngresoModel> getModelSerial(@RequestParam String serial) {
     IngresoModel ingreso = ingresoService.getModelIngreso(serial);
-    return ResponseEntity.ok(ingreso); // 👈 si ingreso es null, igual devuelve 200 OK
+    return ResponseEntity.ok(ingreso);
   }
 
-  @GetMapping("/getSerialByMac/{mac}")
-  public String getSerialByMac(@PathVariable String mac) {
+  @GetMapping("/getSerialByMac")
+  public ResponseEntity<String> getSerialByMac(@RequestParam String mac) {
     String serial = ingresoService.getSerialByMac(mac);
-    return serial;
+    return ResponseEntity.ok(serial);
   }
 
-  @GetMapping("/getReingresos/{serial}")
-  public Integer getReingresos(@PathVariable String serial) {
+  @GetMapping("/getReingresos")
+  public ResponseEntity<Integer> getReingresos(@RequestParam String serial) {
     Integer reingresos = ingresoService.getReingresos(serial);
-    return reingresos;
+    return ResponseEntity.ok(reingresos);
   }
 
-  @GetMapping("/getProactiveRepair/{serial}")
-  public ResponseEntity<Integer> getProactiveRepair(@PathVariable String serial) {
+  @GetMapping("/getProactiveRepair")
+  public ResponseEntity<Integer> getProactiveRepair(@RequestParam String serial) {
     Integer proactiveRepair = ingresoService.getProactiveRepair(serial);
     return ResponseEntity.ok(proactiveRepair);
   }
@@ -338,7 +338,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     }
   }
 
-  @GetMapping("/updateChangeStateEntry")
+  @PostMapping("/updateChangeStateEntry")
   public ResponseEntity<?> updateChangeStateEntry(@RequestBody Map<String, Object> requestBody) {
     String serial1 = (String) requestBody.get("serial1");
     String serial2 = (String) requestBody.get("serial2");
@@ -827,16 +827,14 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/updateScrapAll")
   public ResponseEntity<Integer> updateScrapAll(
-    @RequestBody List<IngresoModel> seriales
-  ) {
+      @RequestBody List<IngresoModel> seriales) {
     try {
       for (IngresoModel serial : seriales) {
         ingresoService.updateScrapAll(
-          serial.getEstadoId(),
-          serial.getUsuarioIdMovimiento(),
-          serial.getSerial(),
-          serial.getNovedad()
-        );
+            serial.getEstadoId(),
+            serial.getUsuarioIdMovimiento(),
+            serial.getSerial(),
+            serial.getNovedad());
       }
       return ResponseEntity.ok(1);
     } catch (Exception e) {
