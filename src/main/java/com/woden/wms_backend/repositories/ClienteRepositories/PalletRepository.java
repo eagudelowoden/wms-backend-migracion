@@ -106,9 +106,9 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId", nativeQuery = true)
+  @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId, :usuarioId", nativeQuery = true)
   Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
-      @Param("codigoSapId") Integer codigoSapId);
+      @Param("codigoSapId") Integer codigoSapId, @Param("usuarioId") Integer usuarioId);
 
   @Query(value = "EXEC pa_SearchStoragePallet :numero, :tipo, :tipoAccesorio", nativeQuery = true)
   List<Object[]> searchStoragePallet(@Param("numero") String numero, @Param("tipo") String tipo,
