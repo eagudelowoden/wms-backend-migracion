@@ -556,6 +556,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.put("id", String.valueOf(result[0]));
       pallet.put("numero", String.valueOf(result[1]));
       pallet.put("cantidadCaja", String.valueOf(result[2]));
+      pallet.put("totalSeriales", String.valueOf(result[3]));
       return pallet;
     }).collect(Collectors.toList());
   }
