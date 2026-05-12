@@ -29,7 +29,7 @@ public class MovimientoController extends BaseController<MovimientoModel, Intege
 
   @GetMapping("/getNext/{palletId}")
   public Integer getNext(@PathVariable Integer palletId) {
-    return movimientoService.getLast(palletId);
+    return movimientoService.getNext(palletId);
   }
 
   @GetMapping("/userCount/{usuarioId}")
@@ -40,5 +40,10 @@ public class MovimientoController extends BaseController<MovimientoModel, Intege
   @GetMapping("/getLastMovimient")
   public ResponseEntity<Integer> getLastMovimient(@RequestParam Integer palletId) {
     return ResponseEntity.ok(movimientoService.getLastMovimient(palletId));
+  }
+
+  @GetMapping("/getLastMovimientAccesory")
+  public ResponseEntity<Integer> getLastMovimientAccesory(@RequestParam Integer palletId) {
+    return ResponseEntity.ok(movimientoService.getLastMovimientAccesory(palletId));
   }
 }

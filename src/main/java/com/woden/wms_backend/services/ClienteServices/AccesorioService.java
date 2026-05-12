@@ -71,8 +71,8 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         return accesorios;
     }
 
-    public int eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId, Integer usuarioId) {
-        return accesorioRepository.deleteAccesorio(palletId, cantidad, codigoSapId, usuarioId);
+    public int eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
+        return accesorioRepository.deleteAccesorio(palletId, cantidad, codigoSapId);
     }
 
     public boolean cerrarPalletAccesorio(SendPalletDTO dto) {

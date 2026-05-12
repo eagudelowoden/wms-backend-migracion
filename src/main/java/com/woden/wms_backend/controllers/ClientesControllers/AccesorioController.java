@@ -46,9 +46,8 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     public ResponseEntity<Integer> eliminarAccesorio(
         @RequestParam Integer palletId,
         @RequestParam Integer cantidad,
-        @RequestParam Integer codigoSapId,
-        @RequestParam Integer usuarioId) {
-        int status = accesorioService.eliminarAccesorio(palletId, cantidad, codigoSapId, usuarioId);
+        @RequestParam Integer codigoSapId) {
+        int status = accesorioService.eliminarAccesorio(palletId, cantidad, codigoSapId);
         return ResponseEntity.ok(status);
     }
 
