@@ -535,16 +535,16 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     palletRepository.innactivatePallet(palletId, filas);
   }
 
-  public List<Map<String, String>> searchQualityDeliveryPallet() {
-    List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
-    return results.stream().map(result -> {
-      Map<String, String> pallet = new HashMap<>();
-      pallet.put("id", String.valueOf(result[0]));
-      pallet.put("numero", String.valueOf(result[1]));
-      pallet.put("cantidadCaja", String.valueOf(result[2]));
-      return pallet;
-    }).collect(Collectors.toList());
-  }
+    public List<Map<String, String>> searchQualityDeliveryPallet() {
+      List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
+      return results.stream().map(result -> {
+        Map<String, String> pallet = new HashMap<>();
+        pallet.put("id", String.valueOf(result[0]));
+        pallet.put("numero", String.valueOf(result[1]));
+        pallet.put("cantidadCaja", String.valueOf(result[2]));
+        return pallet;
+      }).collect(Collectors.toList());
+    }
 
   public List<Map<String, String>> searchPalletBoxDispatchPallet(String numero) {
     List<Object[]> results = palletRepository.searchPalletBoxDispatchPallet(numero);
