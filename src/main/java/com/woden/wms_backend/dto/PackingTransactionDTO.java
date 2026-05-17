@@ -15,7 +15,8 @@ public class PackingTransactionDTO {
     private String smartCard;
 
     // ⚡ Campos para los UPDATES (Los datos de control)
-    private Integer estadoId;
+    private Integer estadoId;       // estadoId de la SmartCard (ej: 99 - EMPAQUE APROBADO)
+    private Integer estadoSerialId; // estadoId del Serial       (ej: 66 - EMPACADO)
     private String smartCardCode;
 
     // --- GETTERS Y SETTERS ---
@@ -54,6 +55,9 @@ public class PackingTransactionDTO {
 
     public Integer getEstadoId() { return estadoId; }
     public void setEstadoId(Integer estadoId) { this.estadoId = estadoId; }
+
+    public Integer getEstadoSerialId() { return estadoSerialId; }
+    public void setEstadoSerialId(Integer estadoSerialId) { this.estadoSerialId = estadoSerialId; }
 
     public String getSmartCardCode() { return smartCardCode; }
     public void setSmartCardCode(String smartCardCode) { this.smartCardCode = smartCardCode; }
