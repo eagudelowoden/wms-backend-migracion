@@ -65,7 +65,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("serial") String serial,
       @Param("filas") Integer filas);
 
-
+//sp nuevo
 
   @Modifying
   @Transactional
