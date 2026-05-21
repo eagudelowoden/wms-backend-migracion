@@ -68,6 +68,11 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             throw new RuntimeException("La serie ya fue procesada o no existe.");
         }
 
+        // PASO 1.5: UPDATE smartCardId en el Ingreso del SERIAL (asigna la smartcard al serial)
+        if (smartCardIdParam != null && smartCardStr != null) {
+            ingresoRepository.updateSmartCardEntry(smartCardIdParam, smartCardStr, dto.getSerial(), 4);
+        }
+
         // PASO 2: UPDATE en Ingreso del SmartCard — usa estadoId (ej: 99 - EMPAQUE APROBADO)
         if (dto.getSmartCardCode() != null
                 && !dto.getSmartCardCode().equals("0")
