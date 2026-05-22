@@ -39,39 +39,55 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
     @Transactional(rollbackFor = Exception.class)
     public void createPackingCompleto(PackingTransactionDTO dto) {
 
-        // 1. Verificación de seguridad
+        // Verificación de seguridad
         if (dto.getEstadoId() == null) {
-            throw new IllegalArgumentException("El estadoId es obligatorio para la transacción.");
+            throw new IllegalArgumentException("El estadoId (SmartCard) es obligatorio para la transacción.");
+        }
+        if (dto.getEstadoSerialId() == null) {
+            throw new IllegalArgumentException("El estadoSerialId (Serial) es obligatorio para la transacción.");
         }
 
-        Integer loteIdParam = (dto.getLoteId() != null && dto.getLoteId() != 0) ? dto.getLoteId() : null;
+        Integer loteIdParam    = (dto.getLoteId()    != null && dto.getLoteId()    != 0) ? dto.getLoteId()    : null;
         Integer smartCardIdParam = (dto.getSmartCardId() != null && dto.getSmartCardId() != 0) ? dto.getSmartCardId() : null;
-        String smartCardStr = (dto.getSmartCard() != null) ? dto.getSmartCard() : "0";
+        String  smartCardStr   = (dto.getSmartCard() != null && !dto.getSmartCard().trim().isEmpty()
+                                  && !dto.getSmartCard().equals("0")) ? dto.getSmartCard() : null;
 
-        // 1. INSERTAR EN TABLA EMPAQUE
-        empaqueRepository.createInsert(
+        // PASO 1: pa_InsertPackingWebD — usa estadoSerialId (ej: 66 - EMPACADO)
+        //   - DELETE previo del serialId (evita duplicados)
+        //   - INSERT en Empaque
+        //   - UPDATE en Ingreso del serial con el estado correcto del serial
+        Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                 dto.getSerialId(), dto.getSerial(), dto.getMac(), dto.getCodigoSapId(),
-                dto.getPalletId(), dto.getCajaEmpaqueId(), dto.getNivelId(),
-                dto.getUsuarioId(), java.time.LocalDateTime.now(),
+                dto.getPalletId(), dto.getCajaEmpaqueId(),
+                dto.getEstadoSerialId(), // ← Serial usa su propio estado (66)
+                dto.getNivelId(), dto.getUsuarioId(), java.time.LocalDateTime.now(),
                 loteIdParam, smartCardIdParam, smartCardStr
         );
 
-        // 2. ACTUALIZAR EQUIPO PRINCIPAL (Usamos dto.getEstadoId() que ya validamos)
-        ingresoRepository.UpdatePackingEntrySmartCard(
-                dto.getEstadoId(), dto.getPalletId(), dto.getCajaEmpaqueId(),
-                dto.getUsuarioId(), dto.getSerial(),
-                loteIdParam, smartCardIdParam, smartCardStr
-        );
+        if (filasAfectadas == null || filasAfectadas == 0) {
+            throw new RuntimeException("La serie ya fue procesada o no existe.");
+        }
 
-        // 3. ACTUALIZAR SMARTCARD (Si aplica)
-        // Usamos el código de la SmartCard para buscar el registro pero los mismos datos de destino
-        if (dto.getSmartCardCode() != null && !dto.getSmartCardCode().equals("0") && !dto.getSmartCardCode().isEmpty()) {
+        // PASO 1.5: UPDATE smartCardId en el Ingreso del SERIAL (asigna la smartcard al serial)
+        if (smartCardIdParam != null && smartCardStr != null) {
+            ingresoRepository.updateSmartCardEntry(smartCardIdParam, smartCardStr, dto.getSerial(), 4);
+        }
+
+        // PASO 2: UPDATE en Ingreso del SmartCard — usa estadoId (ej: 99 - EMPAQUE APROBADO)
+        if (dto.getSmartCardCode() != null
+                && !dto.getSmartCardCode().equals("0")
+                && !dto.getSmartCardCode().isEmpty()) {
+
             ingresoRepository.UpdatePackingEntrySmartCard(
-                    dto.getEstadoId(), dto.getPalletId(), dto.getCajaEmpaqueId(),
+                    dto.getEstadoId(), // ← SmartCard usa su propio estado (99)
+                    dto.getPalletId(), dto.getCajaEmpaqueId(),
                     dto.getUsuarioId(), dto.getSmartCardCode(),
-                    loteIdParam, smartCardIdParam, smartCardStr
+                    loteIdParam, smartCardIdParam,
+                    smartCardStr != null ? smartCardStr : "0"
             );
         }
+
+        logger.info("✅ createPackingCompleto OK — serial: {}", dto.getSerial());
     }
     // =========================================================================
 

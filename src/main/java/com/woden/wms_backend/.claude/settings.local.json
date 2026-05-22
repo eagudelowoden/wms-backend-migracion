@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\e.agudelo\\\\Documents\\\\WMS\\\\Backend\\\\src\\\\main\\\\java\\\\com\\\\woden\\\\wms_backend\" -Recurse -Filter \"*Empaque*.java\")",
+      "Bash(Select-Object FullName)",
+      "Bash(find \"C:\\\\Users\\\\e.agudelo\\\\Documents\\\\WMS\\\\Backend\" -name \"*.sql\" 2>/dev/null | head -20)"
+    ]
+  }
+}
