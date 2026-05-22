@@ -47,44 +47,34 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             throw new IllegalArgumentException("El estadoSerialId (Serial) es obligatorio para la transacción.");
         }
 
-        Integer loteIdParam    = (dto.getLoteId()    != null && dto.getLoteId()    != 0) ? dto.getLoteId()    : null;
+        Integer loteIdParam      = (dto.getLoteId()      != null && dto.getLoteId()      != 0) ? dto.getLoteId()      : null;
         Integer smartCardIdParam = (dto.getSmartCardId() != null && dto.getSmartCardId() != 0) ? dto.getSmartCardId() : null;
-        String  smartCardStr   = (dto.getSmartCard() != null && !dto.getSmartCard().trim().isEmpty()
-                                  && !dto.getSmartCard().equals("0")) ? dto.getSmartCard() : null;
+        String  smartCardStr     = (dto.getSmartCard()   != null && !dto.getSmartCard().trim().isEmpty()
+                                    && !dto.getSmartCard().equals("0")) ? dto.getSmartCard() : null;
 
-        // PASO 1: pa_InsertPackingWebD — usa estadoSerialId (ej: 66 - EMPACADO)
-        //   - DELETE previo del serialId (evita duplicados)
+        // Parámetros opcionales para el update de la SmartCard dentro del mismo SP
+        boolean tieneSmartCardCode = dto.getSmartCardCode() != null
+                && !dto.getSmartCardCode().equals("0")
+                && !dto.getSmartCardCode().isEmpty();
+        Integer estadoSmartCard = tieneSmartCardCode ? dto.getEstadoId() : null;
+        String  smartCardCode   = tieneSmartCardCode ? dto.getSmartCardCode() : null;
+
+        // ÚNICA LLAMADA: pa_InsertPackingWebD maneja internamente:
+        //   - DELETE previo (evita duplicados)
         //   - INSERT en Empaque
-        //   - UPDATE en Ingreso del serial con el estado correcto del serial
+        //   - UPDATE Ingreso del serial (estadoSerialId + asignación de SmartCard)
+        //   - UPDATE Ingreso de la SmartCard (si @SmartCardCode viene informado)
         Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                 dto.getSerialId(), dto.getSerial(), dto.getMac(), dto.getCodigoSapId(),
                 dto.getPalletId(), dto.getCajaEmpaqueId(),
-                dto.getEstadoSerialId(), // ← Serial usa su propio estado (66)
+                dto.getEstadoSerialId(),
                 dto.getNivelId(), dto.getUsuarioId(), java.time.LocalDateTime.now(),
-                loteIdParam, smartCardIdParam, smartCardStr
+                loteIdParam, smartCardIdParam, smartCardStr,
+                estadoSmartCard, smartCardCode
         );
 
         if (filasAfectadas == null || filasAfectadas == 0) {
             throw new RuntimeException("La serie ya fue procesada o no existe.");
-        }
-
-        // PASO 1.5: UPDATE smartCardId en el Ingreso del SERIAL (asigna la smartcard al serial)
-        if (smartCardIdParam != null && smartCardStr != null) {
-            ingresoRepository.updateSmartCardEntry(smartCardIdParam, smartCardStr, dto.getSerial(), 4);
-        }
-
-        // PASO 2: UPDATE en Ingreso del SmartCard — usa estadoId (ej: 99 - EMPAQUE APROBADO)
-        if (dto.getSmartCardCode() != null
-                && !dto.getSmartCardCode().equals("0")
-                && !dto.getSmartCardCode().isEmpty()) {
-
-            ingresoRepository.UpdatePackingEntrySmartCard(
-                    dto.getEstadoId(), // ← SmartCard usa su propio estado (99)
-                    dto.getPalletId(), dto.getCajaEmpaqueId(),
-                    dto.getUsuarioId(), dto.getSmartCardCode(),
-                    loteIdParam, smartCardIdParam,
-                    smartCardStr != null ? smartCardStr : "0"
-            );
         }
 
         logger.info("✅ createPackingCompleto OK — serial: {}", dto.getSerial());
@@ -123,7 +113,8 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                     serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId,
                     estadoId,
-                    nivelId, usuarioId, fecha, loteParam, scIdParam, scParam
+                    nivelId, usuarioId, fecha, loteParam, scIdParam, scParam,
+                    null, null   // sin SmartCard en este flujo
             );
 
             if (filasAfectadas == null || filasAfectadas == 0) {

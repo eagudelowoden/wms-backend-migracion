@@ -35,6 +35,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
           ":SerialId, :Serial, :Mac, :CodigoSapId, :PalletId, :CajaEmpaqueId, " +
           ":EstadoId, " +
           ":NivelId, :UsuarioId, :Fecha, :LoteId, :SmartCardId, :SmartCard, " +
+          ":EstadoSmartCard, :SmartCardCode, " +
           "@FilasOut OUTPUT; " +
           "SELECT @FilasOut;", nativeQuery = true)
   Integer executeInsertPacking(
@@ -50,7 +51,9 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
           @Param("Fecha") LocalDateTime fecha,
           @Param("LoteId") Integer loteId,
           @Param("SmartCardId") Integer smartCardId,
-          @Param("SmartCard") String smartCard
+          @Param("SmartCard") String smartCard,
+          @Param("EstadoSmartCard") Integer estadoSmartCard,
+          @Param("SmartCardCode") String smartCardCode
   );
 
   @Procedure(procedureName = "pa_DeletePacking")
