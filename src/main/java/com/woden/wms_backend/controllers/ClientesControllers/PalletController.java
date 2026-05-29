@@ -98,6 +98,12 @@ public class PalletController extends BaseController<PalletModel, Integer> {
     return ResponseEntity.ok(palletService.searchAccesory(numero, destino, usuarioId));
   }
 
+  @GetMapping("/searchAccesoryNovedad")
+  public ResponseEntity<List<PalletDTO>> searchAccesoryNovedad(
+      @RequestParam String numero) {
+    return ResponseEntity.ok(palletService.searchAccesoryNovedad(numero));
+  }
+
   @PostMapping("/cantidad-seriales")
   public ResponseEntity<Integer> getCount(@RequestBody CountPalletDTO dto) {
     return ResponseEntity.ok(palletService.getCount(dto.getPalletId(), dto.getTabla()));

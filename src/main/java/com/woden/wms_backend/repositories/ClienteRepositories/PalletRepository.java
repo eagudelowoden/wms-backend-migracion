@@ -46,6 +46,9 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("destino") String destino,
       @Param("usuarioId") int usuarioId);
 
+  @Query(value = "EXEC pa_SearchAccesoryNovedadPallet :numero", nativeQuery = true)
+  List<Object[]> searchAccesoryNovedad(@Param("numero") String numero);
+
   @Query(value = "EXEC pa_SearchTransitPallet :numero", nativeQuery = true)
   List<Object[]> searchTransitPallet(@Param("numero") String numero);
 

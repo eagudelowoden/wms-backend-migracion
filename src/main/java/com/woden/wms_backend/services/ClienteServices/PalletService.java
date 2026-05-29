@@ -187,6 +187,21 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  public List<PalletDTO> searchAccesoryNovedad(String numero) {
+    List<Object[]> results = palletRepository.searchAccesoryNovedad(numero);
+    return results.stream().map(obj -> {
+      PalletDTO pallet = new PalletDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCodigoSap((String) obj[2]);
+      pallet.setDescripcion((String) obj[3]);
+      pallet.setCantidad((Integer) obj[4]);
+      pallet.setTipologia((String) obj[5]);
+      pallet.setOrigen((String) obj[6]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
   public List<Map<String, Object>> searchTransitPallet(String numero) {
     List<Object[]> resultado = palletRepository.searchTransitPallet(numero);
     List<Map<String, Object>> pallets = new ArrayList<>();
