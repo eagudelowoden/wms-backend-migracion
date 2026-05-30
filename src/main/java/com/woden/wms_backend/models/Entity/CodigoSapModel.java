@@ -2,6 +2,7 @@ package com.woden.wms_backend.models.Entity;
 
 import com.woden.wms_backend.models.Activable;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,7 +13,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "CodigoSap", schema = "dbo")
-public class CodigoSapModel implements Activable{
+public class CodigoSapModel implements Activable {
     @Id
     @Column(name = "Id")
     private int id;

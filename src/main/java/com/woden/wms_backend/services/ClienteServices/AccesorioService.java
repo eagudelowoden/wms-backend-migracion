@@ -400,6 +400,31 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         }
     }
 
+    // ── Novedades ──────────────────────────────────────────────────────────────
+
+    @Transactional
+    public void updateNoveltyAllAccesory(List<Integer> palletIds, Integer estadoId,
+                                         String observaciones, String novedad, Integer usuarioId) {
+        for (Integer palletId : palletIds) {
+            accesorioRepository.updateNoveltyAllAccesory(palletId, estadoId, observaciones, novedad, usuarioId);
+        }
+    }
+
+    public List<Map<String, Object>> searchNoveltyAccesoryPallet(String tipoNovedad) {
+        List<Object[]> results = accesorioRepository.searchNoveltyAccesoryPallet(tipoNovedad);
+        return results.stream().map(obj -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id",          obj[0]);
+            map.put("numero",      obj[1]);
+            map.put("codigoSap",   obj[2]);
+            map.put("descripcion", obj[3]);
+            map.put("cantidad",    obj[4]);
+            map.put("tipologia",   obj[5]);
+            map.put("novedad",     obj[6]);
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
 
 
 
