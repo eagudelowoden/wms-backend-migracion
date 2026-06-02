@@ -488,6 +488,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.sendIngreso(estadoId, tipologiaId, usuarioId, palletId, opcion, 0);
   }
 
+  public void sendCosmeticEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
+    ingresoRepository.sendCosmeticEntry(estadoId, tipologiaId, usuarioId, palletId, 0);
+  }
+
   public void sendStorageEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
     ingresoRepository.SendStorageEntry(estadoId, tipologiaId, usuarioId, palletId, 0);
   }
