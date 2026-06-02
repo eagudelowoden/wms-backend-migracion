@@ -339,6 +339,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return results;
   }
 
+  public void sendCosmeticEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
+    Integer filas = 4;
+    ingresoRepository.sendCosmeticEntry(estadoId, tipologiaId, usuarioId, palletId, filas);
+  }
+
   public void SendStorageEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
     Integer filas = 0; // aquí el OUT lo usamos de forma simbólica
     ingresoRepository.SendStorageEntry(estadoId, tipologiaId, usuarioId, palletId, filas);

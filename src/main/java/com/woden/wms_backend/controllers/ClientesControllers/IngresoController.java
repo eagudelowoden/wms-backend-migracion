@@ -30,6 +30,7 @@ import com.woden.wms_backend.dto.RegularizarSapDTO;
 import com.woden.wms_backend.dto.RegularizarSapSerialIngresoDTO;
 import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.SendIngresoDTO;
+import com.woden.wms_backend.dto.clientDTO.SendCosmeticEntryDTO;
 import com.woden.wms_backend.dto.clientDTO.SendStorageEntryDTO;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
@@ -181,6 +182,18 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(Map.of("error", "Error al almacenar pallet: " + e.getMessage()));
+    }
+  }
+
+  @PostMapping("/sendCosmeticEntry")
+  public ResponseEntity<?> sendCosmeticEntry(@RequestBody SendCosmeticEntryDTO request) {
+    try {
+      ingresoService.sendCosmeticEntry(request.getPalletId(), request.getEstadoId(), request.getTipologiaId(),
+          request.getUsuarioId());
+      return ResponseEntity.ok(Map.of("message", "Pallet cosmético enviado correctamente.", "success", true));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("error", "Error al enviar pallet cosmético: " + e.getMessage(), "success", false));
     }
   }
 
