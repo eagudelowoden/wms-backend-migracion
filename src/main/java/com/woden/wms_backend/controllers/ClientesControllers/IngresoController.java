@@ -341,7 +341,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/updateStateAllEntry")
   public ResponseEntity<ApiSuccess> updateStateAllEntry(@RequestBody List<UpdateStateAllItemRequest> requestList) {
-    logger.info("[updateStateAllEntry] Recibida solicitud para actualizar {} seriales", requestList.size());
+    String primerSerial = (!requestList.isEmpty() && requestList.get(0).serial() != null)
+        ? requestList.get(0).serial() : "N/A";
+    logger.info("[updateStateAllEntry] Recibida solicitud para actualizar {} seriales, primer serial: {}", requestList.size(), primerSerial);
     ingresoService.updateStateAllEntries(requestList);
     return ResponseEntity.ok(ApiSuccess.of(requestList.size() + " serial(es) actualizado(s)."));
   }

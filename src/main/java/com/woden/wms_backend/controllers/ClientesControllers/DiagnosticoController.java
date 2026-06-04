@@ -58,7 +58,9 @@ public class DiagnosticoController {
 
   @PostMapping("/updateDiagnostico")
   public ResponseEntity<?> updateDiagnostico(@RequestBody List<Map<String, Object>> requestList) {
-    logger.info("[DIAGNOSTICO-PROCESO] Recibida solicitud para actualizar diagnóstico de {} seriales", requestList.size());
+    String primerSerial = (!requestList.isEmpty() && requestList.get(0).get("serial") != null)
+        ? requestList.get(0).get("serial").toString() : "N/A";
+    logger.info("[DIAGNOSTICO-PROCESO] Recibida solicitud para actualizar diagnóstico de {} seriales, primer serial: {}", requestList.size(), primerSerial);
     try {
       service.updateDiagnosticos(requestList);
       return ResponseEntity.ok(1);
