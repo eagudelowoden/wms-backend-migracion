@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
 import com.woden.wms_backend.services.ClienteServices.DiagnosticoService;
 
 @RestController
@@ -88,6 +89,19 @@ public class DiagnosticoController {
       }
       return ResponseEntity.ok(1);
     } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
+  }
+
+  @PostMapping("/save")
+  public ResponseEntity<?> save(@RequestBody List<DiagnosticoRequest> items) {
+    String primer = !items.isEmpty() ? items.get(0).getSerial() : "N/A";
+    logger.info("[DIAGNOSTICO] save: {} seriales, primer serial: {}", items.size(), primer);
+    try {
+      service.save(items);
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      logger.error("[DIAGNOSTICO] Error en save: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
   }
