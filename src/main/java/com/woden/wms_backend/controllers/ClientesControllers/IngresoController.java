@@ -28,6 +28,7 @@ import com.woden.wms_backend.dto.RegularizarSapDTO;
 import com.woden.wms_backend.dto.RegularizarSapSerialIngresoDTO;
 import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.SendIngresoDTO;
+import com.woden.wms_backend.dto.clientDTO.SendCosmeticEntryDTO;
 import com.woden.wms_backend.dto.clientDTO.SendStorageEntryDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.BackRepairedRequest;
 import com.woden.wms_backend.dto.clientDTO.ingreso.ChangedPackingRequest;
@@ -263,6 +264,17 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   // ── Envío / almacenamiento ────────────────────────────────────────────────
 
+  @PostMapping("/sendCosmeticEntry")
+  public ResponseEntity<?> sendCosmeticEntry(@RequestBody SendCosmeticEntryDTO request) {
+    try {
+      ingresoService.sendCosmeticEntry(request.getPalletId(), request.getEstadoId(),
+          request.getTipologiaId(), request.getUsuarioId());
+      return ResponseEntity.ok(Map.of("message", "Pallet cosmético enviado correctamente.", "success", true));
+    } catch (Exception e) {
+      return ResponseEntity.ok(Map.of("message", "Error al enviar pallet cosmético: " + e.getMessage(), "success", false));
+    }
+  }
+
   @PostMapping("/sendStorageEntry")
   public ResponseEntity<ApiSuccess> sendStorageEntry(@RequestBody SendStorageEntryDTO request) {
     ingresoService.sendStorageEntry(
@@ -329,7 +341,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @PostMapping("/updateStateAllEntry")
   public ResponseEntity<ApiSuccess> updateStateAllEntry(@RequestBody List<UpdateStateAllItemRequest> requestList) {
-    logger.info("[updateStateAllEntry] Recibida solicitud para actualizar {} seriales", requestList.size());
+    String primerSerial = (!requestList.isEmpty() && requestList.get(0).serial() != null)
+        ? requestList.get(0).serial() : "N/A";
+    logger.info("[updateStateAllEntry] Recibida solicitud para actualizar {} seriales, primer serial: {}", requestList.size(), primerSerial);
     ingresoService.updateStateAllEntries(requestList);
     return ResponseEntity.ok(ApiSuccess.of(requestList.size() + " serial(es) actualizado(s)."));
   }

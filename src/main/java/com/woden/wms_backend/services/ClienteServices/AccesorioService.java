@@ -431,4 +431,28 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
 
 
+
+    public List<Map<String, Object>> searchNoveltyAccesory(Integer palletId) {
+        List<Object[]> resultados = accesorioRepository.searchNoveltyAccesory(palletId);
+        List<Map<String, Object>> formattedResults = new ArrayList<>();
+        for (Object[] row : resultados) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("palletId", row[0]);
+            map.put("codigoSapId", row[1]);
+            map.put("codigo", row[2] != null ? row[2].toString() : "");
+            map.put("descripcion", row[3] != null ? row[3].toString() : "");
+            map.put("tipoAccesorio", row[4] != null ? row[4].toString() : "");
+            map.put("origen", row[5] != null ? row[5].toString() : "");
+            map.put("documento", row[6] != null ? row[6].toString() : "");
+            map.put("guia", row[7] != null ? row[7].toString() : "");
+            map.put("caja", row[8]);
+            formattedResults.add(map);
+        }
+        return formattedResults;
+    }
+
+    public void updateAccesoryNovedad(Integer palletId, Integer codigoSapId, Integer usuarioId) {
+        accesorioRepository.updateAccesoryNovedad(palletId, codigoSapId, usuarioId, 0);
+    }
+
 }

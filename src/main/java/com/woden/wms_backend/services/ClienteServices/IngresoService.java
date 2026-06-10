@@ -488,6 +488,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingresoRepository.sendIngreso(estadoId, tipologiaId, usuarioId, palletId, opcion, 0);
   }
 
+  public void sendCosmeticEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
+    ingresoRepository.sendCosmeticEntry(estadoId, tipologiaId, usuarioId, palletId, 0);
+  }
+
   public void sendStorageEntry(Integer palletId, Integer estadoId, Integer tipologiaId, Integer usuarioId) {
     ingresoRepository.SendStorageEntry(estadoId, tipologiaId, usuarioId, palletId, 0);
   }
@@ -535,9 +539,43 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @Transactional
   public void updateStateAllEntries(List<UpdateStateAllItemRequest> items) {
-    items.forEach(item ->
-        ingresoRepository.updateStateAllEntry(item.estadoId(), item.usuarioIdMovimiento(), item.serial()));
-    logger.info("[updateStateAllEntries] {} serial(es) actualizado(s)", items.size());
+    final int MAX_INTENTOS = 3;
+    final long ESPERA_MS   = 300;
+
+    // Muestra hasta 3 seriales del inicio y el último para identificar el lote en el log
+    String muestraSeriales = buildSerialSample(items);
+
+    for (int intento = 1; intento <= MAX_INTENTOS; intento++) {
+      try {
+        items.forEach(item ->
+            ingresoRepository.updateStateAllEntry(item.estadoId(), item.usuarioIdMovimiento(), item.serial()));
+        logger.info("[updateStateAllEntries] {} serial(es) actualizado(s) (intento {}) | seriales: {}",
+            items.size(), intento, muestraSeriales);
+        return;
+      } catch (org.springframework.dao.CannotAcquireLockException e) {
+        logger.warn("[updateStateAllEntries] Deadlock en intento {}/{} para {} serial(es) | seriales: {} | {}",
+            intento, MAX_INTENTOS, items.size(), muestraSeriales,
+            intento < MAX_INTENTOS ? "Reintentando en " + ESPERA_MS + "ms..." : "Se agotaron los intentos.");
+        if (intento == MAX_INTENTOS) throw e;
+        try { Thread.sleep(ESPERA_MS); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); throw e; }
+      }
+    }
+  }
+
+  private String buildSerialSample(List<UpdateStateAllItemRequest> items) {
+    if (items == null || items.isEmpty()) return "(vacío)";
+    int total = items.size();
+    int muestra = Math.min(3, total);
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < muestra; i++) {
+      if (i > 0) sb.append(", ");
+      sb.append(items.get(i).serial());
+    }
+    if (total > muestra) {
+      sb.append(", ... (").append(total - muestra).append(" más), ").append(items.get(total - 1).serial());
+    }
+    sb.append("]");
+    return sb.toString();
   }
 
   public void updateStateEntry(Integer estadoId, Integer palletId, Integer usuarioId, Integer fecha, String serial) {

@@ -331,4 +331,27 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
 
 
 
+
+    @GetMapping("/searchNoveltyAccesory")
+    public ResponseEntity<?> searchNoveltyAccesory(@RequestParam Integer palletId) {
+        try {
+            return ResponseEntity.ok(accesorioService.searchNoveltyAccesory(palletId));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("message", "Error: " + e.getMessage(), "success", false));
+        }
+    }
+
+    @PostMapping("/updateAccesoryNovedad")
+    public ResponseEntity<?> updateAccesoryNovedad(@RequestBody Map<String, Object> dto) {
+        try {
+            Integer palletId = (Integer) dto.get("palletId");
+            Integer codigoSapId = (Integer) dto.get("codigoSapId");
+            Integer usuarioId = (Integer) dto.get("usuarioId");
+            accesorioService.updateAccesoryNovedad(palletId, codigoSapId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Pallet actualizado correctamente.", "success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("message", "Error al actualizar: " + e.getMessage(), "success", false));
+        }
+    }
+
 }

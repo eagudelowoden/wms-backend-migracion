@@ -51,4 +51,9 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
 
     @Query(value = "pa_GetDiagnosticVariables :serial", nativeQuery = true)
     public List<Object[]> getDiagnosticVariables(@Param("serial") String serial);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_SaveDiagnostic :datos", nativeQuery = true)
+    void save(@Param("datos") String datos);
 }

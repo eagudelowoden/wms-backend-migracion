@@ -11,9 +11,13 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
 import com.woden.wms_backend.repositories.ClienteRepositories.DiagnosticoRepository;
 
 import jakarta.transaction.Transactional;
@@ -21,11 +25,17 @@ import jakarta.transaction.Transactional;
 @Service
 public class DiagnosticoService {
 
+  private static final Logger logger     = LoggerFactory.getLogger(DiagnosticoService.class);
+  private static final int    CHUNK_SIZE = 50;
+
   @Autowired
   private DataSource dataSource;
 
   @Autowired
   private DiagnosticoRepository repository;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Transactional
   public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId,
@@ -124,6 +134,23 @@ public class DiagnosticoService {
       formattedResults.add(map);
     }
     return formattedResults;
+  }
+
+  @Transactional
+  public void save(List<DiagnosticoRequest> items) {
+    int total = items.size();
+    int procesados = 0;
+    try {
+      for (int i = 0; i < total; i += CHUNK_SIZE) {
+        List<DiagnosticoRequest> chunk = items.subList(i, Math.min(i + CHUNK_SIZE, total));
+        String json = objectMapper.writeValueAsString(chunk);
+        repository.save(json);
+        procesados += chunk.size();
+        logger.info("[DIAGNOSTICO] chunk guardado: {}/{}", procesados, total);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Error al guardar diagnóstico: " + e.getMessage(), e);
+    }
   }
 
   public List<Map<String, Object>> getDiagnosticVariables(String serial) {

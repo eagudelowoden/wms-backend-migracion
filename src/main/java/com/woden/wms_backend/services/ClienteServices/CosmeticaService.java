@@ -1,6 +1,7 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +15,16 @@ import com.woden.wms_backend.repositories.ClienteRepositories.CosmeticaRepositor
 public class CosmeticaService {
   @Autowired
   private CosmeticaRepository repository;
-  
-  public List<Map<String, Object>> searchCosmeticaEntry() {
-    List<Object[]> results = repository.searchCosmeticaEntry();
+
+  public void insertCosmetica(List<String> seriales, Integer usuarioId) {
+    Date fecha = new Date();
+    for (String serial : seriales) {
+      repository.insertCosmetica(serial, usuarioId, fecha);
+    }
+  }
+
+  public List<Map<String, Object>> searchCosmeticaEntry(Integer usuarioId) {
+    List<Object[]> results = repository.searchCosmeticaEntry(usuarioId);
 
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 
