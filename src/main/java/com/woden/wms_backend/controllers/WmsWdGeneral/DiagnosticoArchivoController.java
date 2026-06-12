@@ -99,6 +99,69 @@ public class DiagnosticoArchivoController {
     return ResponseEntity.ok(info);
   }
 
+  /**
+   * Ejecuta "net use" dentro del proceso del backend para ver las conexiones
+   * SMB de ESTA sesión y, opcionalmente, intentar conectarse al share con
+   * credenciales explícitas. Devuelve la salida cruda de Windows.
+   *
+   *   GET /general/diagnostico/netuse                       → lista conexiones actuales
+   *   GET /general/diagnostico/netuse?usuario=X&clave=Y     → intenta conectar y reporta
+   */
+  @GetMapping("/netuse")
+  public ResponseEntity<Map<String, Object>> diagnosticarNetUse(
+      @RequestParam(required = false) String usuario,
+      @RequestParam(required = false) String clave) {
+
+    Map<String, Object> info = new LinkedHashMap<>();
+    info.put("usuarioJvm", System.getProperty("user.name"));
+
+    // 1. Conexiones SMB actuales de esta sesión
+    info.put("conexionesActuales", ejecutar(new String[] { "cmd", "/c", "net", "use" }));
+
+    // 2. Si mandan credenciales, intentar la conexión desde este proceso
+    if (usuario != null && !usuario.isBlank() && clave != null) {
+      info.put("intentoConexion", ejecutar(new String[] {
+          "cmd", "/c", "net", "use", "\\\\10.128.0.28\\archivos",
+          "/user:" + usuario, clave }));
+
+      // 3. Reintentar el acceso después del net use
+      File base = new File(RUTA_BASE);
+      Map<String, Object> reintento = new LinkedHashMap<>();
+      reintento.put("exists", base.exists());
+      reintento.put("canRead", base.canRead());
+      try {
+        String[] carpetas = base.list();
+        reintento.put("clientes",
+            carpetas != null ? List.of(carpetas) : "list() devolvió null (sin acceso)");
+      } catch (Exception e) {
+        reintento.put("error", e.getClass().getSimpleName() + ": " + e.getMessage());
+      }
+      info.put("accesoDespuesDeConectar", reintento);
+    }
+
+    return ResponseEntity.ok(info);
+  }
+
+  private String ejecutar(String[] comando) {
+    try {
+      Process proceso = new ProcessBuilder(comando)
+          .redirectErrorStream(true)
+          .start();
+      StringBuilder salida = new StringBuilder();
+      try (java.io.BufferedReader br = new java.io.BufferedReader(
+          new java.io.InputStreamReader(proceso.getInputStream()))) {
+        String linea;
+        while ((linea = br.readLine()) != null) {
+          salida.append(linea).append("\n");
+        }
+      }
+      int codigo = proceso.waitFor();
+      return "exitCode=" + codigo + "\n" + salida;
+    } catch (Exception e) {
+      return e.getClass().getSimpleName() + ": " + e.getMessage();
+    }
+  }
+
   private void recorrer(File dir, String rutaRelativa, int nivel,
       List<Map<String, Object>> prns, List<String> carpetas, List<String> errores) {
 
