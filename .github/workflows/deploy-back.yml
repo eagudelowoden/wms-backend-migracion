@@ -120,7 +120,7 @@ jobs:
             $batchPath = Join-Path $tempPath "start_backend_$timestamp.bat"
             "@echo off" | Out-File -FilePath $batchPath -Encoding ASCII
             "cd /d $deployPath" | Out-File -FilePath $batchPath -Append -Encoding ASCII
-            "net use \\10.128.0.28\archivos /user:${{ secrets.SMB_USER }} `"${{ secrets.SMB_PASS }}`"" | Out-File -FilePath $batchPath -Append -Encoding ASCII
+            'net use \\10.128.0.28\archivos /user:${{ secrets.SMB_USER }} "${{ secrets.SMB_PASS }}"' | Out-File -FilePath $batchPath -Append -Encoding ASCII
             "javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchPath -Append -Encoding ASCII
 
             # Ejecutar batch en background
