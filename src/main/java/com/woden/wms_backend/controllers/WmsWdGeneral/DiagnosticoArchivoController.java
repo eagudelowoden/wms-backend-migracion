@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
  * Uso:
  *   GET /general/diagnostico/prn                          → lista las carpetas de clientes
  *   GET /general/diagnostico/prn?cliente=TIGO-COLOMBIA-MEDELLIN → lista todo el contenido del cliente
+ *   GET /general/diagnostico/netuse                       → conexiones SMB de la sesión del backend
+ *   GET /general/diagnostico/netuse?usuario=X&clave=Y     → intenta conectar al share y reporta
  */
 @RestController
 @RequestMapping("/general/diagnostico")
@@ -103,9 +105,6 @@ public class DiagnosticoArchivoController {
    * Ejecuta "net use" dentro del proceso del backend para ver las conexiones
    * SMB de ESTA sesión y, opcionalmente, intentar conectarse al share con
    * credenciales explícitas. Devuelve la salida cruda de Windows.
-   *
-   *   GET /general/diagnostico/netuse                       → lista conexiones actuales
-   *   GET /general/diagnostico/netuse?usuario=X&clave=Y     → intenta conectar y reporta
    */
   @GetMapping("/netuse")
   public ResponseEntity<Map<String, Object>> diagnosticarNetUse(

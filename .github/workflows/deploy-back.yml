@@ -120,7 +120,6 @@ jobs:
             $batchPath = Join-Path $tempPath "start_backend_$timestamp.bat"
             "@echo off" | Out-File -FilePath $batchPath -Encoding ASCII
             "cd /d $deployPath" | Out-File -FilePath $batchPath -Append -Encoding ASCII
-            'net use \\10.128.0.28\archivos /user:${{ secrets.SMB_USER }} "${{ secrets.SMB_PASS }}"' | Out-File -FilePath $batchPath -Append -Encoding ASCII
             "javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchPath -Append -Encoding ASCII
 
             # Ejecutar batch en background
@@ -139,6 +138,24 @@ jobs:
                 Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
                 exit 1
             }
+              # Ejecutar JAR en background usando WMI (método más robusto en Windows)
+              $javaPath = (Get-Command javaw).Source
+              $arguments = "-jar `"$targetPath`""
+
+              $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
+              $processStartup.ShowWindow = 0  # Hidden window
+
+              $processClass = [wmiclass]"Win32_Process"
+              $result = $processClass.Create("$javaPath $arguments", $deployPath, $processStartup)
+
+              if ($result.ReturnValue -eq 0) {
+                  $newPid = $result.ProcessId
+                  Write-Host "Backend process started successfully with PID: $newPid"
+              } else {
+                  Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
+                  exit 1
+              }
+
               # Esperar y verificar que el puerto está en uso (con reintentos)
               Write-Host "Waiting for backend service to start..."
               $maxAttempts = 12
@@ -165,7 +182,32 @@ jobs:
                   Write-Warning "Service may still be starting. Port $port is not listening after $maxAttempts attempts."
                   Write-Warning "Check logs for details: $logFileOut"
               }
-              
+
+              # Esperar y verificar que el puerto está en uso (con reintentos)
+              Write-Host "Waiting for backend service to start..."
+              $maxAttempts = 12
+              $attempt = 0
+              $started = $false
+
+              while ($attempt -lt $maxAttempts -and -not $started) {
+                  Start-Sleep -Seconds 5
+                  $attempt++
+
+                  $checkPort = netstat -ano | Select-String ":$port.*LISTENING"
+
+                  if ($checkPort) {
+                      $started = $true
+                      Write-Host "Backend service started successfully and listening on port $port (attempt $attempt)."
+                  } else {
+                      Write-Host "  Attempt $attempt/$maxAttempts - Port $port not listening yet..."
+                  }
+              }
+
+              if (-not $started) {
+                  Write-Warning "Service may still be starting. Port $port is not listening after $maxAttempts attempts."
+                  Write-Warning "Check the application manually or review process with PID: $newPid"
+              }
+
               # Limpiar script batch temporal (si existe)
               Remove-Item -Path "$tempPath\start_backend_*.bat" -Force -ErrorAction SilentlyContinue
               
