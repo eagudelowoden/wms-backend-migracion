@@ -37,6 +37,7 @@ public class SecurityConfig {
             .requestMatchers("/general/clientes/**").permitAll()
             .requestMatchers("/general/users/ping").permitAll()
             .requestMatchers("/general/avisos/activo").permitAll()
+            .requestMatchers("/general/diagnostico/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -55,7 +56,7 @@ public class SecurityConfig {
          "http://52.14.166.232:8084","http://52.14.166.232:8084", "http://52.14.166.232:9005",
         "https://woden-wts-dev.arkade.com.co","http://localhost:9001","http://localhost:8084",
         "https://wmstest.woden.com.co/admin",
-        "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*",
+        "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*", "http://localhost:5173",
         "http://woden-wts-dev.arkade.com.co:443"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
