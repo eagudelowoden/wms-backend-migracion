@@ -116,12 +116,13 @@ public class DiagnosticoArchivoController {
     info.put("usuarioJvm", System.getProperty("user.name"));
 
     // 1. Conexiones SMB actuales de esta sesión
-    info.put("conexionesActuales", ejecutar(new String[] { "cmd", "/c", "net", "use" }));
+    info.put("conexionesActuales", ejecutar(new String[] { "net", "use" }));
 
-    // 2. Si mandan credenciales, intentar la conexión desde este proceso
+    // 2. Si mandan credenciales, intentar la conexión desde este proceso.
+    //    Sin "cmd /c": cmd parte los argumentos en los signos "=" y rompe la clave.
     if (usuario != null && !usuario.isBlank() && clave != null) {
       info.put("intentoConexion", ejecutar(new String[] {
-          "cmd", "/c", "net", "use", "\\\\10.128.0.28\\archivos",
+          "net", "use", "\\\\10.128.0.28\\archivos",
           "/user:" + usuario, clave }));
 
       // 3. Reintentar el acceso después del net use
