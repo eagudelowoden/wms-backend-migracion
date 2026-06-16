@@ -37,7 +37,6 @@ public class SecurityConfig {
             .requestMatchers("/general/clientes/**").permitAll()
             .requestMatchers("/general/users/ping").permitAll()
             .requestMatchers("/general/avisos/activo").permitAll()
-            .requestMatchers("/general/diagnostico/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
