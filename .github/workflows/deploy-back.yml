@@ -112,6 +112,9 @@ jobs:
               # (acceso al share de PRN \\10.128.0.28\archivos).
               # ---------------------------------------------------------
               Write-Host '🔥 Iniciando Spring Boot via tarea programada WMS-Backend...'
+              # Cerrar cualquier instancia previa de la tarea (si quedó en estado Running, /run no relanza)
+              schtasks /end /tn 'WMS-Backend' | Out-Null
+              Start-Sleep -Seconds 3
               schtasks /run /tn 'WMS-Backend'
 
               if (\$LASTEXITCODE -ne 0) {
