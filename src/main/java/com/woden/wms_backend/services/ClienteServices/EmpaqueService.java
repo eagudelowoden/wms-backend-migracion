@@ -39,39 +39,45 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
     @Transactional(rollbackFor = Exception.class)
     public void createPackingCompleto(PackingTransactionDTO dto) {
 
-        // 1. Verificación de seguridad
+        // Verificación de seguridad
         if (dto.getEstadoId() == null) {
-            throw new IllegalArgumentException("El estadoId es obligatorio para la transacción.");
+            throw new IllegalArgumentException("El estadoId (SmartCard) es obligatorio para la transacción.");
+        }
+        if (dto.getEstadoSerialId() == null) {
+            throw new IllegalArgumentException("El estadoSerialId (Serial) es obligatorio para la transacción.");
         }
 
-        Integer loteIdParam = (dto.getLoteId() != null && dto.getLoteId() != 0) ? dto.getLoteId() : null;
+        Integer loteIdParam      = (dto.getLoteId()      != null && dto.getLoteId()      != 0) ? dto.getLoteId()      : null;
         Integer smartCardIdParam = (dto.getSmartCardId() != null && dto.getSmartCardId() != 0) ? dto.getSmartCardId() : null;
-        String smartCardStr = (dto.getSmartCard() != null) ? dto.getSmartCard() : "0";
+        String  smartCardStr     = (dto.getSmartCard()   != null && !dto.getSmartCard().trim().isEmpty()
+                                    && !dto.getSmartCard().equals("0")) ? dto.getSmartCard() : null;
 
-        // 1. INSERTAR EN TABLA EMPAQUE
-        empaqueRepository.createInsert(
+        // Parámetros opcionales para el update de la SmartCard dentro del mismo SP
+        boolean tieneSmartCardCode = dto.getSmartCardCode() != null
+                && !dto.getSmartCardCode().equals("0")
+                && !dto.getSmartCardCode().isEmpty();
+        Integer estadoSmartCard = tieneSmartCardCode ? dto.getEstadoId() : null;
+        String  smartCardCode   = tieneSmartCardCode ? dto.getSmartCardCode() : null;
+
+        // ÚNICA LLAMADA: pa_InsertPackingWebD maneja internamente:
+        //   - DELETE previo (evita duplicados)
+        //   - INSERT en Empaque
+        //   - UPDATE Ingreso del serial (estadoSerialId + asignación de SmartCard)
+        //   - UPDATE Ingreso de la SmartCard (si @SmartCardCode viene informado)
+        Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                 dto.getSerialId(), dto.getSerial(), dto.getMac(), dto.getCodigoSapId(),
-                dto.getPalletId(), dto.getCajaEmpaqueId(), dto.getNivelId(),
-                dto.getUsuarioId(), java.time.LocalDateTime.now(),
-                loteIdParam, smartCardIdParam, smartCardStr
+                dto.getPalletId(), dto.getCajaEmpaqueId(),
+                dto.getEstadoSerialId(),
+                dto.getNivelId(), dto.getUsuarioId(), java.time.LocalDateTime.now(),
+                loteIdParam, smartCardIdParam, smartCardStr,
+                estadoSmartCard, smartCardCode
         );
 
-        // 2. ACTUALIZAR EQUIPO PRINCIPAL (Usamos dto.getEstadoId() que ya validamos)
-        ingresoRepository.UpdatePackingEntrySmartCard(
-                dto.getEstadoId(), dto.getPalletId(), dto.getCajaEmpaqueId(),
-                dto.getUsuarioId(), dto.getSerial(),
-                loteIdParam, smartCardIdParam, smartCardStr
-        );
-
-        // 3. ACTUALIZAR SMARTCARD (Si aplica)
-        // Usamos el código de la SmartCard para buscar el registro pero los mismos datos de destino
-        if (dto.getSmartCardCode() != null && !dto.getSmartCardCode().equals("0") && !dto.getSmartCardCode().isEmpty()) {
-            ingresoRepository.UpdatePackingEntrySmartCard(
-                    dto.getEstadoId(), dto.getPalletId(), dto.getCajaEmpaqueId(),
-                    dto.getUsuarioId(), dto.getSmartCardCode(),
-                    loteIdParam, smartCardIdParam, smartCardStr
-            );
+        if (filasAfectadas == null || filasAfectadas == 0) {
+            throw new RuntimeException("La serie ya fue procesada o no existe.");
         }
+
+        logger.info("✅ createPackingCompleto OK — serial: {}", dto.getSerial());
     }
     // =========================================================================
 
@@ -107,7 +113,8 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
             Integer filasAfectadas = empaqueRepository.executeInsertPacking(
                     serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId,
                     estadoId,
-                    nivelId, usuarioId, fecha, loteParam, scIdParam, scParam
+                    nivelId, usuarioId, fecha, loteParam, scIdParam, scParam,
+                    null, null   // sin SmartCard en este flujo
             );
 
             if (filasAfectadas == null || filasAfectadas == 0) {

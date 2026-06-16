@@ -130,4 +130,7 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+
+
+
 }

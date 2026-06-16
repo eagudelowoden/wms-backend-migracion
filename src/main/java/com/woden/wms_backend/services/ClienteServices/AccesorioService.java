@@ -400,10 +400,59 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         }
     }
 
+    // ── Novedades ──────────────────────────────────────────────────────────────
+
+    @Transactional
+    public void updateNoveltyAllAccesory(List<Integer> palletIds, Integer estadoId,
+                                         String observaciones, String novedad, Integer usuarioId) {
+        for (Integer palletId : palletIds) {
+            accesorioRepository.updateNoveltyAllAccesory(palletId, estadoId, observaciones, novedad, usuarioId);
+        }
+    }
+
+    public List<Map<String, Object>> searchNoveltyAccesoryPallet(String tipoNovedad) {
+        List<Object[]> results = accesorioRepository.searchNoveltyAccesoryPallet(tipoNovedad);
+        return results.stream().map(obj -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id",          obj[0]);
+            map.put("numero",      obj[1]);
+            map.put("codigoSap",   obj[2]);
+            map.put("descripcion", obj[3]);
+            map.put("cantidad",    obj[4]);
+            map.put("tipologia",   obj[5]);
+            map.put("novedad",     obj[6]);
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
+    }
 
 
 
 
 
+
+
+
+    public List<Map<String, Object>> searchNoveltyAccesory(Integer palletId) {
+        List<Object[]> resultados = accesorioRepository.searchNoveltyAccesory(palletId);
+        List<Map<String, Object>> formattedResults = new ArrayList<>();
+        for (Object[] row : resultados) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("palletId", row[0]);
+            map.put("codigoSapId", row[1]);
+            map.put("codigo", row[2] != null ? row[2].toString() : "");
+            map.put("descripcion", row[3] != null ? row[3].toString() : "");
+            map.put("tipoAccesorio", row[4] != null ? row[4].toString() : "");
+            map.put("origen", row[5] != null ? row[5].toString() : "");
+            map.put("documento", row[6] != null ? row[6].toString() : "");
+            map.put("guia", row[7] != null ? row[7].toString() : "");
+            map.put("caja", row[8]);
+            formattedResults.add(map);
+        }
+        return formattedResults;
+    }
+
+    public void updateAccesoryNovedad(Integer palletId, Integer codigoSapId, Integer usuarioId) {
+        accesorioRepository.updateAccesoryNovedad(palletId, codigoSapId, usuarioId, 0);
+    }
 
 }

@@ -1,15 +1,13 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
-import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,866 +30,525 @@ import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.SendIngresoDTO;
 import com.woden.wms_backend.dto.clientDTO.SendCosmeticEntryDTO;
 import com.woden.wms_backend.dto.clientDTO.SendStorageEntryDTO;
+import com.woden.wms_backend.dto.clientDTO.ingreso.BackRepairedRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.ChangedPackingRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.ClassificationItemRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.DispatchEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.EntryDispatchRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.InsertSerialInventoryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.NoveltyAllEntryItemRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.PackingAllRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.PackingEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.PackingSmartCardRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.StateNoUserRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UnifyEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateChangeStateRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateLevelRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateNoveltyItemRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdatePalletEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdatePalletTypologyRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateSmartCardRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStateAllItemRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStateEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStateOneEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStatusBatchRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateTipologiaRequest;
+import com.woden.wms_backend.dto.response.ApiSuccess;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
 import com.woden.wms_backend.services.ClienteServices.ZplService;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @RestController
 @RequestMapping("/client/ingresos")
 public class IngresoController extends BaseController<IngresoModel, Integer> {
 
+  private static final Logger logger = LoggerFactory.getLogger(IngresoController.class);
+
+  @Autowired
+  private IngresoService ingresoService;
+
+  @Autowired
+  private ZplService zplService;
+
   public IngresoController(IngresoService service) {
     super(service);
   }
 
-  @Autowired
-  private IngresoService ingresoService;
-  private ZplService zplService;
-  private static final Logger logger = LoggerFactory.getLogger(IngresoController.class);
+  // ── Creación / eliminación ───────────────────────────────────────────────────
 
   @PostMapping("/create")
-  public ResponseEntity<Map<String, String>> createIngreso(@RequestBody IngresoModel ingreso) {
-    Map<String, String> response = new HashMap<>();
-    try {
-      String resultado = ingresoService.createIngresoCallable(ingreso);
-
-      if (resultado == null) {
-        response.put("message", "Ingreso registrado correctamente.");
-        return ResponseEntity.ok(response);
-      }
-
-      // Analizar mensaje de error para identificar el campo específico
-      String mensaje = switch (resultado) {
-        case "1001" -> "Serial duplicado.";
-        case "1002" -> "MAC duplicada.";
-        default -> resultado;
-      };
-
-      response.put("error", mensaje);
-      return ResponseEntity.badRequest().body(response);
-
-    } catch (Exception e) {
-      logger.error("Error al registrar ingreso: ", e); // 👈 log completo con stacktrace
-      response.put("error", "Error interno: " + e.getMessage());
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+  public ResponseEntity<ApiSuccess> createEntry(@RequestBody IngresoModel ingreso) {
+    String result = ingresoService.createIngresoCallable(ingreso);
+    if (result != null) {
+      throw new com.woden.wms_backend.exception.DuplicateEntryException(result);
     }
-
+    return ResponseEntity.ok(ApiSuccess.of("Ingreso registrado correctamente."));
   }
 
-  @DeleteMapping("/eliminarIngresos")
-  public ResponseEntity<Integer> eliminarIngresos(@RequestBody List<String> seriales) {
-    int status = ingresoService.eliminarIngresos(seriales);
-    return ResponseEntity.ok(status);
+  @DeleteMapping("/deleteEntries")
+  public ResponseEntity<ApiSuccess> deleteEntries(@RequestBody List<String> seriales) {
+    ingresoService.deleteEntries(seriales);
+    return ResponseEntity.ok(ApiSuccess.of("Ingresos eliminados correctamente."));
   }
 
-  @GetMapping("/searchIngreso/{palletId}")
+  // ── Búsqueda / consulta ──────────────────────────────────────────────────────
+
+  @GetMapping("/searchEntryReingreso/{palletId}")
   public ResponseEntity<List<IngresoDTO>> searchEntryReingreso(@PathVariable Integer palletId) {
-    List<IngresoDTO> results = ingresoService.searchEntryReingreso(palletId);
-    return ResponseEntity.ok(results);
+    return ResponseEntity.ok(ingresoService.searchEntryReingreso(palletId));
   }
 
   @GetMapping("/transito/{palletId}")
-  public List<IngresoTransitoDTO> getIngresosTransitoByPallet(@PathVariable Integer palletId) {
-    return ingresoService.getIngresoTransitByPalletId(palletId);
+  public ResponseEntity<List<IngresoTransitoDTO>> getEntryTransitByPallet(@PathVariable Integer palletId) {
+    return ResponseEntity.ok(ingresoService.getIngresoTransitByPalletId(palletId));
   }
 
-  @PostMapping("/regularizacion/sap")
-  public ResponseEntity<Map<String, String>> regularizarSap(@RequestBody RegularizarSapDTO dto) {
-    ingresoService.regularizarSap(dto.getSerial(), dto.getCodigoSapId(), dto.getUsuarioIdMovimiento());
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "SAP actualizado correctamente");
-    return ResponseEntity.ok(response);
+  @GetMapping("/getEntryBySerial")
+  public ResponseEntity<IngresoModel> getEntryBySerial(@RequestParam String serial) {
+    return ResponseEntity.ok(ingresoService.getModelIngreso(serial));
   }
 
-  @PostMapping("/regularizacion/lote")
-  public ResponseEntity<Map<String, String>> regularizarLoteSerial(@RequestBody RegularizarLoteSerialDTO dto) {
-    ingresoService.regularizarLoteSerial(dto.getSerial(), dto.getLoteId(), dto.getUsuarioIdMovimiento());
-
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Lote del serial actualizado correctamente");
-    return ResponseEntity.ok(response);
+  @GetMapping("/getSerialByMac")
+  public ResponseEntity<String> getSerialByMac(@RequestParam String mac) {
+    return ResponseEntity.ok(ingresoService.getSerialByMac(mac));
   }
 
-  @PostMapping("/generar-ilegible")
-  public ResponseEntity<?> generarIngresoIlegible(@RequestBody IngresoIlegibleDTO ingresoDTO,
-      @RequestParam String cliente,
-      @RequestParam Integer usuarioId) {
-    String serialGenerado = ingresoService.generarIngresoIlegible(ingresoDTO, cliente, usuarioId);
-    return (serialGenerado != null)
-        ? ResponseEntity.ok().body(Map.of("serial", serialGenerado))
-        : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar ingreso");
+  @GetMapping("/getReingresos")
+  public ResponseEntity<Integer> getReingresos(@RequestParam String serial) {
+    return ResponseEntity.ok(ingresoService.getReingresos(serial));
   }
 
-  @GetMapping("/getModelSerial/{serial}")
-  public ResponseEntity<IngresoModel> getModelSerial(@PathVariable String serial) {
-    IngresoModel ingreso = ingresoService.getModelIngreso(serial);
-    return ResponseEntity.ok(ingreso); // 👈 si ingreso es null, igual devuelve 200 OK
-  }
-
-  @GetMapping("/getSerialByMac/{mac}")
-  public String getSerialByMac(@PathVariable String mac) {
-    String serial = ingresoService.getSerialByMac(mac);
-    return serial;
-  }
-
-  @GetMapping("/getReingresos/{serial}")
-  public Integer getReingresos(@PathVariable String serial) {
-    Integer reingresos = ingresoService.getReingresos(serial);
-    return reingresos;
-  }
-
-  @GetMapping("/getProactiveRepair/{serial}")
-  public ResponseEntity<Integer> getProactiveRepair(@PathVariable String serial) {
-    Integer proactiveRepair = ingresoService.getProactiveRepair(serial);
-    return ResponseEntity.ok(proactiveRepair);
+  @GetMapping("/getProactiveRepair")
+  public ResponseEntity<Integer> getProactiveRepair(@RequestParam String serial) {
+    return ResponseEntity.ok(ingresoService.getProactiveRepair(serial));
   }
 
   @GetMapping("/getProactiveRepairAll")
   public ResponseEntity<List<String>> getProactiveRepairAll() {
-    List<String> proactiveRepair = ingresoService.getProactiveRepairAll();
-    return ResponseEntity.ok(proactiveRepair);
-  }
-
-  @PostMapping("/updateSapCodeEntry")
-  public ResponseEntity<Integer> updateSapCodeEntry(@RequestBody RegularizarSapSerialIngresoDTO dto) {
-    return ResponseEntity
-        .ok(ingresoService.UpdateSapCode(dto.getCodigoSapId(), dto.getUsuarioIdMovimiento(), dto.getSerial()));
-  }
-
-  @PostMapping("/imprimirHabladores")
-  public ResponseEntity<String> imprimirHabladores(@RequestBody List<IngresoModel> serialesSeleccionados) {
-    try {
-      String zplGenerado = zplService.generarZpl(serialesSeleccionados);
-      return ResponseEntity.ok(zplGenerado);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("Error al generar ZPL: " + e.getMessage());
-    }
-  }
-
-  @PostMapping("/sendStorageEntry")
-  public ResponseEntity<?> sendStorageEntry(@RequestBody SendStorageEntryDTO request) {
-    try {
-      ingresoService.SendStorageEntry(request.getPalletId(), request.getEstadoId(), request.getTipologiaId(),
-          request.getUsuarioId());
-      return ResponseEntity.ok(Map.of("message", "Pallet almacenado correctamente."));
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("error", "Error al almacenar pallet: " + e.getMessage()));
-    }
-  }
-
-  @PostMapping("/sendCosmeticEntry")
-  public ResponseEntity<?> sendCosmeticEntry(@RequestBody SendCosmeticEntryDTO request) {
-    try {
-      ingresoService.sendCosmeticEntry(request.getPalletId(), request.getEstadoId(), request.getTipologiaId(),
-          request.getUsuarioId());
-      return ResponseEntity.ok(Map.of("message", "Pallet cosmético enviado correctamente.", "success", true));
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("error", "Error al enviar pallet cosmético: " + e.getMessage(), "success", false));
-    }
-  }
-
-  @PostMapping("/sendEntry")
-  public ResponseEntity<?> sendEntry(@RequestBody SendIngresoDTO dto) {
-    try {
-      ingresoService.sendEntry(
-          dto.getEstadoId(),
-          dto.getTipologiaId(),
-          dto.getUsuarioId(),
-          dto.getPalletId(),
-          dto.getOpcion());
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(0);
-    }
-
-  }
-
-  @PostMapping("/updateTipologiaEntry")
-  public void updateTipologia(@RequestBody Map<String, Integer> requestBody) {
-    Integer palletId = requestBody.get("palletId");
-    Integer tipologiaId = requestBody.get("tipologiaId");
-    ingresoService.updateTipologia(palletId, tipologiaId);
-  }
-
-  @PostMapping("/unifyEntry")
-  public ResponseEntity<?> unifyEntry(@RequestBody Map<String, Object> requestBody) {
-    try {
-      Integer palletIdDestino = (Integer) requestBody.get("palletIdDestino");
-      Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
-      Integer usuarioId = (Integer) requestBody.get("usuarioId");
-      List<?> palletIdsRaw = (List<?>) requestBody.get("palletIds");
-      List<Integer> palletIds = palletIdsRaw.stream()
-          .map(obj -> (obj instanceof Integer) ? (Integer) obj : Integer.parseInt(obj.toString()))
-          .toList();
-      ingresoService.unifyEntry(palletIdDestino, tipologiaId, usuarioId, palletIds);
-      return ResponseEntity.ok(Map.of("message", "Ingreso unificado correctamente."));
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(Map.of("error", "Error al unificar ingreso: " + e.getMessage()));
-    }
-  }
-
-  @PostMapping("/updatePalletEntry")
-  public ResponseEntity<?> updatePalletEntry(@RequestBody Map<String, Object> requestBody) {
-    Integer palletId = (Integer) requestBody.get("palletId");
-    Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
-    List<?> serialesRaw = (List<?>) requestBody.get("seriales");
-    List<String> seriales = serialesRaw.stream()
-        .map(Object::toString)
-        .toList();
-
-    ingresoService.updatePalletEntry(palletId, usuarioIdMovimiento, seriales);
-    return ResponseEntity.ok(1);
-  }
-
-  @PostMapping("/updatePalletAndTipologyEntry")
-  public ResponseEntity<?> updatePalletAndTipologyEntry(@RequestBody Map<String, Object> requestBody) {
-    Integer palletId = (Integer) requestBody.get("palletId");
-    Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
-    Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
-    Integer estadoId = (Integer) requestBody.get("estadoId");
-    List<?> serialesRaw = (List<?>) requestBody.get("seriales");
-    List<String> seriales = serialesRaw.stream()
-        .map(Object::toString)
-        .toList();
-
-    ingresoService.updatePalletAndTipologyEntry(palletId, tipologiaId, usuarioIdMovimiento, estadoId, seriales);
-    return ResponseEntity.ok(1);
+    return ResponseEntity.ok(ingresoService.getProactiveRepairAll());
   }
 
   @GetMapping("/getLevelEntry")
   public ResponseEntity<List<String>> getLevelEntry(@RequestParam String serial) {
-    List<String> nivel = ingresoService.getLevelEntry(serial);
-    return ResponseEntity.ok(nivel);
-  }
-
-  @PostMapping("/updateStateAllEntry")
-  public ResponseEntity<?> updateStateAllEntry(@RequestBody List<Map<String, Object>> requestList) {
-    logger.info("[updateStateAllEntries] Recibida solicitud para actualizar {} seriales", requestList.size());
-    try {
-      ingresoService.updateStateAllEntries(requestList);
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      logger.error("[updateStateAllEntries] Error actualizando seriales: {}", e.getMessage(), e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
-  }
-
-  @GetMapping("/searchDiagnosticEntry")
-  public ResponseEntity<?> searchDiagnosticEntry(
-      @RequestParam String estadoFinal,
-      @RequestParam String perfil,
-      @RequestParam Integer usuarioId) {
-    List<Map<String, String>> diagnosticEntries = ingresoService.searchDiagnosticEntry(estadoFinal, perfil,
-        usuarioId);
-    return ResponseEntity.ok(diagnosticEntries);
-  }
-
-  @GetMapping("/searchDelivery")
-  public ResponseEntity<?> searchDeliveryEntry(@RequestParam String serial) {
-    List<String> deliveryEntries = ingresoService.searchDeliveryEntry(serial);
-    if (deliveryEntries != null) {
-      return ResponseEntity.ok(deliveryEntries);
-    } else {
-      return ResponseEntity.noContent().build(); // 204 No Content
-    }
-  }
-
-  @PostMapping("/updateLevel")
-  public ResponseEntity<?> updateLevel(@RequestBody Map<String, Integer> requestBody) {
-    Integer levelId = requestBody.get("levelId");
-    Integer palletId = requestBody.get("palletId");
-
-    ingresoService.updateLevel(levelId, palletId);
-    return ResponseEntity.ok(Map.of("message", 1));
-  }
-
-  @PostMapping("/updateStateEntryNotUsuario")
-  public ResponseEntity<?> updateStateEntryNotUsuario(@RequestBody Map<String, Object> requestBody) {
-    Integer estadoId = (Integer) requestBody.get("estadoId");
-    Integer palletId = (Integer) requestBody.get("palletId");
-    Integer fecha = (Integer) requestBody.get("fecha");
-    List<?> serialRaw = (List<?>) requestBody.get("serial");
-    List<String> serial = serialRaw.stream().map(Object::toString).toList();
-
-    for (String s : serial) {
-      ingresoService.updateStateEntryNotUsuario(estadoId, palletId, fecha, s);
-    }
-    return ResponseEntity.ok(Map.of("message", 1));
-  }
-
-  @PostMapping("/updateStateEntry")
-  public ResponseEntity<?> updateStateEntry(
-      @RequestBody Map<String, Object> requestBody) {
-    try {
-      Integer estadoId = (Integer) requestBody.get("estadoId");
-      Integer palletId = (Integer) requestBody.get("palletId");
-      Integer usuarioId = (Integer) requestBody.get("usuarioId");
-      Integer fecha = (Integer) requestBody.get("fecha");
-      List<?> serialRaw = (List<?>) requestBody.get("seriales");
-      List<String> serial = serialRaw.stream().map(Object::toString).toList();
-
-      for (String s : serial) {
-
-        ingresoService.updateStateEntry(estadoId, palletId, usuarioId, fecha, s);
-      }
-
-      return ResponseEntity.ok(1);
-
-    } catch (Exception e) {
-      return ResponseEntity.ok(0);
-    }
-  }
-
-  @GetMapping("/updateChangeStateEntry")
-  public ResponseEntity<?> updateChangeStateEntry(@RequestBody Map<String, Object> requestBody) {
-    String serial1 = (String) requestBody.get("serial1");
-    String serial2 = (String) requestBody.get("serial2");
-    String mac = (String) requestBody.get("mac");
-    Integer estadoId = (Integer) requestBody.get("estadoId");
-
-    ingresoService.updateChangedEntry(serial1, serial2, mac, estadoId);
-    return ResponseEntity.ok(Map.of("message", "1"));
-  }
-
-  @PostMapping("/updateClasificationEntry")
-  public ResponseEntity<?> updateClasificationEntry(@RequestBody Map<String, List<Map<String, Object>>> requestBody) {
-    List<Map<String, Object>> ingresos = requestBody.get("ingresos");
-    for (Map<String, Object> ingreso : ingresos) {
-      Integer estadoId = (Integer) ingreso.get("estadoId");
-      Integer nivelId = (Integer) ingreso.get("nivelId");
-      Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
-      String serial = (String) ingreso.get("serial");
-
-      ingresoService.updateClasificationEntry(serial, estadoId, nivelId, usuarioId);
-    }
-
-    return ResponseEntity.ok(Map.of("message", 1));
-  }
-
-  @GetMapping("/searchClasificationEntry")
-  public ResponseEntity<?> searchClasificationEntry() {
-    List<Map<String, String>> clasificationEntries = ingresoService.searchClasificationEntry();
-    return ResponseEntity.ok(clasificationEntries);
-  }
-
-  @PostMapping("/updateStateOneEntry")
-  public ResponseEntity<?> updateStateOneEntry(@RequestBody Map<String, Object> requestBody) {
-    try {
-      Integer estadoId = (Integer) requestBody.get("estadoId");
-      Integer nivelId = (Integer) requestBody.get("nivelId");
-      Integer usuarioIdMovimiento = (Integer) requestBody.get("usuarioIdMovimiento");
-      String fechaStr = (String) requestBody.get("fecha");
-      String serial = (String) requestBody.get("serial");
-
-      // Parse ISO date string
-      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-      Date fecha = dateFormat.parse(fechaStr);
-
-      ingresoService.updateStateOneEntry(estadoId, nivelId, usuarioIdMovimiento, fecha, serial);
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.status(500).body(Map.of("error", "Error al procesar la fecha: " + e.getMessage()));
-    }
-  }
-
-  @PostMapping("/UpdatePackingEntry")
-  public ResponseEntity<Integer> UpdatePackingEntry(
-      @RequestParam("estadoId") Integer estadoId,
-      @RequestParam("palletId") Integer palletId,
-      @RequestParam("cajaEmpaqueId") Integer cajaEmpaqueId,
-      @RequestParam("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-      @RequestParam("serial") String serial,
-      @RequestParam("loteId") Integer loteId) {
-    try {
-      int result = ingresoService.UpdatePackingEntry(
-          estadoId, palletId, cajaEmpaqueId, usuarioIdMovimiento, serial, loteId);
-
-      if (result == 1) {
-        return ResponseEntity.ok(1);
-      } else {
-        return ResponseEntity.badRequest().body(0);
-      }
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador UpdatePackingEntry: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
-  }
-
-  @PostMapping("/updatePackingEntrySmartCard")
-  public ResponseEntity<Integer> updatePackingEntrySmartCard(
-      @RequestParam Integer estadoId,
-      @RequestParam Integer palletId,
-      @RequestParam Integer cajaEmpaqueId,
-      @RequestParam Integer usuarioId,
-      @RequestParam String serial,
-      @RequestParam Integer loteId,
-      @RequestParam Integer smartCardId,
-      @RequestParam String SmartCard) {
-    try {
-      ingresoService.UpdatePackingEntrySmartCard(
-          estadoId, palletId, cajaEmpaqueId, usuarioId, serial, loteId, smartCardId, SmartCard);
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.badRequest().body(0);
-    }
-  }
-
-  @PostMapping("/updatePackingAllEntry")
-  public ResponseEntity<Integer> UpdatePackingAllEntry(@RequestParam Integer estadoId,
-      @RequestParam Integer usuarioIdMovimiento, @RequestParam List<String> seriales) {
-    try {
-      int result = ingresoService.UpdatePackingAllEntry(estadoId, usuarioIdMovimiento, seriales);
-      return ResponseEntity.ok(result);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.badRequest().body(0);
-    }
-  }
-
-  @PostMapping("/updateChangedPackingEntry")
-  public ResponseEntity<?> updateChangedPacking(@RequestBody Map<String, Object> ingreso) {
-    Integer estadoId = (Integer) ingreso.get("estadoId");
-    Integer palletId = (Integer) ingreso.get("palletId");
-    Integer cajaEmpaqueId = (Integer) ingreso.get("cajaEmpaqueId");
-    String serial = (String) ingreso.get("serial");
-    Integer usuarioId = (Integer) ingreso.get("usuarioIdMovimiento");
-    Integer tipologiaId = (Integer) ingreso.get("tipologiaId");
-
-    ingresoService.updateChangedPackingEntry(estadoId, palletId, cajaEmpaqueId, serial, usuarioId, tipologiaId);
-
-    return ResponseEntity.ok(1);
-  }
-
-  @PostMapping("/updateSmartCardEntry")
-  public ResponseEntity<?> updateSmartCardEntry(@RequestBody Map<String, Object> ingreso) {
-    Integer smartCardId = (Integer) ingreso.get("smartCardId");
-    String smartCardNuevo = (String) ingreso.get("smartCardNuevo");
-    String serial = (String) ingreso.get("serial");
-    ingresoService.updateSmartCardEntry(smartCardId, smartCardNuevo, serial);
-
-    return ResponseEntity.ok(1);
-  }
-
-  @PostMapping("/backRepairedEntry")
-  public ResponseEntity<?> backRepairedEntry(@RequestBody Map<String, Object> requestBody) {
-    List<?> serialesRaw = (List<?>) requestBody.get("seriales");
-    List<String> seriales = serialesRaw.stream().map(Object::toString).toList();
-    try {
-      for (String serial : seriales) {
-        ingresoService.backRepairedEntry(serial);
-      }
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      e.printStackTrace(); // log del error
-      return ResponseEntity.badRequest().body(0); // ❌ error
-    }
-  }
-
-  @GetMapping("/searchRepairEntry")
-  public ResponseEntity<?> searchRepairEntry(
-      @RequestParam String estadoFinal,
-      @RequestParam String perfil,
-      @RequestParam Integer usuarioId) {
-    List<Map<String, String>> repairEntries = ingresoService.searchRepairEntry(estadoFinal, perfil,
-        usuarioId);
-    return ResponseEntity.ok(repairEntries);
-  }
-
-  @PostMapping("/updateStateEntryNotUsuarioRepaired")
-  public ResponseEntity<?> updateStateEntryNotUsuarioRepaired(@RequestBody Map<String, Object> requestBody) {
-    Integer estadoId = (Integer) requestBody.get("estadoId");
-    Integer palletId = (Integer) requestBody.get("palletId");
-    Integer fecha = (Integer) requestBody.get("fecha");
-    List<?> serialRaw = (List<?>) requestBody.get("serial");
-    List<String> serial = serialRaw.stream().map(Object::toString).toList();
-
-    for (String s : serial) {
-      ingresoService.updateStateEntryNotUsuarioRepaired(estadoId, palletId, fecha, s);
-    }
-    return ResponseEntity.ok(1);
-  }
-
-  @PostMapping("/updateStateEntryNotUsuarioDiagnosed")
-  public ResponseEntity<?> updateStateEntryNotUsuarioDiagnosed(@RequestBody Map<String, Object> requestBody) {
-    Integer estadoId = (Integer) requestBody.get("estadoId");
-    Integer palletId = (Integer) requestBody.get("palletId");
-    Integer fecha = (Integer) requestBody.get("fecha");
-    List<?> serialRaw = (List<?>) requestBody.get("serial");
-    List<String> serial = serialRaw.stream().map(Object::toString).toList();
-
-    for (String s : serial) {
-      ingresoService.updateStateEntryNotUsuarioDiagnosed(estadoId, palletId, fecha, s);
-    }
-    return ResponseEntity.ok(1);
-  }
-
-  @GetMapping("/searchPalletBoxEntry")
-  public ResponseEntity<?> searchPalletBoxEntry(
-      @RequestParam String estado,
-      @RequestParam Integer palletId,
-      @RequestParam Integer cajaId) {
-    List<Map<String, String>> seriales = ingresoService.searchPalletBoxEntry(estado, palletId, cajaId);
-    return ResponseEntity.ok(seriales);
+    return ResponseEntity.ok(ingresoService.getLevelEntry(serial));
   }
 
   @GetMapping("/getListModel")
   public ResponseEntity<List<IngresoModel>> getListModel(@RequestParam List<String> seriales) {
-    List<IngresoModel> ingreso = ingresoService.getListModel(seriales);
-    return ResponseEntity.ok(ingreso);
-  }
-
-  @PostMapping("/updateDispatchEntry")
-  public ResponseEntity<Integer> updateDispatchEntry(
-      @RequestBody UpdateDispatchEntryRequest request) {
-    try {
-      ingresoService.updateDispatchEntry(
-          request.getSerial(),
-          request.getEstadoId(),
-          request.getPalletId(),
-          request.getCajaDespachoId(),
-          request.getUsuarioMovimientoId(),
-          request.getLoteId());
-      return ResponseEntity.ok(1);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(0);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+    return ResponseEntity.ok(ingresoService.getListModel(seriales));
   }
 
   @GetMapping("/getModelDispatch")
-  public ResponseEntity<List<IngresoModel>> getModelDispatch(@RequestParam Integer palletId,
-      @RequestParam Integer cajaId) {
-    try {
-      List<IngresoModel> ingreso = ingresoService.getModelDispatch(palletId, cajaId);
-      return ResponseEntity.ok(ingreso);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(null);
-    }
+  public ResponseEntity<List<IngresoModel>> getModelDispatch(
+      @RequestParam Integer palletId, @RequestParam Integer cajaId) {
+    return ResponseEntity.ok(ingresoService.getModelDispatch(palletId, cajaId));
   }
 
   @GetMapping("/searchQualityEntry")
   public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
-    List<Map<String, String>> entries = ingresoService.searchQualityEntry();
-    return ResponseEntity.ok(entries);
+    return ResponseEntity.ok(ingresoService.searchQualityEntry());
   }
 
-  @DeleteMapping("/packOffPalletEntry")
-  public ResponseEntity<Integer> packOffPalletEntry(@RequestParam Integer palletId, @RequestParam Integer usuarioId) {
-    try {
-      int status = ingresoService.packOffPalletEntry(palletId, usuarioId);
-      return ResponseEntity.ok(status);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(0);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
-  }
-
-  @PostMapping("/getModelDispatchBox")
-  public ResponseEntity<List<IngresoModel>> getModelDispatchBox(@RequestParam Integer palletId,
-      @RequestBody List<Integer> cajasIds) {
-    try {
-      List<IngresoModel> ingreso = ingresoService.getModelDispatchBox(palletId, cajasIds);
-      return ResponseEntity.ok(ingreso);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(null);
-    }
-  }
-
-  @PostMapping("/updateLevelWeb")
-  public ResponseEntity<Map<String, Object>> updateLevelWeb(@RequestBody Map<String, Integer> body) {
-    Integer levelId = body.get("levelId");
-    Integer palletId = body.get("palletId");
-
-    int result = ingresoService.updateLevelWeb(levelId, palletId);
-    return ResponseEntity.ok(Map.of("message", result));
-  }
-
-  @PutMapping("/packOffBoxEntry")
-  public ResponseEntity<Integer> packOffBoxEntry(@RequestParam Integer palletId, @RequestBody List<Integer> cajasIds,
+  @GetMapping("/searchDiagnosticEntry")
+  public ResponseEntity<List<Map<String, String>>> searchDiagnosticEntry(
+      @RequestParam String estadoFinal,
+      @RequestParam String perfil,
       @RequestParam Integer usuarioId) {
-    try {
-      Integer status = 0;
-      for (Integer cajaId : cajasIds) {
-        status = ingresoService.packOffBoxEntry(palletId, cajaId, usuarioId);
-      }
-      return ResponseEntity.ok(status);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(0);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+    return ResponseEntity.ok(ingresoService.searchDiagnosticEntry(estadoFinal, perfil, usuarioId));
   }
 
-  @PutMapping("/updateNoveltyAllEntry")
-  public ResponseEntity<Integer> updateNoveltyAllEntry(@RequestBody List<Map<String, Object>> requestList,
-      @RequestParam Integer estadoId, @RequestParam Integer tipologiaId, @RequestParam Integer usuarioId,
-      @RequestParam String novedad) {
-    try {
-      for (Map<String, Object> requestBody : requestList) {
-        String serial = (String) requestBody.get("serial");
-        String observaciones = (String) requestBody.get("observaciones");
-        Integer fallaCosmeticaId = (Integer) requestBody.get("fallaCosmeticaId");
-        Integer fallaFuncionalId = (Integer) requestBody.get("fallaFuncionalId");
-        ingresoService.updateNoveltyAllEntry(serial, estadoId, tipologiaId, observaciones, novedad, usuarioId,
-            fallaCosmeticaId, fallaFuncionalId);
-      }
+  @GetMapping("/searchDelivery")
+  public ResponseEntity<List<String>> searchDeliveryEntry(@RequestParam String serial) {
+    List<String> result = ingresoService.searchDeliveryEntry(serial);
+    return result.isEmpty()
+        ? ResponseEntity.noContent().build()
+        : ResponseEntity.ok(result);
+  }
 
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+  @GetMapping("/searchClasificationEntry")
+  public ResponseEntity<List<Map<String, String>>> searchClasificationEntry() {
+    return ResponseEntity.ok(ingresoService.searchClasificationEntry());
+  }
+
+  @GetMapping("/searchPalletBoxEntry")
+  public ResponseEntity<List<Map<String, String>>> searchPalletBoxEntry(
+      @RequestParam String estado,
+      @RequestParam Integer palletId,
+      @RequestParam Integer cajaId) {
+    return ResponseEntity.ok(ingresoService.searchPalletBoxEntry(estado, palletId, cajaId));
+  }
+
+  @GetMapping("/searchRepairEntry")
+  public ResponseEntity<List<Map<String, String>>> searchRepairEntry(
+      @RequestParam String estadoFinal,
+      @RequestParam String perfil,
+      @RequestParam Integer usuarioId) {
+    return ResponseEntity.ok(ingresoService.searchRepairEntry(estadoFinal, perfil, usuarioId));
   }
 
   @GetMapping("/searchNoveltyEntry")
-  public ResponseEntity<?> searchNoveltyEntry(
-      @RequestParam String tipoNovedad) {
-    List<Map<String, Object>> novedades = ingresoService.searchNoveltyEntry(tipoNovedad);
-    return ResponseEntity.ok(novedades);
-  }
-
-  @PutMapping("/updateNoveltyEntry")
-  public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<Map<String, Object>> requestList) {
-    int updatedCount = 0;
-    try {
-      for (Map<String, Object> requestBody : requestList) {
-        Integer id = (Integer) requestBody.get("id");
-        String serial = (String) requestBody.get("serial");
-        String mac = (String) requestBody.get("mac");
-        Integer codigoSapId = (Integer) requestBody.get("codigoSapId");
-        String guia = (String) requestBody.get("guia");
-        String documento = (String) requestBody.get("documento");
-        Integer tipoOrigenId = (Integer) requestBody.get("tipoOrigenId");
-        Integer origenId = (Integer) requestBody.get("origenId");
-        Integer tipologiaId = (Integer) requestBody.get("tipologiaId");
-        Integer estadoId = (Integer) requestBody.get("estadoId");
-        String tipoNovedad = (String) requestBody.get("tipoNovedad");
-        Integer usuarioId = (Integer) requestBody.get("usuarioId");
-
-        int status = ingresoService.updateNoveltyEntry(
-            id, serial, mac, codigoSapId, guia, documento,
-            tipoOrigenId, origenId, tipologiaId, estadoId, tipoNovedad, usuarioId);
-
-        if (status == 1) {
-          updatedCount++;
-        }
-      }
-      return ResponseEntity.ok(updatedCount);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(updatedCount);
-    }
+  public ResponseEntity<List<Map<String, Object>>> searchNoveltyEntry(@RequestParam String tipoNovedad) {
+    return ResponseEntity.ok(ingresoService.searchNoveltyEntry(tipoNovedad));
   }
 
   @GetMapping("/searchNoveltyEntryDelivery")
-  public ResponseEntity<?> searchNoveltyEntryDelivery(
+  public ResponseEntity<List<Map<String, String>>> searchNoveltyEntryDelivery(
       @RequestParam String perfil,
       @RequestParam Integer usuarioId,
       @RequestParam String tipoNovedad) {
-    List<Map<String, String>> noveltyEntries = ingresoService.searchNoveltyEntryDelivery(perfil,
-        usuarioId, tipoNovedad);
-    return ResponseEntity.ok(noveltyEntries);
-  }
-
-  @PostMapping("/sendNoveltyEntry")
-  public ResponseEntity<?> sendNoveltyEntry(@RequestBody SendIngresoDTO dto) {
-    try {
-      ingresoService.sendNoveltyEntry(
-          dto.getEstadoId(),
-          dto.getTipologiaId(),
-          dto.getUsuarioId(),
-          dto.getPalletId(),
-          dto.getOpcion());
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(0);
-    }
-  }
-
-  @PostMapping("/updateStatusBatch")
-  public ResponseEntity<?> updateStatusBatch(@RequestBody Map<String, Object> dto) {
-    try {
-      Integer estadoId = (Integer) dto.get("estadoId");
-      Integer palletId = (Integer) dto.get("palletId");
-      Integer usuarioIdMovimiento = (Integer) dto.get("usuarioIdMovimiento");
-      List<?> serialRaw = (List<?>) dto.get("seriales");
-      List<String> seriales = serialRaw.stream().map(Object::toString).toList();
-      Integer fecha = (Integer) dto.get("fecha");
-      Integer loteId = (Integer) dto.get("loteId");
-      loteId = (loteId != 0) ? loteId : null;
-      ingresoService.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, seriales, loteId);
-
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(0);
-    }
-  }
-
-  @PostMapping("/updateEntryDispatch")
-  public ResponseEntity<Integer> UpdateEntryDispatch(
-      @RequestParam("estadoId") Integer estadoId,
-      @RequestParam("palletId") Integer palletId,
-      @RequestParam("usuarioIdMovimiento") Integer usuarioIdMovimiento,
-      @RequestParam("serial") String serial,
-      @RequestParam("loteId") Integer loteId) {
-    try {
-      int result = ingresoService.UpdateEntryDispatch(
-          estadoId, palletId, usuarioIdMovimiento, serial, loteId);
-
-      if (result == 1) {
-        return ResponseEntity.ok(1);
-      } else {
-        return ResponseEntity.badRequest().body(0);
-      }
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador updateEntryDispatch: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
-  }
-
-  @PostMapping("/insertSerialInventory")
-  public ResponseEntity<?> insertSerialInventory(@RequestBody Map<String, Object> dto) {
-    try {
-      String serial = (String) dto.get("serial");
-      String codigoSap = (String) dto.get("codigoSap");
-      String palletNumero = (String) dto.get("palletNumero");
-      Integer usuarioId = Integer.valueOf(dto.get("usuarioId").toString());
-
-      Object result = ingresoService.insertSerialInventory(serial, codigoSap, palletNumero, usuarioId);
-
-      if (result instanceof Integer) {
-        return ResponseEntity.ok(result);
-      } else {
-        return ResponseEntity.badRequest().body(result);
-      }
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador insertSerialInventory: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+    return ResponseEntity.ok(ingresoService.searchNoveltyEntryDelivery(perfil, usuarioId, tipoNovedad));
   }
 
   @GetMapping("/getSerialsByPalletInventory")
-  public ResponseEntity<?> getSerialsByPalletInventory(@RequestParam String pallet) {
-    try {
-      List<Map<String, Object>> serials = ingresoService.getSerialsByPalletInventory(pallet);
-      return ResponseEntity.ok(serials);
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador getSerialsByPalletInventory: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+  public ResponseEntity<List<Map<String, Object>>> getSerialsByPalletInventory(@RequestParam String pallet) {
+    return ResponseEntity.ok(ingresoService.getSerialsByPalletInventory(pallet));
   }
 
   @GetMapping("/getValidaStateInventory")
-  public ResponseEntity<?> getValidaStateInventory(@RequestParam String estado,
-      @RequestParam String estadoInventario) {
-    try {
-      String result = ingresoService.getValidaStateInventory(estado, estadoInventario);
-      return ResponseEntity.ok(result);
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador getValidaStateInventory: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+  public ResponseEntity<String> getValidaStateInventory(
+      @RequestParam String estado, @RequestParam String estadoInventario) {
+    return ResponseEntity.ok(ingresoService.getValidaStateInventory(estado, estadoInventario));
   }
 
   @GetMapping("/getEntryProgress")
   public ResponseEntity<EntryProgressDTO> getEntryProgress(
-      @RequestParam Integer palletId,
-      @RequestParam Integer estadoId) {
-    try {
-      EntryProgressDTO progress = ingresoService.getEntryProgress(palletId, estadoId);
-      return ResponseEntity.ok(progress);
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
+      @RequestParam Integer palletId, @RequestParam Integer estadoId) {
+    return ResponseEntity.ok(ingresoService.getEntryProgress(palletId, estadoId));
   }
 
   @GetMapping("/searchScrapEntry")
-  public ResponseEntity<?> searchScrapEntry(@RequestParam String estado) {
-    try {
-      List<Map<String, Object>> scrapEntries = ingresoService.searchScrapEntry(estado);
-      return ResponseEntity.ok(scrapEntries);
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador searchScrapEntry: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
-  }
-
-  @PostMapping("/updateScrapAll")
-  public ResponseEntity<Integer> updateScrapAll(
-    @RequestBody List<IngresoModel> seriales
-  ) {
-    try {
-      for (IngresoModel serial : seriales) {
-        ingresoService.updateScrapAll(
-          serial.getEstadoId(),
-          serial.getUsuarioIdMovimiento(),
-          serial.getSerial(),
-          serial.getNovedad()
-        );
-      }
-      return ResponseEntity.ok(1);
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador updateScrapAll: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+  public ResponseEntity<List<Map<String, Object>>> searchScrapEntry(@RequestParam String estado) {
+    return ResponseEntity.ok(ingresoService.searchScrapEntry(estado));
   }
 
   @GetMapping("/getScrapUser")
-  public ResponseEntity<?> getScrapUser(@RequestParam Integer usuarioIdMovimiento) {
-    try {
-      List<Map<String, Object>> scrapEntries = ingresoService.getScrapUser(usuarioIdMovimiento);
-      return ResponseEntity.ok(scrapEntries);
-    } catch (Exception e) {
-      System.err.println("❌ Error en controlador getScrapUser: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
-    }
+  public ResponseEntity<List<Map<String, Object>>> getScrapUser(@RequestParam Integer usuarioIdMovimiento) {
+    return ResponseEntity.ok(ingresoService.getScrapUser(usuarioIdMovimiento));
   }
 
   @GetMapping("/getEtiquetadoUser")
-  public ResponseEntity<?> getEtiquetadoUser(@RequestParam Integer usuarioIdMovimiento) {
+  public ResponseEntity<List<Map<String, Object>>> getEtiquetadoUser(@RequestParam Integer usuarioIdMovimiento) {
+    return ResponseEntity.ok(ingresoService.getEtiquetadoUser(usuarioIdMovimiento));
+  }
+
+  // ── Regularización SAP / lote ─────────────────────────────────────────────
+
+  @PostMapping("/regularizacion/sap")
+  public ResponseEntity<ApiSuccess> updateSapRegularization(@RequestBody RegularizarSapDTO dto) {
+    ingresoService.regularizarSap(dto.getSerial(), dto.getCodigoSapId(), dto.getUsuarioIdMovimiento());
+    return ResponseEntity.ok(ApiSuccess.of("SAP actualizado correctamente."));
+  }
+
+  @PostMapping("/regularizacion/lote")
+  public ResponseEntity<ApiSuccess> updateBatchRegularization(@RequestBody RegularizarLoteSerialDTO dto) {
+    ingresoService.regularizarLoteSerial(dto.getSerial(), dto.getLoteId(), dto.getUsuarioIdMovimiento());
+    return ResponseEntity.ok(ApiSuccess.of("Lote del serial actualizado correctamente."));
+  }
+
+  @PostMapping("/updateSapCodeEntry")
+  public ResponseEntity<Integer> updateSapCodeEntry(@RequestBody RegularizarSapSerialIngresoDTO dto) {
+    return ResponseEntity.ok(
+        ingresoService.updateSapCode(dto.getCodigoSapId(), dto.getUsuarioIdMovimiento(), dto.getSerial()));
+  }
+
+  // ── Ingreso ilegible ──────────────────────────────────────────────────────
+
+  @PostMapping("/generateIlegibleEntry")
+  public ResponseEntity<Map<String, String>> generateIlegibleEntry(
+      @RequestBody IngresoIlegibleDTO ingresoDTO,
+      @RequestParam String cliente,
+      @RequestParam Integer usuarioId) {
+    String serial = ingresoService.generarIngresoIlegible(ingresoDTO, cliente, usuarioId);
+    return ResponseEntity.ok(Map.of("serial", serial));
+  }
+
+  // ── Envío / almacenamiento ────────────────────────────────────────────────
+
+  @PostMapping("/sendCosmeticEntry")
+  public ResponseEntity<?> sendCosmeticEntry(@RequestBody SendCosmeticEntryDTO request) {
     try {
-      List<Map<String, Object>> etiquetadoEntries = ingresoService.getEtiquetadoUser(usuarioIdMovimiento);
-      return ResponseEntity.ok(etiquetadoEntries);
+      ingresoService.sendCosmeticEntry(request.getPalletId(), request.getEstadoId(),
+          request.getTipologiaId(), request.getUsuarioId());
+      return ResponseEntity.ok(Map.of("message", "Pallet cosmético enviado correctamente.", "success", true));
     } catch (Exception e) {
-      System.err.println("❌ Error en controlador getEtiquetadoUser: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+      return ResponseEntity.ok(Map.of("message", "Error al enviar pallet cosmético: " + e.getMessage(), "success", false));
     }
   }
-}
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class UpdateDispatchEntryRequest {
-  private String serial;
-  private Integer estadoId;
-  private Integer palletId;
-  private Integer cajaDespachoId;
-  private Integer usuarioMovimientoId;
-  private Integer loteId;
+  @PostMapping("/sendStorageEntry")
+  public ResponseEntity<ApiSuccess> sendStorageEntry(@RequestBody SendStorageEntryDTO request) {
+    ingresoService.sendStorageEntry(
+        request.getPalletId(), request.getEstadoId(),
+        request.getTipologiaId(), request.getUsuarioId());
+    return ResponseEntity.ok(ApiSuccess.of("Pallet almacenado correctamente."));
+  }
+
+  @PostMapping("/sendEntry")
+  public ResponseEntity<ApiSuccess> sendEntry(@RequestBody SendIngresoDTO dto) {
+    ingresoService.sendEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(),
+        dto.getPalletId(), dto.getOpcion());
+    return ResponseEntity.ok(ApiSuccess.of("Ingreso enviado correctamente."));
+  }
+
+  @PostMapping("/sendNoveltyEntry")
+  public ResponseEntity<ApiSuccess> sendNoveltyEntry(@RequestBody SendIngresoDTO dto) {
+    ingresoService.sendNoveltyEntry(dto.getEstadoId(), dto.getTipologiaId(), dto.getUsuarioId(),
+        dto.getPalletId(), dto.getOpcion());
+    return ResponseEntity.ok(ApiSuccess.of("Novedad enviada correctamente."));
+  }
+
+  // ── Actualización de tipología / pallet / nivel ───────────────────────────
+
+  @PostMapping("/updateTipologiaEntry")
+  public ResponseEntity<ApiSuccess> updateTipologiaEntry(@RequestBody UpdateTipologiaRequest request) {
+    ingresoService.updateTipologia(request.palletId(), request.tipologiaId());
+    return ResponseEntity.ok(ApiSuccess.of("Tipología actualizada correctamente."));
+  }
+
+  @PostMapping("/unifyEntry")
+  public ResponseEntity<ApiSuccess> unifyEntry(@RequestBody UnifyEntryRequest request) {
+    ingresoService.unifyEntry(request.palletIdDestino(), request.tipologiaId(),
+        request.usuarioId(), request.palletIds());
+    return ResponseEntity.ok(ApiSuccess.of("Ingreso unificado correctamente."));
+  }
+
+  @PostMapping("/updatePalletEntry")
+  public ResponseEntity<ApiSuccess> updatePalletEntry(@RequestBody UpdatePalletEntryRequest request) {
+    ingresoService.updatePalletEntry(request.palletId(), request.usuarioIdMovimiento(), request.seriales());
+    return ResponseEntity.ok(ApiSuccess.of("Pallet actualizado correctamente."));
+  }
+
+  @PostMapping("/updatePalletAndTipologyEntry")
+  public ResponseEntity<ApiSuccess> updatePalletAndTipologyEntry(@RequestBody UpdatePalletTypologyRequest request) {
+    ingresoService.updatePalletAndTipologyEntry(request.palletId(), request.tipologiaId(),
+        request.usuarioIdMovimiento(), request.estadoId(), request.seriales());
+    return ResponseEntity.ok(ApiSuccess.of("Pallet y tipología actualizados correctamente."));
+  }
+
+  @PostMapping("/updateLevel")
+  public ResponseEntity<ApiSuccess> updateLevel(@RequestBody UpdateLevelRequest request) {
+    ingresoService.updateLevel(request.levelId(), request.palletId());
+    return ResponseEntity.ok(ApiSuccess.of("Nivel actualizado correctamente."));
+  }
+
+  @PostMapping("/updateLevelWeb")
+  public ResponseEntity<Map<String, Object>> updateLevelWeb(@RequestBody UpdateLevelRequest request) {
+    int result = ingresoService.updateLevelWeb(request.levelId(), request.palletId());
+    return ResponseEntity.ok(Map.of("message", result));
+  }
+
+  // ── Actualización de estado ───────────────────────────────────────────────
+
+  @PostMapping("/updateStateAllEntry")
+  public ResponseEntity<ApiSuccess> updateStateAllEntry(@RequestBody List<UpdateStateAllItemRequest> requestList) {
+    String primerSerial = (!requestList.isEmpty() && requestList.get(0).serial() != null)
+        ? requestList.get(0).serial() : "N/A";
+    logger.info("[updateStateAllEntry] Recibida solicitud para actualizar {} seriales, primer serial: {}", requestList.size(), primerSerial);
+    ingresoService.updateStateAllEntries(requestList);
+    return ResponseEntity.ok(ApiSuccess.of(requestList.size() + " serial(es) actualizado(s)."));
+  }
+
+  @PostMapping("/updateStateEntry")
+  public ResponseEntity<ApiSuccess> updateStateEntry(@RequestBody UpdateStateEntryRequest request) {
+    request.seriales().forEach(serial ->
+        ingresoService.updateStateEntry(
+            request.estadoId(), request.palletId(), request.usuarioId(), request.fecha(), serial));
+    return ResponseEntity.ok(ApiSuccess.of("Estado actualizado correctamente."));
+  }
+
+  @PostMapping("/updateChangeStateEntry")
+  public ResponseEntity<ApiSuccess> updateChangeStateEntry(@RequestBody UpdateChangeStateRequest request) {
+    ingresoService.updateChangedEntry(request.serial1(), request.serial2(), request.mac(), request.estadoId());
+    return ResponseEntity.ok(ApiSuccess.of("Estado cambiado correctamente."));
+  }
+
+  @PostMapping("/updateClasificationEntry")
+  public ResponseEntity<ApiSuccess> updateClasificationEntry(@RequestBody List<ClassificationItemRequest> items) {
+    items.forEach(item ->
+        ingresoService.updateClasificationEntry(
+            item.serial(), item.estadoId(), item.nivelId(), item.usuarioIdMovimiento()));
+    return ResponseEntity.ok(ApiSuccess.of("Clasificación actualizada correctamente."));
+  }
+
+  @PostMapping("/updateStateOneEntry")
+  public ResponseEntity<ApiSuccess> updateStateOneEntry(@RequestBody UpdateStateOneEntryRequest request)
+      throws Exception {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    Date fecha = dateFormat.parse(request.fecha());
+    ingresoService.updateStateOneEntry(
+        request.estadoId(), request.nivelId(), request.usuarioIdMovimiento(), fecha, request.serial());
+    return ResponseEntity.ok(ApiSuccess.of("Estado del ingreso actualizado correctamente."));
+  }
+
+  @PostMapping("/updateStateEntryNotUsuario")
+  public ResponseEntity<ApiSuccess> updateStateEntryNotUsuario(@RequestBody StateNoUserRequest request) {
+    request.serial().forEach(s ->
+        ingresoService.updateStateEntryNotUsuario(request.estadoId(), request.palletId(), request.fecha(), s));
+    return ResponseEntity.ok(ApiSuccess.of("Estado actualizado correctamente."));
+  }
+
+  @PostMapping("/updateStateEntryNotUsuarioRepaired")
+  public ResponseEntity<ApiSuccess> updateStateEntryNotUsuarioRepaired(@RequestBody StateNoUserRequest request) {
+    request.serial().forEach(s ->
+        ingresoService.updateStateEntryNotUsuarioRepaired(request.estadoId(), request.palletId(), request.fecha(), s));
+    return ResponseEntity.ok(ApiSuccess.of("Estado de reparación actualizado correctamente."));
+  }
+
+  @PostMapping("/updateStateEntryNotUsuarioDiagnosed")
+  public ResponseEntity<ApiSuccess> updateStateEntryNotUsuarioDiagnosed(@RequestBody StateNoUserRequest request) {
+    request.serial().forEach(s ->
+        ingresoService.updateStateEntryNotUsuarioDiagnosed(request.estadoId(), request.palletId(), request.fecha(), s));
+    return ResponseEntity.ok(ApiSuccess.of("Estado de diagnóstico actualizado correctamente."));
+  }
+
+  // ── Packing ───────────────────────────────────────────────────────────────
+
+  @PostMapping("/updatePackingEntry")
+  public ResponseEntity<ApiSuccess> updatePackingEntry(@RequestBody PackingEntryRequest request) {
+    ingresoService.updatePackingEntry(
+        request.estadoId(), request.palletId(), request.cajaEmpaqueId(),
+        request.usuarioIdMovimiento(), request.serial(), request.loteId());
+    return ResponseEntity.ok(ApiSuccess.of("Empaque actualizado correctamente."));
+  }
+
+  @PostMapping("/updatePackingEntrySmartCard")
+  public ResponseEntity<ApiSuccess> updatePackingEntrySmartCard(@RequestBody PackingSmartCardRequest request) {
+    ingresoService.updatePackingEntrySmartCard(
+        request.estadoId(), request.palletId(), request.cajaEmpaqueId(),
+        request.usuarioId(), request.serial(), request.loteId(),
+        request.smartCardId(), request.smartCard());
+    return ResponseEntity.ok(ApiSuccess.of("Empaque con SmartCard actualizado correctamente."));
+  }
+
+  @PostMapping("/updatePackingAllEntry")
+  public ResponseEntity<ApiSuccess> updatePackingAllEntry(@RequestBody PackingAllRequest request) {
+    ingresoService.updatePackingAllEntry(request.estadoId(), request.usuarioIdMovimiento(), request.seriales());
+    return ResponseEntity.ok(ApiSuccess.of("Empaque masivo actualizado correctamente."));
+  }
+
+  @PostMapping("/updateChangedPackingEntry")
+  public ResponseEntity<ApiSuccess> updateChangedPackingEntry(@RequestBody ChangedPackingRequest request) {
+    ingresoService.updateChangedPackingEntry(
+        request.estadoId(), request.palletId(), request.cajaEmpaqueId(),
+        request.serial(), request.usuarioIdMovimiento(), request.tipologiaId());
+    return ResponseEntity.ok(ApiSuccess.of("Cambio de empaque actualizado correctamente."));
+  }
+
+  @PostMapping("/updateSmartCardEntry")
+  public ResponseEntity<ApiSuccess> updateSmartCardEntry(@RequestBody UpdateSmartCardRequest request) {
+    ingresoService.updateSmartCardEntry(request.smartCardId(), request.smartCardNuevo(), request.serial());
+    return ResponseEntity.ok(ApiSuccess.of("SmartCard actualizada correctamente."));
+  }
+
+  @DeleteMapping("/packOffPalletEntry")
+  public ResponseEntity<ApiSuccess> packOffPalletEntry(
+      @RequestParam Integer palletId, @RequestParam Integer usuarioId) {
+    ingresoService.packOffPalletEntry(palletId, usuarioId);
+    return ResponseEntity.ok(ApiSuccess.of("Pallet desempacado correctamente."));
+  }
+
+  @PostMapping("/getModelDispatchBox")
+  public ResponseEntity<List<IngresoModel>> getModelDispatchBox(
+      @RequestParam Integer palletId, @RequestBody List<Integer> cajasIds) {
+    return ResponseEntity.ok(ingresoService.getModelDispatchBox(palletId, cajasIds));
+  }
+
+  @PutMapping("/packOffBoxEntry")
+  public ResponseEntity<ApiSuccess> packOffBoxEntry(
+      @RequestParam Integer palletId,
+      @RequestBody List<Integer> cajasIds,
+      @RequestParam Integer usuarioId) {
+    cajasIds.forEach(cajaId -> ingresoService.packOffBoxEntry(palletId, cajaId, usuarioId));
+    return ResponseEntity.ok(ApiSuccess.of("Cajas desempacadas correctamente."));
+  }
+
+  // ── Novedades ─────────────────────────────────────────────────────────────
+
+  @PutMapping("/updateNoveltyAllEntry")
+  public ResponseEntity<ApiSuccess> updateNoveltyAllEntry(
+      @RequestBody List<NoveltyAllEntryItemRequest> items,
+      @RequestParam Integer estadoId,
+      @RequestParam Integer tipologiaId,
+      @RequestParam Integer usuarioId,
+      @RequestParam String novedad) {
+    items.forEach(item ->
+        ingresoService.updateNoveltyAllEntry(
+            item.serial(), estadoId, tipologiaId, item.observaciones(),
+            novedad, usuarioId, item.fallaCosmeticaId(), item.fallaFuncionalId()));
+    return ResponseEntity.ok(ApiSuccess.of(items.size() + " novedad(es) actualizada(s)."));
+  }
+
+  @PutMapping("/updateNoveltyEntry")
+  public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<UpdateNoveltyItemRequest> items) {
+    int updated = 0;
+    for (UpdateNoveltyItemRequest item : items) {
+      updated += ingresoService.updateNoveltyEntry(
+          item.id(), item.serial(), item.mac(), item.codigoSapId(), item.guia(),
+          item.documento(), item.tipoOrigenId(), item.origenId(), item.tipologiaId(),
+          item.estadoId(), item.tipoNovedad(), item.usuarioId());
+    }
+    return ResponseEntity.ok(updated);
+  }
+
+  // ── Despacho ──────────────────────────────────────────────────────────────
+
+  @PostMapping("/updateDispatchEntry")
+  public ResponseEntity<ApiSuccess> updateDispatchEntry(@RequestBody DispatchEntryRequest request) {
+    ingresoService.updateDispatchEntry(
+        request.serial(), request.estadoId(), request.palletId(),
+        request.cajaDespachoId(), request.usuarioMovimientoId(), request.loteId());
+    return ResponseEntity.ok(ApiSuccess.of("Despacho actualizado correctamente."));
+  }
+
+  @PostMapping("/updateEntryDispatch")
+  public ResponseEntity<ApiSuccess> updateEntryDispatch(@RequestBody EntryDispatchRequest request) {
+    ingresoService.updateEntryDispatch(
+        request.estadoId(), request.palletId(), request.usuarioIdMovimiento(),
+        request.serial(), request.loteId());
+    return ResponseEntity.ok(ApiSuccess.of("Estado de despacho actualizado correctamente."));
+  }
+
+  // ── Reparación ────────────────────────────────────────────────────────────
+
+  @PostMapping("/backRepairedEntry")
+  public ResponseEntity<ApiSuccess> backRepairedEntry(@RequestBody BackRepairedRequest request) {
+    request.seriales().forEach(ingresoService::backRepairedEntry);
+    return ResponseEntity.ok(ApiSuccess.of("Seriales devueltos a reparación correctamente."));
+  }
+
+  // ── Batch / estado masivo ─────────────────────────────────────────────────
+
+  @PostMapping("/updateStatusBatch")
+  public ResponseEntity<ApiSuccess> updateStatusBatch(@RequestBody UpdateStatusBatchRequest request) {
+    ingresoService.updateStatusBatch(
+        request.estadoId(), request.palletId(), request.usuarioIdMovimiento(),
+        request.fecha(), request.seriales(), request.loteId());
+    return ResponseEntity.ok(ApiSuccess.of("Estado lote actualizado correctamente."));
+  }
+
+  // ── Inventario ────────────────────────────────────────────────────────────
+
+  @PostMapping("/insertSerialInventory")
+  public ResponseEntity<ApiSuccess> insertSerialInventory(@RequestBody InsertSerialInventoryRequest request) {
+    ingresoService.insertSerialInventory(
+        request.serial(), request.codigoSap(), request.palletNumero(), request.usuarioId());
+    return ResponseEntity.ok(ApiSuccess.of("Serial insertado en inventario correctamente."));
+  }
+
+  // ── Scrap ─────────────────────────────────────────────────────────────────
+
+  @PostMapping("/updateScrapAll")
+  public ResponseEntity<ApiSuccess> updateScrapAll(@RequestBody List<IngresoModel> seriales) {
+    seriales.forEach(s ->
+        ingresoService.updateScrapAll(s.getEstadoId(), s.getUsuarioIdMovimiento(), s.getSerial(), s.getNovedad()));
+    return ResponseEntity.ok(ApiSuccess.of("Scrap actualizado correctamente."));
+  }
+
+  // ── Etiquetas ZPL (impresoras térmicas Zebra) ─────────────────────────────
+
+  @PostMapping("/imprimirHabladores")
+  public ResponseEntity<String> printLabels(@RequestBody List<IngresoModel> seriales) throws Exception {
+    String zpl = zplService.generarZpl(seriales);
+    return ResponseEntity.ok(zpl);
+  }
 }

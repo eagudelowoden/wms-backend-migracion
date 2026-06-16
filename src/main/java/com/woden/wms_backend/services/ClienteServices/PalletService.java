@@ -1,27 +1,31 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.woden.wms_backend.dto.*;
+import com.woden.wms_backend.repositories.ClienteRepositories.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
+import com.woden.wms_backend.dto.ModeloPalletDto;
+import com.woden.wms_backend.dto.SendModelsDto;
 import com.woden.wms_backend.models.Entity.PalletModel;
-import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
-import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.util.TypeMapper;
 
 @Service
 public class PalletService extends BaseService<PalletModel, Integer> {
+
+  private static final Logger logger = LoggerFactory.getLogger(PalletService.class);
 
   @Autowired
   private PalletRepository palletRepository;
@@ -31,6 +35,16 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   private CodigoSapRepository codigoSapRepository;
   @Autowired
   private MaestroRepository maestroRepository;
+
+  @Autowired
+  private PosicionService posicionService;
+  @Autowired
+  private PosicionRepository posicionRepository;
+
+  private static final Logger log = LoggerFactory.getLogger(PalletService.class);
+
+
+
 
   public PalletModel getModel(int id) {
     List<Object[]> results = palletRepository.getPalletById(id);
@@ -67,41 +81,39 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public String createPallet(PalletModel p, Boolean kitEntryOn) {
-    try {
-      Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
-      palletRepository.insertPallet(
-          p.getNumero(),
-          p.getPosicionId(),
-          p.getCodigoSapId(),
-          p.getTipologiaId(),
-          p.getOrigenId(),
-          p.getDestinoId(),
-          p.getUsuarioId(),
-          loteId);
-      String numeroPallet = palletRepository.getLastInsertedPalletNumber();
+    Integer loteId = (p.getLoteId() != 0) ? p.getLoteId() : null;
+    palletRepository.insertPallet(
+        p.getNumero(),
+        p.getPosicionId(),
+        p.getCodigoSapId(),
+        p.getTipologiaId(),
+        p.getOrigenId(),
+        p.getDestinoId(),
+        p.getUsuarioId(),
+        loteId);
+    String numeroPallet = palletRepository.getLastInsertedPalletNumber();
 
-      if (kitEntryOn) {
-        String codigoSap = p.getCodigoSapId().toString();
-        List<Integer> familyId = codigoSapRepository.getFamilyId(codigoSap);
-        String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
-        int filas = 0;
-        maestroRepository.addCountPalletFamily(newFamilyNumber, familyId.get(0), filas);
-      }
-
-      return numeroPallet;
-    } catch (Exception e) {
-      throw e;
+    if (kitEntryOn) {
+      String codigoSap = p.getCodigoSapId().toString();
+      List<Integer> familyId = codigoSapRepository.getFamilyId(codigoSap);
+      String newFamilyNumber = String.valueOf(maestroRepository.getFamilyNumberPallet(codigoSap) + 1);
+      int filas = 0;
+      maestroRepository.addCountPalletFamily(newFamilyNumber, familyId.get(0), filas);
     }
+
+    logger.info("[createPallet] Pallet creado: {}", numeroPallet);
+    return numeroPallet;
   }
 
   @Transactional
-  public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId) {
-    palletRepository.incrementarConsecutivoPallet(); // atómico: bloquea la fila con HOLDLOCK
-    String numero = palletRepository.getNextPalletNumber(); // lee el valor que acabamos de escribir
-    // Usar el primer CodigoSap disponible como placeholder (se actualizará al guardar)
+  public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId, String zonaHoraria) {
+    // En vez de ZonedDateTime, usa LocalDateTime directo en la zona horaria
+    LocalDateTime ahora = LocalDateTime.now(ZoneId.of(zonaHoraria));
+    String minutoActual = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    logger.debug("[reservePallet] zonaHoraria={}, minutoActual={}", zonaHoraria, minutoActual);
+    String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    // Usar la primera tipología disponible como placeholder (se actualizará al guardar)
     List<String> tipologias = maestroRepository.getListByTipo("tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
         ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
@@ -117,6 +129,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     pallet.setActivo(true);
     pallet.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     PalletModel saved = palletRepository.save(pallet);
+    logger.info("[reservePallet] Pallet reservado: id={}, numero={}", saved.getId(), saved.getNumero());
     Map<String, Object> result = new HashMap<>();
     result.put("id", saved.getId());
     result.put("numero", saved.getNumero());
@@ -174,6 +187,21 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  public List<PalletDTO> searchAccesoryNovedad(String numero) {
+    List<Object[]> results = palletRepository.searchAccesoryNovedad(numero);
+    return results.stream().map(obj -> {
+      PalletDTO pallet = new PalletDTO();
+      pallet.setId((Integer) obj[0]);
+      pallet.setNumero((String) obj[1]);
+      pallet.setCodigoSap((String) obj[2]);
+      pallet.setDescripcion((String) obj[3]);
+      pallet.setCantidad((Integer) obj[4]);
+      pallet.setTipologia((String) obj[5]);
+      pallet.setOrigen((String) obj[6]);
+      return pallet;
+    }).collect(Collectors.toList());
+  }
+
   public List<Map<String, Object>> searchTransitPallet(String numero) {
     List<Object[]> resultado = palletRepository.searchTransitPallet(numero);
     List<Map<String, Object>> pallets = new ArrayList<>();
@@ -193,10 +221,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return pallets;
   }
 
-  public void cerrarPallet(Integer palletId, Integer destinoId, Integer tipologiaId, Integer posicionId,
-      Integer estado) {
-    Integer filas = 0;
-    palletRepository.sendPallet(destinoId, tipologiaId, posicionId, estado, palletId, filas);
+  public void enviarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
+      Integer posicionId, Integer usuarioId, Integer opcion, Integer estado) {
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estado, usuarioId, opcion, 0,
+        0);
   }
 
   public Integer getCount(Integer palletId, String tabla) {
@@ -229,13 +257,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return true;
   }
 
-  public Integer deletePallet(Integer palletId) {
-    try {
-      palletRepository.deletePallet(palletId);
-      return 1;
-    } catch (Exception e) {
-      return 0;
-    }
+  public void deletePallet(Integer palletId) {
+    palletRepository.deletePallet(palletId);
+    logger.info("[deletePallet] Pallet eliminado: id={}", palletId);
   }
 
   private String getTablaDesdeTipo(String tipoEquipo, String tipo) {
@@ -286,15 +310,18 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   }
 
   public boolean confirmarPalletTransito(ConfirmarPalletDTO dto) {
-    ingresoRepository.sendIngreso(dto.getDestinoId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0,
-        0);
-    palletRepository.sendPallet(dto.getDestinoId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    palletRepository.enviarPallet(
+        dto.getPalletId(), dto.getDestinoId(), dto.getDestinoId(),
+        dto.getTipologiaId(), dto.getPosicionId(), 1,
+        dto.getUsuarioId(), 0, 0, 0);
     return true;
   }
 
   public boolean abrirPalletTransito(AbrirPalletDTO dto) {
-    ingresoRepository.sendIngreso(dto.getOrigenId(), dto.getTipologiaId(), dto.getUsuarioId(), dto.getPalletId(), 0, 0);
-    palletRepository.sendPallet(dto.getOrigenId(), dto.getTipologiaId(), dto.getPosicionId(), 1, dto.getPalletId(), 0);
+    palletRepository.enviarPallet(
+        dto.getPalletId(), dto.getOrigenId(), dto.getOrigenId(),
+        dto.getTipologiaId(), dto.getPosicionId(), 1,
+        dto.getUsuarioId(), 0, 0, 0);
     return true;
   }
 
@@ -401,8 +428,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return palletBox;
   }
 
-  public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId) {
-    Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId);
+  public boolean eliminarAccesorio(Integer palletId, Integer cantidad, Integer codigoSapId, Integer usuarioId) {
+    Integer result = palletRepository.eliminarAccesorio(palletId, cantidad, codigoSapId, usuarioId);
     return result > 0;
   }
 
@@ -506,10 +533,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return pallets;
   }
 
-  public String getNextPalletNumber() {
-    return palletRepository.getNextPalletNumber();
-  }
-
   public Integer getIdPallet(String numero) {
     return palletRepository.getIdPallet(numero);
   }
@@ -527,16 +550,16 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     palletRepository.innactivatePallet(palletId, filas);
   }
 
-  public List<Map<String, String>> searchQualityDeliveryPallet() {
-    List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
-    return results.stream().map(result -> {
-      Map<String, String> pallet = new HashMap<>();
-      pallet.put("id", String.valueOf(result[0]));
-      pallet.put("numero", String.valueOf(result[1]));
-      pallet.put("cantidadCaja", String.valueOf(result[2]));
-      return pallet;
-    }).collect(Collectors.toList());
-  }
+    public List<Map<String, String>> searchQualityDeliveryPallet() {
+      List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
+      return results.stream().map(result -> {
+        Map<String, String> pallet = new HashMap<>();
+        pallet.put("id", String.valueOf(result[0]));
+        pallet.put("numero", String.valueOf(result[1]));
+        pallet.put("cantidadCaja", String.valueOf(result[2]));
+        return pallet;
+      }).collect(Collectors.toList());
+    }
 
   public List<Map<String, String>> searchPalletBoxDispatchPallet(String numero) {
     List<Object[]> results = palletRepository.searchPalletBoxDispatchPallet(numero);
@@ -610,14 +633,8 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public Integer updateStateInventoryPallet(Integer palletId, Integer estadoInventario) {
-    try {
-      Integer filas = 4;
-      palletRepository.updateStateInventoryPallet(palletId, estadoInventario, filas);
-      return 1;
-    } catch (Exception e) {
-      return 0;
-    }
+  public void updateStateInventoryPallet(Integer palletId, Integer estadoInventario) {
+    palletRepository.updateStateInventoryPallet(palletId, estadoInventario, 4);
   }
 
   public List<Map<String, Object>> searchGeneralSettingsPallet(String nuemro, String estado) {
@@ -637,5 +654,72 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public Boolean getPalletNumero(String palletNumero) {
     return palletRepository.getPalletNumero(palletNumero);
+  }
+
+  public void cerrarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
+      Integer posicionId, Integer usuarioId, Integer opcion) {
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estadoId, usuarioId, opcion, 0, 0);
+  }
+
+
+  public List<ModeloPalletDto> searchModels(Integer palletId) {
+    List<Object[]> rows = palletRepository.searchModels(palletId);
+    List<ModeloPalletDto> result = new ArrayList<>();
+    for (Object[] row : rows) {
+      ModeloPalletDto dto = new ModeloPalletDto();
+      dto.setCodigoSap(row[0] != null ? row[0].toString() : "");
+      dto.setCantidad(row[1] != null ? Integer.valueOf(row[1].toString()) : 0);
+      dto.setPosicion(null);
+      result.add(dto);
+    }
+    return result;
+  }
+
+  @Transactional
+  public int sendModels(SendModelsDto dto) {
+    try {
+      // 1. Validar si ya existe el pallet en esa posición
+      List<Object[]> existente = palletRepository.getModelByNumber(dto.getPosicionNumero());
+
+      Integer palletDestinoId;
+
+      if (existente == null || existente.isEmpty()) {
+        // Buscar datos maestros necesarios para el nuevo pallet
+        Integer codigoSapMultimodelo = codigoSapRepository.getIdByCodigo("MULTIMODELO");
+        Integer tipologiaLibre = maestroRepository.getIdByDescripcionAndTipo("LIBRE UTILIZACION", "Tipologias");
+        Integer posicionId = posicionRepository.getIdByNumero(dto.getPosicionNumero());
+
+        // Insertar nuevo pallet
+        palletRepository.insertPallet(
+                dto.getPosicionNumero(),
+                posicionId,
+                codigoSapMultimodelo,
+                tipologiaLibre,
+                0, 0,
+                dto.getUsuarioId(),
+                null
+        );
+        // Obtener el ID del pallet recién creado
+        palletDestinoId = palletRepository.getIdPallet(dto.getPosicionNumero());
+      } else {
+        // Si ya existe, usamos el ID que viene del DTO o lo buscamos
+        palletDestinoId = palletRepository.getIdPallet(dto.getPosicionNumero());
+      }
+
+      // 2. Ejecutar la transferencia de modelos
+      palletRepository.sendModels(
+              dto.getDestinoId(),
+              dto.getUsuarioId(),
+              palletDestinoId,
+              dto.getPalletOrigenId(),
+              dto.getCodigoSapId()
+      );
+
+      return 1;
+    } catch (Exception e) {
+
+      log.error("Error en sendModels: ", e); // Mejor usar un logger
+      return 0;
+    }
   }
 }

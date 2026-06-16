@@ -179,7 +179,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
           empaque.getNivelId(),
           empaque.getUsuarioId(),
           empaque.getFecha(),
-          loteIdParam, // 👈 agregado
+          loteIdParam,
           empaque.getSmartCardId(),
           empaque.getSmartCard());
       logger.info("Guardado correctamente");

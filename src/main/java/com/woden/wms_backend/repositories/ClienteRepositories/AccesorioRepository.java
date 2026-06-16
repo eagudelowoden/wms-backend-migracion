@@ -137,5 +137,29 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   @Query(value = "EXEC pa_BackCleanEntry :id, :filas OUT", nativeQuery = true)
   void BackCleanEntry(@Param("id") Integer id, @Param("filas") Integer filas);
 
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateNoveltyAllAccesory :palletId, :estadoId, :observaciones, :novedad, :usuarioId", nativeQuery = true)
+  void updateNoveltyAllAccesory(
+      @Param("palletId") Integer palletId,
+      @Param("estadoId") Integer estadoId,
+      @Param("observaciones") String observaciones,
+      @Param("novedad") String novedad,
+      @Param("usuarioId") Integer usuarioId);
+
+  @Query(value = "EXEC pa_SearchNoveltyAccesoryPallet :tipoNovedad", nativeQuery = true)
+  List<Object[]> searchNoveltyAccesoryPallet(@Param("tipoNovedad") String tipoNovedad);
+
+  @Query(value = "EXEC pa_SearchNoveltyAccesory :palletId", nativeQuery = true)
+  List<Object[]> searchNoveltyAccesory(@Param("palletId") Integer palletId);
+
+  @Modifying
+  @Transactional
+  @Query(value = "EXEC pa_UpdateAccesoryNovedad :palletId, :codigoSapId, :usuarioId, :filas OUT", nativeQuery = true)
+  void updateAccesoryNovedad(
+      @Param("palletId") Integer palletId,
+      @Param("codigoSapId") Integer codigoSapId,
+      @Param("usuarioId") Integer usuarioId,
+      @Param("filas") Integer filas);
 
 }

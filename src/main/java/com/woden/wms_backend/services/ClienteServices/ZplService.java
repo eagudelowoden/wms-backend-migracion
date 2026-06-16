@@ -7,8 +7,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.woden.wms_backend.models.Entity.IngresoModel;
 
+@Service
 public class ZplService {
   public String generarZpl(List<IngresoModel> ingresos) throws IOException {
     int cantidad = ingresos.size();

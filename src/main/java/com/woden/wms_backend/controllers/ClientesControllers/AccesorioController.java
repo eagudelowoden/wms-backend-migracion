@@ -1,6 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.controllers.BaseController;
+import com.woden.wms_backend.dto.response.ApiSuccess;
 import com.woden.wms_backend.dto.AccesorioSearchDTO;
 import com.woden.wms_backend.dto.SendPalletDTO;
 import com.woden.wms_backend.dto.clientDTO.AccesorioSeparateDTO;
@@ -43,7 +44,10 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
     }
 
     @DeleteMapping("/eliminarAccesorio")
-    public ResponseEntity<Integer> eliminarAccesorio(@RequestParam Integer palletId, @RequestParam Integer cantidad, @RequestParam Integer codigoSapId) {
+    public ResponseEntity<Integer> eliminarAccesorio(
+        @RequestParam Integer palletId,
+        @RequestParam Integer cantidad,
+        @RequestParam Integer codigoSapId) {
         int status = accesorioService.eliminarAccesorio(palletId, cantidad, codigoSapId);
         return ResponseEntity.ok(status);
     }
@@ -288,6 +292,25 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         }
     }
 
+    // ── Novedades ────────────────────────────────────────────────────────────────
+
+    @PutMapping("/updateNoveltyAllAccesory")
+    public ResponseEntity<ApiSuccess> updateNoveltyAllAccesory(
+            @RequestBody List<Integer> palletIds,
+            @RequestParam Integer estadoId,
+            @RequestParam String observaciones,
+            @RequestParam String novedad,
+            @RequestParam Integer usuarioId) {
+        accesorioService.updateNoveltyAllAccesory(palletIds, estadoId, observaciones, novedad, usuarioId);
+        return ResponseEntity.ok(ApiSuccess.of(palletIds.size() + " pallet(s) actualizado(s) a novedad."));
+    }
+
+    @GetMapping("/searchNoveltyAccesoryPallet")
+    public ResponseEntity<List<Map<String, Object>>> searchNoveltyAccesoryPallet(
+            @RequestParam String tipoNovedad) {
+        return ResponseEntity.ok(accesorioService.searchNoveltyAccesoryPallet(tipoNovedad));
+    }
+
     @PostMapping("/BackCleanEntry")
     public ResponseEntity<?> BackCleanEntry(@RequestBody Map<String, Object> requestBody) {
         try {
@@ -307,5 +330,28 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
 
 
 
+
+
+    @GetMapping("/searchNoveltyAccesory")
+    public ResponseEntity<?> searchNoveltyAccesory(@RequestParam Integer palletId) {
+        try {
+            return ResponseEntity.ok(accesorioService.searchNoveltyAccesory(palletId));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("message", "Error: " + e.getMessage(), "success", false));
+        }
+    }
+
+    @PostMapping("/updateAccesoryNovedad")
+    public ResponseEntity<?> updateAccesoryNovedad(@RequestBody Map<String, Object> dto) {
+        try {
+            Integer palletId = (Integer) dto.get("palletId");
+            Integer codigoSapId = (Integer) dto.get("codigoSapId");
+            Integer usuarioId = (Integer) dto.get("usuarioId");
+            accesorioService.updateAccesoryNovedad(palletId, codigoSapId, usuarioId);
+            return ResponseEntity.ok(Map.of("message", "Pallet actualizado correctamente.", "success", true));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("message", "Error al actualizar: " + e.getMessage(), "success", false));
+        }
+    }
 
 }
