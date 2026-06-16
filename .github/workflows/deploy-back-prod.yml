@@ -109,6 +109,9 @@ jobs:
               # por lo que el backend nace con credenciales de red completas
               # (acceso al share de PRN \\10.128.0.28\archivos).
               Write-Host "Starting backend via scheduled task WMS-Backend..."
+              # Cerrar cualquier instancia previa de la tarea (si quedó en Running, /run no relanza)
+              schtasks /end /tn "WMS-Backend" | Out-Null
+              Start-Sleep -Seconds 3
               schtasks /run /tn "WMS-Backend"
 
               if ($LASTEXITCODE -ne 0) {
