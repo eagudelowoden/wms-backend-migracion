@@ -121,7 +121,7 @@ public class PerfilService extends BaseService<PerfilModel, Integer> {
   }
 
   public List<Map<String, Object>> getAvailablePermisos(int perfilId, int moduloId) {
-    return mapIdName(perfilRepository.searchAvailablePermit(perfilId, moduloId));
+    return mapIdName(perfilRepository.searchAvailablePermit(moduloId, perfilId));
   }
 
   public List<Map<String, Object>> getAggregatedPermisos(int perfilId, int moduloId) {
