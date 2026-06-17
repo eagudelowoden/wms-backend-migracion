@@ -17,9 +17,11 @@ import com.woden.wms_backend.services.BaseService;
 public class PerfilService extends BaseService<PerfilModel, Integer> {
 
   private final PerfilRepository perfilRepository;
+  private final ClienteService clienteService;
 
-  public PerfilService(PerfilRepository perfilRepository) {
+  public PerfilService(PerfilRepository perfilRepository, ClienteService clienteService) {
     this.perfilRepository = perfilRepository;
+    this.clienteService = clienteService;
   }
 
   public String getNameProfile(Integer usuarioClienteId) {
@@ -43,8 +45,12 @@ public class PerfilService extends BaseService<PerfilModel, Integer> {
   }
 
   @Transactional
-  public Map<String, Object> create(String nombre) {
-    Integer clienteId = ClientDatabaseContext.getCurrentClientId();
+  public Map<String, Object> create(String nombre, String cliente) {
+    if (cliente == null || cliente.isEmpty()) {
+      cliente = ClientDatabaseContext.getCurrentClientName();
+      if (cliente == null) cliente = "";
+    }
+    Integer clienteId = clienteService.getIdClient(cliente);
     if (clienteId == null) clienteId = 0;
     perfilRepository.insertProfile(nombre, clienteId);
     Map<String, Object> response = new HashMap<>();

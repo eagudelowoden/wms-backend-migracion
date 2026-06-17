@@ -44,7 +44,7 @@ public class PerfilController {
 
   @PostMapping
   public ResponseEntity<Map<String, Object>> create(@RequestBody Map<String, String> body) {
-    return ResponseEntity.ok(perfilService.create(body.get("nombre")));
+    return ResponseEntity.ok(perfilService.create(body.get("nombre"), body.get("cliente")));
   }
 
   @PutMapping("/{id}")
