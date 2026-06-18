@@ -13,6 +13,7 @@ import com.woden.wms_backend.models.Entity.PerfilModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MenuPerfilRepository;
 import com.woden.wms_backend.repositories.WmsWdGeneral.PerfilRepository;
 import com.woden.wms_backend.services.BaseService;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class PerfilService extends BaseService<PerfilModel, Integer> {
@@ -73,7 +74,13 @@ public class PerfilService extends BaseService<PerfilModel, Integer> {
 
   @Transactional
   public Map<String, Object> delete(int id) {
-    menuPerfilRepository.deleteByPerfilId(id);
+    String cliente = ClientDatabaseContext.getCurrentClientDb();
+    if ("WmsWdGeneral".equals(cliente)) {
+      PerfilModel perfil = perfilRepository.findById(id)
+          .orElseThrow(() -> new EntityNotFoundException("Perfil no encontrado: " + id));
+      cliente = clienteService.getDbaseById(perfil.getClienteId());
+    }
+    menuPerfilRepository.deleteByPerfilId(id, cliente);
     perfilRepository.deleteProfile(id);
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Perfil eliminado.");

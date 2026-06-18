@@ -32,6 +32,10 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
         return clienteRepository.getKitIngresoON(id);
     }
 
+    public String getDbaseById(int id) {
+        return clienteRepository.getDbaseById(id);
+    }
+
     public List<Map<String, Object>> getClientes() {
         // Ejecutar query nativa que retorna Object[]
         List<Object[]> results = clienteRepository.getClientes();

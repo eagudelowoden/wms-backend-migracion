@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.models.Entity.MenuPerfilModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MenuPerfilRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -22,8 +23,9 @@ public class MenuPerfilService extends BaseService<MenuPerfilModel, Integer> {
     }
 
     public List<Map<String, Object>> getGrupos(int perfilId) {
-        List<Object[]> disponibles = menuPerfilRepository.getAvailableGrupos(perfilId);
-        List<Object[]> asignados = menuPerfilRepository.getAssignedGrupos(perfilId);
+        String cliente = ClientDatabaseContext.getCurrentClientDb();
+        List<Object[]> disponibles = menuPerfilRepository.getAvailableGrupos(perfilId, cliente);
+        List<Object[]> asignados = menuPerfilRepository.getAssignedGrupos(perfilId, cliente);
 
         List<Map<String, Object>> result = new ArrayList<>();
         for (Object[] row : disponibles) {
@@ -44,8 +46,9 @@ public class MenuPerfilService extends BaseService<MenuPerfilModel, Integer> {
     }
 
     public List<Map<String, Object>> getItems(int perfilId, String idPadre) {
-        List<Object[]> disponibles = menuPerfilRepository.getAvailableItems(perfilId, idPadre);
-        List<Object[]> asignados = menuPerfilRepository.getAssignedItems(perfilId, idPadre);
+        String cliente = ClientDatabaseContext.getCurrentClientDb();
+        List<Object[]> disponibles = menuPerfilRepository.getAvailableItems(perfilId, idPadre, cliente);
+        List<Object[]> asignados = menuPerfilRepository.getAssignedItems(perfilId, idPadre, cliente);
 
         List<Map<String, Object>> result = new ArrayList<>();
         for (Object[] row : disponibles) {
@@ -67,9 +70,10 @@ public class MenuPerfilService extends BaseService<MenuPerfilModel, Integer> {
 
     @Transactional
     public void syncMenus(int perfilId, List<String> menuIds) {
-        menuPerfilRepository.deleteByPerfilId(perfilId);
+        String cliente = ClientDatabaseContext.getCurrentClientDb();
+        menuPerfilRepository.deleteByPerfilId(perfilId, cliente);
         for (String menuId : menuIds) {
-            menuPerfilRepository.insertMenuPerfil(menuId, perfilId);
+            menuPerfilRepository.insertMenuPerfil(menuId, perfilId, cliente);
         }
     }
 }
