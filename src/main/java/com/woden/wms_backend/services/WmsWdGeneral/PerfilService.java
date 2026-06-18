@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.models.Entity.PerfilModel;
+import com.woden.wms_backend.repositories.ClienteRepositories.MenuPerfilRepository;
 import com.woden.wms_backend.repositories.WmsWdGeneral.PerfilRepository;
 import com.woden.wms_backend.services.BaseService;
 
@@ -18,10 +19,12 @@ public class PerfilService extends BaseService<PerfilModel, Integer> {
 
   private final PerfilRepository perfilRepository;
   private final ClienteService clienteService;
+  private final MenuPerfilRepository menuPerfilRepository;
 
-  public PerfilService(PerfilRepository perfilRepository, ClienteService clienteService) {
+  public PerfilService(PerfilRepository perfilRepository, ClienteService clienteService, MenuPerfilRepository menuPerfilRepository) {
     this.perfilRepository = perfilRepository;
     this.clienteService = clienteService;
+    this.menuPerfilRepository = menuPerfilRepository;
   }
 
   public String getNameProfile(Integer usuarioClienteId) {
@@ -70,6 +73,7 @@ public class PerfilService extends BaseService<PerfilModel, Integer> {
 
   @Transactional
   public Map<String, Object> delete(int id) {
+    menuPerfilRepository.deleteByPerfilId(id);
     perfilRepository.deleteProfile(id);
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Perfil eliminado.");
