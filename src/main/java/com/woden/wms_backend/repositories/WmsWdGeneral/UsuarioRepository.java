@@ -27,6 +27,12 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
     @Query(value = "EXEC pa_GetIdUser :nombreUsuario", nativeQuery = true)
     Integer getIdUser(@Param("nombreUsuario") String nombreUsuario);
 
+    @Query(value = "SELECT NombreUsuario FROM Usuario WHERE Id = :id", nativeQuery = true)
+    List<String> getNombreUsuarioById(@Param("id") Integer id);
+
+    @Query(value = "SELECT Clave FROM Usuario WHERE Id = :id", nativeQuery = true)
+    List<String> getClaveById(@Param("id") Integer id);
+
     @Query(value = "EXEC pa_SearchUser :usuario", nativeQuery = true)
     List<Object[]> searchUser(@Param("usuario") String usuario);
 

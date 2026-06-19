@@ -16,7 +16,6 @@ import com.woden.wms_backend.controllers.ClientesControllers.IngresoController;
 import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
 import com.woden.wms_backend.repositories.WmsWdGeneral.UsuarioRepository;
 import com.woden.wms_backend.util.EncryptUtil;
-import com.woden.wms_backend.util.TypeMapper;
 
 @Service
 public class UsuarioService {
@@ -40,8 +39,55 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
+    private Integer toInt(Object value) {
+        if (value instanceof Number) return ((Number) value).intValue();
+        if (value instanceof String) try { return Integer.parseInt((String) value); } catch (NumberFormatException e) { return null; }
+        return null;
+    }
+
+    private Long toLong(Object value) {
+        if (value instanceof Number) return ((Number) value).longValue();
+        if (value instanceof String) try { return Long.parseLong((String) value); } catch (NumberFormatException e) { return null; }
+        return null;
+    }
+
+    private String toString(Object value) {
+        return value != null ? value.toString() : null;
+    }
+
+    private Boolean toBoolean(Object value) {
+        if (value instanceof Boolean) return (Boolean) value;
+        if (value instanceof Number) return ((Number) value).intValue() != 0;
+        if (value instanceof String) return !"0".equals(value) && !"NO".equalsIgnoreCase((String) value);
+        return null;
+    }
+
+    private UsuarioModel mapRow(Object[] row) {
+        UsuarioModel u = new UsuarioModel();
+        u.setId(toInt(row[0]));
+        u.setIdentificacion(toLong(row[1]));
+        u.setNombres(toString(row[2]));
+        u.setApellidos(toString(row[3]));
+        u.setNombreUsuario(toString(row[4]));
+        u.setActivo(row.length > 5 ? toBoolean(row[5]) : null);
+        u.setFechaNacimiento(toString(row[6]));
+        u.setCorreo(toString(row[7]));
+        u.setCargo(toString(row[8]));
+        u.setArea(toString(row[9]));
+        return u;
+    }
+
     public Optional<UsuarioModel> getUserById(int id) {
-        return usuarioRepository.findById(id);
+        List<String> usuarios = usuarioRepository.getNombreUsuarioById(id);
+        if (usuarios.isEmpty()) return Optional.empty();
+        List<Object[]> rows = usuarioRepository.searchEditUser(usuarios.get(0));
+        for (Object[] row : rows) {
+            Integer rowId = toInt(row[0]);
+            if (rowId != null && rowId == id) {
+                return Optional.of(mapRow(row));
+            }
+        }
+        return Optional.empty();
     }
 
     public Optional<UsuarioModel> getUserByNameUser(String nombreUsuario) {
@@ -49,14 +95,10 @@ public class UsuarioService {
     }
 
     public boolean deleteUser(int id) {
-        Optional<UsuarioModel> usuarioOpt = usuarioRepository.findById(id);
-        if (usuarioOpt.isPresent()) {
-            UsuarioModel usuario = usuarioOpt.get();
-            usuario.setActivo(false);
-            usuarioRepository.save(usuario);
-            return true;
-        }
-        return false;
+        List<String> usuarios = usuarioRepository.getNombreUsuarioById(id);
+        if (usuarios.isEmpty()) return false;
+        usuarioRepository.innactivateUser(id, 0);
+        return true;
     }
 
     public boolean validateCredentials(String nombreUsuario, String clave) {
@@ -103,21 +145,21 @@ public class UsuarioService {
         Object[] row = results.get(0);
 
         UsuarioModel usuario = new UsuarioModel();
-        usuario.setId((Integer) row[0]);
-        usuario.setIdentificacion((Long) row[1]);
-        usuario.setNombres((String) row[2]);
-        usuario.setApellidos((String) row[3]);
-        usuario.setNombreUsuario((String) row[4]);
-        usuario.setClave((String) row[5]);
-        usuario.setFechaCreacion(row[6] != null ? row[6].toString() : null);
-        usuario.setIp((String) row[7]);
-        usuario.setActivo(TypeMapper.toBoolean(row[8]));
-        usuario.setFechaUltimoAcceso(row[9] != null ? row[9].toString() : null);
-        usuario.setCorreo((String) row[11]);
-        usuario.setFechaNacimiento(row[12] != null ? row[12].toString() : null);
-        usuario.setTemaId((Integer) row[13]);
-        usuario.setCargo((String) row[14]);
-        usuario.setArea((String) row[15]);
+        usuario.setId(toInt(row[0]));
+        usuario.setIdentificacion(toLong(row[1]));
+        usuario.setNombres(toString(row[2]));
+        usuario.setApellidos(toString(row[3]));
+        usuario.setNombreUsuario(toString(row[4]));
+        usuario.setClave(toString(row[5]));
+        usuario.setFechaCreacion(toString(row[6]));
+        usuario.setIp(toString(row[7]));
+        usuario.setActivo(toBoolean(row[8]));
+        usuario.setFechaUltimoAcceso(toString(row[9]));
+        usuario.setCorreo(toString(row[11]));
+        usuario.setFechaNacimiento(toString(row[12]));
+        usuario.setTemaId(toInt(row[13]));
+        usuario.setCargo(toString(row[14]));
+        usuario.setArea(toString(row[15]));
         return usuario;
     }
 
@@ -141,17 +183,19 @@ public class UsuarioService {
             item.put("nombres", row[2]);
             item.put("apellidos", row[3]);
             item.put("nombreUsuario", row[4]);
-            item.put("fechaNacimiento", row.length > 5 ? row[5] : null);
-            item.put("correo", row.length > 6 ? row[6] : null);
-            item.put("cargo", row.length > 7 ? row[7] : null);
-            item.put("area", row.length > 8 ? row[8] : null);
+            item.put("fechaNacimiento", row.length > 6 ? row[6] : null);
+            item.put("correo", row.length > 7 ? row[7] : null);
+            item.put("cargo", row.length > 8 ? row[8] : null);
+            item.put("area", row.length > 9 ? row[9] : null);
             boolean activo = true;
-            if (row.length > 10 && row[10] != null) {
-                Object val = row[10];
-                if (val instanceof Number) {
+            if (row.length > 5 && row[5] != null) {
+                Object val = row[5];
+                if (val instanceof Boolean) {
+                    activo = (Boolean) val;
+                } else if (val instanceof Number) {
                     activo = ((Number) val).intValue() != 0;
                 } else {
-                    activo = !"0".equals(val.toString()) && !"NO".equalsIgnoreCase(val.toString());
+                    activo = !"0".equals(val.toString());
                 }
             }
             item.put("activo", activo);
@@ -163,10 +207,10 @@ public class UsuarioService {
     public void updateUser(int id, Map<String, Object> body) {
         String clave = body.containsKey("clave") ? (String) body.get("clave") : "";
         if (clave == null || clave.isEmpty()) {
-            Optional<UsuarioModel> existing = usuarioRepository.findById(id);
-            clave = existing.map(UsuarioModel::getClave).orElse("");
+            List<String> claves = usuarioRepository.getClaveById(id);
+            clave = claves.isEmpty() ? "" : claves.get(0);
         }
-        Long identificacion = body.get("identificacion") != null ? ((Number) body.get("identificacion")).longValue() : 0L;
+        Long identificacion = body.get("identificacion") != null ? toLong(body.get("identificacion")) : 0L;
         usuarioRepository.updateUser(
             identificacion,
             (String) body.get("nombres"),
@@ -175,8 +219,8 @@ public class UsuarioService {
             clave,
             (String) body.get("fechaNacimiento"),
             (String) body.get("correo"),
-            body.get("cargoId") != null ? ((Number) body.get("cargoId")).intValue() : null,
-            body.get("areaId") != null ? ((Number) body.get("areaId")).intValue() : null,
+            body.get("cargoId") != null ? toInt(body.get("cargoId")) : null,
+            body.get("areaId") != null ? toInt(body.get("areaId")) : null,
             id
         );
     }
@@ -210,12 +254,12 @@ public class UsuarioService {
     public Integer getCargoIdByName(String nombre) {
         List<Object[]> rows = usuarioRepository.getIdPosition(nombre);
         if (rows.isEmpty()) return null;
-        return ((Number) rows.get(0)[0]).intValue();
+        return toInt(rows.get(0)[0]);
     }
 
     public Integer getAreaIdByName(String nombre) {
         List<Object[]> rows = usuarioRepository.getIdArea(nombre);
         if (rows.isEmpty()) return null;
-        return ((Number) rows.get(0)[0]).intValue();
+        return toInt(rows.get(0)[0]);
     }
 }
