@@ -1,5 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,5 +24,15 @@ public class UsuarioSysController {
     } else {
       return ResponseEntity.notFound().build();
     }
+  }
+
+  @PostMapping("/sync")
+  public ResponseEntity<Map<String, String>> syncUsuarioSys(@RequestBody Map<String, Object> body) {
+    int id = ((Number) body.get("id")).intValue();
+    String nombreUsuario = (String) body.get("nombreUsuario");
+    String nombres = (String) body.get("nombres");
+    int perfilId = ((Number) body.get("perfilId")).intValue();
+    usuarioSysService.syncUsuarioSys(id, nombreUsuario, nombres, perfilId);
+    return ResponseEntity.ok(Map.of("message", "Usuario sincronizado."));
   }
 }
