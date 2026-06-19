@@ -11,8 +11,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -83,17 +85,13 @@ public class UsuarioController {
 
         UsuarioModel usuario = usuarioOpt.get();
 
-        // Encriptar la contraseña proporcionada por el usuario
         String claveEncriptada = encryptUtil.encode(loginRequest.getClave());
 
-        // Comparar la contraseña encriptada almacenada con la contraseña encriptada
-        // proporcionada
         if (!usuario.getClave().equals(claveEncriptada)) {
             response.put("message", "Contraseña incorrecta");
             return ResponseEntity.status(401).body(response);
         }
 
-        // Generar el token JWT
         String token = jwtUtil.generateToken(usuario.getNombreUsuario(), "WmsWdGeneral", "WmsWdGeneral", 0);
 
         response.put("token", token);
@@ -123,7 +121,6 @@ public class UsuarioController {
             @RequestParam String nombreUsuario,
             @RequestParam String clave) {
 
-        // 🔐 Encriptar la clave para que coincida con la de la base de datos
         String claveEncriptada = encryptUtil.encode(clave);
 
         UsuarioModel usuario = usuarioService.getModel(nombreUsuario, claveEncriptada);
@@ -147,75 +144,56 @@ public class UsuarioController {
             @RequestHeader(value = "Client-Token", required = false) String clientTokenHeader,
             HttpServletResponse response) {
 
-        log.info("🔄 Endpoint de refresh-token iniciado");
-        // 1. Validar el token de autorización (general)
+        log.info("Refres-token endpoint iniciado");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("❌ Token general mal formado o faltante");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Token general faltante o mal formado"));
         }
         String oldGeneralToken = authHeader.substring(7);
 
-        // 2. Validar el clientToken (si se envía)
         String oldClientToken = null;
         if (clientTokenHeader != null && clientTokenHeader.startsWith("Bearer ")) {
             oldClientToken = clientTokenHeader.substring(7);
         }
 
-        log.info("🔍 Token general recibido: {}", oldGeneralToken);
-        log.info("🔍 Token cliente recibido: {}", oldClientToken);
         try {
-            // 3. Validar el token general (debe ser válido)
             if (!jwtUtil.validateToken(oldGeneralToken)) {
-                log.warn("❌ Token general no válido o expirado");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token general no válido o expirado"));
+                        .body(Map.of("error", "Token general no valido o expirado"));
             }
 
-            // 4. Extraer datos del token general
             String username = jwtUtil.extractUsername(oldGeneralToken);
             String clientDb = jwtUtil.extractClientDb(oldGeneralToken);
             String clientName = jwtUtil.extractClientName(oldGeneralToken);
             Integer clientId = jwtUtil.extractClientId(oldGeneralToken);
 
-            // 5. Si hay un clientToken, validarlo y extraer su información (si es
-            // diferente)
             String newClientName = clientName;
             String newClientDb = clientDb;
             Integer newClientId = clientId;
 
             if (oldClientToken != null && jwtUtil.validateToken(oldClientToken)) {
-                // Si el token del cliente es válido, usamos sus datos (pueden ser diferentes)
                 newClientName = jwtUtil.extractClientName(oldClientToken);
                 newClientDb = jwtUtil.extractClientDb(oldClientToken);
                 newClientId = jwtUtil.extractClientId(oldClientToken);
             }
 
-            // 6. Generar nuevos tokens
             String newGeneralToken = jwtUtil.generateToken(username, clientName, clientDb, clientId);
             String newClientToken = jwtUtil.generateToken(username, newClientName, newClientDb, newClientId);
 
-            // log.info("Tokens renovados para: {} (General) y {} (Client)", username,
-            // newClientName);
-
-            // 7. Configurar headers de respuesta (seguridad)
             response.setHeader("Cache-Control", "no-store");
             response.setHeader("Pragma", "no-cache");
 
-            // 8. Devolver ambos tokens en la respuesta
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of(
-                            "token", newGeneralToken, // Token general renovado
-                            "clientToken", newClientToken, // Token del cliente renovado
+                            "token", newGeneralToken,
+                            "clientToken", newClientToken,
                             "message", "Tokens actualizados correctamente"));
 
         } catch (ExpiredJwtException ex) {
-            log.error("⏳ Token expirado: {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Token expirado"));
         } catch (Exception ex) {
-            log.error("❗ Error inesperado: {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al renovar los tokens"));
         }
@@ -229,5 +207,45 @@ public class UsuarioController {
     @GetMapping("/ping")
     public Map<String, String> ping() {
         return Map.of("status", "OK - Backend funcionando");
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Map<String, Object>>> search(@RequestParam(defaultValue = "") String term) {
+        return ResponseEntity.ok(usuarioService.search(term));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody Map<String, Object> body) {
+        usuarioService.updateUser(id, body);
+        return ResponseEntity.ok(Map.of("message", "Usuario actualizado."));
+    }
+
+    @PatchMapping("/{id}/toggle")
+    public ResponseEntity<Map<String, String>> toggleActivo(@PathVariable int id, @RequestBody Map<String, Integer> body) {
+        int estado = body.getOrDefault("estado", 1);
+        usuarioService.toggleActivo(id, estado);
+        return ResponseEntity.ok(Map.of("message", "Estado actualizado."));
+    }
+
+    @GetMapping("/cargos")
+    public ResponseEntity<List<Map<String, Object>>> getCargos() {
+        return ResponseEntity.ok(usuarioService.getCargos());
+    }
+
+    @GetMapping("/areas")
+    public ResponseEntity<List<Map<String, Object>>> getAreas() {
+        return ResponseEntity.ok(usuarioService.getAreas());
+    }
+
+    @GetMapping("/cargos/id")
+    public ResponseEntity<Map<String, Integer>> getCargoId(@RequestParam String nombre) {
+        Integer id = usuarioService.getCargoIdByName(nombre);
+        return id != null ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/areas/id")
+    public ResponseEntity<Map<String, Integer>> getAreaId(@RequestParam String nombre) {
+        Integer id = usuarioService.getAreaIdByName(nombre);
+        return id != null ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.notFound().build();
     }
 }
