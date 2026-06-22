@@ -57,7 +57,7 @@ public class SecurityConfig {
         "https://wmstest.woden.com.co/admin",
         "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*", "http://localhost:5173",
         "http://woden-wts-dev.arkade.com.co:443"));
-    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
 

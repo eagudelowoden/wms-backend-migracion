@@ -100,7 +100,11 @@ public class UsuarioService {
     }
 
     public Optional<UsuarioModel> getUserByNameUser(String nombreUsuario) {
-        return usuarioRepository.findByNombreUsuario(nombreUsuario);
+        Optional<UsuarioModel> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
+        if (usuarioOpt.isPresent() && !Boolean.TRUE.equals(usuarioOpt.get().getActivo())) {
+            return Optional.empty();
+        }
+        return usuarioOpt;
     }
 
     public boolean deleteUser(int id) {
@@ -234,6 +238,10 @@ public class UsuarioService {
             body.get("areaId") != null ? toInt(body.get("areaId")) : null,
             id
         );
+        if (body.containsKey("activo")) {
+            Boolean activo = toBoolean(body.get("activo"));
+            if (activo != null) usuarioRepository.innactivateUser(id, activo ? 1 : 0);
+        }
     }
 
     public void toggleActivo(int id, int estado) {
