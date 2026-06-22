@@ -29,10 +29,19 @@ public class UsuarioService {
     @Autowired
     private EncryptUtil encryptUtil;
 
-    public UsuarioModel saveUser(UsuarioModel usuario) {
+    public void saveUser(UsuarioModel usuario) {
         String claveEncriptada = encryptUtil.encode(usuario.getClave());
-        usuario.setClave(claveEncriptada);
-        return usuarioRepository.save(usuario);
+        usuarioRepository.insertUser(
+            usuario.getIdentificacion(),
+            usuario.getNombres(),
+            usuario.getApellidos(),
+            usuario.getNombreUsuario(),
+            claveEncriptada,
+            usuario.getFechaNacimiento(),
+            usuario.getCorreo(),
+            usuario.getCargoId(),
+            usuario.getAreaId()
+        );
     }
 
     public List<UsuarioModel> getAll() {
@@ -209,6 +218,8 @@ public class UsuarioService {
         if (clave == null || clave.isEmpty()) {
             List<String> claves = usuarioRepository.getClaveById(id);
             clave = claves.isEmpty() ? "" : claves.get(0);
+        } else {
+            clave = encryptUtil.encode(clave);
         }
         Long identificacion = body.get("identificacion") != null ? toLong(body.get("identificacion")) : 0L;
         usuarioRepository.updateUser(

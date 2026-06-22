@@ -50,8 +50,9 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public UsuarioModel guardarUsuario(@RequestBody UsuarioModel usuario) {
-        return usuarioService.saveUser(usuario);
+    public ResponseEntity<Map<String, String>> guardarUsuario(@RequestBody UsuarioModel usuario) {
+        usuarioService.saveUser(usuario);
+        return ResponseEntity.ok(Map.of("message", "Usuario creado."));
     }
 
     @GetMapping("/{id}")

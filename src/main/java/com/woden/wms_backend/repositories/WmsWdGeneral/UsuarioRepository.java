@@ -53,6 +53,15 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
 
     @Modifying
     @Transactional
+    @Query(value = "EXEC pa_InsertUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId", nativeQuery = true)
+    void insertUser(@Param("identificacion") Long identificacion, @Param("nombres") String nombres,
+                    @Param("apellidos") String apellidos, @Param("usuario") String usuario,
+                    @Param("clave") String clave, @Param("fechaNacimiento") String fechaNacimiento,
+                    @Param("correo") String correo, @Param("cargoId") Integer cargoId,
+                    @Param("areaId") Integer areaId);
+
+    @Modifying
+    @Transactional
     @Query(value = "EXEC pa_InnactivateUser :id, :estado", nativeQuery = true)
     void innactivateUser(@Param("id") int id, @Param("estado") int estado);
 
