@@ -76,6 +76,8 @@ public class CodigoSapModel implements Activable{
     private Integer modeloId;
     @Column(name = "proveedorId")
     private Integer proveedorId;
+    @Column(name = "smartcard")
+    private Integer smartCard;
     @Column(name = "Activo")
     private Boolean activo;
 
