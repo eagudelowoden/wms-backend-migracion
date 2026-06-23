@@ -354,4 +354,25 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         }
     }
 
+    @GetMapping("/countAvailableAccesory")
+    public ResponseEntity<Integer> countAvailableAccesory(@RequestParam Integer codigoSapId) {
+        return ResponseEntity.ok(accesorioService.countAvailableAccesory(codigoSapId));
+    }
+
+    @PostMapping("/updateAccesoryNovedadCantidad")
+    public ResponseEntity<?> updateAccesoryNovedadCantidad(@RequestBody Map<String, Object> dto) {
+        try {
+            Integer palletId = (Integer) dto.get("palletId");
+            Integer codigoSapId = (Integer) dto.get("codigoSapId");
+            Integer cantidad = (Integer) dto.get("cantidad");
+            String accion = (String) dto.get("accion");
+            Integer usuarioId = (Integer) dto.get("usuarioId");
+            Integer result = accesorioService.updateAccesoryNovedadCantidad(palletId, codigoSapId, cantidad, accion, usuarioId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error al ajustar cantidad: " + e.getMessage()));
+        }
+    }
+
 }
