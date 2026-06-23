@@ -678,8 +678,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateStatusBatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento, Integer fecha,
       List<String> seriales, Integer loteId) {
-    Integer loteIdFinal = (loteId == 0) ? null : loteId;
-    seriales.forEach(s -> ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteIdFinal));
+    Integer loteIdFinal = (loteId == null || loteId == 0) ? null : loteId;
+    logger.info("[updateStatusBatch] estadoId={} palletId={} usuarioId={} fecha={} loteId={} loteIdFinal={} seriales={}",
+        estadoId, palletId, usuarioIdMovimiento, fecha, loteId, loteIdFinal, seriales);
+    seriales.forEach(s -> {
+      logger.info("[updateStatusBatch] Ejecutando SP para serial={} loteIdFinal={}", s, loteIdFinal);
+      ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteIdFinal);
+    });
   }
 
   public void updateEntryDispatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento,
