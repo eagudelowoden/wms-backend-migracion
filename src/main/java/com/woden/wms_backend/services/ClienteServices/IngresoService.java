@@ -678,7 +678,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateStatusBatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento, Integer fecha,
       List<String> seriales, Integer loteId) {
-    Integer loteIdFinal = (loteId != null && loteId == 0) ? null : loteId;
+    Integer loteIdFinal = (loteId == 0) ? null : loteId;
     seriales.forEach(s -> ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteIdFinal));
   }
 
