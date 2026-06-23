@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.dto.CodigoSapModelDTO;
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
+import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.services.ClienteServices.CodigoSapService;
 
 @RestController
@@ -89,6 +90,11 @@ public class CodigoSapController {
     @GetMapping("/search")
     public ResponseEntity<List<Map<String, Object>>> search(@RequestParam(defaultValue = "") String codigo) {
         return ResponseEntity.ok(codigoSapService.search(codigo));
+    }
+
+    @GetMapping("/catalogos")
+    public ResponseEntity<Map<String, List<MaestroModel>>> getCatalogos() {
+        return ResponseEntity.ok(codigoSapService.getCatalogos());
     }
 
     @PostMapping

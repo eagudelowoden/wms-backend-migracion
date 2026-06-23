@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.dto.CodigoSapModelDTO;
 import com.woden.wms_backend.models.Entity.CodigoSapModel;
+import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CodigoSapRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.TipoMaestroRepository;
@@ -168,6 +169,26 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         return list;
     }
 
+    public Map<String, List<MaestroModel>> getCatalogos() {
+        Integer famTmId = tipoMaestroRepository.getTipoCodigoSap("Familias");
+        Integer tipoTmId = tipoMaestroRepository.getTipoCodigoSap("Tipo CodigoSap");
+        Integer clasTmId = tipoMaestroRepository.getTipoCodigoSap("Tipo Clasificacion");
+        Integer tipoEquipoTmId = tipoMaestroRepository.getTipoCodigoSap("Tipo Equipo");
+        Integer areaTmId = tipoMaestroRepository.getTipoCodigoSap("Area");
+        Integer modeloProveedor_tmId = tipoMaestroRepository.getTipoCodigoSap("Modelos");
+        Integer fabricanteTmId = tipoMaestroRepository.getTipoCodigoSap("Fabricantes");
+
+        Map<String, List<MaestroModel>> result = new HashMap<>();
+        result.put("familias", famTmId != null ? maestroRepository.findByTipoMaestroId(famTmId) : new ArrayList<>());
+        result.put("tipos", tipoTmId != null ? maestroRepository.findByTipoMaestroId(tipoTmId) : new ArrayList<>());
+        result.put("clasificaciones", clasTmId != null ? maestroRepository.findByTipoMaestroId(clasTmId) : new ArrayList<>());
+        result.put("tiposEquipo", tipoEquipoTmId != null ? maestroRepository.findByTipoMaestroId(tipoEquipoTmId) : new ArrayList<>());
+        result.put("areas", areaTmId != null ? maestroRepository.findByTipoMaestroId(areaTmId) : new ArrayList<>());
+        result.put("modelos", modeloProveedor_tmId != null ? maestroRepository.findByTipoMaestroId(modeloProveedor_tmId) : new ArrayList<>());
+        result.put("fabricantes", fabricanteTmId != null ? maestroRepository.findByTipoMaestroId(fabricanteTmId) : new ArrayList<>());
+        return result;
+    }
+
     @Transactional
     public void create(CodigoSapModel model) {
         Integer tipoEquipoId = (model.getTipoEquipoId() != null && model.getTipoEquipoId() != 0)
@@ -181,7 +202,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
 
         codigoSapRepository.insert(
                 model.getCodigo(), model.getDescripcion(),
-                Integer.valueOf(model.getFamiliaId()),
+                model.getFamiliaId(),
                 model.getTipoId(),
                 Boolean.TRUE.equals(model.getValidacion()) ? 1 : 0,
                 model.getDireccion() != null ? model.getDireccion() : "NINGUNA",
@@ -218,7 +239,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
 
         return codigoSapRepository.update(
                 model.getCodigo(), model.getDescripcion(),
-                Integer.valueOf(model.getFamiliaId()),
+                model.getFamiliaId(),
                 model.getTipoId(),
                 Boolean.TRUE.equals(model.getValidacion()) ? 1 : 0,
                 model.getDireccion() != null ? model.getDireccion() : "NINGUNA",

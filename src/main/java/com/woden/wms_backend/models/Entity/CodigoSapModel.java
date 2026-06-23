@@ -21,7 +21,7 @@ public class CodigoSapModel implements Activable{
     @Column(name = "Descripcion")
     private String descripcion;
     @Column(name = "FamiliaId")
-    private String familiaId;
+    private Integer familiaId;
     @Transient
     private String familia;
     @Column(name = "TipoId")
