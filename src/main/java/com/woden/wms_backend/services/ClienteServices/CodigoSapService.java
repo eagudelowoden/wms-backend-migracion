@@ -177,6 +177,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         Integer areaTmId = tipoMaestroRepository.getTipoCodigoSap("Area");
         Integer modeloProveedor_tmId = tipoMaestroRepository.getTipoCodigoSap("Modelos");
         Integer fabricanteTmId = tipoMaestroRepository.getTipoCodigoSap("Fabricantes");
+        Integer fallasTmId = tipoMaestroRepository.getTipoCodigoSap("Fallas Funcionales");
 
         Map<String, List<MaestroModel>> result = new HashMap<>();
         result.put("familias", famTmId != null ? maestroRepository.findByTipoMaestroId(famTmId) : new ArrayList<>());
@@ -186,6 +187,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         result.put("areas", areaTmId != null ? maestroRepository.findByTipoMaestroId(areaTmId) : new ArrayList<>());
         result.put("modelos", modeloProveedor_tmId != null ? maestroRepository.findByTipoMaestroId(modeloProveedor_tmId) : new ArrayList<>());
         result.put("fabricantes", fabricanteTmId != null ? maestroRepository.findByTipoMaestroId(fabricanteTmId) : new ArrayList<>());
+        result.put("fallas", fallasTmId != null ? maestroRepository.findByTipoMaestroId(fallasTmId) : new ArrayList<>());
         return result;
     }
 
