@@ -26,4 +26,7 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
 
     @Query(value = "SELECT id, nombre from Cliente where id in (92,151)", nativeQuery = true)
     List<Object[]> getClientes();
+
+    @Query(value = "SELECT dbase FROM Cliente WHERE id = :id", nativeQuery = true)
+    String getDbaseById(@Param("id") int id);
 }
