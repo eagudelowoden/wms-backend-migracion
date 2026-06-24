@@ -28,7 +28,8 @@ public class TipoMaestroService extends BaseService<TipoMaestroModel, Integer> {
             map.put("id", row[0]);
             map.put("nombre", row[1]);
             map.put("descripcion", row[2]);
-            map.put("activo", row[3]);
+            Object activoObj = row[3];
+            map.put("activo", activoObj instanceof Boolean ? (((Boolean) activoObj) ? 1 : 0) : activoObj);
             list.add(map);
         }
         return list;
@@ -41,7 +42,12 @@ public class TipoMaestroService extends BaseService<TipoMaestroModel, Integer> {
 
     @Transactional
     public Integer update(TipoMaestroModel model) {
-        return tipoMaestroRepository.updateSP(model.getNombre(), model.getDescripcion(), model.getId());
+        Integer result = tipoMaestroRepository.updateSP(model.getNombre(), model.getDescripcion(), model.getId());
+        TipoMaestroModel current = getById(model.getId());
+        if (current != null && current.getActivo() != model.getActivo()) {
+            tipoMaestroRepository.innactivateSP(model.getId(), model.getActivo());
+        }
+        return result;
     }
 
     @Transactional
