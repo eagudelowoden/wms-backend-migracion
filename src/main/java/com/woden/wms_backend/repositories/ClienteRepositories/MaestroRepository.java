@@ -122,4 +122,29 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
 	@Query(value = "SELECT id FROM Maestro WHERE descripcion = :descripcion AND tipo = :tipo", nativeQuery = true)
 	Integer getIdByDescripcionAndTipo(@Param("descripcion") String descripcion, @Param("tipo") String tipo);
+
+	@Query(value = "EXEC pa_SearchMaster :tipoMaestro", nativeQuery = true)
+	List<Object[]> searchSP(@Param("tipoMaestro") String tipoMaestro);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_InsertMaster :codigo, :descripcion, :detalle, :adicional, :tipoMaestroId", nativeQuery = true)
+	void insertSP(@Param("codigo") String codigo, @Param("descripcion") String descripcion,
+			@Param("detalle") String detalle, @Param("adicional") String adicional,
+			@Param("tipoMaestroId") int tipoMaestroId);
+
+	@Transactional
+	@Query(value = "DECLARE @Filas INT; EXEC pa_UpdateMaster :codigo, :descripcion, :detalle, :adicional, :tipoMaestroId, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+	Integer updateSP(@Param("codigo") String codigo, @Param("descripcion") String descripcion,
+			@Param("detalle") String detalle, @Param("adicional") String adicional,
+			@Param("tipoMaestroId") int tipoMaestroId, @Param("id") Integer id);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_DeleteMaster :id", nativeQuery = true)
+	void deleteSP(@Param("id") Integer id);
+
+	@Transactional
+	@Query(value = "DECLARE @Filas INT; EXEC pa_InnactivateMaster :estado, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+	Integer innactivateSP(@Param("estado") Integer estado, @Param("id") Integer id);
 }

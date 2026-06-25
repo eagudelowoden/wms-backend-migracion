@@ -1,11 +1,14 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.models.Entity.MaestroModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.MaestroRepository;
@@ -14,14 +17,58 @@ import com.woden.wms_backend.services.BaseService;
 @Service
 public class MaestroService extends BaseService<MaestroModel, Integer> {
 
-  private final MaestroRepository maestroRepository;
-
-  public MaestroService(MaestroRepository maestroRepository) {
-    this.maestroRepository = maestroRepository;
-  }
+  @Autowired
+  private MaestroRepository maestroRepository;
 
   public List<MaestroModel> getByTipoMaestroId(int tipoMaestroId) {
     return maestroRepository.findByTipoMaestroId(tipoMaestroId);
+  }
+
+  public List<Map<String, Object>> search(String tipoMaestro) {
+    List<Object[]> results = maestroRepository.searchSP(tipoMaestro);
+    List<Map<String, Object>> list = new ArrayList<>();
+    for (Object[] row : results) {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", row[0]);
+      map.put("codigo", row[1]);
+      map.put("descripcion", row[2]);
+      map.put("detalle", row[3]);
+      map.put("adicional", row[4]);
+      map.put("tipoMaestro", row[5]);
+      Object activoObj = row[6];
+      map.put("activo", activoObj instanceof Boolean ? (((Boolean) activoObj) ? 1 : 0) : activoObj);
+      list.add(map);
+    }
+    return list;
+  }
+
+  @Transactional
+  public void create(MaestroModel model) {
+    maestroRepository.insertSP(model.getCodigo(), model.getDescripcion(),
+        model.getDetalle(), model.getAdicional(), model.getTipoMaestroId());
+  }
+
+  @Transactional
+  public Integer update(MaestroModel model) {
+    Integer result = maestroRepository.updateSP(model.getCodigo(), model.getDescripcion(),
+        model.getDetalle(), model.getAdicional(), model.getTipoMaestroId(), model.getId());
+    if (result != null && result > 0) {
+      MaestroModel current = getById(model.getId());
+      if (current != null && current.getActivo() != model.getActivo()) {
+        maestroRepository.innactivateSP(model.getActivo(), model.getId());
+      }
+    }
+    return result;
+  }
+
+  @Transactional
+  public void delete(Integer id) {
+    maestroRepository.deleteSP(id);
+  }
+
+  @Transactional
+  public Integer toggle(Integer id, Integer estado) {
+    return maestroRepository.innactivateSP(estado, id);
   }
 
   public List<String> obtenerTipologias(String desc1, String desc2, String desc3, String desc4) {
