@@ -71,9 +71,7 @@ public class MenuPerfilService extends BaseService<MenuPerfilModel, Integer> {
     @Transactional
     public void syncMenus(int perfilId, List<String> menuIds) {
         String cliente = ClientDatabaseContext.getCurrentClientDb();
-        menuPerfilRepository.deleteByPerfilId(perfilId, cliente);
-        for (String menuId : menuIds) {
-            menuPerfilRepository.insertMenuPerfil(menuId, perfilId, cliente);
-        }
+        String ids = String.join(",", menuIds);
+        menuPerfilRepository.syncMenuPerfil(perfilId, ids, cliente);
     }
 }

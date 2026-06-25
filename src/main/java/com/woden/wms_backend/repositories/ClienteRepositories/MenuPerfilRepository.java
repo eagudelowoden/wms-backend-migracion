@@ -40,4 +40,9 @@ public interface MenuPerfilRepository extends BaseRepository<MenuPerfilModel, In
     @Transactional
     @Query(value = "EXEC [WmsWdGeneral].dbo.pa_DeleteMenuPerfilByPerfil @perfilId = :perfilId, @cliente = :cliente", nativeQuery = true)
     void deleteByPerfilId(@Param("perfilId") int perfilId, @Param("cliente") String cliente);
+
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC [WmsWdGeneral].dbo.pa_SyncMenuPerfil @perfilId = :perfilId, @menuIds = :menuIds, @cliente = :cliente", nativeQuery = true)
+    void syncMenuPerfil(@Param("perfilId") int perfilId, @Param("menuIds") String menuIds, @Param("cliente") String cliente);
 }
