@@ -147,4 +147,27 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 	@Transactional
 	@Query(value = "DECLARE @Filas INT; EXEC pa_InnactivateMaster :estado, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
 	Integer innactivateSP(@Param("estado") Integer estado, @Param("id") Integer id);
+
+	@Query(value = """
+			SELECT ISNULL(SUM(cnt), 0) FROM (
+				SELECT COUNT(*) cnt FROM CodigoSap WHERE familiaId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE tipoEquipoId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE areaId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE proveedorId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE modeloId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE tipologiaId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE tipoOrigenId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE origenId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE nivelId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE modeloId = :id
+				UNION ALL SELECT COUNT(*) FROM Calidad WHERE estadoFinalId = :id
+				UNION ALL SELECT COUNT(*) FROM Calidad WHERE fallaCosmeticaId = :id
+				UNION ALL SELECT COUNT(*) FROM Diagnostico WHERE estadoFinalId = :id
+				UNION ALL SELECT COUNT(*) FROM Diagnostico WHERE fallaId = :id
+				UNION ALL SELECT COUNT(*) FROM Reparacion WHERE estadoFinalId = :id
+				UNION ALL SELECT COUNT(*) FROM Reparacion WHERE motivoScrapId = :id
+				UNION ALL SELECT COUNT(*) FROM SerialComponente WHERE componenteId = :id
+			) refs
+			""", nativeQuery = true)
+	Integer getCount(@Param("id") Integer id);
 }

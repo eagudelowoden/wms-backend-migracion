@@ -72,6 +72,11 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
     maestroRepository.deleteSP(id);
   }
 
+  public boolean hasMovements(Integer id) {
+    Integer count = maestroRepository.getCount(id);
+    return count != null && count > 0;
+  }
+
   @Transactional
   public Integer toggle(Integer id, Integer estado) {
     return maestroRepository.innactivateSP(estado, id);

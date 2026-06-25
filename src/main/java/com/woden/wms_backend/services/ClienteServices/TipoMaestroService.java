@@ -67,4 +67,9 @@ public class TipoMaestroService extends BaseService<TipoMaestroModel, Integer> {
     public Integer getCount(Integer id) {
         return tipoMaestroRepository.getCount(id);
     }
+
+    public boolean hasMovements(Integer id) {
+        Integer count = tipoMaestroRepository.getCount(id);
+        return count != null && count > 0;
+    }
 }

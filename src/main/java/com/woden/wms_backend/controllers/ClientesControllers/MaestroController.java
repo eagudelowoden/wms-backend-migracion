@@ -70,6 +70,11 @@ public class MaestroController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/has-movements")
+    public ResponseEntity<Boolean> hasMovements(@PathVariable Integer id) {
+        return ResponseEntity.ok(maestroService.hasMovements(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Integer id) {
         Map<String, Object> response = new HashMap<>();

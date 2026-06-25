@@ -68,6 +68,11 @@ public class TipoMaestroController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/has-movements")
+    public ResponseEntity<Boolean> hasMovements(@PathVariable Integer id) {
+        return ResponseEntity.ok(tipoMaestroService.hasMovements(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Integer id) {
         Map<String, Object> response = new HashMap<>();
