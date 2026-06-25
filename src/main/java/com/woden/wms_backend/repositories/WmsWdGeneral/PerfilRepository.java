@@ -25,10 +25,9 @@ public interface PerfilRepository extends BaseRepository<PerfilModel, Integer> {
   @Query(value = "EXEC pa_InsertProfile :nombre, :clienteId", nativeQuery = true)
   void insertProfile(@Param("nombre") String nombre, @Param("clienteId") int clienteId);
 
-  @Modifying
   @Transactional
-  @Query(value = "DECLARE @f int; EXEC pa_UpdateProfile :nombre, :id, :clienteId, @f OUTPUT", nativeQuery = true)
-  void updateProfile(@Param("nombre") String nombre, @Param("id") int id, @Param("clienteId") int clienteId);
+  @Query(value = "DECLARE @f int; EXEC pa_UpdateProfile :nombre, :id, :clienteId, @f OUTPUT; SELECT @f", nativeQuery = true)
+  Integer updateProfile(@Param("nombre") String nombre, @Param("id") int id, @Param("clienteId") int clienteId);
 
   @Modifying
   @Transactional

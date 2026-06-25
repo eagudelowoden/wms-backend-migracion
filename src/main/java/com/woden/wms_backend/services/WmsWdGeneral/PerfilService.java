@@ -64,11 +64,13 @@ public class PerfilService extends BaseService<PerfilModel, Integer> {
 
   @Transactional
   public Map<String, Object> update(int id, String nombre) {
-    Integer clienteId = ClientDatabaseContext.getCurrentClientId();
-    if (clienteId == null) clienteId = 0;
-    perfilRepository.updateProfile(nombre, id, clienteId);
+    PerfilModel perfil = perfilRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Perfil no encontrado: " + id));
+    Integer filas = perfilRepository.updateProfile(nombre, id, perfil.getClienteId());
     Map<String, Object> response = new HashMap<>();
-    response.put("message", "Perfil actualizado.");
+    response.put("message", filas != null && filas > 0
+        ? "Perfil actualizado."
+        : "No se pudo actualizar el perfil.");
     return response;
   }
 
