@@ -46,6 +46,12 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   public void create(MaestroModel model) {
     maestroRepository.insertSP(model.getCodigo(), model.getDescripcion(),
         model.getDetalle(), model.getAdicional(), model.getTipoMaestroId());
+    if (model.getActivo() == 0) {
+      Integer id = maestroRepository.getIdByCodigo(model.getCodigo(), model.getTipoMaestroId());
+      if (id != null) {
+        maestroRepository.innactivateSP(0, id);
+      }
+    }
   }
 
   @Transactional
