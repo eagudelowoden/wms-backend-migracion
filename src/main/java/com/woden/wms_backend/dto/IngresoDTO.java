@@ -19,4 +19,5 @@ public class IngresoDTO {
   private String modelo;
   private Integer reingreso;
   private String smartCard;
+  private Integer truckRollId;
 }

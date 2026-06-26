@@ -551,4 +551,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     String zpl = zplService.generarZpl(seriales);
     return ResponseEntity.ok(zpl);
   }
+
+  @GetMapping("/truckroll-status")
+  public ResponseEntity<Map<String, Object>> getTruckRollStatus(@RequestParam String serial) {
+    return ResponseEntity.ok(ingresoService.getTruckRollStatus(serial));
+  }
 }
