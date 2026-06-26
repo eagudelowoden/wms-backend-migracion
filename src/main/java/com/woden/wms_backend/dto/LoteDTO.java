@@ -4,5 +4,8 @@ import lombok.Data;
 
 @Data
 public class LoteDTO {
-  private String nombreLote;
+  private Integer id;
+  private String nombre;
+  private String descripcion;
+  private Integer activo;
 }
