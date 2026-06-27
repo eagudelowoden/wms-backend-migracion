@@ -75,7 +75,7 @@ public class TruckrollRepository {
      */
     public boolean isTipoOrigenAdicionalUno(Integer tipoOrigenId) {
         if (tipoOrigenId == null) return false;
-        String sql = "SELECT ISNULL(Adicional, 0) FROM [WmsWdGeneral].[dbo].[TipoOrigen] WHERE Id = ?";
+        String sql = "SELECT ISNULL(Adicional, 0) FROM Maestro WHERE Id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, tipoOrigenId);
@@ -83,7 +83,7 @@ public class TruckrollRepository {
                 if (rs.next()) return rs.getInt(1) == 1;
             }
         } catch (SQLException e) {
-            logger.error("[TruckrollRepository] Error consultando TipoOrigen.Adicional para id={}: {}", tipoOrigenId, e.getMessage());
+            logger.error("[TruckrollRepository] Error consultando Maestro.Adicional para tipoOrigenId={}: {}", tipoOrigenId, e.getMessage());
         }
         return false;
     }

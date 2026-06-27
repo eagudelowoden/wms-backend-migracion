@@ -41,6 +41,12 @@ public class TruckrollService {
                 return;
             }
 
+            boolean adicionalUno = truckrollRepository.isTipoOrigenAdicionalUno(tipoOrigenId);
+            if (adicionalUno) {
+                logger.debug("[TruckrollService] TipoOrigen.Adicional=1 — serial {} excluido de toda clasificación TruckRoll", serial);
+                return;
+            }
+
             for (ParametroTruckrollModel regla : reglas) {
                 String valorCruce = resolverValorCruce(regla.getCampoCruceDestino(), serial, mac);
                 logger.debug("[TruckrollService] Regla '{}' — campoCruceDestino={}, valorCruce={}",
@@ -58,9 +64,8 @@ public class TruckrollService {
 
                 long despachoId = resultado[0];
                 long dias = resultado[1];
-                boolean adicionalUno = truckrollRepository.isTipoOrigenAdicionalUno(tipoOrigenId);
-                Integer truckRollId = calcularTruckRollId(dias, regla, adicionalUno);
-                logger.debug("[TruckrollService] Despacho encontrado: id={}, dias={}, adicionalUno={} -> TruckRollId={}", despachoId, dias, adicionalUno, truckRollId);
+                Integer truckRollId = calcularTruckRollId(dias, regla);
+                logger.debug("[TruckrollService] Despacho encontrado: id={}, dias={} -> TruckRollId={}", despachoId, dias, truckRollId);
 
                 truckrollRepository.updateIngresoTruckroll(regla, serial, despachoId, truckRollId);
                 truckrollRepository.updateDespachoConsumido(regla, despachoId, serial, truckRollId);
@@ -93,18 +98,13 @@ public class TruckrollService {
 
     /**
      * 0 = Garantía (0–DiasGarantia días)
-     * 1 = Posible TruckRoll (DiasGarantia+1 – DiasTruckRoll días, solo si TipoOrigen.Adicional <> 1)
-     * null = Vacío (> DiasTruckRoll, sin cruce, o TipoOrigen con Adicional = 1 en rango TruckRoll)
+     * 1 = Posible TruckRoll (DiasGarantia+1 – DiasTruckRoll días)
+     * null = Vacío (> DiasTruckRoll o sin cruce)
+     * TipoOrigen.Adicional=1 se evalúa antes de llegar aquí — si aplica, se retorna sin clasificar.
      */
-    private Integer calcularTruckRollId(long dias, ParametroTruckrollModel regla, boolean adicionalUno) {
+    private Integer calcularTruckRollId(long dias, ParametroTruckrollModel regla) {
         if (dias <= regla.getDiasGarantia()) return 0;
-        if (dias <= regla.getDiasTruckRoll()) {
-            if (adicionalUno) {
-                logger.debug("[TruckrollService] Días en rango TruckRoll pero TipoOrigen.Adicional=1 — se omite clasificación");
-                return null;
-            }
-            return 1;
-        }
+        if (dias <= regla.getDiasTruckRoll()) return 1;
         return null;
     }
 }
