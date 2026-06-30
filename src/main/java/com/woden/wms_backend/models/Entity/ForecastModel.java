@@ -1,5 +1,7 @@
 package com.woden.wms_backend.models.Entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -14,7 +16,7 @@ public class ForecastModel {
     @Column(name = "id")
     private Integer id;
     private String forecast;
-    private java.sql.Date fecha;
+    private LocalDate fecha;
     private String diasHabiles;
     private Integer familiaId;
     private String forecastIngreso;
