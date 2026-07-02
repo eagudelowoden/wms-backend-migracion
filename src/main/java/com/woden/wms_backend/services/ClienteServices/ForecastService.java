@@ -1,5 +1,6 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +27,20 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
         for (Object[] row : results) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", row[0]);
-            map.put("forecast", row[1]);
-            map.put("fecha", row[2] != null ? row[2].toString() : null);
-            map.put("diasHabiles", row[3]);
-            map.put("familia", row[4]);
-            map.put("forecastIngreso", row[5]);
-            map.put("detalle", row[6]);
-            map.put("observaciones", row[7]);
+            map.put("idLinea", row[1]);
+            map.put("lineaNombre", row[2]);
+            map.put("fecha", row[3] != null ? row[3].toString() : null);
+            map.put("fechaEntrega", row[4] != null ? row[4].toString() : null);
+            map.put("forecastUnd", row[5]);
+            map.put("jornada", row[6]);
+            map.put("diasHabiles", row[7]);
+            map.put("estado", row[8]);
+            map.put("observaciones", row[9]);
+            map.put("activo", row[10]);
+            map.put("usuario", row[11]);
+            map.put("createdAt", row[12] != null ? row[12].toString() : null);
+            map.put("updatedAt", row[13] != null ? row[13].toString() : null);
+            map.put("familiasJson", row[14]);
             list.add(map);
         }
         return list;
@@ -41,26 +49,32 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
     @Transactional
     public void create(ForecastModel model) {
         forecastRepository.insertSP(
+                model.getIdLinea(),
                 model.getFecha() != null ? model.getFecha().toString() : null,
+                model.getFechaEntrega() != null ? model.getFechaEntrega().toString() : null,
+                model.getForecastUnd() != null ? model.getForecastUnd().toPlainString() : "0",
+                model.getJornada(),
                 model.getDiasHabiles(),
-                model.getFamiliaId(),
-                model.getForecast(),
-                model.getForecastIngreso(),
-                model.getDetalle(),
-                model.getObservaciones());
+                model.getEstado(),
+                model.getObservaciones(),
+                model.getUsuario(),
+                model.getFamiliasJson());
     }
 
     @Transactional
     public Integer update(ForecastModel model) {
         return forecastRepository.updateSP(
+                model.getId(),
+                model.getIdLinea(),
                 model.getFecha() != null ? model.getFecha().toString() : null,
+                model.getFechaEntrega() != null ? model.getFechaEntrega().toString() : null,
+                model.getForecastUnd() != null ? model.getForecastUnd().toPlainString() : "0",
+                model.getJornada(),
                 model.getDiasHabiles(),
-                model.getFamiliaId(),
-                model.getForecast(),
-                model.getForecastIngreso(),
-                model.getDetalle(),
+                model.getEstado(),
                 model.getObservaciones(),
-                model.getId());
+                model.getUsuario(),
+                model.getFamiliasJson());
     }
 
     @Transactional

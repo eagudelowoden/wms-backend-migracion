@@ -19,18 +19,22 @@ public interface ForecastRepository extends BaseRepository<ForecastModel, Intege
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertForecast :fecha, :diasHabiles, :familiaId, :forecast, :forecastIngreso, :detalle, :observaciones", nativeQuery = true)
-  void insertSP(@Param("fecha") String fecha, @Param("diasHabiles") String diasHabiles,
-      @Param("familiaId") Integer familiaId, @Param("forecast") String forecast,
-      @Param("forecastIngreso") String forecastIngreso, @Param("detalle") String detalle,
-      @Param("observaciones") String observaciones);
+  @Query(value = "EXEC pa_InsertForecast :idLinea, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :estado, :observaciones, :usuario, :familiasJson", nativeQuery = true)
+  void insertSP(@Param("idLinea") Integer idLinea, @Param("fecha") String fecha,
+      @Param("fechaEntrega") String fechaEntrega,
+      @Param("forecastUnd") String forecastUnd, @Param("jornada") String jornada,
+      @Param("diasHabiles") Integer diasHabiles, @Param("estado") String estado,
+      @Param("observaciones") String observaciones, @Param("usuario") String usuario,
+      @Param("familiasJson") String familiasJson);
 
   @Transactional
-  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateForecast :fecha, :diasHabiles, :familiaId, :forecast, :forecastIngreso, :detalle, :observaciones, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
-  Integer updateSP(@Param("fecha") String fecha, @Param("diasHabiles") String diasHabiles,
-      @Param("familiaId") Integer familiaId, @Param("forecast") String forecast,
-      @Param("forecastIngreso") String forecastIngreso, @Param("detalle") String detalle,
-      @Param("observaciones") String observaciones, @Param("id") Integer id);
+  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateForecast :id, :idLinea, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :estado, :observaciones, :usuario, :familiasJson, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+  Integer updateSP(@Param("id") Integer id, @Param("idLinea") Integer idLinea,
+      @Param("fecha") String fecha, @Param("fechaEntrega") String fechaEntrega,
+      @Param("forecastUnd") String forecastUnd,
+      @Param("jornada") String jornada, @Param("diasHabiles") Integer diasHabiles,
+      @Param("estado") String estado, @Param("observaciones") String observaciones,
+      @Param("usuario") String usuario, @Param("familiasJson") String familiasJson);
 
   @Modifying
   @Transactional
