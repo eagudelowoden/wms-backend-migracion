@@ -81,4 +81,9 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
     public void delete(Integer id) {
         forecastRepository.deleteSP(id);
     }
+
+    @Transactional
+    public Integer toggle(Integer id, Integer estado) {
+        return forecastRepository.toggleSP(id, estado);
+    }
 }

@@ -40,4 +40,8 @@ public interface ForecastRepository extends BaseRepository<ForecastModel, Intege
   @Transactional
   @Query(value = "EXEC pa_DeleteForecast :id", nativeQuery = true)
   void deleteSP(@Param("id") Integer id);
+
+  @Transactional
+  @Query(value = "DECLARE @Filas INT; EXEC pa_ToggleForecastActivo :id, :estado, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+  Integer toggleSP(@Param("id") Integer id, @Param("estado") Integer estado);
 }
