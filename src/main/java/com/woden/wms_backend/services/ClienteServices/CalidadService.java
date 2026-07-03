@@ -41,6 +41,10 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         System.out.println("✅ Filas actualizadas: " + filas);
     }
 
+    public void updateFinalStateQualityByCaja(Integer cajaEmpaqueId, Integer estadoFinalId) {
+        calidadRepository.updateFinalStateQualityByCaja(cajaEmpaqueId, estadoFinalId);
+    }
+
     public void createCalidad(Integer serialId, String serial, String mac,
                               Integer codigoSapId, Integer palletId,
                               Integer cajaEmpaqueId, Integer usuarioId,

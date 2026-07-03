@@ -40,6 +40,61 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
   @Autowired
   private EmpaqueRepository empaqueRepository;
 
+  /** Estado con el que queda una caja al ser rechazada en Calidad. */
+  private static final int ESTADO_CAJA_RECHAZADA = 38;
+
+  public List<CajaEmpaqueDTO> searchRejectedPallets() {
+    List<Object[]> results = cajaEmpaqueRepository.searchRejectedPallets(ESTADO_CAJA_RECHAZADA);
+    return results.stream().map(obj -> {
+      CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
+      caja.setId((Integer) obj[0]);
+      caja.setNumero((String) obj[1]);
+      caja.setCantidad(obj[2] != null ? ((Number) obj[2]).intValue() : 0);
+      return caja;
+    }).collect(Collectors.toList());
+  }
+
+  public List<CajaEmpaqueDTO> searchRejectedBoxes(Integer palletId) {
+    List<Object[]> results = cajaEmpaqueRepository.searchRejectedBoxes(palletId, ESTADO_CAJA_RECHAZADA);
+    return results.stream().map(obj -> {
+      CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
+      caja.setId((Integer) obj[0]);
+      caja.setNumero((String) obj[1]);
+      caja.setSeriales(obj[2] != null ? ((Number) obj[2]).intValue() : 0);
+      caja.setPallet((String) obj[3]);
+      caja.setEstado("Empaque");
+      return caja;
+    }).collect(Collectors.toList());
+  }
+
+  /** Cajas de un pallet excluyendo las rechazadas (estado 38) — para la vista de Calidad. */
+  public List<CajaEmpaqueDTO> searchBoxesNoRejected(Integer palletId) {
+    List<Object[]> results = cajaEmpaqueRepository.searchPackingNoRejected(palletId, ESTADO_CAJA_RECHAZADA);
+    return results.stream().map(obj -> {
+      CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
+      caja.setId((Integer) obj[0]);
+      caja.setNumero((String) obj[1]);
+      caja.setSeriales(obj[2] != null ? ((Number) obj[2]).intValue() : 0);
+      return caja;
+    }).collect(Collectors.toList());
+  }
+
+  public List<Map<String, String>> searchBoxSeriales(Integer cajaEmpaqueId) {
+    List<Object[]> results = cajaEmpaqueRepository.searchBoxEntry(cajaEmpaqueId);
+    List<Map<String, String>> seriales = new ArrayList<>();
+    for (Object[] r : results) {
+      Map<String, String> fila = new HashMap<>();
+      fila.put("serial", r[0] != null ? r[0].toString() : "");
+      fila.put("mac", r[1] != null ? r[1].toString() : "");
+      fila.put("codigo", r[2] != null ? r[2].toString() : "");
+      fila.put("descripcion", r[3] != null ? r[3].toString() : "");
+      fila.put("tipologia", r[4] != null ? r[4].toString() : "");
+      fila.put("smartCard", r[5] != null ? r[5].toString() : "");
+      seriales.add(fila);
+    }
+    return seriales;
+  }
+
   public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
     Integer filas = 0;
     cajaEmpaqueRepository.updateStatusBoxPacking(cajaEmpaqueId, estadoId, filas);
