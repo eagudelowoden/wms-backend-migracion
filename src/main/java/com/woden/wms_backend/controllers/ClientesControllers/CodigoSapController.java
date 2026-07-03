@@ -30,6 +30,11 @@ public class CodigoSapController {
     @Autowired
     private CodigoSapService codigoSapService;
 
+    @GetMapping
+    public ResponseEntity<List<Map<String, String>>> getAll() {
+        return ResponseEntity.ok(codigoSapService.getListDescriptionSapCode());
+    }
+
     @GetMapping("/list")
     public ResponseEntity<List<Map<String, String>>> getListDescriptionSapCode() {
         return ResponseEntity.ok(codigoSapService.getListDescriptionSapCode());
