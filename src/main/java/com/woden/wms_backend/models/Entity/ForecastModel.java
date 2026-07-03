@@ -40,9 +40,6 @@ public class ForecastModel {
     @Column(name = "dias_habiles")
     private Integer diasHabiles;
 
-    @Column(name = "estado", length = 40)
-    private String estado;
-
     @Column(name = "observaciones", length = 500)
     private String observaciones;
 

@@ -34,13 +34,12 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
             map.put("forecastUnd", row[5]);
             map.put("jornada", row[6]);
             map.put("diasHabiles", row[7]);
-            map.put("estado", row[8]);
-            map.put("observaciones", row[9]);
-            map.put("activo", row[10]);
-            map.put("usuario", row[11]);
-            map.put("createdAt", row[12] != null ? row[12].toString() : null);
-            map.put("updatedAt", row[13] != null ? row[13].toString() : null);
-            map.put("familiasJson", row[14]);
+            map.put("observaciones", row[8]);
+            map.put("activo", row[9]);
+            map.put("usuario", row[10]);
+            map.put("createdAt", row[11] != null ? row[11].toString() : null);
+            map.put("updatedAt", row[12] != null ? row[12].toString() : null);
+            map.put("familiasJson", row[13]);
             list.add(map);
         }
         return list;
@@ -55,7 +54,6 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
                 model.getForecastUnd() != null ? model.getForecastUnd().toPlainString() : "0",
                 model.getJornada(),
                 model.getDiasHabiles(),
-                model.getEstado(),
                 model.getObservaciones(),
                 model.getUsuario(),
                 model.getFamiliasJson());
@@ -71,7 +69,6 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
                 model.getForecastUnd() != null ? model.getForecastUnd().toPlainString() : "0",
                 model.getJornada(),
                 model.getDiasHabiles(),
-                model.getEstado(),
                 model.getObservaciones(),
                 model.getUsuario(),
                 model.getFamiliasJson());
