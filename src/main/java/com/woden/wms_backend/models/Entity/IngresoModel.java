@@ -96,5 +96,7 @@ public class IngresoModel {
     private String etiquetaUnitaria;
     private String serialSmartCard;
     private String serialCode;
+    @Transient // La columna TruckRollId solo existe en clientes con TruckRoll activo; se llena desde pa_GetModelEntry
+    private Integer truckRollId;
 
 }

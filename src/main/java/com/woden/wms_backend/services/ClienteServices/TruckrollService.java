@@ -20,8 +20,14 @@ public class TruckrollService {
     private TruckrollRepository truckrollRepository;
 
     /**
-     * Clasifica un serial recién ingresado como Garantía, TruckRoll o Baja Normal.
+     * Clasifica un serial recién ingresado según las reglas de negocio TruckRoll.
      * Se ejecuta en hilo separado para no bloquear la respuesta del ingreso.
+     *
+     * Clasificación por rango de días:
+     *   <= DiasGarantia  → sin PQRS: 0 (Posible Garantía) | con PQRS: 1 (Garantía, Amarillo)
+     *   <= DiasTruckRoll → sin PQRS: 6 (Posible TruckRoll) | con PQRS: 7 (TruckRoll, Amarillo)
+     *   > DiasTruckRoll  → NULL (fuera de ventana)
+     *   TipoOrigen.Adicional=1 excluye solo el rango TruckRoll (baja normal del cliente).
      *
      * Se requiere pasar clientDbName/clientName/clientId porque @Async corre en un
      * hilo nuevo donde ClientDatabaseContext (ThreadLocal) ya no tiene valores.
@@ -42,10 +48,6 @@ public class TruckrollService {
             }
 
             boolean adicionalUno = truckrollRepository.isTipoOrigenAdicionalUno(tipoOrigenId);
-            if (adicionalUno) {
-                logger.debug("[TruckrollService] TipoOrigen.Adicional=1 — serial {} excluido de toda clasificación TruckRoll", serial);
-                return;
-            }
 
             for (ParametroTruckrollModel regla : reglas) {
                 String valorCruce = resolverValorCruce(regla.getCampoCruceDestino(), serial, mac);
@@ -64,8 +66,24 @@ public class TruckrollService {
 
                 long despachoId = resultado[0];
                 long dias = resultado[1];
-                Integer truckRollId = calcularTruckRollId(dias, regla);
-                logger.debug("[TruckrollService] Despacho encontrado: id={}, dias={} -> TruckRollId={}", despachoId, dias, truckRollId);
+                Integer truckRollId;
+
+                if (dias <= regla.getDiasGarantia()) {
+                    boolean tienePqrs = truckrollRepository.hasPqrsTicket(serial);
+                    truckRollId = tienePqrs ? 1 : 0;
+                    logger.debug("[TruckrollService] Garantía ({} días) — PQRS={} → TruckRollId={}", dias, tienePqrs, truckRollId);
+                } else if (dias <= regla.getDiasTruckRoll()) {
+                    if (adicionalUno) {
+                        logger.debug("[TruckrollService] TipoOrigen.Adicional=1 en rango TruckRoll — serial {} excluido", serial);
+                        return;
+                    }
+                    boolean tienePqrs = truckrollRepository.hasPqrsTicket(serial);
+                    truckRollId = tienePqrs ? 7 : 6;
+                    logger.debug("[TruckrollService] TruckRoll ({} días) — PQRS={} → TruckRollId={}", dias, tienePqrs, truckRollId);
+                } else {
+                    truckRollId = null;
+                    logger.debug("[TruckrollService] Fuera de ventana ({} días) — TruckRollId=NULL", dias);
+                }
 
                 truckrollRepository.updateIngresoTruckroll(regla, serial, despachoId, truckRollId);
                 truckrollRepository.updateDespachoConsumido(regla, despachoId, serial, truckRollId);
@@ -86,7 +104,6 @@ public class TruckrollService {
 
     /**
      * Determina qué valor del Ingreso usar para el cruce según CampoCruceDestino de la regla.
-     * Ejemplo: si CampoCruceDestino = "Mac", usa el MAC del ingreso para buscar en Despacho.Serial
      */
     private String resolverValorCruce(String campoCruceDestino, String serial, String mac) {
         if (campoCruceDestino == null) return serial;
@@ -94,17 +111,5 @@ public class TruckrollService {
             case "mac" -> mac;
             default -> serial;
         };
-    }
-
-    /**
-     * 0 = Garantía (0–DiasGarantia días)
-     * 1 = Posible TruckRoll (DiasGarantia+1 – DiasTruckRoll días)
-     * null = Vacío (> DiasTruckRoll o sin cruce)
-     * TipoOrigen.Adicional=1 se evalúa antes de llegar aquí — si aplica, se retorna sin clasificar.
-     */
-    private Integer calcularTruckRollId(long dias, ParametroTruckrollModel regla) {
-        if (dias <= regla.getDiasGarantia()) return 0;
-        if (dias <= regla.getDiasTruckRoll()) return 1;
-        return null;
     }
 }

@@ -70,6 +70,26 @@ public class TruckrollRepository {
     }
 
     /**
+     * Verifica si existe un ticket PQRS previo para el serial en App_PQRS_Tickets del cliente.
+     * La columna "mac" de esta tabla almacena en realidad el serial del equipo.
+     * Determina si la clasificación sube de nivel: 0→1 (Garantía) o 6→7 (Posible TruckRoll).
+     */
+    public boolean hasPqrsTicket(String serial) {
+        if (serial == null || serial.isBlank()) return false;
+        String sql = "SELECT COUNT(1) FROM App_PQRS_Tickets WHERE mac = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error consultando App_PQRS_Tickets para serial={}: {}", serial, e.getMessage());
+        }
+        return false;
+    }
+
+    /**
      * Verifica si el TipoOrigen del ingreso tiene Adicional = 1 en el maestro de WmsWdGeneral.
      * Cuando es true, el serial es "baja normal del cliente" y se omite la clasificación Posible TruckRoll.
      */

@@ -775,6 +775,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setCajaIngreso((String) obj[34]);
     ingreso.setModeloId((Integer) obj[35]);
     ingreso.setModelo((String) obj[36]);
+    if (obj.length > 37) {
+      ingreso.setTruckRollId((Integer) obj[37]);
+    }
     return ingreso;
   }
 
