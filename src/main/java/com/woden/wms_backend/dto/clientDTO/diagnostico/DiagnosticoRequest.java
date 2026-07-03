@@ -8,6 +8,7 @@ public class DiagnosticoRequest {
     private Integer estadoFinalId;
     private Integer fallaId;
     private Integer estadoCalidadId;
+    private Integer truckRollId;
 
     public String  getSerial()                    { return serial; }
     public void    setSerial(String serial)        { this.serial = serial; }
@@ -26,4 +27,7 @@ public class DiagnosticoRequest {
 
     public Integer getEstadoCalidadId()                        { return estadoCalidadId; }
     public void    setEstadoCalidadId(Integer estadoCalidadId) { this.estadoCalidadId = estadoCalidadId; }
+
+    public Integer getTruckRollId()                    { return truckRollId; }
+    public void    setTruckRollId(Integer truckRollId) { this.truckRollId = truckRollId; }
 }

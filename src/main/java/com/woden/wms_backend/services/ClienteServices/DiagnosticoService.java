@@ -131,6 +131,8 @@ public class DiagnosticoService {
       map.put("lote", row[10] != null ? row[10].toString() : "");
       map.put("pqrs", row[11] != null ? row[11].toString() : "");
       map.put("fecha", row[12] != null ? row[12].toString() : "");
+      // El SP devuelve: ..., Fecha(12), TruckRollId(13), rn(14). Con el SP viejo (14 cols) la posición 13 es rn — no mapear.
+      map.put("truckRollId", row.length > 14 && row[13] != null ? Integer.parseInt(row[13].toString()) : null);
       formattedResults.add(map);
     }
     return formattedResults;
@@ -147,6 +149,14 @@ public class DiagnosticoService {
         repository.save(json);
         procesados += chunk.size();
         logger.info("[DIAGNOSTICO] chunk guardado: {}/{}", procesados, total);
+      }
+
+      // Actualizar TruckRollId de los seriales clasificados TruckRoll/Garantía (1→2/3, 7→8/9)
+      for (DiagnosticoRequest item : items) {
+        if (item.getTruckRollId() != null) {
+          repository.updateTruckRollId(item.getSerial(), item.getTruckRollId());
+          logger.info("[DIAGNOSTICO] TruckRollId actualizado: serial={} → {}", item.getSerial(), item.getTruckRollId());
+        }
       }
     } catch (Exception e) {
       throw new RuntimeException("Error al guardar diagnóstico: " + e.getMessage(), e);
