@@ -19,7 +19,7 @@ public interface ManoObraRepository extends BaseRepository<ManoObraModel, Intege
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertManoDeObra @fecha = :fecha, @segmentoId = :segmentoId, @usuarioActivo = :usuarioActivo, @altas = :altas, @bajas = :bajas, @costo = :costo, @reclamo = :reclamo, @tipo = :tipo, @detalle = :detalle, @observaciones = :observaciones, @mano_obra_json = :manoObraJson, @activo = :activo, @usuario = :usuario", nativeQuery = true)
+    @Query(value = "EXEC pa_InsertManoDeObra @Fecha = :fecha, @SegmentoId = :segmentoId, @UsuarioActivo = :usuarioActivo, @Altas = :altas, @Bajas = :bajas, @Costo = :costo, @Reclamo = :reclamo, @Tipo = :tipo, @Detalle = :detalle, @Observaciones = :observaciones, @mano_obra_json = :manoObraJson, @activo = :activo, @usuario = :usuario", nativeQuery = true)
     void insertSP(@Param("fecha") String fecha,
                   @Param("segmentoId") Integer segmentoId,
                   @Param("usuarioActivo") Integer usuarioActivo,
@@ -35,7 +35,7 @@ public interface ManoObraRepository extends BaseRepository<ManoObraModel, Intege
                   @Param("usuario") String usuario);
 
     @Transactional
-    @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateManoDeObra @fecha = :fecha, @segmentoId = :segmentoId, @usuarioActivo = :usuarioActivo, @altas = :altas, @bajas = :bajas, @costo = :costo, @reclamo = :reclamo, @tipo = :tipo, @detalle = :detalle, @observaciones = :observaciones, @id = :id, @Filas = @Filas OUTPUT, @mano_obra_json = :manoObraJson, @usuario = :usuario; SELECT @Filas", nativeQuery = true)
+    @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateManoDeObra @Fecha = :fecha, @SegmentoId = :segmentoId, @UsuarioActivo = :usuarioActivo, @Altas = :altas, @Bajas = :bajas, @Costo = :costo, @Reclamo = :reclamo, @Tipo = :tipo, @Detalle = :detalle, @Observaciones = :observaciones, @Id = :id, @Filas = @Filas OUTPUT, @mano_obra_json = :manoObraJson, @usuario = :usuario; SELECT @Filas", nativeQuery = true)
     Integer updateSP(@Param("fecha") String fecha,
                      @Param("segmentoId") Integer segmentoId,
                      @Param("usuarioActivo") Integer usuarioActivo,
@@ -52,10 +52,10 @@ public interface ManoObraRepository extends BaseRepository<ManoObraModel, Intege
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_DeleteManoDeObra :id", nativeQuery = true)
+    @Query(value = "EXEC pa_DeleteManoDeObra @Id = :id", nativeQuery = true)
     void deleteSP(@Param("id") Integer id);
 
     @Transactional
-    @Query(value = "DECLARE @Filas INT; EXEC pa_ToggleManoObraActivo :id, :estado, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+    @Query(value = "DECLARE @Filas INT; EXEC pa_ToggleManoObraActivo @Id = :id, @estado = :estado, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
     Integer toggleSP(@Param("id") Integer id, @Param("estado") Integer estado);
 }
