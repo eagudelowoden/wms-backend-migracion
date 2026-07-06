@@ -27,19 +27,18 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
         for (Object[] row : results) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", row[0]);
-            map.put("idLinea", row[1]);
-            map.put("lineaNombre", row[2]);
-            map.put("fecha", row[3] != null ? row[3].toString() : null);
-            map.put("fechaEntrega", row[4] != null ? row[4].toString() : null);
-            map.put("forecastUnd", row[5]);
-            map.put("jornada", row[6]);
-            map.put("diasHabiles", row[7]);
-            map.put("observaciones", row[8]);
-            map.put("activo", row[9]);
-            map.put("usuario", row[10]);
-            map.put("createdAt", row[11] != null ? row[11].toString() : null);
-            map.put("updatedAt", row[12] != null ? row[12].toString() : null);
-            map.put("familiasJson", row[13]);
+            map.put("lineaNegocio", row[1]);
+            map.put("fecha", row[2] != null ? row[2].toString() : null);
+            map.put("fechaEntrega", row[3] != null ? row[3].toString() : null);
+            map.put("forecastUnd", row[4]);
+            map.put("jornada", row[5]);
+            map.put("diasHabiles", row[6]);
+            map.put("observaciones", row[7]);
+            map.put("activo", row[8]);
+            map.put("usuario", row[9]);
+            map.put("createdAt", row[10] != null ? row[10].toString() : null);
+            map.put("updatedAt", row[11] != null ? row[11].toString() : null);
+            map.put("familiasJson", row[12]);
             list.add(map);
         }
         return list;
@@ -48,7 +47,7 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
     @Transactional
     public void create(ForecastModel model) {
         forecastRepository.insertSP(
-                model.getIdLinea(),
+                model.getLineaNegocio(),
                 model.getFecha() != null ? model.getFecha().toString() : null,
                 model.getFechaEntrega() != null ? model.getFechaEntrega().toString() : null,
                 model.getForecastUnd() != null ? model.getForecastUnd().toPlainString() : "0",
@@ -63,7 +62,7 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
     public Integer update(ForecastModel model) {
         return forecastRepository.updateSP(
                 model.getId(),
-                model.getIdLinea(),
+                model.getLineaNegocio(),
                 model.getFecha() != null ? model.getFecha().toString() : null,
                 model.getFechaEntrega() != null ? model.getFechaEntrega().toString() : null,
                 model.getForecastUnd() != null ? model.getForecastUnd().toPlainString() : "0",

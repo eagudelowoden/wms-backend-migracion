@@ -19,8 +19,8 @@ public interface ForecastRepository extends BaseRepository<ForecastModel, Intege
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertForecast :idLinea, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :observaciones, :usuario, :familiasJson", nativeQuery = true)
-  void insertSP(@Param("idLinea") Integer idLinea, @Param("fecha") String fecha,
+  @Query(value = "EXEC pa_InsertForecast :lineaNegocio, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :observaciones, :usuario, :familiasJson", nativeQuery = true)
+  void insertSP(@Param("lineaNegocio") String lineaNegocio, @Param("fecha") String fecha,
       @Param("fechaEntrega") String fechaEntrega,
       @Param("forecastUnd") String forecastUnd, @Param("jornada") String jornada,
       @Param("diasHabiles") Integer diasHabiles,
@@ -28,8 +28,8 @@ public interface ForecastRepository extends BaseRepository<ForecastModel, Intege
       @Param("familiasJson") String familiasJson);
 
   @Transactional
-  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateForecast :id, :idLinea, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :observaciones, :usuario, :familiasJson, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
-  Integer updateSP(@Param("id") Integer id, @Param("idLinea") Integer idLinea,
+  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateForecast :id, :lineaNegocio, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :observaciones, :usuario, :familiasJson, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+  Integer updateSP(@Param("id") Integer id, @Param("lineaNegocio") String lineaNegocio,
       @Param("fecha") String fecha, @Param("fechaEntrega") String fechaEntrega,
       @Param("forecastUnd") String forecastUnd,
       @Param("jornada") String jornada, @Param("diasHabiles") Integer diasHabiles,

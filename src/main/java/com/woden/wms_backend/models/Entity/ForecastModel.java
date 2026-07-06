@@ -22,8 +22,8 @@ public class ForecastModel {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "id_linea")
-    private Integer idLinea;
+    @Column(name = "linea_negocio", length = 255)
+    private String lineaNegocio;
 
     @Column(name = "fecha")
     private LocalDate fecha;
