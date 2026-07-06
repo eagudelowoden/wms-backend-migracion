@@ -19,22 +19,26 @@ public interface ForecastRepository extends BaseRepository<ForecastModel, Intege
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertForecast :lineaNegocio, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :observaciones, :usuario, :familiasJson", nativeQuery = true)
+  @Query(value = "EXEC pa_InsertForecast @fecha = :fecha, @linea_negocio = :lineaNegocio, @fecha_entrega = :fechaEntrega, @forecast_und = :forecastUnd, @jornada = :jornada, @diasHabiles = :diasHabiles, @observaciones = :observaciones, @usuario = :usuario, @familias_json = :familiasJson, @familiaId = :familiaId, @forecast = :forecast, @forecastIngreso = :forecastIngreso, @detalle = :detalle", nativeQuery = true)
   void insertSP(@Param("lineaNegocio") String lineaNegocio, @Param("fecha") String fecha,
       @Param("fechaEntrega") String fechaEntrega,
       @Param("forecastUnd") String forecastUnd, @Param("jornada") String jornada,
-      @Param("diasHabiles") Integer diasHabiles,
+      @Param("diasHabiles") String diasHabiles,
       @Param("observaciones") String observaciones, @Param("usuario") String usuario,
-      @Param("familiasJson") String familiasJson);
+      @Param("familiasJson") String familiasJson,
+      @Param("familiaId") Integer familiaId, @Param("forecast") String forecast,
+      @Param("forecastIngreso") String forecastIngreso, @Param("detalle") String detalle);
 
   @Transactional
-  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateForecast :id, :lineaNegocio, :fecha, :fechaEntrega, :forecastUnd, :jornada, :diasHabiles, :observaciones, :usuario, :familiasJson, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateForecast @id = :id, @linea_negocio = :lineaNegocio, @fecha = :fecha, @fecha_entrega = :fechaEntrega, @forecast_und = :forecastUnd, @jornada = :jornada, @diasHabiles = :diasHabiles, @observaciones = :observaciones, @usuario = :usuario, @familias_json = :familiasJson, @familiaId = :familiaId, @forecast = :forecast, @forecastIngreso = :forecastIngreso, @detalle = :detalle, @Filas = @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
   Integer updateSP(@Param("id") Integer id, @Param("lineaNegocio") String lineaNegocio,
       @Param("fecha") String fecha, @Param("fechaEntrega") String fechaEntrega,
       @Param("forecastUnd") String forecastUnd,
-      @Param("jornada") String jornada, @Param("diasHabiles") Integer diasHabiles,
+      @Param("jornada") String jornada, @Param("diasHabiles") String diasHabiles,
       @Param("observaciones") String observaciones,
-      @Param("usuario") String usuario, @Param("familiasJson") String familiasJson);
+      @Param("usuario") String usuario, @Param("familiasJson") String familiasJson,
+      @Param("familiaId") Integer familiaId, @Param("forecast") String forecast,
+      @Param("forecastIngreso") String forecastIngreso, @Param("detalle") String detalle);
 
   @Modifying
   @Transactional

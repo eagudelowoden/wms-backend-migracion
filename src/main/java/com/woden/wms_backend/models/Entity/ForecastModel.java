@@ -37,8 +37,20 @@ public class ForecastModel {
     @Column(name = "jornada", length = 8)
     private String jornada;
 
-    @Column(name = "dias_habiles")
-    private Integer diasHabiles;
+    @Column(name = "diasHabiles")
+    private String diasHabiles;
+
+    @Column(name = "familiaId")
+    private Integer familiaId;
+
+    @Column(name = "forecast")
+    private String forecast;
+
+    @Column(name = "forecastIngreso")
+    private String forecastIngreso;
+
+    @Column(name = "detalle")
+    private String detalle;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
