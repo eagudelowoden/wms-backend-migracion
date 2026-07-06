@@ -118,5 +118,25 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return cajaEmpaqueService.getLastBoxPacking(palletId);
     }
 
+    @GetMapping("/rejectedPallets")
+    public ResponseEntity<List<CajaEmpaqueDTO>> searchRejectedPallets() {
+        return ResponseEntity.ok(cajaEmpaqueService.searchRejectedPallets());
+    }
+
+    @GetMapping("/rejectedBoxes")
+    public ResponseEntity<List<CajaEmpaqueDTO>> searchRejectedBoxes(@RequestParam Integer palletId) {
+        return ResponseEntity.ok(cajaEmpaqueService.searchRejectedBoxes(palletId));
+    }
+
+    @GetMapping("/boxSeriales")
+    public ResponseEntity<List<Map<String, String>>> searchBoxSeriales(@RequestParam Integer cajaEmpaqueId) {
+        return ResponseEntity.ok(cajaEmpaqueService.searchBoxSeriales(cajaEmpaqueId));
+    }
+
+    @GetMapping("/SearchPackingBoxesProcessActive")
+    public ResponseEntity<List<CajaEmpaqueDTO>> searchBoxesNoRejected(@RequestParam Integer palletId) {
+        return ResponseEntity.ok(cajaEmpaqueService.searchBoxesNoRejected(palletId));
+    }
+
 
 }

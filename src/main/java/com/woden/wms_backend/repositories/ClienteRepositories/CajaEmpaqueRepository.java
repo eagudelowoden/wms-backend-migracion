@@ -72,4 +72,42 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     @Query(value = "EXEC pa_GetLastBoxPacking :palletId", nativeQuery = true)
     Integer getLastBoxPacking(@Param("palletId") Integer palletId);
 
+    /** Pallets que tienen al menos una caja rechazada (CajaEmpaque.EstadoId = :estadoId). */
+    @Query(value = "SELECT p.Id, p.Numero, COUNT(c.Id) AS cajas " +
+            "FROM dbo.CajaEmpaque c " +
+            "INNER JOIN dbo.Pallet p ON p.Id = c.PalletId " +
+            "WHERE c.EstadoId = :estadoId AND c.Activo = 1 " +
+            "GROUP BY p.Id, p.Numero " +
+            "ORDER BY p.Numero", nativeQuery = true)
+    List<Object[]> searchRejectedPallets(@Param("estadoId") Integer estadoId);
+
+    /** Cajas rechazadas (CajaEmpaque.EstadoId = :estadoId) de un pallet, con el conteo de seriales en Calidad. */
+    @Query(value = "SELECT c.Id, c.Numero, " +
+            "(SELECT COUNT(*) FROM dbo.Calidad q WHERE q.CajaEmpaqueId = c.Id) AS seriales, " +
+            "p.Numero AS pallet " +
+            "FROM dbo.CajaEmpaque c " +
+            "INNER JOIN dbo.Pallet p ON p.Id = c.PalletId " +
+            "WHERE c.PalletId = :palletId AND c.EstadoId = :estadoId AND c.Activo = 1 " +
+            "ORDER BY c.Numero", nativeQuery = true)
+    List<Object[]> searchRejectedBoxes(@Param("palletId") Integer palletId, @Param("estadoId") Integer estadoId);
+
+    /** Seriales de una caja (SP legado pa_SearchBoxEntry): serial, mac, codigo, descripcion, tipologia, SmartCard. */
+    @Query(value = "EXEC pa_SearchBoxEntry :cajaEmpaqueId", nativeQuery = true)
+    List<Object[]> searchBoxEntry(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
+
+    /**
+     * Cajas de un pallet excluyendo las que están en :estadoId (rechazadas).
+     * Replica el conteo de seriales serializados de pa_SearchPacking.
+     */
+    @Query(value = "SELECT ce.Id, ce.Numero, COUNT(ing.Id) AS seriales " +
+            "FROM dbo.CajaEmpaque ce " +
+            "LEFT JOIN (SELECT i.Id, i.CajaEmpaqueId FROM dbo.Ingreso i " +
+            "           INNER JOIN dbo.CodigoSap cs ON i.CodigoSapId = cs.Id " +
+            "           INNER JOIN dbo.Maestro m ON cs.TipoId = m.Id " +
+            "           WHERE m.Codigo = 'SERIALIZADOS') ing ON ce.Id = ing.CajaEmpaqueId " +
+            "WHERE ce.PalletId = :palletId AND ce.EstadoId <> :estadoId " +
+            "GROUP BY ce.Id, ce.Numero " +
+            "ORDER BY ce.Id", nativeQuery = true)
+    List<Object[]> searchPackingNoRejected(@Param("palletId") Integer palletId, @Param("estadoId") Integer estadoId);
+
 }

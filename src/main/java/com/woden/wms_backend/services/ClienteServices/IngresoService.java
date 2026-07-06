@@ -26,6 +26,7 @@ import com.woden.wms_backend.dto.IngresoTransitoDTO;
 import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.IngresoModelDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStateAllItemRequest;
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.exception.BusinessRuleException;
 import com.woden.wms_backend.exception.EntryNotFoundException;
 import com.woden.wms_backend.models.Entity.IngresoModel;
@@ -50,6 +51,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @Autowired
   private ConsecutiveService consecutiveService;
+
+  @Autowired
+  private TruckrollService truckrollService;
 
   @Autowired
   private DataSource dataSource;
@@ -100,7 +104,14 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       Integer codigo = stmt.getInt(29);
       String mensaje = stmt.getString(30);
 
-      if (codigo == 0) return null;
+      if (codigo == 0) {
+        String clientDb = ClientDatabaseContext.getCurrentClientDb();
+        String clientName = ClientDatabaseContext.getCurrentClientName();
+        Integer clientId = ClientDatabaseContext.getCurrentClientId();
+        truckrollService.clasificarAsync(ingreso.getSerial(), ingreso.getMac(),
+            ingreso.getTipoOrigenId(), clientDb, clientName, clientId);
+        return null;
+      }
 
       // Mapear código del SP a mensaje legible
       return switch (codigo) {
@@ -113,6 +124,30 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       logger.error("[createIngresoCallable] Error al crear ingreso para serial {}: {}", ingreso.getSerial(), e.getMessage(), e);
       return "EXCEPCION: " + e.getMessage();
     }
+  }
+
+  public Map<String, Object> getTruckRollStatus(String serial) {
+    Map<String, Object> result = new HashMap<>();
+    try (Connection conn = dataSource.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(
+             "SELECT TruckRollId FROM Ingreso WHERE Serial = ? ORDER BY Id DESC")) {
+      ps.setString(1, serial.toUpperCase());
+      try (java.sql.ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          Object truckRollId = rs.getObject("TruckRollId");
+          result.put("truckRollId", truckRollId);
+          result.put("clasificado", truckRollId != null);
+        } else {
+          result.put("truckRollId", null);
+          result.put("clasificado", false);
+        }
+      }
+    } catch (java.sql.SQLException e) {
+      logger.error("[getTruckRollStatus] Error para serial {}: {}", serial, e.getMessage());
+      result.put("truckRollId", null);
+      result.put("clasificado", false);
+    }
+    return result;
   }
 
   @Transactional
@@ -178,6 +213,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setLote((String) obj[11]);
       ingreso.setModelo((String) obj[12]);
       ingreso.setReingreso((Integer) obj[13]);
+      if (obj.length > 14 && obj[14] != null) ingreso.setTruckRollId((Integer) obj[14]);
       return ingreso;
     }).collect(Collectors.toList());
   }
@@ -678,7 +714,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateStatusBatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento, Integer fecha,
       List<String> seriales, Integer loteId) {
-    seriales.forEach(s -> ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteId));
+    Integer loteIdFinal = (loteId != null && loteId == 0) ? null : loteId;
+    seriales.forEach(s -> ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteIdFinal));
   }
 
   public void updateEntryDispatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento,
@@ -738,6 +775,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setCajaIngreso((String) obj[34]);
     ingreso.setModeloId((Integer) obj[35]);
     ingreso.setModelo((String) obj[36]);
+    if (obj.length > 37) {
+      ingreso.setTruckRollId((Integer) obj[37]);
+    }
     return ingreso;
   }
 

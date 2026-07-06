@@ -22,6 +22,14 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("estadoFinalId") Integer estadoFinalId
     );
 
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE dbo.Calidad SET EstadoFinalId = :estadoFinalId WHERE CajaEmpaqueId = :cajaEmpaqueId", nativeQuery = true)
+    void updateFinalStateQualityByCaja(
+            @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
+            @Param("estadoFinalId") Integer estadoFinalId
+    );
+
     @Procedure(name = "pa_InsertQuality", procedureName = "pa_InsertQuality")
     void createInsertCalidad(
             @Param("SerialId") Integer serialId,
