@@ -28,16 +28,16 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
             map.put("id", row[0]);
             map.put("fecha", row[1] != null ? row[1].toString() : null);
             map.put("diasHabiles", row[2]);
-            map.put("observaciones", row[7]);
-            map.put("lineaNegocio", row[8]);
-            map.put("fechaEntrega", row[9] != null ? row[9].toString() : null);
-            map.put("forecastUnd", row[10]);
-            map.put("jornada", row[11]);
-            map.put("activo", row[13]);
-            map.put("usuario", row[14]);
-            map.put("createdAt", row[15] != null ? row[15].toString() : null);
-            map.put("updatedAt", row[16] != null ? row[16].toString() : null);
-            map.put("familiasJson", row[17]);
+            map.put("observaciones", row[3]);
+            map.put("lineaNegocio", row[4]);
+            map.put("fechaEntrega", row[5] != null ? row[5].toString() : null);
+            map.put("forecastUnd", row[6]);
+            map.put("jornada", row[7]);
+            map.put("activo", row[8]);
+            map.put("usuario", row[9]);
+            map.put("createdAt", row[10] != null ? row[10].toString() : null);
+            map.put("updatedAt", row[11] != null ? row[11].toString() : null);
+            map.put("familiasJson", row[12]);
             list.add(map);
         }
         return list;
@@ -54,11 +54,7 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
                 model.getDiasHabiles(),
                 model.getObservaciones(),
                 model.getUsuario(),
-                model.getFamiliasJson(),
-                model.getFamiliaId(),
-                model.getForecast(),
-                model.getForecastIngreso(),
-                model.getDetalle());
+                model.getFamiliasJson());
     }
 
     @Transactional
@@ -73,11 +69,7 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
                 model.getDiasHabiles(),
                 model.getObservaciones(),
                 model.getUsuario(),
-                model.getFamiliasJson(),
-                model.getFamiliaId(),
-                model.getForecast(),
-                model.getForecastIngreso(),
-                model.getDetalle());
+                model.getFamiliasJson());
     }
 
     @Transactional

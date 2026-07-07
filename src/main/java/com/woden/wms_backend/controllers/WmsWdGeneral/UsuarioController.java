@@ -249,4 +249,14 @@ public class UsuarioController {
         Integer id = usuarioService.getAreaIdByName(nombre);
         return id != null ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/profile-for-client")
+    public ResponseEntity<Map<String, Object>> getProfileForClient(
+            @RequestParam int usuarioId, @RequestParam int clienteId) {
+        Map<String, Object> profile = usuarioService.getProfileForClient(usuarioId, clienteId);
+        if (profile != null) {
+            return ResponseEntity.ok(profile);
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

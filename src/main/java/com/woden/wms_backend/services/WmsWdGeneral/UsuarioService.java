@@ -281,4 +281,16 @@ public class UsuarioService {
         if (rows.isEmpty()) return null;
         return toInt(rows.get(0)[0]);
     }
+
+    public Map<String, Object> getProfileForClient(int usuarioId, int clienteId) {
+        List<Object[]> rows = usuarioRepository.getProfileForClient(usuarioId, clienteId);
+        if (rows.isEmpty()) return null;
+        Object[] row = rows.get(0);
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", row[0]);
+        map.put("nombres", row[1]);
+        map.put("nombreUsuario", row[2]);
+        map.put("perfilId", row[3]);
+        return map;
+    }
 }

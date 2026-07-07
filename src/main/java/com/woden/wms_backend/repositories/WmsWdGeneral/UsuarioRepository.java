@@ -76,4 +76,10 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
 
     @Query(value = "EXEC pa_GetIdArea :nombre", nativeQuery = true)
     List<Object[]> getIdArea(@Param("nombre") String nombre);
+
+    @Query(value = "SELECT c.dbase, c.id, c.nombre FROM UsuarioCliente uc INNER JOIN Cliente c ON uc.clienteId = c.id WHERE uc.usuarioId = :usuarioId", nativeQuery = true)
+    List<Object[]> getDbsByUsuarioId(@Param("usuarioId") int usuarioId);
+
+    @Query(value = "SELECT u.id, u.nombres + ' ' + u.apellidos AS nombres, u.nombreUsuario, COALESCE(ucp.perfilId, -1) AS perfilId FROM Usuario u LEFT JOIN UsuarioCliente uc ON uc.usuarioId = u.id AND uc.clienteId = :clienteId LEFT JOIN UsuarioClientePerfil ucp ON ucp.usuarioClienteId = uc.id WHERE u.id = :usuarioId", nativeQuery = true)
+    List<Object[]> getProfileForClient(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
 }
