@@ -1,6 +1,5 @@
 package com.woden.wms_backend.services.ClienteServices;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,16 +28,11 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
             map.put("id", row[0]);
             map.put("fecha", row[1] != null ? row[1].toString() : null);
             map.put("diasHabiles", row[2]);
-            map.put("familia", row[3]);
-            map.put("forecast", row[4]);
-            map.put("forecastIngreso", row[5]);
-            map.put("detalle", row[6]);
             map.put("observaciones", row[7]);
             map.put("lineaNegocio", row[8]);
             map.put("fechaEntrega", row[9] != null ? row[9].toString() : null);
             map.put("forecastUnd", row[10]);
             map.put("jornada", row[11]);
-            map.put("familiaId", row[12]);
             map.put("activo", row[13]);
             map.put("usuario", row[14]);
             map.put("createdAt", row[15] != null ? row[15].toString() : null);
