@@ -56,6 +56,7 @@ public interface ManoObraRepository extends BaseRepository<ManoObraModel, Intege
     void deleteSP(@Param("id") Integer id);
 
     @Transactional
-    @Query(value = "DECLARE @Filas INT; EXEC pa_ToggleManoObraActivo @Id = :id, @estado = :estado, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+    @Query(value = "DECLARE @Filas INT; EXEC pa_ToggleManoObraActivo @Id = :id, @estado = :estado, @Filas = @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
     Integer toggleSP(@Param("id") Integer id, @Param("estado") Integer estado);
+
 }

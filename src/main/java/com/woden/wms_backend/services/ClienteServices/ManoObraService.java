@@ -27,13 +27,6 @@ public class ManoObraService extends BaseService<ManoObraModel, Integer> {
             Map<String, Object> map = new HashMap<>();
             map.put("id", row[0]);
             map.put("fecha", row[1] != null ? row[1].toString() : null);
-            map.put("segmento", row[2]);
-            map.put("usuarioActivo", row[3]);
-            map.put("altas", row[4]);
-            map.put("bajas", row[5]);
-            map.put("costo", row[6]);
-            map.put("reclamo", row[7]);
-            map.put("tipo", row[8]);
             map.put("detalle", row[9]);
             map.put("observaciones", row[10]);
             map.put("manoObraJson", row[11]);
@@ -50,10 +43,10 @@ public class ManoObraService extends BaseService<ManoObraModel, Integer> {
     public void create(ManoObraModel model) {
         manoObraRepository.insertSP(
                 model.getFecha() != null ? model.getFecha().toString() : null,
-                model.getSegmentoId(),
-                model.getUsuarioActivo(),
-                model.getAltas(),
-                model.getBajas(),
+                model.getSegmentoId() != null ? model.getSegmentoId() : 0,
+                model.getUsuarioActivo() != null ? model.getUsuarioActivo() : 0,
+                model.getAltas() != null ? model.getAltas() : 0,
+                model.getBajas() != null ? model.getBajas() : 0,
                 model.getCosto(),
                 model.getReclamo(),
                 model.getTipo(),
@@ -68,10 +61,10 @@ public class ManoObraService extends BaseService<ManoObraModel, Integer> {
     public Integer update(ManoObraModel model) {
         return manoObraRepository.updateSP(
                 model.getFecha() != null ? model.getFecha().toString() : null,
-                model.getSegmentoId(),
-                model.getUsuarioActivo(),
-                model.getAltas(),
-                model.getBajas(),
+                model.getSegmentoId() != null ? model.getSegmentoId() : 0,
+                model.getUsuarioActivo() != null ? model.getUsuarioActivo() : 0,
+                model.getAltas() != null ? model.getAltas() : 0,
+                model.getBajas() != null ? model.getBajas() : 0,
                 model.getCosto(),
                 model.getReclamo(),
                 model.getTipo(),
