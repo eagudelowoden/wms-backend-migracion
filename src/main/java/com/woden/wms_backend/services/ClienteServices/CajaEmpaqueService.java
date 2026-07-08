@@ -67,6 +67,20 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  /** Todas las cajas rechazadas (estado 38), sin filtrar por pallet — vista Empaque › Cajas. */
+  public List<CajaEmpaqueDTO> searchAllRejectedBoxes() {
+    List<Object[]> results = cajaEmpaqueRepository.searchAllRejectedBoxes(ESTADO_CAJA_RECHAZADA);
+    return results.stream().map(obj -> {
+      CajaEmpaqueDTO caja = new CajaEmpaqueDTO();
+      caja.setId((Integer) obj[0]);
+      caja.setNumero((String) obj[1]);
+      caja.setSeriales(obj[2] != null ? ((Number) obj[2]).intValue() : 0);
+      caja.setPallet((String) obj[3]);
+      caja.setEstado("Empaque");
+      return caja;
+    }).collect(Collectors.toList());
+  }
+
   /** Cajas de un pallet excluyendo las rechazadas (estado 38) — para la vista de Calidad. */
   public List<CajaEmpaqueDTO> searchBoxesNoRejected(Integer palletId) {
     List<Object[]> results = cajaEmpaqueRepository.searchPackingNoRejected(palletId, ESTADO_CAJA_RECHAZADA);
