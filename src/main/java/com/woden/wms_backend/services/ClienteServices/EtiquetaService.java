@@ -12,8 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
@@ -40,6 +47,16 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
 
   @Autowired
   private EtiquetaCampoRepository etiquetaCampoRepository;
+
+  @Override
+  @Transactional
+  public void delete(Integer id) {
+    List<EtiquetaCampoModel> campos = etiquetaCampoRepository.findAll().stream()
+        .filter(c -> c.getEtiquetaId() == id)
+        .toList();
+    etiquetaCampoRepository.deleteAll(campos);
+    etiquetaRepository.deleteById(id);
+  }
 
   @Autowired
   private ClienteService clienteService;
@@ -110,19 +127,79 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     return created;
   }
 
-  public boolean uploadPrn(String nombre, String tipo, int impresion, MultipartFile file) {
+  private static final Set<String> STANDARD_VARS = Set.of(
+      "fecha", "codeinmodel", "unitserial3", "unitserial4", "unitserial5",
+      "unitserial",
+      "descripcion", "codigosap", "usuario", "tipologia",
+      "modelo", "codproveedor", "proveedor", "lote",
+      "passmodel", "modelcodigo", "modeldescripcion", "modeldetalle",
+      "familia", "variable1_", "variable2_", "variable3_", "variable4_"
+  );
+
+  private static final Map<String, String> DEFAULT_VALUES = Map.of(
+      "serial", "0",
+      "mac", "1"
+  );
+
+  private static final Pattern PLACEHOLDER = Pattern.compile(
+      "\\^FD([a-zA-Z][a-zA-Z0-9_]*?)(\\d+)\\^FS", Pattern.CASE_INSENSITIVE);
+
+  public Map<String, Object> uploadPrn(String nombre, String tipo, int impresion, MultipartFile file) {
+    Map<String, Object> result = new LinkedHashMap<>();
     String prnRoute = resolvePrnRoute(tipo);
-    if (prnRoute == null) return false;
+    if (prnRoute == null) {
+      result.put("ok", false);
+      return result;
+    }
     File dir = new File(prnRoute, nombre);
     if (!dir.exists()) dir.mkdirs();
     File dest = new File(dir, "codigo" + impresion + ".prn");
     try {
       Files.copy(file.getInputStream(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
       System.out.println("PRN subido: " + dest.getAbsolutePath());
-      return true;
+      result.put("ok", true);
+
+      int camposNuevos = autoDetectarCampos(nombre, dest);
+      result.put("camposNuevos", camposNuevos);
+      return result;
     } catch (IOException e) {
       System.err.println("Error al subir PRN: " + e.getMessage());
-      return false;
+      result.put("ok", false);
+      return result;
+    }
+  }
+
+  private int autoDetectarCampos(String nombre, File prnFile) {
+    try {
+      String content = Files.readString(prnFile.toPath());
+      EtiquetaModel etiqueta = getModelLabel(nombre);
+      List<Object[]> existingRaw = etiquetaCampoRepository.getListLabelField(etiqueta.getId());
+      Set<String> existingNames = existingRaw.stream()
+          .map(obj -> ((String) obj[0]).toLowerCase())
+          .collect(HashSet::new, Set::add, Set::addAll);
+
+      Set<String> found = new HashSet<>();
+      Matcher matcher = PLACEHOLDER.matcher(content);
+      while (matcher.find()) {
+        String base = matcher.group(1).toLowerCase();
+        if (!STANDARD_VARS.contains(base)) found.add(base);
+      }
+
+      int added = 0;
+      for (String varName : found) {
+        if (!existingNames.contains(varName)) {
+          EtiquetaCampoModel novo = new EtiquetaCampoModel();
+          novo.setEtiquetaId(etiqueta.getId());
+          novo.setNombre(varName);
+          novo.setValor(DEFAULT_VALUES.getOrDefault(varName, "0"));
+          etiquetaCampoRepository.save(novo);
+          added++;
+        }
+      }
+      if (added > 0) System.out.println("Auto-creados " + added + " campo(s) para etiqueta: " + nombre);
+      return added;
+    } catch (IOException e) {
+      return 0;
     }
   }
 

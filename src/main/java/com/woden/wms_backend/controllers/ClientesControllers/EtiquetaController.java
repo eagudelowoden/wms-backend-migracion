@@ -54,13 +54,13 @@ public class EtiquetaController extends BaseController<EtiquetaModel, Integer> {
   }
 
   @PostMapping("/uploadPrn")
-  public ResponseEntity<Boolean> uploadPrn(
+  public ResponseEntity<Map<String, Object>> uploadPrn(
       @RequestParam String nombre,
       @RequestParam String tipo,
       @RequestParam int impresion,
       @RequestParam("file") MultipartFile file) {
-    boolean ok = etiquetaService.uploadPrn(nombre, tipo, impresion, file);
-    return ResponseEntity.ok(ok);
+    Map<String, Object> result = etiquetaService.uploadPrn(nombre, tipo, impresion, file);
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping("/listPrnFiles")
