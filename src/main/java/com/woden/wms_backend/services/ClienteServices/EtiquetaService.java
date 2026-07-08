@@ -1,5 +1,6 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -7,17 +8,27 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
+import com.woden.wms_backend.models.WmsWdGeneral.ClienteModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetaRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 
 @Service
 public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   @Autowired
   private EtiquetaRepository etiquetaRepository;
+
+  @Autowired
+  private ClienteService clienteService;
+
+  @Value("${PRN_LOCAL_PATH:}")
+  private String localPrnPath;
 
   public EtiquetaModel getModelLabel(String nombre) {
     List<Object[]> results = etiquetaRepository.getModelLabel(nombre);
@@ -70,5 +81,26 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
       etiquetas.add(map);
     }
     return etiquetas;
+  }
+
+  public boolean crearDirectorioPrn(String nombre, String tipo) {
+    String prnRoute;
+    if (localPrnPath != null && !localPrnPath.isBlank()) {
+      String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
+      prnRoute = localPrnPath + File.separator + tipoLower;
+    } else {
+      Integer clientId = ClientDatabaseContext.getCurrentClientId();
+      ClienteModel cliente = clienteService.getById(clientId);
+      if (cliente == null) return false;
+      prnRoute = "ETIQUETADO".equalsIgnoreCase(tipo)
+          ? cliente.getPrnEtiquetado()
+          : cliente.getPrnEmpaque();
+    }
+    if (prnRoute == null || prnRoute.isBlank()) return false;
+    File dir = new File(prnRoute, nombre);
+    boolean created = dir.mkdirs();
+    System.out.println(created ? "Directorio PRN creado: " + dir.getAbsolutePath()
+        : "No se pudo crear directorio PRN: " + dir.getAbsolutePath());
+    return created;
   }
 }

@@ -15,7 +15,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/client/etiqueta")
@@ -42,5 +43,12 @@ public class EtiquetaController extends BaseController<EtiquetaModel, Integer> {
   public ResponseEntity<List<Map<String, Object>>> searchLabeled(@RequestParam String nombre,
       @RequestParam String tipo) {
     return ResponseEntity.ok(etiquetaService.searchLabeled(nombre, tipo));
+  }
+
+  @PostMapping("/crearDirectorio")
+  public ResponseEntity<Boolean> crearDirectorio(@RequestBody Map<String, String> body) {
+    boolean ok = etiquetaService.crearDirectorioPrn(
+        body.get("nombre"), body.get("tipo"));
+    return ResponseEntity.ok(ok);
   }
 }
