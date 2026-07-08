@@ -268,16 +268,19 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
   }
 
-  public List<Map<String, String>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
+  public List<Map<String, Object>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
     List<Object[]> results = ingresoRepository.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
     return results.stream().map(result -> {
-      Map<String, String> entry = new HashMap<>();
+      Map<String, Object> entry = new HashMap<>();
       entry.put("serial", (String) result[0]);
       entry.put("mac", (String) result[1]);
       entry.put("codigoSap", (String) result[2]);
       entry.put("descripcion", (String) result[3]);
       entry.put("falla", (String) result[4]);
       entry.put("estado", (String) result[5]);
+      // TruckRollId al final del SELECT del SP (posición 6); con el SP viejo queda null
+      entry.put("truckRollId", result.length > 6 && result[6] != null
+          ? Integer.parseInt(result[6].toString()) : null);
       return entry;
     }).collect(Collectors.toList());
   }
