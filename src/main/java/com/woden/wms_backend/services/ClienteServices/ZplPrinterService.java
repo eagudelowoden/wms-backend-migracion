@@ -118,8 +118,7 @@ public class ZplPrinterService {
 
   private String obtenerValorCampo(IngresoModel ingreso, String nombreCampo) {
 
-    // ✅ "virtual" → serial3 si existe (LH02), sino smartCard (LH01)
-    if (nombreCampo.equalsIgnoreCase("virtual")) {
+    if ("virtual".equalsIgnoreCase(nombreCampo)) {
       String serial3 = ingreso.getSerial3();
       boolean tieneSerial3 = serial3 != null
               && !serial3.isEmpty()
@@ -128,21 +127,58 @@ public class ZplPrinterService {
       return tieneSerial3 ? serial3 : (ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "");
     }
 
-    // ✅ "smartCardSerial" → smartCard del ingreso individual
-    if (nombreCampo.equalsIgnoreCase("smartCardSerial")) {
+    if ("smartCardSerial".equalsIgnoreCase(nombreCampo)) {
       return ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "";
     }
 
-    // ✅ Reflexión para los demás campos
+    if (esNumerico(nombreCampo)) {
+      return getValueByLegacyEmpaqueIndex(ingreso, nombreCampo);
+    }
+
+    String propiedad = resolverPropiedad(nombreCampo);
     try {
-      String propiedad = nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
-      Field field = ingreso.getClass().getDeclaredField(propiedad);
+      java.lang.reflect.Field field = ingreso.getClass().getDeclaredField(propiedad);
       field.setAccessible(true);
       Object valor = field.get(ingreso);
       return valor != null ? valor.toString() : "";
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      System.err.println("⚠️ Campo no encontrado en IngresoModel: " + nombreCampo);
+      System.err.println("Campo no encontrado en IngresoModel: " + nombreCampo + " (buscado: " + propiedad + ")");
       return "";
+    }
+  }
+
+  private boolean esNumerico(String valor) {
+    try {
+      Integer.parseInt(valor);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+
+  private String resolverPropiedad(String nombreCampo) {
+    switch (nombreCampo.toLowerCase()) {
+      case "codigosap": return "codigoSap";
+      case "lote":       return "Lote";
+      default:
+        return nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
+    }
+  }
+
+  private String getValueByLegacyEmpaqueIndex(IngresoModel ingreso, String columnaIndex) {
+    switch (columnaIndex) {
+      case "0":  return ingreso.getSerial() != null ? ingreso.getSerial() : "";
+      case "1":  return ingreso.getMac() != null ? ingreso.getMac() : "";
+      case "2":  return ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "";
+      case "3":  return ingreso.getSerial3() != null ? ingreso.getSerial3() : "";
+      case "4":  return ingreso.getSerial4() != null ? ingreso.getSerial4() : "";
+      case "5":  return ingreso.getCodigoSap() != null ? ingreso.getCodigoSap() : "";
+      case "6":  return ingreso.getDescripcion() != null ? ingreso.getDescripcion() : "";
+      case "7":  return ingreso.getNivel() != null ? ingreso.getNivel() : "";
+      case "8":  return ingreso.getLote() != null ? ingreso.getLote() : "";
+      case "9":  return ingreso.getNumeroSmartcard() != null ? ingreso.getNumeroSmartcard() : "";
+      case "10": return ingreso.getModelo() != null ? ingreso.getModelo() : "";
+      default:   return "";
     }
   }
 
