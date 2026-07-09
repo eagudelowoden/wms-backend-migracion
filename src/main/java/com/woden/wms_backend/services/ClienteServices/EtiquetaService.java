@@ -89,16 +89,28 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     return etiqueta;
   }
   public List<EtiquetaListDTO> getListLabel(String tipo) {
-    List<Object[]> results = etiquetaRepository.getListLabel(tipo);
-    if (results.isEmpty()) {
+    if ("EMPAQUE".equals(tipo)) {
+      List<Object[]> results = etiquetaRepository.getListLabel(tipo);
+      results.addAll(etiquetaRepository.getListLabel("EMPAQUE_DESPACHO"));
+      return toListLabelDTO(results);
+    }
+    if ("DESPACHO".equals(tipo)) {
+      List<Object[]> results = etiquetaRepository.getListLabel(tipo);
+      results.addAll(etiquetaRepository.getListLabel("EMPAQUE_DESPACHO"));
+      return toListLabelDTO(results);
+    }
+    return toListLabelDTO(etiquetaRepository.getListLabel(tipo));
+  }
+
+  private List<EtiquetaListDTO> toListLabelDTO(List<Object[]> results) {
+    if (results == null || results.isEmpty()) {
       return Collections.emptyList();
     }
-    List<EtiquetaListDTO> etiquetas = results.stream().map(obj -> {
+    return results.stream().map(obj -> {
       EtiquetaListDTO etiqueta = new EtiquetaListDTO();
       etiqueta.setNombre((String) obj[0]);
       return etiqueta;
-    }).toList();
-    return etiquetas;
+    }).distinct().toList();
   }
 
   public List<Map<String, Object>> searchLabeled(String nombre, String tipo) {
@@ -225,6 +237,9 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   private String resolvePrnRoute(String tipo) {
     if (localPrnPath != null && !localPrnPath.isBlank()) {
       String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
+      if ("empaque_despacho".equals(tipoLower)) {
+        tipoLower = "empaque";
+      }
       return localPrnPath + File.separator + tipoLower;
     }
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
