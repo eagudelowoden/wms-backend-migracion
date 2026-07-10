@@ -179,7 +179,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @GetMapping("/searchRepairEntry")
-  public ResponseEntity<List<Map<String, String>>> searchRepairEntry(
+  public ResponseEntity<List<Map<String, Object>>> searchRepairEntry(
       @RequestParam String estadoFinal,
       @RequestParam String perfil,
       @RequestParam Integer usuarioId) {

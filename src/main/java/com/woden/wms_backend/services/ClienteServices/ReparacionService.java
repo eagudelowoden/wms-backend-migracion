@@ -27,10 +27,15 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
 
   public void updateRepair(Integer estadoFinalId, Integer falla1Id, Integer falla2Id, Integer falla3Id,
       Integer falla4Id, String partesCambiadas, Integer motivoScrapId, Integer tecnicoReparacionId, String serial,
-      Integer estadoCalidadId) {
+      Integer estadoCalidadId, Integer truckRollId) {
     Integer filas = 0;
     repository.updateRepair(estadoFinalId, falla1Id, falla2Id, falla3Id, falla4Id, partesCambiadas, motivoScrapId,
         tecnicoReparacionId, serial, estadoCalidadId, filas);
+
+    // Seriales TruckRoll/Garantía: avanzar la novedad (3→4/5, 9→10-13) en el Ingreso
+    if (truckRollId != null) {
+      repository.updateTruckRollId(serial, truckRollId);
+    }
   }
 
   public void deleteRepair(List<String> seriales) {
@@ -96,6 +101,10 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
       reparacion.setCodigoSap((String) obj[2]);
       reparacion.setDescripcion((String) obj[3]);
       reparacion.setTecnicoReparacion((String) obj[4]);
+      // TruckRollId al final del SELECT de pa_GetRepairUser (posición 5); con el SP viejo queda null
+      if (obj.length > 5 && obj[5] != null) {
+        reparacion.setTruckRollId(Integer.parseInt(obj[5].toString()));
+      }
       response.add(reparacion);
     }
     return response;
