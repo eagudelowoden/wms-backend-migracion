@@ -221,7 +221,14 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     File dir = new File(prnRoute, nombre);
     if (!dir.exists() || !dir.isDirectory()) return Collections.emptyList();
     String[] files = dir.list((d, name) -> name.endsWith(".prn"));
-    return files != null ? Arrays.asList(files) : Collections.emptyList();
+    if (files == null) return Collections.emptyList();
+    Arrays.sort(files, (a, b) -> {
+      int na = extraerNumeroPrn(a);
+      int nb = extraerNumeroPrn(b);
+      if (na >= 0 && nb >= 0) return Integer.compare(na, nb);
+      return a.compareToIgnoreCase(b);
+    });
+    return Arrays.asList(files);
   }
 
   public boolean deletePrnFile(String nombre, String tipo, String archivo) {
@@ -248,6 +255,11 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     return "ETIQUETADO".equalsIgnoreCase(tipo)
         ? cliente.getPrnEtiquetado()
         : cliente.getPrnEmpaque();
+  }
+
+  private int extraerNumeroPrn(String filename) {
+    String num = filename.replaceAll("[^0-9]", "");
+    return num.isEmpty() ? -1 : Integer.parseInt(num);
   }
 
   public String previewPrn(String nombre, String tipo, String archivo) {
