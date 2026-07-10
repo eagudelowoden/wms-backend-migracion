@@ -26,13 +26,13 @@ public class ForecastService extends BaseService<ForecastModel, Integer> {
         for (Object[] row : results) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", row[0]);
-            map.put("fecha", row[1] != null ? row[1].toString() : null);
-            map.put("diasHabiles", row[2]);
-            map.put("observaciones", row[3]);
-            map.put("lineaNegocio", row[4]);
-            map.put("fechaEntrega", row[5] != null ? row[5].toString() : null);
-            map.put("forecastUnd", row[6]);
-            map.put("jornada", row[7]);
+            map.put("lineaNegocio", row[1]);
+            map.put("fecha", row[2] != null ? row[2].toString() : null);
+            map.put("fechaEntrega", row[3] != null ? row[3].toString() : null);
+            map.put("forecastUnd", row[4]);
+            map.put("jornada", row[5]);
+            map.put("diasHabiles", row[6]);
+            map.put("observaciones", row[7]);
             map.put("activo", row[8]);
             map.put("usuario", row[9]);
             map.put("createdAt", row[10] != null ? row[10].toString() : null);
