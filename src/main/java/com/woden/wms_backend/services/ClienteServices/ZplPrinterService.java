@@ -69,8 +69,10 @@ public class ZplPrinterService {
       String plantillaPath = String.format("%s\\%s\\codigo%d.prn",
               plantillaBasePath, etiqueta.getNombre(), porImpresion);
       String zpl = leerPlantilla(plantillaPath);
-      zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + porImpresion), campos);
+      List<IngresoModel> subl = seriales.subList(contador, contador + porImpresion);
+      zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
+      zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
       zplFinal.append(zpl).append("\n^XZ###DELIMITER_ZPL###^XA\n");
       contador += porImpresion;
     }
@@ -80,8 +82,10 @@ public class ZplPrinterService {
       String plantillaPath = String.format("%s\\%s\\codigo%d.prn",
               plantillaBasePath, etiqueta.getNombre(), residuo);
       String zpl = leerPlantilla(plantillaPath);
-      zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + residuo), campos);
+      List<IngresoModel> subl = seriales.subList(contador, contador + residuo);
+      zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
+      zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
       zplFinal.append(zpl);
     }
 
@@ -140,7 +144,10 @@ public class ZplPrinterService {
       java.lang.reflect.Field field = ingreso.getClass().getDeclaredField(propiedad);
       field.setAccessible(true);
       Object valor = field.get(ingreso);
-      return valor != null ? valor.toString() : "";
+      if (valor == null) return "";
+      String strVal = valor.toString();
+      if (strVal.isEmpty() && "codigosap".equalsIgnoreCase(nombreCampo)) return null;
+      return strVal;
     } catch (NoSuchFieldException | IllegalAccessException e) {
       System.err.println("Campo no encontrado en IngresoModel: " + nombreCampo + " (buscado: " + propiedad + ")");
       return "";
@@ -235,6 +242,21 @@ public class ZplPrinterService {
     zpl = reemplazarSeguro(zpl, "caja",       "Caja: " + Objects.toString(datos.getCaja(), ""));
     zpl = reemplazarSeguro(zpl, "fecha",      datos.getFecha());
 
+    return zpl;
+  }
+
+  private String reemplazarGeneralConSufijos(String zpl, List<IngresoModel> seriales, EtiquetaDatosGeneralesDTO datos) {
+    String sapCode = datos.getCodigosap();
+    String desc = datos.getDescripcion();
+    for (int i = 0; i < seriales.size(); i++) {
+      String suffix = getKey(i, "");
+      if (sapCode != null && !sapCode.isEmpty()) {
+        zpl = reemplazarSeguro(zpl, "codigosap" + suffix, sapCode);
+      }
+      if (desc != null && !desc.isEmpty()) {
+        zpl = reemplazarSeguro(zpl, "descripcion" + suffix, desc);
+      }
+    }
     return zpl;
   }
 

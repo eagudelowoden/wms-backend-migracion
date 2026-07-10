@@ -299,7 +299,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     for (EtiquetaCampoModel campo : campos) {
       String nombreVar = campo.getNombre() + sufijo;
       String valor = getValueAtColumn(impresion, serial, campo.getValor());
-      System.out.println("      • " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
+      System.out.println("      \u2022 " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
       zpl = zpl.replace(nombreVar, valor);
     }
 
