@@ -1,7 +1,13 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -15,8 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
 import com.woden.wms_backend.repositories.ClienteRepositories.DiagnosticoRepository;
 
@@ -161,6 +169,123 @@ public class DiagnosticoService {
     } catch (Exception e) {
       throw new RuntimeException("Error al guardar diagnóstico: " + e.getMessage(), e);
     }
+  }
+
+  // ── Hoja de vida (evidencia TruckRoll/Garantía) ──────────────────────────────
+
+  private static final List<String> EXTENSIONES_HOJA_VIDA = List.of("pdf", "docx");
+
+  /**
+   * Sube la hoja de vida de un serial TruckRoll/Garantía.
+   * Ruta final: {RutaEvidencias}\{NOMBRE-CLIENTE}\Hoja de vida-{serial}.{ext}
+   * Un archivo por serial: si ya existe se reemplaza (en cualquier extensión permitida).
+   */
+  public void uploadHojaVida(String serial, MultipartFile file) throws IOException {
+    if (serial == null || serial.isBlank()) throw new IllegalArgumentException("Serial requerido");
+    if (file == null || file.isEmpty()) throw new IllegalArgumentException("Archivo requerido");
+
+    String nombreOriginal = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
+    String ext = nombreOriginal.contains(".")
+        ? nombreOriginal.substring(nombreOriginal.lastIndexOf('.') + 1).toLowerCase()
+        : "";
+    if (!EXTENSIONES_HOJA_VIDA.contains(ext)) {
+      throw new IllegalArgumentException("Solo se permiten archivos PDF o DOCX");
+    }
+
+    Path dir = getDirectorioHojasVida();
+    Files.createDirectories(dir);
+
+    String serialLimpio = sanitizarSerial(serial);
+    for (String e : EXTENSIONES_HOJA_VIDA) {
+      Files.deleteIfExists(dir.resolve("Hoja de vida-" + serialLimpio + "." + e));
+    }
+
+    Path destino = dir.resolve("Hoja de vida-" + serialLimpio + "." + ext);
+    Files.copy(file.getInputStream(), destino);
+    logger.info("[HOJA-VIDA] Guardada: {}", destino.toAbsolutePath());
+  }
+
+  /** Indica si el serial ya tiene hoja de vida cargada (en cualquier extensión permitida). */
+  public boolean hasHojaVida(String serial) {
+    try {
+      Path dir = getDirectorioHojasVida();
+      String serialLimpio = sanitizarSerial(serial);
+      for (String e : EXTENSIONES_HOJA_VIDA) {
+        if (Files.exists(dir.resolve("Hoja de vida-" + serialLimpio + "." + e))) return true;
+      }
+    } catch (Exception e) {
+      logger.error("[HOJA-VIDA] Error verificando hoja de vida para serial {}: {}", serial, e.getMessage());
+    }
+    return false;
+  }
+
+  /** Elimina la hoja de vida cargada del serial (cualquier extensión permitida). */
+  public void deleteHojaVida(String serial) throws IOException {
+    if (serial == null || serial.isBlank()) throw new IllegalArgumentException("Serial requerido");
+    Path dir = getDirectorioHojasVida();
+    String serialLimpio = sanitizarSerial(serial);
+    boolean eliminado = false;
+    for (String e : EXTENSIONES_HOJA_VIDA) {
+      if (Files.deleteIfExists(dir.resolve("Hoja de vida-" + serialLimpio + "." + e))) {
+        eliminado = true;
+      }
+    }
+    if (eliminado) {
+      logger.info("[HOJA-VIDA] Eliminada hoja de vida del serial {}", serial);
+    }
+  }
+
+  /**
+   * Devuelve la plantilla de hoja de vida ubicada en {RutaArchivos}\PLANTILLA.
+   * Se toma el primer archivo de la carpeta para poder actualizarla sin recompilar.
+   * Retorna null si no existe.
+   */
+  public Path getPlantillaHojaVida() {
+    String ruta = getRutaArchivos();
+    if (ruta == null || ruta.isBlank()) {
+      throw new IllegalStateException("RutaArchivos no configurada en Parametro_TruckrollsLiberty para este cliente");
+    }
+    Path dir = Paths.get(ruta, "PLANTILLA");
+    if (!Files.isDirectory(dir)) return null;
+    try (var stream = Files.list(dir)) {
+      return stream.filter(Files::isRegularFile).findFirst().orElse(null);
+    } catch (IOException e) {
+      logger.error("[HOJA-VIDA] Error buscando plantilla en {}: {}", dir, e.getMessage());
+      return null;
+    }
+  }
+
+  /** Carpeta del cliente actual: {RutaArchivos}\{NOMBRE-CLIENTE} */
+  private Path getDirectorioHojasVida() {
+    String ruta = getRutaArchivos();
+    if (ruta == null || ruta.isBlank()) {
+      throw new IllegalStateException("RutaArchivos no configurada en Parametro_TruckrollsLiberty para este cliente");
+    }
+    String cliente = ClientDatabaseContext.getCurrentClientName();
+    String carpetaCliente = cliente != null ? cliente.trim().toUpperCase().replace(" ", "-") : "SIN-CLIENTE";
+    return Paths.get(ruta, carpetaCliente);
+  }
+
+  /** Lee RutaArchivos de la regla TruckRoll activa del cliente actual. */
+  private String getRutaArchivos() {
+    String clientDb = ClientDatabaseContext.getCurrentClientDb();
+    String sql = "SELECT TOP 1 RutaArchivos FROM [WmsWdGeneral].[dbo].[Parametro_TruckrollsLiberty] " +
+        "WHERE Activo = 1 AND BaseDestino = ?";
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setString(1, clientDb);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) return rs.getString(1);
+      }
+    } catch (SQLException e) {
+      logger.error("[HOJA-VIDA] Error consultando RutaArchivos para {}: {}", clientDb, e.getMessage());
+    }
+    return null;
+  }
+
+  /** Evita path traversal: el serial solo conserva caracteres alfanuméricos, guion y guion bajo. */
+  private String sanitizarSerial(String serial) {
+    return serial.replaceAll("[^A-Za-z0-9_-]", "");
   }
 
   public List<Map<String, Object>> getDiagnosticVariables(String serial) {

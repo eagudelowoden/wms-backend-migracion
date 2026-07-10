@@ -95,6 +95,12 @@ public class TruckrollService {
 
             logger.debug("[TruckrollService] Serial {} sin Despacho matching en {} reglas activas", serial, reglas.size());
 
+            // Sin cruce en Despacho pero con ticket PQRS → TruckRollId = 14 (solo PQRS)
+            if (truckrollRepository.hasPqrsTicket(serial)) {
+                truckrollRepository.updateIngresoSoloPqrs(serial);
+                logger.info("[TruckrollService] Serial {} sin cruce Despacho pero con PQRS → TruckRollId=14", serial);
+            }
+
         } catch (Exception e) {
             logger.error("[TruckrollService] Error clasificando serial {}: {}", serial, e.getMessage(), e);
         } finally {

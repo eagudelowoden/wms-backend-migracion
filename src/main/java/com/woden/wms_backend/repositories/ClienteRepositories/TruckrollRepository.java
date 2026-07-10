@@ -90,6 +90,22 @@ public class TruckrollRepository {
     }
 
     /**
+     * Marca el ingreso como "solo PQRS" (TruckRollId = 14): el serial no cruzó en
+     * ninguna tabla Despacho origen pero sí tiene ticket en App_PQRS_Tickets.
+     * WHERE TruckRollId IS NULL asegura idempotencia.
+     */
+    public void updateIngresoSoloPqrs(String serial) {
+        String sql = "UPDATE Ingreso SET TruckRollId = 14 WHERE Serial = ? AND TruckRollId IS NULL";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error marcando solo-PQRS para serial '{}': {}", serial, e.getMessage());
+        }
+    }
+
+    /**
      * Verifica si el TipoOrigen del ingreso tiene Adicional = 1 en el maestro de WmsWdGeneral.
      * Cuando es true, el serial es "baja normal del cliente" y se omite la clasificación Posible TruckRoll.
      */

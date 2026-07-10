@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
@@ -36,4 +37,6 @@ public class ReparacionModel {
     private String fechaReparacion;
     private Integer estadoCalidadId;
     private Integer usuarioId;
+    @Transient // Nuevo TruckRollId calculado en Reparación (4/5/10-13); no es columna de Reparacion
+    private Integer truckRollId;
 }
