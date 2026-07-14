@@ -34,11 +34,9 @@ import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
-import com.woden.wms_backend.models.WmsWdGeneral.ClienteModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetaCampoRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetaRepository;
 import com.woden.wms_backend.services.BaseService;
-import com.woden.wms_backend.services.WmsWdGeneral.ClienteService;
 
 @Service
 public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
@@ -59,7 +57,7 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   }
 
   @Autowired
-  private ClienteService clienteService;
+  private javax.sql.DataSource dataSource;
 
   @Value("${PRN_LOCAL_PATH:}")
   private String localPrnPath;
@@ -249,12 +247,23 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
       }
       return localPrnPath + File.separator + tipoLower;
     }
+    // Query directo con nombre calificado: funciona desde cualquier conexión del pool,
+    // sin depender del routing de datasource (que en el mismo request ya puede estar
+    // fijado en la BD del cliente y rompería la consulta de la tabla Cliente).
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
-    ClienteModel cliente = clienteService.getById(clientId);
-    if (cliente == null) return null;
-    return "ETIQUETADO".equalsIgnoreCase(tipo)
-        ? cliente.getPrnEtiquetado()
-        : cliente.getPrnEmpaque();
+    if (clientId == null) return null;
+    String columna = "ETIQUETADO".equalsIgnoreCase(tipo) ? "PrnEtiquetado" : "PrnEmpaque";
+    String sql = "SELECT " + columna + " FROM [WmsWdGeneral].[dbo].[Cliente] WHERE Id = ?";
+    try (java.sql.Connection conn = dataSource.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, clientId);
+      try (java.sql.ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) return rs.getString(1);
+      }
+    } catch (java.sql.SQLException e) {
+      System.err.println("Error consultando ruta PRN del cliente " + clientId + ": " + e.getMessage());
+    }
+    return null;
   }
 
   private int extraerNumeroPrn(String filename) {
@@ -263,8 +272,8 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   }
 
   public String previewPrn(String nombre, String tipo, String archivo) {
-    // Consultas de la BD del cliente PRIMERO: resolvePrnRoute pasa por ClienteService
-    // (BD general) y no debe anteceder a los SP del cliente para no arriesgar el routing.
+    // Consultas de la BD del cliente primero; la ruta PRN (BD general) se resuelve después
+    // con query calificado, independiente del routing de datasource.
     EtiquetaModel etiqueta = getModelLabel(nombre);
     List<EtiquetaCampoModel> campos = etiquetaCampoRepository.getListLabelField(etiqueta.getId())
         .stream().map(obj -> {
