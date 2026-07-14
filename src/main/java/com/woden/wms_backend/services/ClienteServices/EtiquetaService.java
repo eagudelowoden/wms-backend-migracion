@@ -65,8 +65,6 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   private String localPrnPath;
 
   public EtiquetaModel getModelLabel(String nombre) {
-    String clientDb = ClientDatabaseContext.getCurrentClientDb();
-    System.out.println("[DEBUG-GETMODEL] getModelLabel() -> nombre: " + nombre + ", clientDb: " + clientDb);
     List<Object[]> results = etiquetaRepository.getModelLabel(nombre);
 
     if (results == null || results.isEmpty()) {
@@ -265,8 +263,17 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   }
 
   public String previewPrn(String nombre, String tipo, String archivo) {
-    String clientDb = ClientDatabaseContext.getCurrentClientDb();
-    System.out.println("[DEBUG-PREVIEW] previewPrn() -> nombre: " + nombre + ", tipo: " + tipo + ", clientDb: " + clientDb);
+    // Consultas de la BD del cliente PRIMERO: resolvePrnRoute pasa por ClienteService
+    // (BD general) y no debe anteceder a los SP del cliente para no arriesgar el routing.
+    EtiquetaModel etiqueta = getModelLabel(nombre);
+    List<EtiquetaCampoModel> campos = etiquetaCampoRepository.getListLabelField(etiqueta.getId())
+        .stream().map(obj -> {
+          EtiquetaCampoModel c = new EtiquetaCampoModel();
+          c.setNombre((String) obj[0]);
+          c.setValor((String) obj[1]);
+          return c;
+        }).toList();
+
     String prnRoute = resolvePrnRoute(tipo);
     if (prnRoute == null) throw new RuntimeException("Ruta de PRN no encontrada");
     File file = new File(new File(prnRoute, nombre), archivo);
@@ -274,15 +281,6 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
 
     try {
       String zpl = Files.readString(file.toPath());
-      System.out.println("[DEBUG-PREVIEW] Llamando a getModelLabel() para: " + nombre);
-      EtiquetaModel etiqueta = getModelLabel(nombre);
-      List<EtiquetaCampoModel> campos = etiquetaCampoRepository.getListLabelField(etiqueta.getId())
-          .stream().map(obj -> {
-            EtiquetaCampoModel c = new EtiquetaCampoModel();
-            c.setNombre((String) obj[0]);
-            c.setValor((String) obj[1]);
-            return c;
-          }).toList();
 
       int previewCount = Math.min(etiqueta.getImpresion() != null ? etiqueta.getImpresion() : 3, 3);
       String[] sufijosNormales = { "1", "2", "3" };
