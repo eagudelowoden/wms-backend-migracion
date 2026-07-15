@@ -24,13 +24,11 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
@@ -57,10 +55,7 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   }
 
   @Autowired
-  private javax.sql.DataSource dataSource;
-
-  @Value("${PRN_LOCAL_PATH:}")
-  private String localPrnPath;
+  private PrnPathResolverService prnPathResolver;
 
   public EtiquetaModel getModelLabel(String nombre) {
     List<Object[]> results = etiquetaRepository.getModelLabel(nombre);
@@ -240,30 +235,7 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   }
 
   private String resolvePrnRoute(String tipo) {
-    if (localPrnPath != null && !localPrnPath.isBlank()) {
-      String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
-      if ("empaque_despacho".equals(tipoLower)) {
-        tipoLower = "empaque";
-      }
-      return localPrnPath + File.separator + tipoLower;
-    }
-    // Query directo con nombre calificado: funciona desde cualquier conexión del pool,
-    // sin depender del routing de datasource (que en el mismo request ya puede estar
-    // fijado en la BD del cliente y rompería la consulta de la tabla Cliente).
-    Integer clientId = ClientDatabaseContext.getCurrentClientId();
-    if (clientId == null) return null;
-    String columna = "ETIQUETADO".equalsIgnoreCase(tipo) ? "PrnEtiquetado" : "PrnEmpaque";
-    String sql = "SELECT " + columna + " FROM [WmsWdGeneral].[dbo].[Cliente] WHERE Id = ?";
-    try (java.sql.Connection conn = dataSource.getConnection();
-         java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setInt(1, clientId);
-      try (java.sql.ResultSet rs = ps.executeQuery()) {
-        if (rs.next()) return rs.getString(1);
-      }
-    } catch (java.sql.SQLException e) {
-      System.err.println("Error consultando ruta PRN del cliente " + clientId + ": " + e.getMessage());
-    }
-    return null;
+    return prnPathResolver.resolvePath(tipo);
   }
 
   private int extraerNumeroPrn(String filename) {
