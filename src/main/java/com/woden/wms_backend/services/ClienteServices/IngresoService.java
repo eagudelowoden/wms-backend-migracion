@@ -152,7 +152,12 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @Transactional
   public void deleteEntries(List<String> seriales) {
-    seriales.forEach(ingresoRepository::eliminarIngresos);
+    seriales.forEach(serial -> {
+      // Limpieza TruckRoll ANTES de borrar: libera el Despacho origen vinculado
+      // para que un reingreso del serial vuelva a clasificarse correctamente
+      truckrollService.limpiarPorEliminacion(serial);
+      ingresoRepository.eliminarIngresos(serial);
+    });
     logger.info("[deleteEntries] {} ingreso(s) eliminado(s)", seriales.size());
   }
 
