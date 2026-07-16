@@ -92,6 +92,12 @@ public class CodigoSapController {
         return ResponseEntity.ok(codigoSapService.getFamilyId(codigoSap));
     }
 
+    @GetMapping("/{id}/has-movements")
+    public ResponseEntity<Boolean> hasMovements(@PathVariable Integer id) {
+        Integer count = codigoSapService.getCount(id);
+        return ResponseEntity.ok(count != null && count > 0);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<Map<String, Object>>> search(@RequestParam(defaultValue = "") String codigo) {
         return ResponseEntity.ok(codigoSapService.search(codigo));

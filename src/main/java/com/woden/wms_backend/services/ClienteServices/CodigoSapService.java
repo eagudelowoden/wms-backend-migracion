@@ -273,7 +273,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
 
     @Transactional
     public Integer innactivate(Integer id, Integer estado) {
-        return codigoSapRepository.innactivate(estado, id);
+        return codigoSapRepository.innactivate(id, estado);
     }
 
     public Integer getCount(Integer id) {
