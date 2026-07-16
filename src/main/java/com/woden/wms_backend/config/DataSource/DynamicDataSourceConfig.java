@@ -72,13 +72,10 @@ public class DynamicDataSourceConfig {
       @Override
       protected DataSource determineTargetDataSource() {
         String dbName = (String) determineCurrentLookupKey();
-        System.out.println("[DEBUG-ROUTING] determineTargetDataSource() -> dbName: " + dbName);
         if (dbName == null || "WmsWdGeneral".equals(dbName)) {
-          System.out.println("[DEBUG-ROUTING] Usando defaultDataSource (WmsWdGeneral)");
           return defaultDataSource;
         }
 
-        System.out.println("[DEBUG-ROUTING] Buscando/creando DataSource para: " + dbName);
         return dataSourceMap.computeIfAbsent(dbName, this::createAndRegisterDataSource);
       }
 
