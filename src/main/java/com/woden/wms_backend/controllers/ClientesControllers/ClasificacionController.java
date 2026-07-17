@@ -15,13 +15,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.woden.wms_backend.controllers.BaseController;
+import com.woden.wms_backend.dto.clientDTO.clasificacion.ClasificacionRequest;
 import com.woden.wms_backend.models.Entity.ClasificacionModel;
 import com.woden.wms_backend.services.ClienteServices.ClasificacionService;
 
 @RestController
 @RequestMapping("/client/clasificacion")
 public class ClasificacionController extends BaseController<ClasificacionModel, Integer> {
+
+  private static final Logger logger = LoggerFactory.getLogger(ClasificacionController.class);
+
   public ClasificacionController(ClasificacionService service) {
     super(service);
   }
@@ -104,5 +111,18 @@ public class ClasificacionController extends BaseController<ClasificacionModel, 
   @GetMapping("/getClassifiedUser")
   public ResponseEntity<List<Map<String, Object>>> getClassifiedUser(@RequestParam Integer usuarioId) {
     return ResponseEntity.ok(service.getClassifiedUser(usuarioId));
+  }
+
+  @PostMapping("/save")
+  public ResponseEntity<?> save(@RequestBody List<ClasificacionRequest> items) {
+    String primer = !items.isEmpty() ? items.get(0).getSerial() : "N/A";
+    logger.info("[CLASIFICACION] save: {} seriales, primer serial: {}", items.size(), primer);
+    try {
+      service.save(items);
+      return ResponseEntity.ok(1);
+    } catch (Exception e) {
+      logger.error("[CLASIFICACION] Error en save: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
+    }
   }
 }

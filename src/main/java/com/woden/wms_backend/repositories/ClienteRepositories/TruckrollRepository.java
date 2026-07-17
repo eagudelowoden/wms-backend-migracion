@@ -106,6 +106,53 @@ public class TruckrollRepository {
     }
 
     /**
+     * Obtiene el Despacho origen vinculado a un Ingreso antes de eliminarlo.
+     * Devuelve { ClienteOrigenId, ClienteParametroId } o null si el serial no fue clasificado.
+     */
+    public long[] getDespachoVinculado(String serial) {
+        String sql = "SELECT ClienteOrigenId, ClienteParametroId FROM Ingreso " +
+                "WHERE Serial = ? AND ClienteOrigenId IS NOT NULL AND ClienteParametroId IS NOT NULL";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new long[]{ rs.getLong(1), rs.getLong(2) };
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error consultando despacho vinculado del serial '{}': {}", serial, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Libera el Despacho en la BD origen cuando se elimina el Ingreso vinculado:
+     * limpia ClienteDestinoId y TruckRollId para que el serial pueda reclasificarse
+     * correctamente en un reingreso.
+     */
+    public void limpiarDespachoOrigen(ParametroTruckrollModel regla, long despachoId) {
+        String sql = String.format(
+                "UPDATE [%s].[dbo].[%s] SET [%s] = NULL, [%s] = NULL, [%s] = NULL WHERE [%s] = ?",
+                regla.getBaseOrigen(),
+                regla.getTablaOrigen(),
+                regla.getCampoClienteDestinoOrigen(),
+                regla.getCampoTruckRollOrigen(),
+                regla.getCampoParametroId(),
+                regla.getCampoIdOrigen()
+        );
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, despachoId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error liberando Despacho {} en {}: {}",
+                    despachoId, regla.getBaseOrigen(), e.getMessage());
+        }
+    }
+
+    /**
      * Verifica si el TipoOrigen del ingreso tiene Adicional = 1 en el maestro de WmsWdGeneral.
      * Cuando es true, el serial es "baja normal del cliente" y se omite la clasificación Posible TruckRoll.
      */
@@ -213,16 +260,20 @@ public class TruckrollRepository {
      */
     public void updateDespachoConsumido(ParametroTruckrollModel regla, long despachoId,
                                          String serial, Integer truckRollId) {
+        // El subselect busca el Ingreso por serial + vínculo con este despacho (ClienteOrigenId),
+        // que updateIngresoTruckroll ya dejó asignado — así también funciona cuando TruckRollId es NULL.
         String sql = String.format(
                 "UPDATE [%s].[dbo].[%s] " +
-                "SET [%s] = (SELECT Id FROM Ingreso WHERE Serial = ? AND [%s] IS NOT NULL), " +
+                "SET [%s] = (SELECT TOP 1 Id FROM Ingreso WHERE Serial = ? AND [%s] = ?), " +
+                "    [%s] = ?, " +
                 "    [%s] = ? " +
                 "WHERE [%s] = ?",
                 regla.getBaseOrigen(),
                 regla.getTablaOrigen(),
                 regla.getCampoClienteDestinoOrigen(),
-                regla.getCampoTruckRollDestino(),
+                regla.getCampoClienteOrigenDestino(),
                 regla.getCampoTruckRollOrigen(),
+                regla.getCampoParametroId(),
                 regla.getCampoIdOrigen()
         );
 
@@ -230,9 +281,11 @@ public class TruckrollRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, serial);
-            if (truckRollId != null) ps.setInt(2, truckRollId);
-            else ps.setNull(2, Types.INTEGER);
-            ps.setLong(3, despachoId);
+            ps.setLong(2, despachoId);
+            if (truckRollId != null) ps.setInt(3, truckRollId);
+            else ps.setNull(3, Types.INTEGER);
+            ps.setInt(4, regla.getId());
+            ps.setLong(5, despachoId);
             ps.executeUpdate();
 
         } catch (SQLException e) {

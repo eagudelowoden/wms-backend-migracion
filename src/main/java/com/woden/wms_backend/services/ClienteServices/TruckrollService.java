@@ -109,6 +109,38 @@ public class TruckrollService {
     }
 
     /**
+     * Limpieza post-delete: al eliminar un Ingreso clasificado, libera el Despacho
+     * de la BD origen (ClienteDestinoId y TruckRollId a NULL) para que un reingreso
+     * del mismo serial vuelva a clasificarse correctamente.
+     * Se ejecuta en el hilo del request (el contexto de cliente ya está establecido),
+     * ANTES de borrar el Ingreso — después ya no existe el vínculo ClienteOrigenId.
+     */
+    public void limpiarPorEliminacion(String serial) {
+        try {
+            long[] vinculo = truckrollRepository.getDespachoVinculado(serial);
+            if (vinculo == null) return; // serial sin clasificación TruckRoll — nada que limpiar
+
+            long despachoId = vinculo[0];
+            long parametroId = vinculo[1];
+
+            String clientDb = ClientDatabaseContext.getCurrentClientDb();
+            List<ParametroTruckrollModel> reglas = truckrollRepository.findReglasActivasPorCliente(clientDb);
+            for (ParametroTruckrollModel regla : reglas) {
+                if (regla.getId() == parametroId) {
+                    truckrollRepository.limpiarDespachoOrigen(regla, despachoId);
+                    logger.info("[TruckrollService] Serial {} eliminado — Despacho {} liberado en {}",
+                            serial, despachoId, regla.getBaseOrigen());
+                    return;
+                }
+            }
+            logger.warn("[TruckrollService] Serial {} tiene ClienteParametroId={} pero la regla no está activa — Despacho {} no liberado",
+                    serial, parametroId, despachoId);
+        } catch (Exception e) {
+            logger.error("[TruckrollService] Error en limpieza post-delete del serial {}: {}", serial, e.getMessage(), e);
+        }
+    }
+
+    /**
      * Determina qué valor del Ingreso usar para el cruce según CampoCruceDestino de la regla.
      */
     private String resolverValorCruce(String campoCruceDestino, String serial, String mac) {
