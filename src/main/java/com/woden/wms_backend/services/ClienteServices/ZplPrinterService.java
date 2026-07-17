@@ -22,12 +22,14 @@ import javax.print.attribute.standard.PrinterName;
 
 import java.awt.print.PrinterJob;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
+import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -37,6 +39,9 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 @Service
 public class ZplPrinterService {
+
+  @Autowired
+  private PrnPathResolverService prnPathResolver;
 
   // ✅ Helper central: reemplaza placeholder exacto, sin afectar variantes con sufijo
   private String reemplazarSeguro(String zpl, String placeholder, String valor) {
@@ -55,6 +60,14 @@ public class ZplPrinterService {
           List<EtiquetaCampoModel> campos,
           List<IngresoModel> seriales,
           EtiquetaDatosGeneralesDTO datosGenerales) {
+
+    if ((plantillaBasePath == null || plantillaBasePath.isBlank())
+        && etiqueta != null && etiqueta.getTipo() != null) {
+      String resolved = prnPathResolver.resolvePath(etiqueta.getTipo());
+      if (resolved != null) {
+        plantillaBasePath = resolved;
+      }
+    }
 
     StringBuilder zplFinal = new StringBuilder();
 

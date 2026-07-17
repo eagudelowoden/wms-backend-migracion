@@ -1,5 +1,9 @@
 package com.woden.wms_backend.services.WmsWdGeneral;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +14,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.controllers.ClientesControllers.IngresoController;
@@ -28,6 +33,9 @@ public class UsuarioService {
 
     @Autowired
     private EncryptUtil encryptUtil;
+
+    @Value("${app.auth.web.url}")
+    private String authWebUrl;
 
     public void saveUser(UsuarioModel usuario) {
         String claveEncriptada = encryptUtil.encode(usuario.getClave());
@@ -188,6 +196,15 @@ public class UsuarioService {
     public List<Map<String, Object>> search(String term) {
         String searchTerm = (term == null || term.trim().isEmpty()) ? "" : term.trim();
         List<Object[]> rows = usuarioRepository.searchEditUser(searchTerm);
+        List<Object[]> webStatusRows = usuarioRepository.getAllWebAccess();
+        Map<Integer, Boolean> webAccessMap = new HashMap<>();
+        for (Object[] w : webStatusRows) {
+            Integer uid = toInt(w[0]);
+            if (uid != null) {
+                Object val = w.length > 1 ? w[1] : null;
+                webAccessMap.put(uid, val != null && !"0".equals(val.toString()));
+            }
+        }
         List<Map<String, Object>> result = new ArrayList<>();
         for (Object[] row : rows) {
             Map<String, Object> item = new HashMap<>();
@@ -212,6 +229,8 @@ public class UsuarioService {
                 }
             }
             item.put("activo", activo);
+            Integer id = toInt(row[0]);
+            item.put("claveHash", id != null && Boolean.TRUE.equals(webAccessMap.get(id)));
             result.add(item);
         }
         return result;
@@ -246,6 +265,32 @@ public class UsuarioService {
 
     public void toggleActivo(int id, int estado) {
         usuarioRepository.innactivateUser(id, estado);
+    }
+
+    public int activateWeb(int id) {
+        List<String> claves = usuarioRepository.getClaveById(id);
+        if (claves.isEmpty()) {
+            return -1;
+        }
+        String password = encryptUtil.decode(claves.get(0));
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            String json = "{ \"id\": " + id + ", \"password\": \"" + password + "\" }";
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(authWebUrl))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode();
+        } catch (Exception e) {
+            log.error("Error al activar usuario web: {}", e.getMessage());
+            return -1;
+        }
+    }
+
+    public void deactivateWeb(int id) {
+        usuarioRepository.deactivateWebAccess(id);
     }
 
     public List<Map<String, Object>> getCargos() {

@@ -80,6 +80,17 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
     @Query(value = "SELECT c.dbase, c.id, c.nombre FROM UsuarioCliente uc INNER JOIN Cliente c ON uc.clienteId = c.id WHERE uc.usuarioId = :usuarioId", nativeQuery = true)
     List<Object[]> getDbsByUsuarioId(@Param("usuarioId") int usuarioId);
 
+    @Query(value = "SELECT id, CASE WHEN clave_hash IS NOT NULL THEN 1 ELSE 0 END FROM Usuario", nativeQuery = true)
+    List<Object[]> getAllWebAccess();
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Usuario SET clave_hash = NULL WHERE id = :id", nativeQuery = true)
+    void deactivateWebAccess(@Param("id") int id);
+
+    @Query(value = "SELECT clave_hash FROM Usuario WHERE id = :id", nativeQuery = true)
+    List<String> getClaveHashById(@Param("id") int id);
+
     @Query(value = "SELECT u.id, u.nombres + ' ' + u.apellidos AS nombres, u.nombreUsuario, COALESCE(ucp.perfilId, -1) AS perfilId FROM Usuario u LEFT JOIN UsuarioCliente uc ON uc.usuarioId = u.id AND uc.clienteId = :clienteId LEFT JOIN UsuarioClientePerfil ucp ON ucp.usuarioClienteId = uc.id WHERE u.id = :usuarioId", nativeQuery = true)
     List<Object[]> getProfileForClient(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
 }

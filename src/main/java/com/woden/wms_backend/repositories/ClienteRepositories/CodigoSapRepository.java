@@ -79,10 +79,10 @@ public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Inte
   void delete(@Param("id") Integer id);
 
   @Transactional
-  @Query(value = "DECLARE @Filas INT; EXEC pa_InnactivateSapCode :estado, :id, @Filas OUTPUT; SELECT @Filas;", nativeQuery = true)
-  Integer innactivate(@Param("estado") Integer estado, @Param("id") Integer id);
+  @Query(value = "DECLARE @Filas INT; EXEC pa_InnactivateSapCode :id, :estado, @Filas OUTPUT; SELECT @Filas;", nativeQuery = true)
+  Integer innactivate(@Param("id") Integer id, @Param("estado") Integer estado);
 
-  @Query(value = "EXEC pa_GetCountSapCode :id", nativeQuery = true)
+  @Query(value = "SELECT ISNULL(SUM(cnt), 0) FROM (SELECT COUNT(*) cnt FROM Pallet WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Accesorio WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Calidad WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Despacho WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Diagnostico WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Empaque WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Ensamble WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Etiquetado WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Etiqueta WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Ingreso WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Limpieza WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Posicion WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Parte WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Reparacion WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM SmartCard WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Cosmetica WHERE CodigoSapId = :id UNION ALL SELECT COUNT(*) FROM Clasificacion WHERE CodigoSapId = :id) refs", nativeQuery = true)
   Integer getCount(@Param("id") Integer id);
 
   @Query(value = "EXEC pa_SearchSimpliCodeSap", nativeQuery = true)

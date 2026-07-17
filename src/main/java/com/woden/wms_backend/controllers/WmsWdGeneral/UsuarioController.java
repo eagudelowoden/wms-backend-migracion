@@ -228,6 +228,22 @@ public class UsuarioController {
         return ResponseEntity.ok(Map.of("message", "Estado actualizado."));
     }
 
+    @PostMapping("/{id}/activate-web")
+    public ResponseEntity<Map<String, String>> activateWeb(@PathVariable int id) {
+        int statusCode = usuarioService.activateWeb(id);
+        if (statusCode == 200) {
+            return ResponseEntity.ok(Map.of("message", "Usuario activado en WEB!"));
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Error al activar usuario web. Código: " + statusCode));
+    }
+
+    @DeleteMapping("/{id}/deactivate-web")
+    public ResponseEntity<Map<String, String>> deactivateWeb(@PathVariable int id) {
+        usuarioService.deactivateWeb(id);
+        return ResponseEntity.ok(Map.of("message", "Usuario desactivado en WEB!"));
+    }
+
     @GetMapping("/cargos")
     public ResponseEntity<List<Map<String, Object>>> getCargos() {
         return ResponseEntity.ok(usuarioService.getCargos());

@@ -24,31 +24,10 @@ public class ManoObraModel {
     @Column(name = "fecha")
     private LocalDate fecha;
 
-    @Column(name = "segmentoId")
-    private Integer segmentoId;
-
-    @Column(name = "usuarioActivo")
-    private Integer usuarioActivo;
-
-    @Column(name = "altas")
-    private Integer altas;
-
-    @Column(name = "bajas")
-    private Integer bajas;
-
-    @Column(name = "costo", length = 255)
-    private String costo;
-
-    @Column(name = "reclamo", length = 255)
-    private String reclamo;
-
-    @Column(name = "tipo", length = 255)
-    private String tipo;
-
-    @Column(name = "detalle", length = 255)
+    @Column(name = "detalle", length = 50)
     private String detalle;
 
-    @Column(name = "observaciones", length = 500)
+    @Column(name = "observaciones", length = 50)
     private String observaciones;
 
     @Column(name = "mano_obra_json", columnDefinition = "nvarchar(max)")

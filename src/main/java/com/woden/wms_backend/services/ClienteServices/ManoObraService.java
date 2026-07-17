@@ -27,13 +27,13 @@ public class ManoObraService extends BaseService<ManoObraModel, Integer> {
             Map<String, Object> map = new HashMap<>();
             map.put("id", row[0]);
             map.put("fecha", row[1] != null ? row[1].toString() : null);
-            map.put("detalle", row[9]);
-            map.put("observaciones", row[10]);
-            map.put("manoObraJson", row[11]);
-            map.put("activo", row[12]);
-            map.put("usuario", row[13]);
-            map.put("createdAt", row[14] != null ? row[14].toString() : null);
-            map.put("updatedAt", row[15] != null ? row[15].toString() : null);
+            map.put("detalle", row[2]);
+            map.put("observaciones", row[3]);
+            map.put("manoObraJson", row[4]);
+            map.put("activo", row[5]);
+            map.put("usuario", row[6]);
+            map.put("createdAt", row[7] != null ? row[7].toString() : null);
+            map.put("updatedAt", row[8] != null ? row[8].toString() : null);
             list.add(map);
         }
         return list;
@@ -43,17 +43,9 @@ public class ManoObraService extends BaseService<ManoObraModel, Integer> {
     public void create(ManoObraModel model) {
         manoObraRepository.insertSP(
                 model.getFecha() != null ? model.getFecha().toString() : null,
-                model.getSegmentoId() != null ? model.getSegmentoId() : 0,
-                model.getUsuarioActivo() != null ? model.getUsuarioActivo() : 0,
-                model.getAltas() != null ? model.getAltas() : 0,
-                model.getBajas() != null ? model.getBajas() : 0,
-                model.getCosto(),
-                model.getReclamo(),
-                model.getTipo(),
                 model.getDetalle(),
                 model.getObservaciones(),
                 model.getManoObraJson(),
-                model.getActivo(),
                 model.getUsuario());
     }
 
@@ -61,18 +53,11 @@ public class ManoObraService extends BaseService<ManoObraModel, Integer> {
     public Integer update(ManoObraModel model) {
         return manoObraRepository.updateSP(
                 model.getFecha() != null ? model.getFecha().toString() : null,
-                model.getSegmentoId() != null ? model.getSegmentoId() : 0,
-                model.getUsuarioActivo() != null ? model.getUsuarioActivo() : 0,
-                model.getAltas() != null ? model.getAltas() : 0,
-                model.getBajas() != null ? model.getBajas() : 0,
-                model.getCosto(),
-                model.getReclamo(),
-                model.getTipo(),
                 model.getDetalle(),
                 model.getObservaciones(),
-                model.getId(),
                 model.getManoObraJson(),
-                model.getUsuario());
+                model.getUsuario(),
+                model.getId());
     }
 
     @Transactional

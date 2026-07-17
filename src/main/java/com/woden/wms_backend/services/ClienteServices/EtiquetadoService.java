@@ -17,6 +17,7 @@ import com.woden.wms_backend.models.Entity.EtiquetadoModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetadoRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
 
 @Service
 public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
@@ -26,6 +27,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
   @Autowired
   private IngresoService ingresoService;
+
+  @Autowired
+  private PrnPathResolverService prnPathResolver;
 
   public Integer insertEtiquetado(String serial, String mac, String variable1, String variable2,
       String variable3, String variable4, Integer reImpresion, Integer usuarioId, String fecha) {
@@ -48,6 +52,17 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     System.out.println("╚════════════════════════════════════════════════════════════════╝");
 
     StringBuilder zplFinal = new StringBuilder();
+
+    // Si no se recibió ruta de plantillas desde el frontend y PRN_LOCAL_PATH está configurado,
+    // resolver la ruta localmente
+    if ((request.getRutaPlantillas() == null || request.getRutaPlantillas().isBlank())
+        && request.getEtiqueta() != null && request.getEtiqueta().getTipo() != null) {
+      String resolved = prnPathResolver.resolvePath(request.getEtiqueta().getTipo());
+      if (resolved != null) {
+        System.out.println("📂 Ruta PRN resuelta localmente: " + resolved);
+        request.setRutaPlantillas(resolved);
+      }
+    }
 
     List<IngresoImpresionDTO> seriales = request.getListaSeriales();
     int totalSeriales = seriales.size();
