@@ -23,6 +23,9 @@ public interface ClienteValidacionRepository extends JpaRepository<ClienteValida
     @Query(value = "EXEC dbo.pa_GetValidacionesAsignadas :clienteId", nativeQuery = true)
     List<Object[]> getAsignadas(@Param("clienteId") Integer clienteId);
 
+    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM ClienteValidacion cv JOIN ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
+    Integer tieneValidacion(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
+
     @Modifying
     @Transactional
     @Query(value = "EXEC dbo.pa_InsertClienteValidacion :clienteId, :validacionTipoId", nativeQuery = true)

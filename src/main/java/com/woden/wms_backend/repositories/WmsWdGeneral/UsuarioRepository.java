@@ -44,21 +44,23 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
 
     @Modifying
     @Transactional
-    @Query(value = "DECLARE @f int; EXEC pa_UpdateUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId, :id, @f OUTPUT", nativeQuery = true)
+    @Query(value = "DECLARE @f int; EXEC pa_UpdateUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId, :maestroCargoId, :maestroAreaId, :id, @f OUTPUT", nativeQuery = true)
     void updateUser(@Param("identificacion") Long identificacion, @Param("nombres") String nombres,
                     @Param("apellidos") String apellidos, @Param("usuario") String usuario,
                     @Param("clave") String clave, @Param("fechaNacimiento") String fechaNacimiento,
                     @Param("correo") String correo, @Param("cargoId") Integer cargoId,
-                    @Param("areaId") Integer areaId, @Param("id") Integer id);
+                    @Param("areaId") Integer areaId, @Param("maestroCargoId") Integer maestroCargoId,
+                    @Param("maestroAreaId") Integer maestroAreaId, @Param("id") Integer id);
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId", nativeQuery = true)
+    @Query(value = "EXEC pa_InsertUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId, :maestroCargoId, :maestroAreaId", nativeQuery = true)
     void insertUser(@Param("identificacion") Long identificacion, @Param("nombres") String nombres,
                     @Param("apellidos") String apellidos, @Param("usuario") String usuario,
                     @Param("clave") String clave, @Param("fechaNacimiento") String fechaNacimiento,
                     @Param("correo") String correo, @Param("cargoId") Integer cargoId,
-                    @Param("areaId") Integer areaId);
+                    @Param("areaId") Integer areaId, @Param("maestroCargoId") Integer maestroCargoId,
+                    @Param("maestroAreaId") Integer maestroAreaId);
 
     @Modifying
     @Transactional

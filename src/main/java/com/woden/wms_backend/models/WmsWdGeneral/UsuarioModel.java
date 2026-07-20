@@ -48,6 +48,12 @@ public class UsuarioModel implements Activable {
     @Column(name = "AreaId")
     private Integer AreaId;
 
+    @Column(name = "MaestroCargoId")
+    private Integer maestroCargoId;
+
+    @Column(name = "MaestroAreaId")
+    private Integer maestroAreaId;
+
     @Column(name = "TemaId")
     private Integer temaId;
 

@@ -48,7 +48,9 @@ public class UsuarioService {
             usuario.getFechaNacimiento(),
             usuario.getCorreo(),
             usuario.getCargoId(),
-            usuario.getAreaId()
+            usuario.getAreaId(),
+            usuario.getMaestroCargoId(),
+            usuario.getMaestroAreaId()
         );
     }
 
@@ -255,6 +257,8 @@ public class UsuarioService {
             (String) body.get("correo"),
             body.get("cargoId") != null ? toInt(body.get("cargoId")) : null,
             body.get("areaId") != null ? toInt(body.get("areaId")) : null,
+            body.get("maestroCargoId") != null ? toInt(body.get("maestroCargoId")) : null,
+            body.get("maestroAreaId") != null ? toInt(body.get("maestroAreaId")) : null,
             id
         );
         if (body.containsKey("activo")) {
