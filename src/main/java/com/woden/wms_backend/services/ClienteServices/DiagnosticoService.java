@@ -246,24 +246,48 @@ public class DiagnosticoService {
   }
 
   /**
-   * Devuelve la plantilla de hoja de vida ubicada en {RutaArchivos}\PLANTILLA.
-   * Se toma el primer archivo de la carpeta para poder actualizarla sin recompilar.
-   * Retorna null si no existe.
+   * Rutas conocidas donde puede vivir la carpeta PLANTILLA, en orden de intento:
+   * la unidad mapeada (Z:) solo existe en algunos servidores/sesiones; la ruta UNC
+   * directa siempre es válida si el servidor tiene acceso de red al share.
+   */
+  private static final List<String> RUTAS_PLANTILLA_CANDIDATAS = List.of(
+      "Z:\\ENV\\PRD\\pqrs\\PLANTILLA",
+      "\\\\10.128.0.28\\archivos\\ENV\\PRD\\pqrs\\PLANTILLA"
+  );
+
+  /**
+   * Devuelve la plantilla de hoja de vida. Prueba primero HOJA_VIDA_PLANTILLA_PATH
+   * (si está configurada) y luego las rutas conocidas (mapeada y UNC), en orden,
+   * usando la primera que sea accesible y tenga un archivo — sin requerir configurar
+   * nada distinto por servidor.
    */
   public Path getPlantillaHojaVida() {
-    if (plantillaPath == null || plantillaPath.isBlank()) {
-      throw new IllegalStateException("HOJA_VIDA_PLANTILLA_PATH no configurado en el backend");
+    List<String> candidatas = new java.util.ArrayList<>();
+    if (plantillaPath != null && !plantillaPath.isBlank()) candidatas.add(plantillaPath);
+    candidatas.addAll(RUTAS_PLANTILLA_CANDIDATAS);
+
+    IOException ultimoError = null;
+    for (String candidata : candidatas) {
+      Path dir = Paths.get(candidata);
+      try (var stream = Files.list(dir)) {
+        Path encontrado = stream.filter(Files::isRegularFile).findFirst().orElse(null);
+        if (encontrado != null) {
+          logger.info("[HOJA-VIDA] Plantilla encontrada en {}", dir);
+          return encontrado;
+        }
+        logger.debug("[HOJA-VIDA] Carpeta accesible pero vacía: {}", dir);
+      } catch (IOException e) {
+        ultimoError = e;
+        logger.debug("[HOJA-VIDA] Ruta de plantilla no accesible: {} ({})", dir, e.getMessage());
+      }
     }
-    Path dir = Paths.get(plantillaPath);
-    try (var stream = Files.list(dir)) {
-      return stream.filter(Files::isRegularFile).findFirst().orElse(null);
-    } catch (IOException e) {
-      logger.error("[HOJA-VIDA] No se pudo listar la carpeta de plantilla {}: {}. " +
-          "Verifique que la ruta exista y que el usuario del servicio tenga acceso de lectura " +
-          "(común cuando la ruta apunta a un share \\\\servidor\\... y el proceso corre con " +
-          "una cuenta sin credenciales de red).", dir, e.getMessage());
-      throw new RuntimeException("No se pudo acceder a la carpeta de plantilla en " + dir + ": " + e.getMessage(), e);
+
+    if (ultimoError != null) {
+      logger.error("[HOJA-VIDA] No se pudo acceder a ninguna ruta de plantilla conocida ({}). Último error: {}",
+          candidatas, ultimoError.getMessage());
+      throw new RuntimeException("No se pudo acceder a la carpeta de plantilla. Último error: " + ultimoError.getMessage(), ultimoError);
     }
+    return null; // todas las rutas accesibles pero sin ningún archivo dentro
   }
 
   /** Carpeta del cliente actual: {RutaArchivos}\{NOMBRE-CLIENTE} */
