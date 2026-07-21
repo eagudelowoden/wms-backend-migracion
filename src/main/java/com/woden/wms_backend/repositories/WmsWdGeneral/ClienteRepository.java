@@ -30,6 +30,9 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
     @Query(value = "SELECT dbase FROM Cliente WHERE id = :id", nativeQuery = true)
     String getDbaseById(@Param("id") int id);
 
+    @Query(value = "SELECT ISNULL(SUM(cnt), 0) FROM (SELECT COUNT(*) cnt FROM UsuarioCliente WHERE clienteId = :id UNION ALL SELECT COUNT(*) FROM ClienteParametro WHERE clienteId = :id) refs", nativeQuery = true)
+    Integer countMovements(@Param("id") Integer id);
+
     @Transactional
     @Query(value = "DECLARE @NewId INT; EXEC pa_InsertCliente @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @ImagenesIngreso = :imagenesIngreso, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @PrnIngreso = :prnIngreso, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @LblIngreso = :lblIngreso, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @Id = @NewId OUTPUT; SELECT @NewId", nativeQuery = true)
     Integer insertSP(@Param("nombre") String nombre,

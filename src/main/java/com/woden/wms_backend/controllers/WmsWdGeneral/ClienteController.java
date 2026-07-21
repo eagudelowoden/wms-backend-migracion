@@ -125,6 +125,11 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         return ResponseEntity.ok(clienteService.search(termino));
     }
 
+    @GetMapping("/{id}/has-movements")
+    public ResponseEntity<Boolean> hasMovements(@PathVariable Integer id) {
+        return ResponseEntity.ok(clienteService.hasMovements(id));
+    }
+
     @GetMapping("/detail/{id}")
     public ResponseEntity<Map<String, Object>> getDetail(@PathVariable Integer id) {
         Map<String, Object> result = clienteService.findByIdMapped(id);

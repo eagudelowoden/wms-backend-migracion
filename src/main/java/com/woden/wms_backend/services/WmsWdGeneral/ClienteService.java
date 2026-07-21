@@ -217,4 +217,9 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
     public void toggle(Integer id, Integer estado) {
         clienteRepository.toggle(id, estado);
     }
+
+    public boolean hasMovements(Integer id) {
+        Integer count = clienteRepository.countMovements(id);
+        return count != null && count > 0;
+    }
 }
