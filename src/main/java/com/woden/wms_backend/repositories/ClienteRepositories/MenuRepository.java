@@ -19,4 +19,13 @@ public interface MenuRepository extends BaseRepository<MenuModel, String> {
 
   @Query(value = "SELECT id,descripcion,tipo,orden,accion,estado,icono,id_padre,view_name,controller_name FROM Menu", nativeQuery = true)
   public List<MenuModel> GetAllMenus();
+
+  @Query(value = "SELECT moduloId FROM [WmsWdGeneral].dbo.PerfilModulo WHERE perfilId = :perfilId", nativeQuery = true)
+  List<Integer> getAssignedModuleIds(@Param("perfilId") int perfilId);
+
+  @Query(value = "SELECT seccionId FROM [WmsWdGeneral].dbo.PerfilSeccion WHERE perfilId = :perfilId", nativeQuery = true)
+  List<Integer> getAssignedSeccionIds(@Param("perfilId") int perfilId);
+
+  @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM [WmsWdGeneral].dbo.ClienteValidacion cv JOIN [WmsWdGeneral].dbo.ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id JOIN [WmsWdGeneral].dbo.Perfil p ON p.clienteId = cv.ClienteId WHERE p.id = :perfilId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
+  Integer tieneValidacion(@Param("perfilId") int perfilId, @Param("codigo") String codigo);
 }
