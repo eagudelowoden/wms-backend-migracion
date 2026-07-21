@@ -70,4 +70,9 @@ public class ClienteValidacionService {
     public void toggle(Integer clienteId, Integer validacionTipoId, Boolean activo) {
         clienteValidacionRepository.toggleValidacion(clienteId, validacionTipoId, activo);
     }
+
+    public boolean tieneValidacion(Integer clienteId, String codigo) {
+        Integer count = clienteValidacionRepository.tieneValidacion(clienteId, codigo);
+        return count != null && count > 0;
+    }
 }

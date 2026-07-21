@@ -93,6 +93,8 @@ public class UsuarioService {
         u.setCorreo(toString(row[7]));
         u.setCargo(toString(row[8]));
         u.setArea(toString(row[9]));
+        u.setMaestroCargoId(row.length > 10 ? toInt(row[10]) : null);
+        u.setMaestroAreaId(row.length > 11 ? toInt(row[11]) : null);
         return u;
     }
 
@@ -219,6 +221,8 @@ public class UsuarioService {
             item.put("correo", row.length > 7 ? row[7] : null);
             item.put("cargo", row.length > 8 ? row[8] : null);
             item.put("area", row.length > 9 ? row[9] : null);
+            item.put("maestroCargoId", row.length > 10 ? row[10] : null);
+            item.put("maestroAreaId", row.length > 11 ? row[11] : null);
             boolean activo = true;
             if (row.length > 5 && row[5] != null) {
                 Object val = row[5];

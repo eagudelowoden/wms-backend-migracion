@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.dto.clientDTO.ClienteValidacionTipoDto;
@@ -59,5 +60,11 @@ public class ClienteValidacionController {
         Boolean activo = (Boolean) body.get("activo");
         clienteValidacionService.toggle(clienteId, validacionTipoId, activo);
         return ResponseEntity.ok(Map.of("message", "Estado actualizado."));
+    }
+
+    @GetMapping("/{clienteId}/tiene")
+    public ResponseEntity<Map<String, Boolean>> tieneValidacion(@PathVariable Integer clienteId, @RequestParam String codigo) {
+        boolean tiene = clienteValidacionService.tieneValidacion(clienteId, codigo);
+        return ResponseEntity.ok(Map.of("tiene", tiene));
     }
 }
