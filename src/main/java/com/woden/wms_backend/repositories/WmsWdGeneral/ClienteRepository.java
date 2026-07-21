@@ -112,6 +112,11 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
 
     @Modifying
     @Transactional
+    @Query(value = "UPDATE Cliente SET Activo = :estado WHERE Id = :id", nativeQuery = true)
+    void toggle(@Param("id") Integer id, @Param("estado") Integer estado);
+
+    @Modifying
+    @Transactional
     @Query(value = "EXEC pa_DeleteCliente @Id = :id", nativeQuery = true)
     void deleteSP(@Param("id") Integer id);
 

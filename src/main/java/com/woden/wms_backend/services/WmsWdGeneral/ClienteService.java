@@ -212,4 +212,9 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
     public void delete(Integer id) {
         clienteRepository.deleteSP(id);
     }
+
+    @Transactional
+    public void toggle(Integer id, Integer estado) {
+        clienteRepository.toggle(id, estado);
+    }
 }
