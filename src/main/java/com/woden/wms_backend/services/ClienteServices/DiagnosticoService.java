@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +45,15 @@ public class DiagnosticoService {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  /**
+   * Ruta ÚNICA y global de la plantilla de hoja de vida — independiente del cliente.
+   * A diferencia de RutaArchivos (que sí es por cliente, para las evidencias ya firmadas),
+   * la plantilla es la misma para todos: agregar un cliente nuevo no requiere copiarla
+   * a ningún lado, solo configurar RutaArchivos para sus evidencias.
+   */
+  @Value("${HOJA_VIDA_PLANTILLA_PATH:}")
+  private String plantillaPath;
 
   @Transactional
   public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId,
@@ -241,20 +251,16 @@ public class DiagnosticoService {
    * Retorna null si no existe.
    */
   public Path getPlantillaHojaVida() {
-    String ruta = getRutaArchivos();
-    if (ruta == null || ruta.isBlank()) {
-      throw new IllegalStateException("RutaArchivos no configurada en Parametro_TruckrollsLiberty para este cliente");
+    if (plantillaPath == null || plantillaPath.isBlank()) {
+      throw new IllegalStateException("HOJA_VIDA_PLANTILLA_PATH no configurado en el backend");
     }
-    Path dir = Paths.get(ruta, "PLANTILLA");
-    // isDirectory() ya intenta acceder a la ruta; si el servidor no tiene permisos sobre el
-    // share de red, aquí devuelve false igual que si la carpeta no existiera — no hay forma de
-    // diferenciar "no existe" de "sin acceso" sin listar explícitamente y capturar la excepción.
+    Path dir = Paths.get(plantillaPath);
     try (var stream = Files.list(dir)) {
       return stream.filter(Files::isRegularFile).findFirst().orElse(null);
     } catch (IOException e) {
       logger.error("[HOJA-VIDA] No se pudo listar la carpeta de plantilla {}: {}. " +
           "Verifique que la ruta exista y que el usuario del servicio tenga acceso de lectura " +
-          "(común cuando RutaArchivos apunta a un share \\\\servidor\\... y el proceso corre con " +
+          "(común cuando la ruta apunta a un share \\\\servidor\\... y el proceso corre con " +
           "una cuenta sin credenciales de red).", dir, e.getMessage());
       throw new RuntimeException("No se pudo acceder a la carpeta de plantilla en " + dir + ": " + e.getMessage(), e);
     }
