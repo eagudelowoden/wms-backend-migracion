@@ -246,12 +246,17 @@ public class DiagnosticoService {
       throw new IllegalStateException("RutaArchivos no configurada en Parametro_TruckrollsLiberty para este cliente");
     }
     Path dir = Paths.get(ruta, "PLANTILLA");
-    if (!Files.isDirectory(dir)) return null;
+    // isDirectory() ya intenta acceder a la ruta; si el servidor no tiene permisos sobre el
+    // share de red, aquí devuelve false igual que si la carpeta no existiera — no hay forma de
+    // diferenciar "no existe" de "sin acceso" sin listar explícitamente y capturar la excepción.
     try (var stream = Files.list(dir)) {
       return stream.filter(Files::isRegularFile).findFirst().orElse(null);
     } catch (IOException e) {
-      logger.error("[HOJA-VIDA] Error buscando plantilla en {}: {}", dir, e.getMessage());
-      return null;
+      logger.error("[HOJA-VIDA] No se pudo listar la carpeta de plantilla {}: {}. " +
+          "Verifique que la ruta exista y que el usuario del servicio tenga acceso de lectura " +
+          "(común cuando RutaArchivos apunta a un share \\\\servidor\\... y el proceso corre con " +
+          "una cuenta sin credenciales de red).", dir, e.getMessage());
+      throw new RuntimeException("No se pudo acceder a la carpeta de plantilla en " + dir + ": " + e.getMessage(), e);
     }
   }
 
