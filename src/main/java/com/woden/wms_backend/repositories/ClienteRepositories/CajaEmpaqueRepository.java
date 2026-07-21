@@ -96,6 +96,14 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     List<Object[]> searchBoxEntry(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
 
     /**
+     * Seriales de una caja con su falla funcional/cosmética (SP nuevo pa_SearchBoxEntryQuality).
+     * Columnas: serial, mac, codigo, descripcion, tipologia, SmartCard,
+     * fallaFuncional, fallaFuncionalDescripcion, fallaCosmetica, fallaCosmeticaDescripcion.
+     */
+    @Query(value = "EXEC pa_SearchBoxEntryQuality :cajaEmpaqueId", nativeQuery = true)
+    List<Object[]> searchBoxEntryQuality(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
+
+    /**
      * Cajas de un pallet excluyendo las que están en :estadoId (rechazadas).
      * Replica el conteo de seriales serializados de pa_SearchPacking.
      */

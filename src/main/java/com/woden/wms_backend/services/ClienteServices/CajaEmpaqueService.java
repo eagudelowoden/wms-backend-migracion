@@ -109,6 +109,33 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     return seriales;
   }
 
+  /** Seriales de una caja incluyendo falla funcional/cosmética (SP nuevo pa_SearchBoxEntryQuality). */
+  public List<Map<String, String>> searchBoxSerialesQuality(Integer cajaEmpaqueId) {
+    List<Object[]> results = cajaEmpaqueRepository.searchBoxEntryQuality(cajaEmpaqueId);
+    List<Map<String, String>> seriales = new ArrayList<>();
+    for (Object[] r : results) {
+      Map<String, String> fila = new HashMap<>();
+      fila.put("serial", r[0] != null ? r[0].toString() : "");
+      fila.put("mac", r[1] != null ? r[1].toString() : "");
+      fila.put("codigo", r[2] != null ? r[2].toString() : "");
+      fila.put("descripcion", r[3] != null ? r[3].toString() : "");
+      fila.put("tipologia", r[4] != null ? r[4].toString() : "");
+      fila.put("smartCard", r[5] != null ? r[5].toString() : "");
+      fila.put("fallaFuncional", combinarFalla(r, 6, 7));
+      fila.put("fallaCosmetica", combinarFalla(r, 8, 9));
+      seriales.add(fila);
+    }
+    return seriales;
+  }
+
+  /** Arma "codigo | descripcion" de una falla; vacío si no hay código. */
+  private String combinarFalla(Object[] r, int idxCodigo, int idxDescripcion) {
+    String codigo = r[idxCodigo] != null ? r[idxCodigo].toString().trim() : "";
+    String descripcion = r[idxDescripcion] != null ? r[idxDescripcion].toString().trim() : "";
+    if (codigo.isEmpty()) return "";
+    return descripcion.isEmpty() ? codigo : codigo + " | " + descripcion;
+  }
+
   public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
     Integer filas = 0;
     cajaEmpaqueRepository.updateStatusBoxPacking(cajaEmpaqueId, estadoId, filas);
