@@ -122,7 +122,7 @@ public class UsuarioService {
     public boolean deleteUser(int id) {
         List<String> usuarios = usuarioRepository.getNombreUsuarioById(id);
         if (usuarios.isEmpty()) return false;
-        usuarioRepository.innactivateUser(id, 0);
+        usuarioRepository.deleteUser(id);
         return true;
     }
 

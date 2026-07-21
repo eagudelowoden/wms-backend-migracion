@@ -67,6 +67,11 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
     @Query(value = "EXEC pa_InnactivateUser :id, :estado", nativeQuery = true)
     void innactivateUser(@Param("id") int id, @Param("estado") int estado);
 
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_DeleteUser :id", nativeQuery = true)
+    void deleteUser(@Param("id") int id);
+
     @Query(value = "EXEC pa_GetListPosition", nativeQuery = true)
     List<Object[]> getListPosition();
 
