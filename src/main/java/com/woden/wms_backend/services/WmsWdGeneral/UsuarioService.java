@@ -48,7 +48,9 @@ public class UsuarioService {
             usuario.getFechaNacimiento(),
             usuario.getCorreo(),
             usuario.getCargoId(),
-            usuario.getAreaId()
+            usuario.getAreaId(),
+            usuario.getMaestroCargoId(),
+            usuario.getMaestroAreaId()
         );
     }
 
@@ -91,6 +93,8 @@ public class UsuarioService {
         u.setCorreo(toString(row[7]));
         u.setCargo(toString(row[8]));
         u.setArea(toString(row[9]));
+        u.setMaestroCargoId(row.length > 10 ? toInt(row[10]) : null);
+        u.setMaestroAreaId(row.length > 11 ? toInt(row[11]) : null);
         return u;
     }
 
@@ -118,7 +122,7 @@ public class UsuarioService {
     public boolean deleteUser(int id) {
         List<String> usuarios = usuarioRepository.getNombreUsuarioById(id);
         if (usuarios.isEmpty()) return false;
-        usuarioRepository.innactivateUser(id, 0);
+        usuarioRepository.deleteUser(id);
         return true;
     }
 
@@ -217,6 +221,8 @@ public class UsuarioService {
             item.put("correo", row.length > 7 ? row[7] : null);
             item.put("cargo", row.length > 8 ? row[8] : null);
             item.put("area", row.length > 9 ? row[9] : null);
+            item.put("maestroCargoId", row.length > 10 ? row[10] : null);
+            item.put("maestroAreaId", row.length > 11 ? row[11] : null);
             boolean activo = true;
             if (row.length > 5 && row[5] != null) {
                 Object val = row[5];
@@ -255,6 +261,8 @@ public class UsuarioService {
             (String) body.get("correo"),
             body.get("cargoId") != null ? toInt(body.get("cargoId")) : null,
             body.get("areaId") != null ? toInt(body.get("areaId")) : null,
+            body.get("maestroCargoId") != null ? toInt(body.get("maestroCargoId")) : null,
+            body.get("maestroAreaId") != null ? toInt(body.get("maestroAreaId")) : null,
             id
         );
         if (body.containsKey("activo")) {

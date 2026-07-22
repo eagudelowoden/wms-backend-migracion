@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -124,6 +125,11 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
         return ResponseEntity.ok(clienteService.search(termino));
     }
 
+    @GetMapping("/{id}/has-movements")
+    public ResponseEntity<Boolean> hasMovements(@PathVariable Integer id) {
+        return ResponseEntity.ok(clienteService.hasMovements(id));
+    }
+
     @GetMapping("/detail/{id}")
     public ResponseEntity<Map<String, Object>> getDetail(@PathVariable Integer id) {
         Map<String, Object> result = clienteService.findByIdMapped(id);
@@ -152,6 +158,12 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
     public ResponseEntity<Map<String, Object>> removeCliente(@PathVariable Integer id) {
         clienteService.delete(id);
         return ResponseEntity.ok(Map.of("message", "Cliente eliminado."));
+    }
+
+    @PatchMapping("/{id}/toggle")
+    public ResponseEntity<Map<String, Object>> toggle(@PathVariable Integer id, @RequestParam Integer estado) {
+        clienteService.toggle(id, estado);
+        return ResponseEntity.ok(Map.of("message", "Estado actualizado."));
     }
 
     public static class DatabaseInfo {
