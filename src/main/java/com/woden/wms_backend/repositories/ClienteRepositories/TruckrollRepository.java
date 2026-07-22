@@ -70,6 +70,33 @@ public class TruckrollRepository {
     }
 
     /**
+     * Verifica si el cliente tiene activa la validación con el código dado (ej. "TRUCKROLL").
+     * Usa JDBC directo con nombre calificado a WmsWdGeneral (igual que el resto de este
+     * repositorio) para evitar el "connection pinning": esta llamada ocurre con
+     * ClientDatabaseContext ya apuntando a la BD del cliente, así que una consulta vía
+     * Hibernate/JPA a ClienteValidacionRepository terminaría enrutada a la BD del cliente
+     * en vez de WmsWdGeneral (donde realmente viven ClienteValidacion/ClienteValidacionTipo).
+     */
+    public boolean tieneValidacionActiva(Integer clienteId, String codigo) {
+        if (clienteId == null || codigo == null) return false;
+        String sql = "SELECT cv.Activo " +
+                "FROM [WmsWdGeneral].[dbo].[ClienteValidacion] cv " +
+                "INNER JOIN [WmsWdGeneral].[dbo].[ClienteValidacionTipo] cvt ON cvt.Id = cv.ValidacionTipoId " +
+                "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = 1 AND cvt.Activo = 1";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, clienteId);
+            ps.setString(2, codigo);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error consultando validación '{}' para clienteId={}: {}", codigo, clienteId, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Verifica si existe un ticket PQRS previo para el serial en App_PQRS_Tickets del cliente.
      * La columna "mac" de esta tabla almacena en realidad el serial del equipo.
      * Determina si la clasificación sube de nivel: 0→1 (Garantía) o 6→7 (Posible TruckRoll).

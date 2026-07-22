@@ -19,6 +19,8 @@ public class TruckrollService {
     @Autowired
     private TruckrollRepository truckrollRepository;
 
+    private static final String CODIGO_VALIDACION = "TRUCKROLL";
+
     /**
      * Clasifica un serial recién ingresado según las reglas de negocio TruckRoll.
      * Se ejecuta en hilo separado para no bloquear la respuesta del ingreso.
@@ -40,6 +42,11 @@ public class TruckrollService {
         logger.debug("[TruckrollService] Iniciando clasificación — serial={}, mac={}, tipoOrigenId={}, clientDb={}", serial, mac, tipoOrigenId, clientDbName);
         ClientDatabaseContext.setCurrentClient(clientName, clientDbName, clientId);
         try {
+            if (!truckrollRepository.tieneValidacionActiva(clientId, CODIGO_VALIDACION)) {
+                logger.debug("[TruckrollService] Validación TRUCKROLL no activa para el cliente {} — no se clasifica", clientName);
+                return;
+            }
+
             List<ParametroTruckrollModel> reglas = truckrollRepository.findReglasActivasPorCliente(clientDbName);
             logger.debug("[TruckrollService] Reglas activas encontradas para {}: {}", clientDbName, reglas.size());
             if (reglas.isEmpty()) {
@@ -117,6 +124,11 @@ public class TruckrollService {
      */
     public void limpiarPorEliminacion(String serial) {
         try {
+            Integer clienteId = ClientDatabaseContext.getCurrentClientId();
+            if (!truckrollRepository.tieneValidacionActiva(clienteId, CODIGO_VALIDACION)) {
+                return;
+            }
+
             long[] vinculo = truckrollRepository.getDespachoVinculado(serial);
             if (vinculo == null) return; // serial sin clasificación TruckRoll — nada que limpiar
 

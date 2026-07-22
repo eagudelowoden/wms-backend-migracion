@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woden.wms_backend.dto.IngresoDTO;
 import com.woden.wms_backend.dto.IngresoIlegibleDTO;
 import com.woden.wms_backend.dto.IngresoTransitoDTO;
@@ -57,6 +58,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @Autowired
   private DataSource dataSource;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -150,15 +154,33 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return result;
   }
 
+  /**
+   * Elimina los seriales indicados. La limpieza TruckRoll (libera el Despacho
+   * origen vinculado) se hace ANTES del borrado, serial por serial — son solo
+   * lecturas/escrituras en Despacho, no tocan Ingreso, así que no retienen locks
+   * sobre esa tabla. El borrado en sí es UN solo DELETE set-based (pa_DeleteEntries)
+   * en vez de N deletes secuenciales dentro de una misma transacción larga, que
+   * era lo que mantenía bloqueadas las filas de Ingreso (y con ellas cualquier
+   * consulta que las necesitara, como listar pallets o sus seriales) durante
+   * todo el lote.
+   *
+   * @Transactional es obligatorio aquí: Spring Data JPA exige una transacción
+   * activa para ejecutar métodos @Modifying (eliminarIngresosBatch). No reintroduce
+   * el problema original porque la conexión real solo se abre cuando se llama a
+   * eliminarIngresosBatch (un único DELETE set-based) — la limpieza TruckRoll previa
+   * usa conexiones JDBC aparte y no la mantiene abierta más tiempo.
+   */
   @Transactional
   public void deleteEntries(List<String> seriales) {
-    seriales.forEach(serial -> {
-      // Limpieza TruckRoll ANTES de borrar: libera el Despacho origen vinculado
-      // para que un reingreso del serial vuelva a clasificarse correctamente
-      truckrollService.limpiarPorEliminacion(serial);
-      ingresoRepository.eliminarIngresos(serial);
-    });
-    logger.info("[deleteEntries] {} ingreso(s) eliminado(s)", seriales.size());
+    seriales.forEach(truckrollService::limpiarPorEliminacion);
+
+    try {
+      String serialesJson = objectMapper.writeValueAsString(seriales);
+      ingresoRepository.eliminarIngresosBatch(serialesJson);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new RuntimeException("Error serializando seriales para eliminar", e);
+    }
+
   }
 
   // ── Búsqueda / mapeo ─────────────────────────────────────────────────────────
