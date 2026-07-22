@@ -72,7 +72,7 @@ public class ClienteValidacionService {
     }
 
     /** true si el cliente tiene activa la validación con el código dado (ej. "TRUCKROLL"). */
-    public boolean tieneValidacionActiva(Integer clienteId, String codigo) {
+    public boolean tieneValidacion(Integer clienteId, String codigo) {
         if (clienteId == null || codigo == null) return false;
         return getValidacionesByClienteId(clienteId).stream()
                 .anyMatch(v -> codigo.equalsIgnoreCase(v.getCodigo()) && v.isActivo());
