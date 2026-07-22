@@ -58,6 +58,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_DeleteEntry :serial", nativeQuery = true)
 	void eliminarIngresos(@Param("serial") String serial);
 
+	/** Borra todos los seriales indicados en un solo DELETE set-based (ver pa_DeleteEntries). */
+	@Modifying
+	@Query(value = "EXEC pa_DeleteEntries :serialesJson", nativeQuery = true)
+	void eliminarIngresosBatch(@Param("serialesJson") String serialesJson);
+
 	@Query(value = "EXEC pa_GetModelEntry :serial", nativeQuery = true)
 	List<Object[]> searchIngreso(@Param("serial") String serial);
 
