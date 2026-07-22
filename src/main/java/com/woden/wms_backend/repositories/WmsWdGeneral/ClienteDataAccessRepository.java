@@ -43,4 +43,7 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Query(value = "SELECT etiquetaUnitariaON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getEtiquetaUnitariaON(@Param("id") int id);
+
+  @Query(value = "SELECT CASE WHEN serialMasterCalidadON = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
+  Integer getSerialMasterCalidadON(@Param("id") int id);
 }

@@ -35,6 +35,12 @@ public class ClienteDataAccessController {
         return clienteService.getBaseEmpaqueON(id);
     }
 
+    @GetMapping("/SerialMasterCalidadON/{id}")
+    public int getSerialMasterCalidadON(@PathVariable Integer id) {
+        Integer value = clienteService.getSerialMasterCalidadON(id);
+        return value != null ? value : 0;
+    }
+
 
 
 
