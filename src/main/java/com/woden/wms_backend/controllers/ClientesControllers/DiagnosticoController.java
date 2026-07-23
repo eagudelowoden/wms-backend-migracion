@@ -124,9 +124,11 @@ public class DiagnosticoController {
 
   @PostMapping("/uploadHojaVida")
   public ResponseEntity<?> uploadHojaVida(@RequestParam String serial,
-      @RequestParam("file") MultipartFile file) {
+      @RequestParam("file") MultipartFile file,
+      @RequestParam Integer usuarioId,
+      @RequestParam String modulo) {
     try {
-      service.uploadHojaVida(serial, file);
+      service.uploadHojaVida(serial, file, usuarioId, modulo);
       return ResponseEntity.ok(1);
     } catch (IllegalArgumentException | IllegalStateException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
@@ -164,9 +166,9 @@ public class DiagnosticoController {
   }
 
   @DeleteMapping("/deleteHojaVida")
-  public ResponseEntity<?> deleteHojaVida(@RequestParam String serial) {
+  public ResponseEntity<?> deleteHojaVida(@RequestParam String serial, @RequestParam Integer usuarioId) {
     try {
-      service.deleteHojaVida(serial);
+      service.deleteHojaVida(serial, usuarioId);
       return ResponseEntity.ok(1);
     } catch (IllegalArgumentException | IllegalStateException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
