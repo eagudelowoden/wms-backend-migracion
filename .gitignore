@@ -32,6 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 .logs/
+logs/
 .fake
 *.log
 *.log.*
+*.gz
+
+### Claude Code ###
+.claude/settings.local.json
