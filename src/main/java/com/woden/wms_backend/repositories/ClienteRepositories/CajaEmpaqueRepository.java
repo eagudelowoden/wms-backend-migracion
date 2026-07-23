@@ -96,6 +96,14 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     List<Object[]> searchBoxEntry(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
 
     /**
+     * Seriales de una caja con su falla funcional/cosmética (SP nuevo pa_SearchBoxEntryQuality).
+     * Columnas: serial, mac, codigo, descripcion, tipologia, SmartCard,
+     * fallaFuncional, fallaFuncionalDescripcion, fallaCosmetica, fallaCosmeticaDescripcion.
+     */
+    @Query(value = "EXEC pa_SearchBoxEntryQuality :cajaEmpaqueId", nativeQuery = true)
+    List<Object[]> searchBoxEntryQuality(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
+
+    /**
      * Cajas de un pallet excluyendo las que están en :estadoId (rechazadas).
      * Replica el conteo de seriales serializados de pa_SearchPacking.
      */
@@ -109,5 +117,15 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
             "GROUP BY ce.Id, ce.Numero " +
             "ORDER BY ce.Id", nativeQuery = true)
     List<Object[]> searchPackingNoRejected(@Param("palletId") Integer palletId, @Param("estadoId") Integer estadoId);
+
+    /** Todas las cajas rechazadas (CajaEmpaque.EstadoId = :estadoId) con pallet y conteo de seriales. */
+    @Query(value = "SELECT c.Id, c.Numero, " +
+            "(SELECT COUNT(*) FROM dbo.Calidad q WHERE q.CajaEmpaqueId = c.Id) AS seriales, " +
+            "p.Numero AS pallet " +
+            "FROM dbo.CajaEmpaque c " +
+            "INNER JOIN dbo.Pallet p ON p.Id = c.PalletId " +
+            "WHERE c.EstadoId = :estadoId AND c.Activo = 1 " +
+            "ORDER BY p.Numero, c.Numero", nativeQuery = true)
+    List<Object[]> searchAllRejectedBoxes(@Param("estadoId") Integer estadoId);
 
 }
