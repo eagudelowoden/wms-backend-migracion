@@ -20,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woden.wms_backend.dto.IngresoDTO;
 import com.woden.wms_backend.dto.IngresoIlegibleDTO;
 import com.woden.wms_backend.dto.IngresoTransitoDTO;
 import com.woden.wms_backend.dto.clientDTO.EntryProgressDTO;
 import com.woden.wms_backend.dto.clientDTO.IngresoModelDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStateAllItemRequest;
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.exception.BusinessRuleException;
 import com.woden.wms_backend.exception.EntryNotFoundException;
 import com.woden.wms_backend.models.Entity.IngresoModel;
@@ -52,7 +54,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private ConsecutiveService consecutiveService;
 
   @Autowired
+  private TruckrollService truckrollService;
+
+  @Autowired
   private DataSource dataSource;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @PersistenceContext
   private EntityManager entityManager;
@@ -100,7 +108,14 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       Integer codigo = stmt.getInt(29);
       String mensaje = stmt.getString(30);
 
-      if (codigo == 0) return null;
+      if (codigo == 0) {
+        String clientDb = ClientDatabaseContext.getCurrentClientDb();
+        String clientName = ClientDatabaseContext.getCurrentClientName();
+        Integer clientId = ClientDatabaseContext.getCurrentClientId();
+        truckrollService.clasificarAsync(ingreso.getSerial(), ingreso.getMac(),
+            ingreso.getTipoOrigenId(), clientDb, clientName, clientId);
+        return null;
+      }
 
       // Mapear código del SP a mensaje legible
       return switch (codigo) {
@@ -115,10 +130,57 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
   }
 
+  public Map<String, Object> getTruckRollStatus(String serial) {
+    Map<String, Object> result = new HashMap<>();
+    try (Connection conn = dataSource.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(
+             "SELECT TruckRollId FROM Ingreso WHERE Serial = ? ORDER BY Id DESC")) {
+      ps.setString(1, serial.toUpperCase());
+      try (java.sql.ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          Object truckRollId = rs.getObject("TruckRollId");
+          result.put("truckRollId", truckRollId);
+          result.put("clasificado", truckRollId != null);
+        } else {
+          result.put("truckRollId", null);
+          result.put("clasificado", false);
+        }
+      }
+    } catch (java.sql.SQLException e) {
+      logger.error("[getTruckRollStatus] Error para serial {}: {}", serial, e.getMessage());
+      result.put("truckRollId", null);
+      result.put("clasificado", false);
+    }
+    return result;
+  }
+
+  /**
+   * Elimina los seriales indicados. La limpieza TruckRoll (libera el Despacho
+   * origen vinculado) se hace ANTES del borrado, serial por serial — son solo
+   * lecturas/escrituras en Despacho, no tocan Ingreso, así que no retienen locks
+   * sobre esa tabla. El borrado en sí es UN solo DELETE set-based (pa_DeleteEntries)
+   * en vez de N deletes secuenciales dentro de una misma transacción larga, que
+   * era lo que mantenía bloqueadas las filas de Ingreso (y con ellas cualquier
+   * consulta que las necesitara, como listar pallets o sus seriales) durante
+   * todo el lote.
+   *
+   * @Transactional es obligatorio aquí: Spring Data JPA exige una transacción
+   * activa para ejecutar métodos @Modifying (eliminarIngresosBatch). No reintroduce
+   * el problema original porque la conexión real solo se abre cuando se llama a
+   * eliminarIngresosBatch (un único DELETE set-based) — la limpieza TruckRoll previa
+   * usa conexiones JDBC aparte y no la mantiene abierta más tiempo.
+   */
   @Transactional
   public void deleteEntries(List<String> seriales) {
-    seriales.forEach(ingresoRepository::eliminarIngresos);
-    logger.info("[deleteEntries] {} ingreso(s) eliminado(s)", seriales.size());
+    seriales.forEach(truckrollService::limpiarPorEliminacion);
+
+    try {
+      String serialesJson = objectMapper.writeValueAsString(seriales);
+      ingresoRepository.eliminarIngresosBatch(serialesJson);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new RuntimeException("Error serializando seriales para eliminar", e);
+    }
+
   }
 
   // ── Búsqueda / mapeo ─────────────────────────────────────────────────────────
@@ -178,6 +240,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setLote((String) obj[11]);
       ingreso.setModelo((String) obj[12]);
       ingreso.setReingreso((Integer) obj[13]);
+      if (obj.length > 14 && obj[14] != null) ingreso.setTruckRollId((Integer) obj[14]);
       return ingreso;
     }).collect(Collectors.toList());
   }
@@ -232,16 +295,19 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
   }
 
-  public List<Map<String, String>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
+  public List<Map<String, Object>> searchDiagnosticEntry(String estadoFinal, String perfil, Integer usuarioId) {
     List<Object[]> results = ingresoRepository.searchDiagnosticEntry(estadoFinal, perfil, usuarioId);
     return results.stream().map(result -> {
-      Map<String, String> entry = new HashMap<>();
+      Map<String, Object> entry = new HashMap<>();
       entry.put("serial", (String) result[0]);
       entry.put("mac", (String) result[1]);
       entry.put("codigoSap", (String) result[2]);
       entry.put("descripcion", (String) result[3]);
       entry.put("falla", (String) result[4]);
       entry.put("estado", (String) result[5]);
+      // TruckRollId al final del SELECT del SP (posición 6); con el SP viejo queda null
+      entry.put("truckRollId", result.length > 6 && result[6] != null
+          ? Integer.parseInt(result[6].toString()) : null);
       return entry;
     }).collect(Collectors.toList());
   }
@@ -280,14 +346,17 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public List<Map<String, String>> searchRepairEntry(String estadoFinal, String perfil, Integer usuarioId) {
+  public List<Map<String, Object>> searchRepairEntry(String estadoFinal, String perfil, Integer usuarioId) {
     return ingresoRepository.searchRepairEntry(estadoFinal, perfil, usuarioId).stream().map(result -> {
-      Map<String, String> entry = new HashMap<>();
+      Map<String, Object> entry = new HashMap<>();
       entry.put("serial", (String) result[0]);
       entry.put("mac", (String) result[1]);
       entry.put("codigoSap", (String) result[2]);
       entry.put("descripcion", (String) result[3]);
       entry.put("estado", (String) result[4]);
+      // TruckRollId al final del SELECT de pa_SearchRepairEntry (posición 5); con el SP viejo queda null
+      entry.put("truckRollId", result.length > 5 && result[5] != null
+          ? Integer.parseInt(result[5].toString()) : null);
       return entry;
     }).collect(Collectors.toList());
   }
@@ -678,7 +747,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   public void updateStatusBatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento, Integer fecha,
       List<String> seriales, Integer loteId) {
-    seriales.forEach(s -> ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteId));
+    Integer loteIdFinal =  (loteId != null && loteId == 0) ? null : loteId;
+    seriales.forEach(s -> ingresoRepository.updateStatusBatch(estadoId, palletId, usuarioIdMovimiento, fecha, s, loteIdFinal));
   }
 
   public void updateEntryDispatch(Integer estadoId, Integer palletId, Integer usuarioIdMovimiento,
@@ -738,6 +808,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setCajaIngreso((String) obj[34]);
     ingreso.setModeloId((Integer) obj[35]);
     ingreso.setModelo((String) obj[36]);
+    if (obj.length > 37) {
+      ingreso.setTruckRollId((Integer) obj[37]);
+    }
     return ingreso;
   }
 

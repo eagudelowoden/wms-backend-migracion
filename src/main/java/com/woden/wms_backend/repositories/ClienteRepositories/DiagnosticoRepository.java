@@ -56,4 +56,9 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
     @Transactional
     @Query(value = "EXEC pa_SaveDiagnostic :datos", nativeQuery = true)
     void save(@Param("datos") String datos);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Ingreso SET TruckRollId = :truckRollId WHERE Serial = :serial", nativeQuery = true)
+    void updateTruckRollId(@Param("serial") String serial, @Param("truckRollId") Integer truckRollId);
 }

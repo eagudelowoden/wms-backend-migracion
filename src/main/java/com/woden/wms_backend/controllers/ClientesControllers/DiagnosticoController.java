@@ -1,12 +1,17 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
 import com.woden.wms_backend.services.ClienteServices.DiagnosticoService;
@@ -114,5 +120,61 @@ public class DiagnosticoController {
   @GetMapping("/getDiagnosticVariables")
   public ResponseEntity<List<Map<String, Object>>> getDiagnosticVariables(@RequestParam String serial) {
     return ResponseEntity.ok(service.getDiagnosticVariables(serial));
+  }
+
+  @PostMapping("/uploadHojaVida")
+  public ResponseEntity<?> uploadHojaVida(@RequestParam String serial,
+      @RequestParam("file") MultipartFile file,
+      @RequestParam Integer usuarioId,
+      @RequestParam String modulo) {
+    try {
+      service.uploadHojaVida(serial, file, usuarioId, modulo);
+      return ResponseEntity.ok(1);
+    } catch (IllegalArgumentException | IllegalStateException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+      logger.error("[HOJA-VIDA] Error subiendo hoja de vida para serial {}: {}", serial, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar el archivo");
+    }
+  }
+
+  @GetMapping("/hasHojaVida")
+  public ResponseEntity<Boolean> hasHojaVida(@RequestParam String serial) {
+    return ResponseEntity.ok(service.hasHojaVida(serial));
+  }
+
+  @GetMapping("/downloadPlantillaHojaVida")
+  public ResponseEntity<?> downloadPlantillaHojaVida() {
+    try {
+      Path plantilla = service.getPlantillaHojaVida();
+      if (plantilla == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body("No hay plantilla de hoja de vida disponible");
+      }
+      Resource resource = new FileSystemResource(plantilla);
+      String nombre = plantilla.getFileName().toString();
+      return ResponseEntity.ok()
+          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombre + "\"")
+          .contentType(MediaType.APPLICATION_OCTET_STREAM)
+          .body(resource);
+    } catch (IllegalStateException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+      logger.error("[HOJA-VIDA] Error descargando plantilla: {}", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al descargar la plantilla");
+    }
+  }
+
+  @DeleteMapping("/deleteHojaVida")
+  public ResponseEntity<?> deleteHojaVida(@RequestParam String serial, @RequestParam Integer usuarioId) {
+    try {
+      service.deleteHojaVida(serial, usuarioId);
+      return ResponseEntity.ok(1);
+    } catch (IllegalArgumentException | IllegalStateException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+      logger.error("[HOJA-VIDA] Error eliminando hoja de vida para serial {}: {}", serial, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el archivo");
+    }
   }
 }
