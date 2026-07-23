@@ -38,6 +38,17 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
     }
 
 
+    @PostMapping("/updateFinalStateQualityByCaja")
+    public ResponseEntity<Map<String, Object>> updateFinalStateQualityByCaja(@RequestBody Map<String, Object> body) {
+        Integer cajaEmpaqueId = ((Number) body.get("cajaEmpaqueId")).intValue();
+        Integer estadoFinalId = ((Number) body.get("estadoFinalId")).intValue();
+        calidadService.updateFinalStateQualityByCaja(cajaEmpaqueId, estadoFinalId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "✅ Estado final de la caja actualizado correctamente");
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/insertCalidad")
     public ResponseEntity<Integer> createEntity(@RequestBody CalidadModel requestBody) {
         try {

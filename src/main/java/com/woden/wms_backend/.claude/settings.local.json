@@ -3,7 +3,11 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\e.agudelo\\\\Documents\\\\WMS\\\\Backend\\\\src\\\\main\\\\java\\\\com\\\\woden\\\\wms_backend\" -Recurse -Filter \"*Empaque*.java\")",
       "Bash(Select-Object FullName)",
-      "Bash(find \"C:\\\\Users\\\\e.agudelo\\\\Documents\\\\WMS\\\\Backend\" -name \"*.sql\" 2>/dev/null | head -20)"
+      "Bash(find \"C:\\\\Users\\\\e.agudelo\\\\Documents\\\\WMS\\\\Backend\" -name \"*.sql\" 2>/dev/null | head -20)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Daniel\\\\Documents\\\\WMS\\\\Frontend\\\\src\\\\app\\\\admin\\\\views\\\\produccion\\\\smartcard\" -Recurse)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(xargs grep -l -i \"separac\\\\|sendModels\\\\|SeparacionView\\\\|SeparacionController\")",
+      "Bash(xargs grep -l \"sendModels\")"
     ]
   }
 }

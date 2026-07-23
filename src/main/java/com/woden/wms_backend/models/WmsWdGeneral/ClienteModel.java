@@ -79,6 +79,10 @@ public class ClienteModel {
     private Integer smartCardInfoON;
     @Column(name = "BloqueoReimpresionON")
     private Integer bloqueoReimpresionON;
+    @Column(name = "etiquetaUnitariaON")
+    private Integer etiquetaUnitariaON;
+    @Column(name = "adicionPrealertaON")
+    private Integer adicionPrealertaON;
     @Column(name = "prealerta")
     private String prealerta;
     @Column(name = "odooPqrsON")

@@ -122,4 +122,52 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 
 	@Query(value = "SELECT id FROM Maestro WHERE descripcion = :descripcion AND tipo = :tipo", nativeQuery = true)
 	Integer getIdByDescripcionAndTipo(@Param("descripcion") String descripcion, @Param("tipo") String tipo);
+
+	@Query(value = "EXEC pa_SearchMaster :tipoMaestro", nativeQuery = true)
+	List<Object[]> searchSP(@Param("tipoMaestro") String tipoMaestro);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_InsertMaster :codigo, :descripcion, :detalle, :adicional, :tipoMaestroId", nativeQuery = true)
+	void insertSP(@Param("codigo") String codigo, @Param("descripcion") String descripcion,
+			@Param("detalle") String detalle, @Param("adicional") String adicional,
+			@Param("tipoMaestroId") int tipoMaestroId);
+
+	@Transactional
+	@Query(value = "DECLARE @Filas INT; EXEC pa_UpdateMaster :codigo, :descripcion, :detalle, :adicional, :tipoMaestroId, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+	Integer updateSP(@Param("codigo") String codigo, @Param("descripcion") String descripcion,
+			@Param("detalle") String detalle, @Param("adicional") String adicional,
+			@Param("tipoMaestroId") int tipoMaestroId, @Param("id") Integer id);
+
+	@Modifying
+	@Transactional
+	@Query(value = "EXEC pa_DeleteMaster :id", nativeQuery = true)
+	void deleteSP(@Param("id") Integer id);
+
+	@Transactional
+	@Query(value = "DECLARE @Filas INT; EXEC pa_InnactivateMaster :estado, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+	Integer innactivateSP(@Param("estado") Integer estado, @Param("id") Integer id);
+
+	@Query(value = """
+			SELECT ISNULL(SUM(cnt), 0) FROM (
+				SELECT COUNT(*) cnt FROM CodigoSap WHERE familiaId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE tipoEquipoId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE areaId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE proveedorId = :id
+				UNION ALL SELECT COUNT(*) FROM CodigoSap WHERE modeloId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE tipologiaId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE tipoOrigenId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE origenId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE nivelId = :id
+				UNION ALL SELECT COUNT(*) FROM Ingreso WHERE modeloId = :id
+				UNION ALL SELECT COUNT(*) FROM Calidad WHERE estadoFinalId = :id
+				UNION ALL SELECT COUNT(*) FROM Calidad WHERE fallaCosmeticaId = :id
+				UNION ALL SELECT COUNT(*) FROM Diagnostico WHERE estadoFinalId = :id
+				UNION ALL SELECT COUNT(*) FROM Diagnostico WHERE fallaId = :id
+				UNION ALL SELECT COUNT(*) FROM Reparacion WHERE estadoFinalId = :id
+				UNION ALL SELECT COUNT(*) FROM Reparacion WHERE motivoScrapId = :id
+				UNION ALL SELECT COUNT(*) FROM SerialComponente WHERE componenteId = :id
+			) refs
+			""", nativeQuery = true)
+	Integer getCount(@Param("id") Integer id);
 }

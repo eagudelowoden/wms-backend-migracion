@@ -17,6 +17,7 @@ import com.woden.wms_backend.models.Entity.EtiquetadoModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetadoRepository;
 import com.woden.wms_backend.services.BaseService;
+import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
 
 @Service
 public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
@@ -26,6 +27,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
   @Autowired
   private IngresoService ingresoService;
+
+  @Autowired
+  private PrnPathResolverService prnPathResolver;
 
   public Integer insertEtiquetado(String serial, String mac, String variable1, String variable2,
       String variable3, String variable4, Integer reImpresion, Integer usuarioId, String fecha) {
@@ -48,6 +52,17 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     System.out.println("╚════════════════════════════════════════════════════════════════╝");
 
     StringBuilder zplFinal = new StringBuilder();
+
+    // Si no se recibió ruta de plantillas desde el frontend y PRN_LOCAL_PATH está configurado,
+    // resolver la ruta localmente
+    if ((request.getRutaPlantillas() == null || request.getRutaPlantillas().isBlank())
+        && request.getEtiqueta() != null && request.getEtiqueta().getTipo() != null) {
+      String resolved = prnPathResolver.resolvePath(request.getEtiqueta().getTipo());
+      if (resolved != null) {
+        System.out.println("📂 Ruta PRN resuelta localmente: " + resolved);
+        request.setRutaPlantillas(resolved);
+      }
+    }
 
     List<IngresoImpresionDTO> seriales = request.getListaSeriales();
     int totalSeriales = seriales.size();
@@ -220,7 +235,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     // 1. ✅ Campos configurados - SIEMPRE se reemplazan con sus valores
     for (EtiquetaCampoModel campo : campos) {
       String nombreVar = campo.getNombre() + sufijo; // Ej: "codigo1", "descripcion1"
-      String valor = getValueAtColumn(impresion, campo.getValor()); // Columna 0-5
+      String valor = getValueAtColumn(impresion, serial, campo.getValor());
       System.out.println("      - " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
       zpl = zpl.replace(nombreVar, valor);
     }
@@ -298,8 +313,8 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     // 1. Campos configurados
     for (EtiquetaCampoModel campo : campos) {
       String nombreVar = campo.getNombre() + sufijo;
-      String valor = getValueAtColumn(impresion, campo.getValor());
-      System.out.println("      • " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
+      String valor = getValueAtColumn(impresion, serial, campo.getValor());
+      System.out.println("      \u2022 " + nombreVar + " = '" + valor + "' (columna: " + campo.getValor() + ")");
       zpl = zpl.replace(nombreVar, valor);
     }
 
@@ -331,51 +346,62 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     return zpl;
   }
 
-  /**
-   * ✅ OBTIENE VALOR POR COLUMNA
-   * Usado SOLO para campos configurados en PASO 1
-   * 
-   * Mapeo de columnas en IngresoImpresionDTO:
-   * 0 = serial
-   * 1 = mac
-   * 2 = variable1
-   * 3 = variable2
-   * 4 = variable3
-   * 5 = variable4
-   */
-  private String getValueAtColumn(IngresoImpresionDTO impresion, String columnaIndex) {
+  private String getValueAtColumn(IngresoImpresionDTO impresion, IngresoModel serial, String columnaIndex) {
 
-    System.out.println("      🔍 getValueAtColumn(): columna=" + columnaIndex);
+    System.out.println("      getValueAtColumn(): columna=" + columnaIndex);
 
-    switch (columnaIndex) {
-      case "0":
-        System.out.println("         ✅ Retornando serial: '" + impresion.getSerial() + "'");
-        return impresion.getSerial() != null ? impresion.getSerial() : "";
-
-      case "1":
-        System.out.println("         ✅ Retornando mac: '" + impresion.getMac() + "'");
-        return impresion.getMac() != null ? impresion.getMac() : "";
-
-      case "2":
-        System.out.println("         ✅ Retornando variable1: '" + impresion.getVariable1() + "'");
-        return impresion.getVariable1() != null ? impresion.getVariable1() : "";
-
-      case "3":
-        System.out.println("         ✅ Retornando variable2: '" + impresion.getVariable2() + "'");
-        return impresion.getVariable2() != null ? impresion.getVariable2() : "";
-
-      case "4":
-        System.out.println("         ✅ Retornando variable3: '" + impresion.getVariable3() + "'");
-        return impresion.getVariable3() != null ? impresion.getVariable3() : "";
-
-      case "5":
-        System.out.println("         ✅ Retornando variable4: '" + impresion.getVariable4() + "'");
-        return impresion.getVariable4() != null ? impresion.getVariable4() : "";
-
-      default:
-        System.out.println("         ⚠️ Columna desconocida, retornando ''");
-        return "";
+    if (esNumerico(columnaIndex)) {
+        return getValueByLegacyIndex(impresion, columnaIndex);
     }
+
+    switch (columnaIndex.toLowerCase()) {
+        case "serial":
+            return nvl(impresion.getSerial());
+        case "mac":
+            return nvl(impresion.getMac());
+        case "unitserial3":
+            return nvl(serial.getSerial3());
+        case "unitserial4":
+            return nvl(serial.getSerial4());
+        case "unitserial5":
+            return nvl(serial.getSerial5());
+        case "variable1":
+            return nvl(impresion.getVariable1());
+        case "variable2":
+            return nvl(impresion.getVariable2());
+        case "variable3":
+            return nvl(impresion.getVariable3());
+        case "variable4":
+            return nvl(impresion.getVariable4());
+        default:
+            System.out.println("         Columna desconocida, retornando ''");
+            return "";
+    }
+  }
+
+  private boolean esNumerico(String valor) {
+      try {
+          Integer.parseInt(valor);
+          return true;
+      } catch (NumberFormatException e) {
+          return false;
+      }
+  }
+
+  private String nvl(String val) {
+      return val != null ? val : "";
+  }
+
+  private String getValueByLegacyIndex(IngresoImpresionDTO impresion, String columnaIndex) {
+      switch (columnaIndex) {
+          case "0": return nvl(impresion.getSerial());
+          case "1": return nvl(impresion.getMac());
+          case "2": return nvl(impresion.getVariable1());
+          case "3": return nvl(impresion.getVariable2());
+          case "4": return nvl(impresion.getVariable3());
+          case "5": return nvl(impresion.getVariable4());
+          default:  return "";
+      }
   }
 
   /**

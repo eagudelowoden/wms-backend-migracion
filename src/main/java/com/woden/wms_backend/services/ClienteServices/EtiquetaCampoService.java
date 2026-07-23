@@ -23,4 +23,16 @@ public class EtiquetaCampoService extends BaseService<EtiquetaCampoModel, Intege
       return etiquetaCampo;
     }).toList();
   }
+
+  @Override
+  public void delete(Integer id) {
+    etiquetaCampoRepository.deleteById(id);
+  }
+
+  public void deleteAllByEtiquetaId(Integer etiquetaId) {
+    List<EtiquetaCampoModel> campos = etiquetaCampoRepository.findAll().stream()
+        .filter(c -> c.getEtiquetaId() == etiquetaId)
+        .toList();
+    etiquetaCampoRepository.deleteAll(campos);
+  }
 }
