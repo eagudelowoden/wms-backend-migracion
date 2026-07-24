@@ -61,6 +61,53 @@ public class CodigoSapFailureService {
     return repository.searchMandatoryComponent(codigoSapId, fallaId);
   }
 
+  public List<Map<String, Object>> getFailuresBySap(Integer codigoSapId) {
+    List<Object[]> results = repository.getFailuresBySap(codigoSapId);
+    return results.stream().map(obj -> {
+      Map<String, Object> map = new HashMap<>();
+      map.put("id", (Integer) obj[0]);
+      map.put("codigo", (String) obj[1]);
+      map.put("descripcion", (String) obj[2]);
+      Object raw = obj[3];
+      map.put("componenteObligatorio", raw != null ? String.valueOf(raw) : "0");
+      return map;
+    }).collect(Collectors.toList());
+  }
+
+  public void createFalla(Integer codigoSapId, List<Integer> fallaIds) {
+    if (fallaIds == null || fallaIds.isEmpty()) return;
+    try (Connection conn = dataSource.getConnection()) {
+      CallableStatement stmt = conn.prepareCall("{call pa_InsertCodigoSapFalla(?, ?)}");
+      for (Integer fallaId : fallaIds) {
+        stmt.setInt(1, codigoSapId);
+        stmt.setInt(2, fallaId);
+        stmt.addBatch();
+      }
+      stmt.executeBatch();
+      stmt.close();
+    } catch (SQLException e) {
+      System.err.println("Error createFalla: " + e.getMessage());
+      throw new RuntimeException("Error al asignar fallas: " + e.getMessage());
+    }
+  }
+
+  public void deleteFalla(Integer codigoSapId, List<Integer> fallaIds) {
+    if (fallaIds == null || fallaIds.isEmpty()) return;
+    try (Connection conn = dataSource.getConnection()) {
+      CallableStatement stmt = conn.prepareCall("{call pa_DeleteCodigoSapFalla(?, ?)}");
+      for (Integer fallaId : fallaIds) {
+        stmt.setInt(1, codigoSapId);
+        stmt.setInt(2, fallaId);
+        stmt.addBatch();
+      }
+      stmt.executeBatch();
+      stmt.close();
+    } catch (SQLException e) {
+      System.err.println("Error deleteFalla: " + e.getMessage());
+      throw new RuntimeException("Error al remover fallas: " + e.getMessage());
+    }
+  }
+
   public List<Map<String, Object>> searchSapCodeFailureComponent(Integer codigoSapId, Integer fallaId) {
     List<Object[]> results = repository.searchSapCodeFailureComponent(codigoSapId, fallaId);
     return results.stream().map(obj -> {

@@ -455,4 +455,13 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         accesorioRepository.updateAccesoryNovedad(palletId, codigoSapId, usuarioId, 0);
     }
 
+    public Integer countAvailableAccesory(Integer codigoSapId) {
+        Integer result = accesorioRepository.countAvailableAccesory(codigoSapId);
+        return result != null ? result : 0;
+    }
+
+    public Integer updateAccesoryNovedadCantidad(Integer palletId, Integer codigoSapId, Integer cantidad, String accion, Integer usuarioId) {
+        return accesorioRepository.updateAccesoryNovedadCantidad(palletId, codigoSapId, cantidad, accion, usuarioId);
+    }
+
 }

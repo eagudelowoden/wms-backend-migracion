@@ -22,12 +22,14 @@ import javax.print.attribute.standard.PrinterName;
 
 import java.awt.print.PrinterJob;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
+import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -37,6 +39,9 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 @Service
 public class ZplPrinterService {
+
+  @Autowired
+  private PrnPathResolverService prnPathResolver;
 
   // ✅ Helper central: reemplaza placeholder exacto, sin afectar variantes con sufijo
   private String reemplazarSeguro(String zpl, String placeholder, String valor) {
@@ -56,6 +61,14 @@ public class ZplPrinterService {
           List<IngresoModel> seriales,
           EtiquetaDatosGeneralesDTO datosGenerales) {
 
+    if ((plantillaBasePath == null || plantillaBasePath.isBlank())
+        && etiqueta != null && etiqueta.getTipo() != null) {
+      String resolved = prnPathResolver.resolvePath(etiqueta.getTipo());
+      if (resolved != null) {
+        plantillaBasePath = resolved;
+      }
+    }
+
     StringBuilder zplFinal = new StringBuilder();
 
     int totalSeriales = seriales.size();
@@ -69,8 +82,10 @@ public class ZplPrinterService {
       String plantillaPath = String.format("%s\\%s\\codigo%d.prn",
               plantillaBasePath, etiqueta.getNombre(), porImpresion);
       String zpl = leerPlantilla(plantillaPath);
-      zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + porImpresion), campos);
+      List<IngresoModel> subl = seriales.subList(contador, contador + porImpresion);
+      zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
+      zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
       zplFinal.append(zpl).append("\n^XZ###DELIMITER_ZPL###^XA\n");
       contador += porImpresion;
     }
@@ -80,8 +95,10 @@ public class ZplPrinterService {
       String plantillaPath = String.format("%s\\%s\\codigo%d.prn",
               plantillaBasePath, etiqueta.getNombre(), residuo);
       String zpl = leerPlantilla(plantillaPath);
-      zpl = reemplazarCampos(zpl, seriales.subList(contador, contador + residuo), campos);
+      List<IngresoModel> subl = seriales.subList(contador, contador + residuo);
+      zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
+      zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
       zplFinal.append(zpl);
     }
 
@@ -118,8 +135,7 @@ public class ZplPrinterService {
 
   private String obtenerValorCampo(IngresoModel ingreso, String nombreCampo) {
 
-    // ✅ "virtual" → serial3 si existe (LH02), sino smartCard (LH01)
-    if (nombreCampo.equalsIgnoreCase("virtual")) {
+    if ("virtual".equalsIgnoreCase(nombreCampo)) {
       String serial3 = ingreso.getSerial3();
       boolean tieneSerial3 = serial3 != null
               && !serial3.isEmpty()
@@ -128,21 +144,61 @@ public class ZplPrinterService {
       return tieneSerial3 ? serial3 : (ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "");
     }
 
-    // ✅ "smartCardSerial" → smartCard del ingreso individual
-    if (nombreCampo.equalsIgnoreCase("smartCardSerial")) {
+    if ("smartCardSerial".equalsIgnoreCase(nombreCampo)) {
       return ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "";
     }
 
-    // ✅ Reflexión para los demás campos
+    if (esNumerico(nombreCampo)) {
+      return getValueByLegacyEmpaqueIndex(ingreso, nombreCampo);
+    }
+
+    String propiedad = resolverPropiedad(nombreCampo);
     try {
-      String propiedad = nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
-      Field field = ingreso.getClass().getDeclaredField(propiedad);
+      java.lang.reflect.Field field = ingreso.getClass().getDeclaredField(propiedad);
       field.setAccessible(true);
       Object valor = field.get(ingreso);
-      return valor != null ? valor.toString() : "";
+      if (valor == null) return "";
+      String strVal = valor.toString();
+      if (strVal.isEmpty() && "codigosap".equalsIgnoreCase(nombreCampo)) return null;
+      return strVal;
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      System.err.println("⚠️ Campo no encontrado en IngresoModel: " + nombreCampo);
+      System.err.println("Campo no encontrado en IngresoModel: " + nombreCampo + " (buscado: " + propiedad + ")");
       return "";
+    }
+  }
+
+  private boolean esNumerico(String valor) {
+    try {
+      Integer.parseInt(valor);
+      return true;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+
+  private String resolverPropiedad(String nombreCampo) {
+    switch (nombreCampo.toLowerCase()) {
+      case "codigosap": return "codigoSap";
+      case "lote":       return "Lote";
+      default:
+        return nombreCampo.substring(0, 1).toLowerCase() + nombreCampo.substring(1);
+    }
+  }
+
+  private String getValueByLegacyEmpaqueIndex(IngresoModel ingreso, String columnaIndex) {
+    switch (columnaIndex) {
+      case "0":  return ingreso.getSerial() != null ? ingreso.getSerial() : "";
+      case "1":  return ingreso.getMac() != null ? ingreso.getMac() : "";
+      case "2":  return ingreso.getSmartCard() != null ? ingreso.getSmartCard() : "";
+      case "3":  return ingreso.getSerial3() != null ? ingreso.getSerial3() : "";
+      case "4":  return ingreso.getSerial4() != null ? ingreso.getSerial4() : "";
+      case "5":  return ingreso.getCodigoSap() != null ? ingreso.getCodigoSap() : "";
+      case "6":  return ingreso.getDescripcion() != null ? ingreso.getDescripcion() : "";
+      case "7":  return ingreso.getNivel() != null ? ingreso.getNivel() : "";
+      case "8":  return ingreso.getLote() != null ? ingreso.getLote() : "";
+      case "9":  return ingreso.getNumeroSmartcard() != null ? ingreso.getNumeroSmartcard() : "";
+      case "10": return ingreso.getModelo() != null ? ingreso.getModelo() : "";
+      default:   return "";
     }
   }
 
@@ -199,6 +255,21 @@ public class ZplPrinterService {
     zpl = reemplazarSeguro(zpl, "caja",       "Caja: " + Objects.toString(datos.getCaja(), ""));
     zpl = reemplazarSeguro(zpl, "fecha",      datos.getFecha());
 
+    return zpl;
+  }
+
+  private String reemplazarGeneralConSufijos(String zpl, List<IngresoModel> seriales, EtiquetaDatosGeneralesDTO datos) {
+    String sapCode = datos.getCodigosap();
+    String desc = datos.getDescripcion();
+    for (int i = 0; i < seriales.size(); i++) {
+      String suffix = getKey(i, "");
+      if (sapCode != null && !sapCode.isEmpty()) {
+        zpl = reemplazarSeguro(zpl, "codigosap" + suffix, sapCode);
+      }
+      if (desc != null && !desc.isEmpty()) {
+        zpl = reemplazarSeguro(zpl, "descripcion" + suffix, desc);
+      }
+    }
     return zpl;
   }
 

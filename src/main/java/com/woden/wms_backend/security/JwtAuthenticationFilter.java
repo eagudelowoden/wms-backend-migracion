@@ -42,7 +42,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
 
       String token = authHeader.substring(7);
-      String username = jwtUtil.extractUsername(token);
+
+      String username;
+      try {
+        username = jwtUtil.extractUsername(token);
+      } catch (io.jsonwebtoken.ExpiredJwtException e) {
+        // Token vencido: situación normal, responder 401 sin ensuciar los logs
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"TOKEN_EXPIRED\",\"message\":\"La sesión ha expirado.\"}");
+        return;
+      } catch (io.jsonwebtoken.JwtException e) {
+        // Token inválido/corrupto: también 401, sin stack trace
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"INVALID_TOKEN\",\"message\":\"Token inválido.\"}");
+        return;
+      }
 
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         if (jwtUtil.validateToken(token)) {

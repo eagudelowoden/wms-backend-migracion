@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
@@ -15,5 +16,6 @@ public class PerfilModel {
     private int id;
     private String nombre;
     private int clienteId;
+    @Transient
     private int tipoPerfilId;
 }

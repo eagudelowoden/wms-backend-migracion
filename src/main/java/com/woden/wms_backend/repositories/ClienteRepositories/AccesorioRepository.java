@@ -162,4 +162,15 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
       @Param("usuarioId") Integer usuarioId,
       @Param("filas") Integer filas);
 
+  @Query(value = "EXEC pa_CountAvailableAccesory :codigoSapId", nativeQuery = true)
+  Integer countAvailableAccesory(@Param("codigoSapId") Integer codigoSapId);
+
+  @Query(value = "EXEC pa_UpdateAccesoryNovedadCantidad :palletId, :codigoSapId, :cantidad, :accion, :usuarioId", nativeQuery = true)
+  Integer updateAccesoryNovedadCantidad(
+      @Param("palletId") Integer palletId,
+      @Param("codigoSapId") Integer codigoSapId,
+      @Param("cantidad") Integer cantidad,
+      @Param("accion") String accion,
+      @Param("usuarioId") Integer usuarioId);
+
 }

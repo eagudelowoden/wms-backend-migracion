@@ -69,4 +69,9 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
 
     @Query(value = "EXEC pa_GetAssignedTechnicianRepair :serial", nativeQuery = true)
     List<Object[]> getAssignedTechnicianRepair(@Param("serial") String serial);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Ingreso SET TruckRollId = :truckRollId WHERE Serial = :serial", nativeQuery = true)
+    void updateTruckRollId(@Param("serial") String serial, @Param("truckRollId") Integer truckRollId);
 }

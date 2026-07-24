@@ -42,7 +42,7 @@ public class ReparacionController extends BaseController<ReparacionModel, Intege
     service.updateRepair(requestBody.getEstadoFinalId(), requestBody.getFalla1Id(), requestBody.getFalla2Id(),
         requestBody.getFalla3Id(), requestBody.getFalla4Id(), requestBody.getPartesCambiadas(),
         requestBody.getMotivoScrapId(), requestBody.getTecnicoReparacionId(), requestBody.getSerial(),
-        requestBody.getEstadoCalidadId());
+        requestBody.getEstadoCalidadId(), requestBody.getTruckRollId());
     return ResponseEntity.ok(1);
   }
 

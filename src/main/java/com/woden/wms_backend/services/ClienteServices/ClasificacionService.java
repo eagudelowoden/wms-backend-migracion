@@ -7,9 +7,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.woden.wms_backend.dto.clientDTO.clasificacion.ClasificacionRequest;
 import com.woden.wms_backend.models.Entity.ClasificacionModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.ClasificacionRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -18,8 +22,37 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class ClasificacionService extends BaseService<ClasificacionModel, Integer> {
+
+  private static final Logger logger     = LoggerFactory.getLogger(ClasificacionService.class);
+  private static final int    CHUNK_SIZE = 50;
+
   @Autowired
   private ClasificacionRepository repository;
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  /**
+   * Guardado en lote de la clasificación (Ingreso + Clasificacion) vía pa_SaveClasificacion.
+   * Chunks secuenciales de 50 en una transacción — reemplaza el guardado paralelo por serial
+   * que causaba bloqueos y actualizaciones perdidas (mismo patrón que DiagnosticoService.save).
+   */
+  @Transactional
+  public void save(List<ClasificacionRequest> items) {
+    int total = items.size();
+    int procesados = 0;
+    try {
+      for (int i = 0; i < total; i += CHUNK_SIZE) {
+        List<ClasificacionRequest> chunk = items.subList(i, Math.min(i + CHUNK_SIZE, total));
+        String json = objectMapper.writeValueAsString(chunk);
+        repository.save(json);
+        procesados += chunk.size();
+        logger.info("[CLASIFICACION] chunk guardado: {}/{}", procesados, total);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Error al guardar clasificación: " + e.getMessage(), e);
+    }
+  }
 
   @Transactional
   public void create(List<List<String>> serialEstadoUsuario, Integer usuarioId) {

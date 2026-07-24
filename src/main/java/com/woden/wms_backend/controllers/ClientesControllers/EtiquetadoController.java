@@ -73,8 +73,8 @@ public class EtiquetadoController extends BaseController<EtiquetadoModel, Intege
         return ResponseEntity.badRequest().body("❌ Lista de seriales vacía");
       }
 
-      if (request.getRutaPlantillas() == null || request.getRutaPlantillas().isEmpty()) {
-        return ResponseEntity.badRequest().body("❌ Ruta de plantillas no especificada");
+      if (request.getRutaPlantillas() == null || request.getRutaPlantillas().isBlank()) {
+        System.out.println("⚠️ Ruta de plantillas no especificada en request, se resolverá localmente si PRN_LOCAL_PATH está configurado");
       }
 
       // Generar ZPL

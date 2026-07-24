@@ -10,12 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # -------------------------------------------------------------
-      # PASO 1: CONFIGURAR JAVA Y BUILD
-      # -------------------------------------------------------------
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -23,205 +20,100 @@ jobs:
           distribution: "temurin"
           cache: "maven"
 
-      # Caché adicional para el repositorio local de Maven
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      # - name: Download dependencies
-      #   run: mvn dependency:go-offline -B
-
-      - name: Build with Maven (skip tests)
-        run: mvn -B clean package -DskipTests
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
 
       # -------------------------------------------------------------
-      # PASO 2: GENERAR SCRIPT DE DESPLIEGUE
+      # PASO 1: GENERAR SCRIPT DE DESPLIEGUE
       # -------------------------------------------------------------
       - name: Create Backend Deployment Script
         run: |
           cat <<'EOF' > remote_deploy_backend.ps1
           $ErrorActionPreference = 'Stop'
-          Write-Host "=== STARTING BACKEND DEPLOYMENT ==="
+          Write-Host "=== STARTING BACKEND TEST DEPLOYMENT ==="
 
-          $deployPath = "C:\nginx-1.27.1\html\front"
-          $backupRoot = "C:\nginx-1.27.1\html\front\_backups\back"
-          $tempPath = "C:\Windows\Temp"
-          $port = 9000
+          $deployDir = "C:\nginx-1.27.1\html\front"
+          $backupDir = "C:\nginx-1.27.1\html\front\_backups\back"
+          $tempPath  = "C:\Windows\Temp"
+          $port      = 9000
           $timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
 
           # 1. DETENER PROCESO EN PUERTO 9000
           Write-Host "Checking for process on port $port..."
-          $netstatOutput = netstat -ano | Select-String ":$port.*LISTENING"
+          $connection = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
 
-          if ($netstatOutput) {
-              $line = $netstatOutput[0].ToString().Trim()
-              $processPid = ($line -split '\s+')[-1]
-              
-              if ($processPid -match '^\d+$' -and [int]$processPid -gt 0) {
-                  $processInfo = Get-Process -Id $processPid -ErrorAction SilentlyContinue
-                  
-                  if ($processInfo) {
-                      Write-Host "Found process PID: $processPid ($($processInfo.ProcessName)). Stopping..."
-                      taskkill /F /PID $processPid
-                      Start-Sleep -Seconds 5
-                      Write-Host "Process stopped."
-                  }
-              }
+          if ($connection) {
+              $pidTarget = $connection.OwningProcess
+              Write-Host "Killing process PID: $pidTarget"
+              Stop-Process -Id $pidTarget -Force
+              Start-Sleep -Seconds 5
           } else {
-              Write-Host "No process listening on port $port."
+              Write-Host "Port $port is free."
           }
 
-          # 2. CREAR CARPETA DE BACKUPS SI NO EXISTE
-          if (-not (Test-Path $backupRoot)) {
-              New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
-              Write-Host "Backup directory created: $backupRoot"
-          }
-
-          # 3. MOVER JAR ANTERIOR A BACKUPS
-          $currentJar = Get-ChildItem -Path $deployPath -Filter "wms-backend-*.jar" | Select-Object -First 1
+          # 2. BACKUP DEL JAR ACTUAL (conservando su nombre con versión)
+          $currentJar = Get-ChildItem -Path $deployDir -Filter "wms-backend-*.jar" | Select-Object -First 1
 
           if ($currentJar) {
+              if (-not (Test-Path $backupDir)) { New-Item -ItemType Directory -Path $backupDir -Force | Out-Null }
               $backupName = "$($currentJar.BaseName)_$timestamp.jar"
-              $backupPath = Join-Path $backupRoot $backupName
-              
-              Write-Host "Moving current JAR to backup: $backupName"
+              $backupPath = Join-Path $backupDir $backupName
+              Write-Host "Backup: $backupName"
               Move-Item -Path $currentJar.FullName -Destination $backupPath -Force
-              Write-Host "Backup completed."
           } else {
-              Write-Host "No existing JAR found to backup."
+              Write-Host "No existing JAR to backup."
           }
 
-          # 4. MOVER NUEVO JAR DESDE TEMP
+          # 3. MOVER NUEVO JAR DESDE TEMP (manteniendo nombre con versión)
           $newJar = Get-ChildItem -Path $tempPath -Filter "wms-backend-*.jar" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 
-          if ($newJar) {
-              $targetPath = Join-Path $deployPath $newJar.Name
-              Write-Host "Moving new JAR: $($newJar.Name)"
-              Move-Item -Path $newJar.FullName -Destination $targetPath -Force
-              Write-Host "JAR deployed to: $targetPath"
-              
-              # 5. EJECUTAR NUEVO JAR
-            Write-Host "Starting backend service on port $port..."
-
-            # Definir rutas de logs
-            $logDir = Join-Path $deployPath "logs"
-            if (-not (Test-Path $logDir)) {
-                New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-            }
-
-            $logFileOut = Join-Path $logDir "backend_$timestamp.log"
-            $logFileErr = Join-Path $logDir "backend_error_$timestamp.log"
-
-            # Crear script batch temporal
-            $batchPath = Join-Path $tempPath "start_backend_$timestamp.bat"
-            "@echo off" | Out-File -FilePath $batchPath -Encoding ASCII
-            "cd /d $deployPath" | Out-File -FilePath $batchPath -Append -Encoding ASCII
-            "javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchPath -Append -Encoding ASCII
-
-            # Ejecutar batch en background
-            $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
-            $processStartup.ShowWindow = 0
-
-            $processClass = [wmiclass]"Win32_Process"
-            $result = $processClass.Create("cmd.exe /c `"$batchPath`"", $deployPath, $processStartup)
-
-            if ($result.ReturnValue -eq 0) {
-                $newPid = $result.ProcessId
-                Write-Host "Backend process started successfully with PID: $newPid"
-                Write-Host "  Output log: $logFileOut"
-                Write-Host "  Error log: $logFileErr"
-            } else {
-                Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
-                exit 1
-            }
-              # Ejecutar JAR en background usando WMI (método más robusto en Windows)
-              $javaPath = (Get-Command javaw).Source
-              $arguments = "-jar `"$targetPath`""
-              
-              $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
-              $processStartup.ShowWindow = 0  # Hidden window
-              
-              $processClass = [wmiclass]"Win32_Process"
-              $result = $processClass.Create("$javaPath $arguments", $deployPath, $processStartup)
-              
-              if ($result.ReturnValue -eq 0) {
-                  $newPid = $result.ProcessId
-                  Write-Host "Backend process started successfully with PID: $newPid"
-              } else {
-                  Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
-                  exit 1
-              }
-              
-              # Esperar y verificar que el puerto está en uso (con reintentos)
-              Write-Host "Waiting for backend service to start..."
-              $maxAttempts = 12
-              $attempt = 0
-              $started = $false
-              
-              while ($attempt -lt $maxAttempts -and -not $started) {
-                  Start-Sleep -Seconds 5
-                  $attempt++
-                  
-                  $checkPort = netstat -ano | Select-String ":$port.*LISTENING"
-                  
-                  if ($checkPort) {
-                      $started = $true
-                      Write-Host "Backend service started successfully and listening on port $port (attempt $attempt)."
-                      Write-Host "  Output log: $logFileOut"
-                      Write-Host "  Error log: $logFileErr"
-                  } else {
-                      Write-Host "  Attempt $attempt/$maxAttempts - Port $port not listening yet..."
-                  }
-              }
-              
-              if (-not $started) {
-                  Write-Warning "Service may still be starting. Port $port is not listening after $maxAttempts attempts."
-                  Write-Warning "Check logs for details: $logFileOut"
-              }
-              
-              # Esperar y verificar que el puerto está en uso (con reintentos)
-              Write-Host "Waiting for backend service to start..."
-              $maxAttempts = 12
-              $attempt = 0
-              $started = $false
-              
-              while ($attempt -lt $maxAttempts -and -not $started) {
-                  Start-Sleep -Seconds 5
-                  $attempt++
-                  
-                  $checkPort = netstat -ano | Select-String ":$port.*LISTENING"
-                  
-                  if ($checkPort) {
-                      $started = $true
-                      Write-Host "Backend service started successfully and listening on port $port (attempt $attempt)."
-                  } else {
-                      Write-Host "  Attempt $attempt/$maxAttempts - Port $port not listening yet..."
-                  }
-              }
-              
-              if (-not $started) {
-                  Write-Warning "Service may still be starting. Port $port is not listening after $maxAttempts attempts."
-                  Write-Warning "Check the application manually or review process with PID: $newPid"
-              }
-              
-              # Limpiar script batch temporal (si existe)
-              Remove-Item -Path "$tempPath\start_backend_*.bat" -Force -ErrorAction SilentlyContinue
-              
-              Write-Host "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
-          } else {
-              Write-Error "ERROR: No new JAR found in Temp folder!"
+          if (-not $newJar) {
+              Write-Error "ERROR: No JAR found in Temp."
               exit 1
           }
+
+          $targetPath = Join-Path $deployDir $newJar.Name
+          Write-Host "Deploying: $($newJar.Name)"
+          Move-Item -Path $newJar.FullName -Destination $targetPath -Force
+
+          # 4. ACTUALIZAR TAREA PROGRAMADA AL NUEVO JAR
+          Write-Host "Updating scheduled task to: $targetPath"
+          schtasks /change /tn "WMS-Backend" /tr "java -jar `"$targetPath`"" | Out-Null
+
+          # 5. INICIAR VIA TAREA PROGRAMADA
+          Write-Host "Starting via scheduled task WMS-Backend..."
+          schtasks /end /tn "WMS-Backend" | Out-Null
+          Start-Sleep -Seconds 3
+          schtasks /run /tn "WMS-Backend"
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "Could not run scheduled task WMS-Backend."
+              exit 1
+          }
+
+          # 6. VERIFICAR QUE EL PUERTO QUEDE ESCUCHANDO
+          $started = $false
+          for ($i = 1; $i -le 12; $i++) {
+              Start-Sleep -Seconds 5
+              if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) {
+                  $started = $true
+                  Write-Host "Backend listening on port $port (attempt $i)"
+                  break
+              }
+              Write-Host "  Attempt $i/12 - port $port not ready yet..."
+          }
+
+          if (-not $started) {
+              Write-Warning "Port $port not listening after 60s. Check backend log."
+          }
+
+          Write-Host "=== DEPLOYMENT COMPLETED: $($newJar.Name) ==="
           EOF
 
       # -------------------------------------------------------------
-      # PASO 3: SUBIR SCRIPT AL SERVIDOR
+      # PASO 2: SUBIR SCRIPT AL SERVIDOR
       # -------------------------------------------------------------
-      - name: Upload Deployment Script to Server
+      - name: Upload Deployment Script
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.TEST_HOST }}
@@ -231,7 +123,7 @@ jobs:
           target: "C:/Windows/Temp/"
 
       # -------------------------------------------------------------
-      # PASO 4: SUBIR JAR A TEMP
+      # PASO 3: SUBIR JAR (con nombre de versión)
       # -------------------------------------------------------------
       - name: Upload JAR to Server Temp
         uses: appleboy/scp-action@v0.1.7
@@ -244,7 +136,7 @@ jobs:
           strip_components: 1
 
       # -------------------------------------------------------------
-      # PASO 5: EJECUTAR SCRIPT DE DESPLIEGUE
+      # PASO 4: EJECUTAR SCRIPT DE DESPLIEGUE
       # -------------------------------------------------------------
       - name: Execute Deployment Script
         uses: appleboy/ssh-action@v1.0.3

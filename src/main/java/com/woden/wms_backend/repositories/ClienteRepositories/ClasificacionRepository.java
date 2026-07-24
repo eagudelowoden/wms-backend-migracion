@@ -39,4 +39,9 @@ public interface ClasificacionRepository extends BaseRepository<ClasificacionMod
 
     @Query(value = "EXEC pa_GetClassifiedUser :usuarioId", nativeQuery = true)
     public List<Object[]> getClassifiedUser(@Param("usuarioId") Integer usuarioId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "EXEC pa_SaveClasificacion :datos", nativeQuery = true)
+    public void save(@Param("datos") String datos);
 }

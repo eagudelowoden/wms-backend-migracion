@@ -32,11 +32,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Download dependencies
-        run: mvn dependency:go-offline -B
+      # - name: Download dependencies
+      #   run: mvn dependency:go-offline -B
 
       - name: Build with Maven (skip tests)
-        run: mvn -B clean package -DskipTests -o
+        run: mvn -B clean package -DskipTests
 
       # -------------------------------------------------------------
       # PASO 2: GENERAR SCRIPT DE DESPLIEGUE
@@ -104,41 +104,24 @@ jobs:
               Move-Item -Path $newJar.FullName -Destination $targetPath -Force
               Write-Host "JAR deployed to: $targetPath"
               
-              # 5. EJECUTAR NUEVO JAR
-              Write-Host "Starting backend service on port $port..."
-              
-              # Crear archivos de log
-              $logFileOut = Join-Path $deployPath "backend-$timestamp.log"
-              $logFileErr = Join-Path $deployPath "backend-$timestamp-error.log"
-              
-              # Crear script batch temporal para ejecutar el JAR
-              $batchScript = Join-Path $tempPath "start_backend_prod.bat"
-              "@echo off" | Out-File -FilePath $batchScript -Encoding ASCII
-              "cd /d `"$deployPath`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
-              "start `"WMS Backend`" /B javaw -jar `"$targetPath`" > `"$logFileOut`" 2> `"$logFileErr`"" | Out-File -FilePath $batchScript -Encoding ASCII -Append
-              
-              # Ejecutar el batch usando WMI
-              $processStartup = ([wmiclass]"Win32_ProcessStartup").CreateInstance()
-              $processStartup.ShowWindow = 0  # Hidden window
-              
-              $processClass = [wmiclass]"Win32_Process"
-              $result = $processClass.Create("cmd.exe /c `"$batchScript`"", $deployPath, $processStartup)
-              
-              if ($result.ReturnValue -eq 0) {
-                  Write-Host "Backend launch command executed successfully"
-                  Write-Host "  Output log: $logFileOut"
-                  Write-Host "  Error log: $logFileErr"
-                  
-                  # Esperar un momento para que el proceso hijo se cree
-                  Start-Sleep -Seconds 3
-                  
-                  # Limpiar batch temporal
-                  Remove-Item -Path $batchScript -Force -ErrorAction SilentlyContinue
-              } else {
-                  Write-Error "Failed to start process. Return code: $($result.ReturnValue)"
+              # 5. EJECUTAR NUEVO JAR mediante la tarea programada "WMS-Backend".
+              # La tarea corre con usuario y contraseña guardados en el servidor,
+              # por lo que el backend nace con credenciales de red completas
+              # (acceso al share de PRN \\10.128.0.28\archivos).
+              Write-Host "Starting backend via scheduled task WMS-Backend..."
+              # Cerrar cualquier instancia previa de la tarea (si quedó en Running, /run no relanza)
+              schtasks /end /tn "WMS-Backend" | Out-Null
+              Start-Sleep -Seconds 3
+              schtasks /run /tn "WMS-Backend"
+
+              if ($LASTEXITCODE -ne 0) {
+                  Write-Error "No se pudo ejecutar la tarea programada 'WMS-Backend'. Verifique que exista en el servidor (schtasks /query /tn WMS-Backend)."
                   exit 1
               }
-              
+              Write-Host "Scheduled task triggered successfully."
+
+              $logFileOut = Join-Path $deployPath "backend.log"
+
               # Esperar y verificar que el puerto está en uso (con reintentos)
               Write-Host "Waiting for backend service to start..."
               $maxAttempts = 12
