@@ -33,7 +33,7 @@ public interface WorkFlowRepository  extends BaseRepository<WorkFlowModel, Integ
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdateWorflow :moduloId, :origenId, :opcionId, :tipologiaId, :nivelId, :id", nativeQuery = true)
+  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateWorflow :moduloId, :origenId, :opcionId, :tipologiaId, :nivelId, :id, @Filas OUTPUT", nativeQuery = true)
   void updateWorkflow(@Param("moduloId") int moduloId, @Param("origenId") int origenId,
               @Param("opcionId") int opcionId, @Param("tipologiaId") int tipologiaId,
               @Param("nivelId") int nivelId, @Param("id") int id);
