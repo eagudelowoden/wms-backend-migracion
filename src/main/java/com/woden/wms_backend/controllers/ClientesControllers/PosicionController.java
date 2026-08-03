@@ -8,19 +8,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.models.Entity.PosicionModel;
 import com.woden.wms_backend.services.ClienteServices.PosicionService;
 
 @RestController
 @RequestMapping("/client/posicion")
-public class PosicionController extends BaseController<PosicionModel, Integer> {
-    public PosicionController(PosicionService service) {
-        super(service);
-    }
+public class PosicionController {
 
     @Autowired
     private PosicionService posicionService;
+
+    @GetMapping
+    public ResponseEntity<List<PosicionModel>> getAll() {
+        return ResponseEntity.ok(posicionService.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PosicionModel> getById(@PathVariable Integer id) {
+        PosicionModel model = posicionService.getById(id);
+        if (model == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(model);
+    }
 
     @GetMapping("/getList/{reservado}")
     public List<String> getList(@PathVariable Integer reservado) {
