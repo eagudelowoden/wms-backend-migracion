@@ -12,6 +12,12 @@ public class BoletaMovimientoDTO {
   private String fechaEntrega;
   private String observacionesGenerales;
   private String usuarioNombre;
+  private String empresaNombre;
+  private String ruc;
+  private String telefono;
+  private String email;
+  private String web;
+  private String logoUrl;
   private List<ItemDTO> equipos;
 
   @Data

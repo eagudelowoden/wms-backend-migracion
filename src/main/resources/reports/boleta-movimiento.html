@@ -224,8 +224,13 @@
     }
 
     .signature-script {
-      font-family: "Brush Script MT", cursive;
-      font-size: 14px;
+      /* "Brush Script MT" es una fuente de Windows — el servidor donde corre
+         OpenHTMLtoPDF probablemente no la tiene instalada, así que el
+         italic + una fuente serif garantiza que igual se vea como firma
+         aunque el navegador/servidor no resuelva las fuentes cursivas. */
+      font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive, "Times New Roman", serif;
+      font-style: italic;
+      font-size: 16px;
       margin-top: 10px;
     }
 

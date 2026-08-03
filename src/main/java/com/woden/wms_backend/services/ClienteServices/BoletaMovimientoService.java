@@ -1,7 +1,9 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +11,8 @@ import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -30,7 +34,12 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 @Service
 public class BoletaMovimientoService {
 
+  private static final Logger logger = LoggerFactory.getLogger(BoletaMovimientoService.class);
+
   private final PebbleEngine pebbleEngine = new PebbleEngine.Builder().build();
+
+  // Cacheado en memoria: se lee y codifica una sola vez, no en cada boleta.
+  private String logoWodenBase64;
 
   public byte[] generarBoleta(BoletaMovimientoDTO request) throws Exception {
     PebbleTemplate template = pebbleEngine.getTemplate("reports/boleta-movimiento.html");
@@ -46,13 +55,18 @@ public class BoletaMovimientoService {
     contexto.put("total_unidades", totalUnidades(request.getEquipos()));
     contexto.put("doc_pagina", "1");
 
-    // Datos de empresa/logo — pendientes de definir origen, van vacíos por ahora.
-    contexto.put("logo_url", "");
-    contexto.put("empresa_nombre", "");
-    contexto.put("empresa_ruc", "");
-    contexto.put("empresa_telefono", "");
-    contexto.put("empresa_email", "");
-    contexto.put("empresa_web", "");
+    // El logo del cliente (ClienteModel.bandera) es una ruta relativa que solo
+    // existe en el servidor del frontend Angular — OpenHTMLtoPDF corre en el
+    // backend y no tiene forma de resolverla (no hay URL base configurada).
+    // Se usa el logo fijo de Woden ya empaquetado en el backend (mismo archivo
+    // que usa JasperReportService para el PDF de un solo pallet), embebido
+    // como data URI en base64 para no depender de resolución de URLs.
+    contexto.put("logo_url", cargarLogoWodenBase64());
+    contexto.put("empresa_nombre", request.getEmpresaNombre() != null ? request.getEmpresaNombre() : "");
+    contexto.put("empresa_ruc", request.getRuc() != null ? request.getRuc() : "");
+    contexto.put("empresa_telefono", request.getTelefono() != null ? request.getTelefono() : "");
+    contexto.put("empresa_email", request.getEmail() != null ? request.getEmail() : "");
+    contexto.put("empresa_web", request.getWeb() != null ? request.getWeb() : "");
 
     StringWriter writer = new StringWriter();
     template.evaluate(writer, contexto);
@@ -73,6 +87,30 @@ public class BoletaMovimientoService {
       builder.toStream(baos);
       builder.run();
       return baos.toByteArray();
+    }
+  }
+
+  private String cargarLogoWodenBase64() {
+    if (logoWodenBase64 != null) {
+      return logoWodenBase64;
+    }
+
+    // OJO: NO usar /reports/Logo.png (el que usa JasperReportService) — es un
+    // logo blanco (confirmado por inspección de píxeles: 0% de contenido
+    // opaco no-blanco), pensado para fondos oscuros/de color. En esta boleta
+    // el fondo es blanco, así que ahí es invisible. Se usa una copia de
+    // WODEN-WMS.png (mismo logo del login, visible sobre blanco).
+    try (InputStream logoStream = getClass().getResourceAsStream("/reports/WodenLogoBoleta.png")) {
+      if (logoStream == null) {
+        logger.warn("[BoletaMovimiento] No se encontró /reports/WodenLogoBoleta.png en el classpath");
+        return "";
+      }
+      String base64 = Base64.getEncoder().encodeToString(logoStream.readAllBytes());
+      logoWodenBase64 = "data:image/png;base64," + base64;
+      return logoWodenBase64;
+    } catch (Exception e) {
+      logger.error("[BoletaMovimiento] Error cargando el logo: {}", e.getMessage(), e);
+      return "";
     }
   }
 
