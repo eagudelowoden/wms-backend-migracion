@@ -24,6 +24,9 @@ public interface WorkFlowRepository  extends BaseRepository<WorkFlowModel, Integ
   @Query(value = "EXEC pa_SearchWorflow", nativeQuery = true)
   List<Object[]> search();
 
+  @Query(value = "SELECT wfd.WorkFlowId, e.Nombre FROM WorkFlowDestino wfd INNER JOIN Estado e ON e.Id = wfd.DestinoId", nativeQuery = true)
+  List<Object[]> searchDestinos();
+
   @Modifying
   @Transactional
   @Query(value = "EXEC pa_InsertWorflow :moduloId, :origenId, :opcionId, :tipologiaId, :nivelId", nativeQuery = true)

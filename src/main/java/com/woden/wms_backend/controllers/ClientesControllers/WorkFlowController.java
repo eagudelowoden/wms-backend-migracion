@@ -35,6 +35,11 @@ public class WorkFlowController {
     return ResponseEntity.ok(service.search());
   }
 
+  @GetMapping("/search-con-destinos")
+  public ResponseEntity<List<Map<String, Object>>> searchConDestinos() {
+    return ResponseEntity.ok(service.searchConDestinos());
+  }
+
   @PostMapping
   public ResponseEntity<Map<String, Object>> create(@RequestBody WorkFlowModel model) {
     service.create(model.getModuloId(), model.getOrigenId(), model.getOpcionId(),

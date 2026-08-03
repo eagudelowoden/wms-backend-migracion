@@ -41,6 +41,20 @@ public class WorkFlowService {
     return list;
   }
 
+  public List<Map<String, Object>> searchConDestinos() {
+    List<Map<String, Object>> list = search();
+    Map<Integer, List<String>> destinosByWorkflow = new HashMap<>();
+    for (Object[] row : repository.searchDestinos()) {
+      Integer workflowId = ((Number) row[0]).intValue();
+      destinosByWorkflow.computeIfAbsent(workflowId, k -> new ArrayList<>()).add((String) row[1]);
+    }
+    for (Map<String, Object> map : list) {
+      Integer id = ((Number) map.get("id")).intValue();
+      map.put("destinos", destinosByWorkflow.getOrDefault(id, new ArrayList<>()));
+    }
+    return list;
+  }
+
   @Transactional
   public void create(int moduloId, int origenId, int opcionId, int tipologiaId, int nivelId,
                      String usuario, String cliente) {
