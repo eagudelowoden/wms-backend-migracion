@@ -43,10 +43,13 @@ public class WorkFlowService {
 
   public List<Map<String, Object>> searchConDestinos() {
     List<Map<String, Object>> list = search();
-    Map<Integer, List<String>> destinosByWorkflow = new HashMap<>();
+    Map<Integer, List<Map<String, Object>>> destinosByWorkflow = new HashMap<>();
     for (Object[] row : repository.searchDestinos()) {
       Integer workflowId = ((Number) row[0]).intValue();
-      destinosByWorkflow.computeIfAbsent(workflowId, k -> new ArrayList<>()).add((String) row[1]);
+      Map<String, Object> destino = new HashMap<>();
+      destino.put("id", row[1]);
+      destino.put("nombre", row[2]);
+      destinosByWorkflow.computeIfAbsent(workflowId, k -> new ArrayList<>()).add(destino);
     }
     for (Map<String, Object> map : list) {
       Integer id = ((Number) map.get("id")).intValue();
