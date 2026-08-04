@@ -71,10 +71,8 @@ public class ClienteValidacionService {
         clienteValidacionRepository.toggleValidacion(clienteId, validacionTipoId, activo);
     }
 
-    /** true si el cliente tiene activa la validación con el código dado (ej. "TRUCKROLL"). */
     public boolean tieneValidacion(Integer clienteId, String codigo) {
-        if (clienteId == null || codigo == null) return false;
-        return getValidacionesByClienteId(clienteId).stream()
-                .anyMatch(v -> codigo.equalsIgnoreCase(v.getCodigo()) && v.isActivo());
+        Integer count = clienteValidacionRepository.tieneValidacion(clienteId, codigo);
+        return count != null && count > 0;
     }
 }

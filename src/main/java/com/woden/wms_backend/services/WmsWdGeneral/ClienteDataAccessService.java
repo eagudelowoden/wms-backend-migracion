@@ -27,6 +27,10 @@ public class ClienteDataAccessService {
     return clienteRepository.getBaseEmpaqueON(id);
   }
 
+  public Integer getSerialMasterCalidadON(int id) {
+    return clienteRepository.getSerialMasterCalidadON(id);
+  }
+
   public Integer getBaseNoDisponibleON(int id) {
     Boolean result = clienteRepository.getBaseNoDisponibleON(id);
     return result != null ? (result ? 1 : 0) : null;

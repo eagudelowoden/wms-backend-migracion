@@ -186,11 +186,12 @@ public class DiagnosticoService {
   private static final List<String> EXTENSIONES_HOJA_VIDA = List.of("pdf", "docx");
 
   /**
-   * Sube la hoja de vida de un serial TruckRoll/Garantía.
+   * Sube la hoja de vida de un serial TruckRoll/Garantía/PQRS.
    * Ruta final: {RutaEvidencias}\{NOMBRE-CLIENTE}\Hoja de vida-{serial}.{ext}
    * Un archivo por serial: si ya existe se reemplaza (en cualquier extensión permitida).
+   * Registra el cargue en HojaVida para que se pueda ubicar por SQL sin acceso al filesystem.
    */
-  public void uploadHojaVida(String serial, MultipartFile file) throws IOException {
+  public void uploadHojaVida(String serial, MultipartFile file, Integer usuarioId, String modulo) throws IOException {
     if (serial == null || serial.isBlank()) throw new IllegalArgumentException("Serial requerido");
     if (file == null || file.isEmpty()) throw new IllegalArgumentException("Archivo requerido");
 
@@ -210,9 +211,63 @@ public class DiagnosticoService {
       Files.deleteIfExists(dir.resolve("Hoja de vida-" + serialLimpio + "." + e));
     }
 
-    Path destino = dir.resolve("Hoja de vida-" + serialLimpio + "." + ext);
+    String nombreArchivo = "Hoja de vida-" + serialLimpio + "." + ext;
+    Path destino = dir.resolve(nombreArchivo);
     Files.copy(file.getInputStream(), destino);
     logger.info("[HOJA-VIDA] Guardada: {}", destino.toAbsolutePath());
+
+    registrarHojaVida(serial, nombreArchivo, destino.toAbsolutePath().toString(), ext, modulo, usuarioId);
+  }
+
+  /**
+   * Registra el cargue en la tabla HojaVida (BD del cliente actual): desactiva cualquier
+   * registro previo del serial y crea uno nuevo con la ruta/extensión/módulo actuales.
+   * SQL no puede servir el binario, pero sí permite ubicar la ruta exacta del archivo.
+   */
+  private void registrarHojaVida(String serial, String nombreArchivo, String rutaCompleta,
+                                  String extension, String modulo, Integer usuarioId) {
+    String sqlIngreso = "SELECT TOP 1 Id, TruckRollId FROM Ingreso WHERE Serial = ? ORDER BY Id DESC";
+    String sqlDesactivar = "UPDATE HojaVida SET Activo = 0 WHERE Serial = ? AND Activo = 1";
+    String sqlInsertar = "INSERT INTO HojaVida " +
+        "(SerialId, Serial, NombreArchivo, RutaCompleta, Extension, Modulo, TruckRollId, UsuarioId) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    try (Connection conn = dataSource.getConnection()) {
+      Integer serialId = null;
+      Integer truckRollId = null;
+      try (PreparedStatement ps = conn.prepareStatement(sqlIngreso)) {
+        ps.setString(1, serial);
+        try (ResultSet rs = ps.executeQuery()) {
+          if (rs.next()) {
+            serialId = rs.getInt(1);
+            truckRollId = (Integer) rs.getObject(2);
+          }
+        }
+      }
+      if (serialId == null) {
+        logger.warn("[HOJA-VIDA] No se encontró Ingreso para serial {} — no se registra en HojaVida", serial);
+        return;
+      }
+
+      try (PreparedStatement ps = conn.prepareStatement(sqlDesactivar)) {
+        ps.setString(1, serial);
+        ps.executeUpdate();
+      }
+
+      try (PreparedStatement ps = conn.prepareStatement(sqlInsertar)) {
+        ps.setInt(1, serialId);
+        ps.setString(2, serial);
+        ps.setString(3, nombreArchivo);
+        ps.setString(4, rutaCompleta);
+        ps.setString(5, extension);
+        ps.setString(6, modulo != null ? modulo : "DESCONOCIDO");
+        if (truckRollId != null) ps.setInt(7, truckRollId); else ps.setNull(7, Types.INTEGER);
+        if (usuarioId != null) ps.setInt(8, usuarioId); else ps.setNull(8, Types.INTEGER);
+        ps.executeUpdate();
+      }
+    } catch (SQLException e) {
+      logger.error("[HOJA-VIDA] Error registrando HojaVida para serial {}: {}", serial, e.getMessage());
+    }
   }
 
   /** Indica si el serial ya tiene hoja de vida cargada (en cualquier extensión permitida). */
@@ -230,7 +285,7 @@ public class DiagnosticoService {
   }
 
   /** Elimina la hoja de vida cargada del serial (cualquier extensión permitida). */
-  public void deleteHojaVida(String serial) throws IOException {
+  public void deleteHojaVida(String serial, Integer usuarioId) throws IOException {
     if (serial == null || serial.isBlank()) throw new IllegalArgumentException("Serial requerido");
     Path dir = getDirectorioHojasVida();
     String serialLimpio = sanitizarSerial(serial);
@@ -242,6 +297,21 @@ public class DiagnosticoService {
     }
     if (eliminado) {
       logger.info("[HOJA-VIDA] Eliminada hoja de vida del serial {}", serial);
+      desactivarHojaVida(serial, usuarioId);
+    }
+  }
+
+  /** Marca como inactivo (soft-delete) el registro activo del serial en HojaVida. */
+  private void desactivarHojaVida(String serial, Integer usuarioId) {
+    String sql = "UPDATE HojaVida SET Activo = 0, UsuarioIdEliminacion = ?, FechaEliminacion = GETDATE() " +
+        "WHERE Serial = ? AND Activo = 1";
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+      if (usuarioId != null) ps.setInt(1, usuarioId); else ps.setNull(1, Types.INTEGER);
+      ps.setString(2, serial);
+      ps.executeUpdate();
+    } catch (SQLException e) {
+      logger.error("[HOJA-VIDA] Error desactivando registro HojaVida para serial {}: {}", serial, e.getMessage());
     }
   }
 
