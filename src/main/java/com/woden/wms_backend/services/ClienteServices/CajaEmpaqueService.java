@@ -136,6 +136,11 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     return descripcion.isEmpty() ? codigo : codigo + " | " + descripcion;
   }
 
+  /** Serial Master (Calidad): seriales de una caja dado el pallet y el número de caja. */
+  public List<String> searchSerialesByCajaMaster(Integer palletId, String numeroCaja) {
+    return cajaEmpaqueRepository.searchSerialesByCajaMaster(palletId, numeroCaja);
+  }
+
   public void updateStatusBoxPacking(Integer cajaEmpaqueId, Integer estadoId) {
     Integer filas = 0;
     cajaEmpaqueRepository.updateStatusBoxPacking(cajaEmpaqueId, estadoId, filas);

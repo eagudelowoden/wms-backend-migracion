@@ -128,4 +128,10 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
             "ORDER BY p.Numero, c.Numero", nativeQuery = true)
     List<Object[]> searchAllRejectedBoxes(@Param("estadoId") Integer estadoId);
 
+    /** Serial Master (Calidad): seriales de una caja dado el pallet y el número de caja. */
+    @Query(value = "EXEC pa_SearchSerialesByCajaMaster :palletId, :numeroCaja", nativeQuery = true)
+    List<String> searchSerialesByCajaMaster(
+            @Param("palletId") Integer palletId,
+            @Param("numeroCaja") String numeroCaja);
+
 }

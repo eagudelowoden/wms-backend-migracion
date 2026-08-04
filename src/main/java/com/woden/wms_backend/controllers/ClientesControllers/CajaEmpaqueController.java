@@ -133,6 +133,13 @@ public class CajaEmpaqueController extends BaseController<CajaEmpaqueModel, Inte
         return ResponseEntity.ok(cajaEmpaqueService.searchAllRejectedBoxes());
     }
 
+    @GetMapping("/serialesByCajaMaster")
+    public ResponseEntity<List<String>> searchSerialesByCajaMaster(
+            @RequestParam Integer palletId,
+            @RequestParam String numeroCaja) {
+        return ResponseEntity.ok(cajaEmpaqueService.searchSerialesByCajaMaster(palletId, numeroCaja));
+    }
+
     @GetMapping("/boxSeriales")
     public ResponseEntity<List<Map<String, String>>> searchBoxSeriales(@RequestParam Integer cajaEmpaqueId) {
         return ResponseEntity.ok(cajaEmpaqueService.searchBoxSeriales(cajaEmpaqueId));
