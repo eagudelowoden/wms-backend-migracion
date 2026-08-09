@@ -119,56 +119,56 @@ public class EtiquetadoController extends BaseController<EtiquetadoModel, Intege
    */
   @PostMapping("/preview-base64")
   public ResponseEntity<String> obtenerPreviewBase64(@RequestBody String zpl) {
-    try {
-      System.out.println("🔄 Generando preview de ZPL (" + zpl.length() + " caracteres)");
+    final int maxIntentos = 3;
+    Exception ultimoError = null;
 
-      // Endpoint Labelary para generar imagen PNG
-      // Parámetros: 8dpmm = densidad, 4x6 = tamaño de etiqueta (ajusta según
-      // necesites)
-      URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setDoOutput(true);
-      conn.setRequestMethod("POST");
-      conn.setRequestProperty("Accept", "image/png");
-      conn.setConnectTimeout(10000); // 10 segundos timeout
-      conn.setReadTimeout(10000);
+    for (int intento = 1; intento <= maxIntentos; intento++) {
+      try {
+        // Endpoint Labelary para generar imagen PNG
+        // Parámetros: 8dpmm = densidad, 4x6 = tamaño de etiqueta (ajusta según necesites)
+        URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Accept", "image/png");
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(10000);
 
-      // Enviar ZPL al API
-      try (OutputStream os = conn.getOutputStream()) {
-        os.write(zpl.getBytes(StandardCharsets.UTF_8));
-      }
-
-      // Verificar respuesta
-      int responseCode = conn.getResponseCode();
-      if (responseCode != 200) {
-        System.err.println("❌ Labelary API retornó código: " + responseCode);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("❌ Error en Labelary API: código " + responseCode);
-      }
-
-      // Leer la imagen PNG generada
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      try (InputStream in = conn.getInputStream()) {
-        byte[] buffer = new byte[4096];
-        int bytesRead;
-        while ((bytesRead = in.read(buffer)) != -1) {
-          baos.write(buffer, 0, bytesRead);
+        try (OutputStream os = conn.getOutputStream()) {
+          os.write(zpl.getBytes(StandardCharsets.UTF_8));
         }
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode != 200) {
+          System.err.println("❌ Intento " + intento + "/" + maxIntentos + ": Labelary API retornó código: " + responseCode);
+          esperarAntesDeReintentar(intento);
+          continue;
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (InputStream in = conn.getInputStream()) {
+          byte[] buffer = new byte[4096];
+          int bytesRead;
+          while ((bytesRead = in.read(buffer)) != -1) {
+            baos.write(buffer, 0, bytesRead);
+          }
+        }
+
+        String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+        String dataUrl = "data:image/png;base64," + base64Image;
+        return ResponseEntity.ok(dataUrl);
+
+      } catch (Exception e) {
+        ultimoError = e;
+        System.err.println("❌ Intento " + intento + "/" + maxIntentos + ": error generando vista previa: " + e.getMessage());
+        esperarAntesDeReintentar(intento);
       }
-
-      // Convertir a Base64 con data URL
-      String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
-      String dataUrl = "data:image/png;base64," + base64Image;
-
-      System.out.println("✅ Preview generado correctamente (" + base64Image.length() + " bytes en base64)");
-      return ResponseEntity.ok(dataUrl);
-
-    } catch (Exception e) {
-      System.err.println("❌ Error generando vista previa: " + e.getMessage());
-      e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("❌ Error generando vista previa: " + e.getMessage());
     }
+
+    System.err.println("❌ /preview-base64 falló tras " + maxIntentos + " intentos: "
+        + (ultimoError != null ? ultimoError.getMessage() : ""));
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body("❌ Error generando vista previa tras varios intentos");
   }
 
   /**
@@ -177,27 +177,55 @@ public class EtiquetadoController extends BaseController<EtiquetadoModel, Intege
    */
   @PostMapping("/vistaPrevia")
   public ResponseEntity<byte[]> vistaPreviaZpl(@RequestBody String zpl) {
+    final int maxIntentos = 3;
+    Exception ultimoError = null;
+
+    for (int intento = 1; intento <= maxIntentos; intento++) {
+      try {
+        URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Accept", "image/png");
+        conn.setConnectTimeout(8000);
+        conn.setReadTimeout(15000);
+
+        try (OutputStream os = conn.getOutputStream()) {
+          os.write(zpl.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode != 200) {
+          System.err.println("❌ Intento " + intento + "/" + maxIntentos + ": Labelary API retornó código: " + responseCode);
+          esperarAntesDeReintentar(intento);
+          continue;
+        }
+
+        try (InputStream in = conn.getInputStream()) {
+          byte[] imageBytes = in.readAllBytes();
+          return ResponseEntity.ok()
+              .contentType(MediaType.IMAGE_PNG)
+              .body(imageBytes);
+        }
+
+      } catch (Exception e) {
+        ultimoError = e;
+        System.err.println("❌ Intento " + intento + "/" + maxIntentos + ": error generando vista previa: " + e.getMessage());
+        esperarAntesDeReintentar(intento);
+      }
+    }
+
+    System.err.println("❌ /vistaPrevia falló tras " + maxIntentos + " intentos: "
+        + (ultimoError != null ? ultimoError.getMessage() : ""));
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+  }
+
+  /** Backoff simple: 300ms, 600ms, ... antes del siguiente intento. */
+  private void esperarAntesDeReintentar(int intento) {
     try {
-      URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setDoOutput(true);
-      conn.setRequestMethod("POST");
-      conn.setRequestProperty("Accept", "image/png");
-
-      try (OutputStream os = conn.getOutputStream()) {
-        os.write(zpl.getBytes(StandardCharsets.UTF_8));
-      }
-
-      try (InputStream in = conn.getInputStream()) {
-        byte[] imageBytes = in.readAllBytes();
-        return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_PNG)
-            .body(imageBytes);
-      }
-
-    } catch (Exception e) {
-      System.err.println("❌ Error generando vista previa: " + e.getMessage());
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+      Thread.sleep(300L * intento);
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
     }
   }
 }

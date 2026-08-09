@@ -105,30 +105,62 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     return numeroPallet;
   }
 
+  // Tope de reintentos si el número que devuelve el SP ya existe en Pallet
+  // (choque contra el índice único UQ_Pallet_Numero_Activo) — normalmente no
+  // debería pasar más de 1 vez seguida, este margen es solo por seguridad.
+  private static final int MAX_INTENTOS_RESERVA_PALLET = 5;
+
   @Transactional
   public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId, String zonaHoraria) {
     // En vez de ZonedDateTime, usa LocalDateTime directo en la zona horaria
+    // del NAVEGADOR del usuario — a propósito: cada país mide productividad
+    // con la hora local en la que se crea el pallet, no la hora del servidor.
     LocalDateTime ahora = LocalDateTime.now(ZoneId.of(zonaHoraria));
     String minutoActual = ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     logger.debug("[reservePallet] zonaHoraria={}, minutoActual={}", zonaHoraria, minutoActual);
-    String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
+
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
     List<String> tipologias = maestroRepository.getListByTipo("tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
         ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
         : 1;
-    PalletModel pallet = new PalletModel();
-    pallet.setNumero(numero);
-    pallet.setOrigenId(origenId);
-    pallet.setDestinoId(destinoId);
-    pallet.setUsuarioId(usuarioId);
-    pallet.setCodigoSapId(defaultCodigoSapId);
-    pallet.setTipologiaId(defaultTipologiaId);
-    pallet.setPosicionId(0);
-    pallet.setActivo(true);
-    pallet.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-    PalletModel saved = palletRepository.save(pallet);
+
+    // Si dos usuarios (relojes/husos distintos) terminan cayendo en el mismo
+    // minuto y el número que entrega el SP ya existe (choca con el índice
+    // único de Pallet.Numero), no se le muestra el error al usuario — se le
+    // vuelve a pedir un número nuevo al mismo SP (que incrementa de forma
+    // atómica sobre ConsecutivoPallet2) y se reintenta el insert.
+    PalletModel saved = null;
+    String numeroUsado = null;
+    for (int intento = 1; intento <= MAX_INTENTOS_RESERVA_PALLET; intento++) {
+      String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
+      numeroUsado = numero;
+      try {
+        PalletModel pallet = new PalletModel();
+        pallet.setNumero(numero);
+        pallet.setOrigenId(origenId);
+        pallet.setDestinoId(destinoId);
+        pallet.setUsuarioId(usuarioId);
+        pallet.setCodigoSapId(defaultCodigoSapId);
+        pallet.setTipologiaId(defaultTipologiaId);
+        pallet.setPosicionId(0);
+        pallet.setActivo(true);
+        pallet.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        saved = palletRepository.save(pallet);
+        break;
+      } catch (org.springframework.dao.DataIntegrityViolationException e) {
+        logger.warn("[reservePallet] Número {} ya existía (intento {}/{}), reintentando con uno nuevo",
+            numero, intento, MAX_INTENTOS_RESERVA_PALLET);
+      }
+    }
+
+    if (saved == null) {
+      throw new IllegalStateException(
+          "No se pudo reservar un número de pallet único tras " + MAX_INTENTOS_RESERVA_PALLET
+              + " intentos (último número probado: " + numeroUsado + ")");
+    }
+
     logger.info("[reservePallet] Pallet reservado: id={}, numero={}", saved.getId(), saved.getNumero());
     Map<String, Object> result = new HashMap<>();
     result.put("id", saved.getId());
