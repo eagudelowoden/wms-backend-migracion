@@ -45,10 +45,14 @@ import com.woden.wms_backend.util.TypeMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import java.util.Collection;
+
 @Service
 public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   private static final Logger logger = LoggerFactory.getLogger(IngresoService.class);
+
+  private static final int CHUNK_SIZE = 1500;
 
   @Autowired
   private IngresoRepository ingresoRepository;
@@ -67,6 +71,20 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @PersistenceContext
   private EntityManager entityManager;
+
+  private <T> List<List<T>> particionar(Collection<T> valores, int tam) {
+    List<List<T>> paginas = new ArrayList<>();
+    List<T> actual = new ArrayList<>(tam);
+    for (T valor : valores) {
+      actual.add(valor);
+      if (actual.size() >= tam) {
+        paginas.add(actual);
+        actual = new ArrayList<>(tam);
+      }
+    }
+    if (!actual.isEmpty()) paginas.add(actual);
+    return paginas;
+  }
 
   // ── Creación / eliminación ───────────────────────────────────────────────────
 
@@ -858,9 +876,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         .filter(s -> s != null && !s.isEmpty())
         .map(s -> s.trim().toUpperCase())
         .toList();
-    Set<String> serialesExistentes = ingresoRepository.findExistingSerials(seriales).stream()
-        .map(String::toUpperCase)
-        .collect(java.util.stream.Collectors.toSet());
+    Set<String> serialesExistentes = new java.util.HashSet<>();
+    for (List<String> lote : particionar(seriales, CHUNK_SIZE)) {
+      serialesExistentes.addAll(ingresoRepository.findExistingSerials(lote));
+    }
     Set<String> serialesEnArchivo = new java.util.HashSet<>();
 
     List<String> macs = rows.stream()
@@ -868,20 +887,20 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         .filter(m -> m != null && !m.trim().isEmpty())
         .map(m -> m.trim().toUpperCase())
         .toList();
-    Set<String> macsExistentes = macs.isEmpty() ? java.util.Set.of()
-        : ingresoRepository.findExistingMacs(macs).stream()
-            .map(String::toUpperCase)
-            .collect(java.util.stream.Collectors.toSet());
+    Set<String> macsExistentes = new java.util.HashSet<>();
+    for (List<String> lote : particionar(macs, CHUNK_SIZE)) {
+      macsExistentes.addAll(ingresoRepository.findExistingMacs(lote));
+    }
 
     List<String> serial3s = rows.stream()
         .map(MassUploadRowDTO::getSerial3)
         .filter(s -> s != null && !s.trim().isEmpty())
         .map(s -> s.trim().toUpperCase())
         .toList();
-    Set<String> serial3sExistentes = serial3s.isEmpty() ? java.util.Set.of()
-        : ingresoRepository.findExistingSerial3s(serial3s).stream()
-            .map(String::toUpperCase)
-            .collect(java.util.stream.Collectors.toSet());
+    Set<String> serial3sExistentes = new java.util.HashSet<>();
+    for (List<String> lote : particionar(serial3s, CHUNK_SIZE)) {
+      serial3sExistentes.addAll(ingresoRepository.findExistingSerial3s(lote));
+    }
 
     Integer estadoIdIngreso = obtenerEstadoIdIngreso();
     Integer nivelIdIngreso = obtenerNivelIdIngreso();
@@ -1131,16 +1150,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
     Map<String, Integer> map = new java.util.HashMap<>();
     try (Connection conn = dataSource.getConnection()) {
-      String placeholders = String.join(",", java.util.Collections.nCopies(codigos.size(), "?"));
-      String sql = "SELECT Id, Codigo FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
-      try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-        int i = 1;
-        for (String codigo : codigos) {
-          ps.setString(i++, codigo);
-        }
-        try (java.sql.ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            map.put(rs.getString("Codigo").toUpperCase(), rs.getInt("Id"));
+      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT Id, Codigo FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String codigo : lote) {
+            ps.setString(i++, codigo);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              map.put(rs.getString("Codigo").toUpperCase(), rs.getInt("Id"));
+            }
           }
         }
       }
@@ -1160,20 +1181,22 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
     Map<String, Integer> map = new java.util.HashMap<>();
     try (Connection conn = dataSource.getConnection()) {
-      String placeholders = String.join(",", java.util.Collections.nCopies(codigos.size(), "?"));
-      String sql = "SELECT Codigo, Largos FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
-      try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-        int i = 1;
-        for (String codigo : codigos) {
-          ps.setString(i++, codigo);
-        }
-        try (java.sql.ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            String largos = rs.getString("Largos");
-            if (largos != null && !largos.isEmpty()) {
-              try {
-                map.put(rs.getString("Codigo").toUpperCase(), Integer.parseInt(largos));
-              } catch (NumberFormatException ignored) {}
+      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT Codigo, Largos FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String codigo : lote) {
+            ps.setString(i++, codigo);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              String largos = rs.getString("Largos");
+              if (largos != null && !largos.isEmpty()) {
+                try {
+                  map.put(rs.getString("Codigo").toUpperCase(), Integer.parseInt(largos));
+                } catch (NumberFormatException ignored) {}
+              }
             }
           }
         }
@@ -1194,16 +1217,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
     Map<String, Integer> map = new java.util.HashMap<>();
     try (Connection conn = dataSource.getConnection()) {
-      String placeholders = String.join(",", java.util.Collections.nCopies(pallets.size(), "?"));
-      String sql = "SELECT Id, Numero FROM Pallet WHERE UPPER(Numero) IN (" + placeholders + ")";
-      try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-        int i = 1;
-        for (String pallet : pallets) {
-          ps.setString(i++, pallet);
-        }
-        try (java.sql.ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            map.put(rs.getString("Numero").toUpperCase(), rs.getInt("Id"));
+      for (List<String> lote : particionar(pallets, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT Id, Numero FROM Pallet WHERE UPPER(Numero) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String pallet : lote) {
+            ps.setString(i++, pallet);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              map.put(rs.getString("Numero").toUpperCase(), rs.getInt("Id"));
+            }
           }
         }
       }
@@ -1223,16 +1248,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
     Map<String, Integer> map = new java.util.HashMap<>();
     try (Connection conn = dataSource.getConnection()) {
-      String placeholders = String.join(",", java.util.Collections.nCopies(usuarios.size(), "?"));
-      String sql = "SELECT id, nombre_usuario FROM UsuarioSys WHERE UPPER(nombre_usuario) IN (" + placeholders + ")";
-      try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-        int i = 1;
-        for (String usuario : usuarios) {
-          ps.setString(i++, usuario);
-        }
-        try (java.sql.ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            map.put(rs.getString("nombre_usuario").toUpperCase(), rs.getInt("id"));
+      for (List<String> lote : particionar(usuarios, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT id, nombre_usuario FROM UsuarioSys WHERE UPPER(nombre_usuario) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String usuario : lote) {
+            ps.setString(i++, usuario);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              map.put(rs.getString("nombre_usuario").toUpperCase(), rs.getInt("id"));
+            }
           }
         }
       }
@@ -1263,17 +1290,19 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       Integer tipoMaestroId = getTipoMaestroId(conn, tipoMaestro);
       if (tipoMaestroId == null) return map;
 
-      String placeholders = String.join(",", java.util.Collections.nCopies(valores.size(), "?"));
-      String sql = "SELECT id, codigo FROM Maestro WHERE UPPER(codigo) IN (" + placeholders + ") AND TipoMaestroId = ?";
-      try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-        int i = 1;
-        for (String valor : valores) {
-          ps.setString(i++, valor);
-        }
-        ps.setInt(i, tipoMaestroId);
-        try (java.sql.ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            map.put(rs.getString("codigo").toUpperCase(), rs.getInt("id"));
+      for (List<String> lote : particionar(valores, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT id, codigo FROM Maestro WHERE UPPER(codigo) IN (" + placeholders + ") AND TipoMaestroId = ?";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String valor : lote) {
+            ps.setString(i++, valor);
+          }
+          ps.setInt(i, tipoMaestroId);
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              map.put(rs.getString("codigo").toUpperCase(), rs.getInt("id"));
+            }
           }
         }
       }
@@ -1293,16 +1322,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
     Map<String, Integer> map = new java.util.HashMap<>();
     try (Connection conn = dataSource.getConnection()) {
-      String placeholders = String.join(",", java.util.Collections.nCopies(lotes.size(), "?"));
-      String sql = "SELECT id, nombre FROM Lote WHERE UPPER(nombre) IN (" + placeholders + ")";
-      try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-        int i = 1;
-        for (String lote : lotes) {
-          ps.setString(i++, lote);
-        }
-        try (java.sql.ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            map.put(rs.getString("nombre").toUpperCase(), rs.getInt("id"));
+      for (List<String> lote : particionar(lotes, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT id, nombre FROM Lote WHERE UPPER(nombre) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String nombre : lote) {
+            ps.setString(i++, nombre);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              map.put(rs.getString("nombre").toUpperCase(), rs.getInt("id"));
+            }
           }
         }
       }
