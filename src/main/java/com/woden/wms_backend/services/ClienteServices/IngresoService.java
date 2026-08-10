@@ -863,6 +863,26 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         .collect(java.util.stream.Collectors.toSet());
     Set<String> serialesEnArchivo = new java.util.HashSet<>();
 
+    List<String> macs = rows.stream()
+        .map(MassUploadRowDTO::getMac)
+        .filter(m -> m != null && !m.trim().isEmpty())
+        .map(m -> m.trim().toUpperCase())
+        .toList();
+    Set<String> macsExistentes = macs.isEmpty() ? java.util.Set.of()
+        : ingresoRepository.findExistingMacs(macs).stream()
+            .map(String::toUpperCase)
+            .collect(java.util.stream.Collectors.toSet());
+
+    List<String> serial3s = rows.stream()
+        .map(MassUploadRowDTO::getSerial3)
+        .filter(s -> s != null && !s.trim().isEmpty())
+        .map(s -> s.trim().toUpperCase())
+        .toList();
+    Set<String> serial3sExistentes = serial3s.isEmpty() ? java.util.Set.of()
+        : ingresoRepository.findExistingSerial3s(serial3s).stream()
+            .map(String::toUpperCase)
+            .collect(java.util.stream.Collectors.toSet());
+
     Integer estadoIdIngreso = obtenerEstadoIdIngreso();
     Integer nivelIdIngreso = obtenerNivelIdIngreso();
 
@@ -974,11 +994,28 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         serialesEnArchivo.add(serialUpper);
       }
 
+      String macUpper = row.getMac() != null ? row.getMac().toUpperCase().trim() : "";
+      if (!macUpper.isEmpty() && macsExistentes.contains(macUpper)) {
+        erroresFila.add("Mac '" + macUpper + "' ya existe en el sistema");
+      }
+
+      String serial3Upper = row.getSerial3() != null ? row.getSerial3().toUpperCase().trim() : "";
+      if (!serial3Upper.isEmpty() && serial3sExistentes.contains(serial3Upper)) {
+        erroresFila.add("Serial3 '" + serial3Upper + "' ya existe en el sistema");
+      }
+
       if (codigoSapId != null && codigoSapLargosMap.containsKey(row.getCodigoSap().trim().toUpperCase())) {
         String largos = String.valueOf(codigoSapLargosMap.get(row.getCodigoSap().trim().toUpperCase()));
       }
 
       if (palletConfig != null) {
+        String rowPalletWms = row.getPalletWms() != null ? row.getPalletWms().trim() : "";
+        if (!rowPalletWms.isEmpty() && palletConfig.getNumeroPallet() != null && !palletConfig.getNumeroPallet().isEmpty()) {
+          if (!rowPalletWms.equalsIgnoreCase(palletConfig.getNumeroPallet())) {
+            erroresFila.add("Pallet WMS '" + rowPalletWms + "' no coincide con el pallet seleccionado: '" + palletConfig.getNumeroPallet() + "'");
+          }
+        }
+
         String rowLote = row.getLote() != null ? row.getLote().trim() : "";
         if (!rowLote.isEmpty() && !"-".equals(rowLote) && palletConfig.getLote() != null && !palletConfig.getLote().isEmpty()) {
           if (!rowLote.equalsIgnoreCase(palletConfig.getLote())) {

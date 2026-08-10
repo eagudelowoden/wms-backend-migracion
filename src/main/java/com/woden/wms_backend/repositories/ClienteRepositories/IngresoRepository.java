@@ -500,4 +500,10 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "SELECT Serial FROM Ingreso WHERE Serial IN (:seriales)", nativeQuery = true)
 	List<String> findExistingSerials(@Param("seriales") List<String> seriales);
+
+	@Query(value = "SELECT Mac FROM Ingreso WHERE Mac IN (:macs) AND Mac IS NOT NULL AND Mac <> ''", nativeQuery = true)
+	List<String> findExistingMacs(@Param("macs") List<String> macs);
+
+	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 IS NOT NULL AND Serial3 <> ''", nativeQuery = true)
+	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
 }
