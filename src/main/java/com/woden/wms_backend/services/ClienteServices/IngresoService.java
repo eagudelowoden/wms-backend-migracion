@@ -879,8 +879,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       } else {
         try {
           java.time.LocalDateTime fecha = parseFecha(row.getFecha());
-          if (fecha.isAfter(java.time.LocalDateTime.now())) {
-            erroresFila.add("Fecha futura no permitida");
+          if (!fecha.toLocalDate().equals(java.time.LocalDate.now())) {
+            erroresFila.add("Solo se permite la fecha actual");
           }
         } catch (Exception e) {
           erroresFila.add("Fecha con formato inválido");
