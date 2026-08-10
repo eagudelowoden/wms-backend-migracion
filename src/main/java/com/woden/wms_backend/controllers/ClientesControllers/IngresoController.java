@@ -566,7 +566,7 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @PostMapping("/mass-upload/preview")
   public ResponseEntity<MassUploadPreviewResponseDTO> massUploadPreview(
       @RequestBody MassUploadPreviewRequestDTO request) {
-    return ResponseEntity.ok(ingresoService.massUploadPreview(request.getRows()));
+    return ResponseEntity.ok(ingresoService.massUploadPreview(request.getRows(), request.getPalletConfig()));
   }
 
   @PostMapping("/mass-upload/confirm")

@@ -29,6 +29,7 @@ import com.woden.wms_backend.dto.clientDTO.IngresoModelDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadConfirmResponseDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadErrorDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadPreviewResponseDTO;
+import com.woden.wms_backend.dto.clientDTO.ingreso.PalletConfigDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadRowDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadRowResolvedDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateStateAllItemRequest;
@@ -837,7 +838,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   // ── Ingreso Masivo ─────────────────────────────────────────────────────────
 
-  public MassUploadPreviewResponseDTO massUploadPreview(List<MassUploadRowDTO> rows) {
+  public MassUploadPreviewResponseDTO massUploadPreview(List<MassUploadRowDTO> rows, PalletConfigDTO palletConfig) {
     MassUploadPreviewResponseDTO response = new MassUploadPreviewResponseDTO();
     List<MassUploadRowResolvedDTO> validos = new ArrayList<>();
     List<MassUploadErrorDTO> errores = new ArrayList<>();
@@ -975,7 +976,50 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
       if (codigoSapId != null && codigoSapLargosMap.containsKey(row.getCodigoSap().trim().toUpperCase())) {
         String largos = String.valueOf(codigoSapLargosMap.get(row.getCodigoSap().trim().toUpperCase()));
-        // Validación de longitud de serial se puede agregar aquí si se conoce el formato
+      }
+
+      if (palletConfig != null) {
+        String rowLote = row.getLote() != null ? row.getLote().trim() : "";
+        if (!rowLote.isEmpty() && !"-".equals(rowLote) && palletConfig.getLote() != null && !palletConfig.getLote().isEmpty()) {
+          if (!rowLote.equalsIgnoreCase(palletConfig.getLote())) {
+            erroresFila.add("Lote '" + rowLote + "' no coincide con el lote del pallet: '" + palletConfig.getLote() + "'");
+          }
+        }
+
+        String rowModelo = row.getModelo() != null ? row.getModelo().trim() : "";
+        if (!rowModelo.isEmpty() && !"NINGUNA".equalsIgnoreCase(rowModelo) && palletConfig.getModelo() != null && !palletConfig.getModelo().isEmpty()) {
+          if (!rowModelo.equalsIgnoreCase(palletConfig.getModelo())) {
+            erroresFila.add("Modelo '" + rowModelo + "' no coincide con el modelo seleccionado: '" + palletConfig.getModelo() + "'");
+          }
+        }
+
+        String rowTipoOrigen = row.getTipoOrigen() != null ? row.getTipoOrigen().trim() : "";
+        if (!rowTipoOrigen.isEmpty() && palletConfig.getTipoOrigen() != null && !palletConfig.getTipoOrigen().isEmpty()) {
+          if (!rowTipoOrigen.equalsIgnoreCase(palletConfig.getTipoOrigen())) {
+            erroresFila.add("TipoOrigen '" + rowTipoOrigen + "' no coincide con el tipo origen seleccionado: '" + palletConfig.getTipoOrigen() + "'");
+          }
+        }
+
+        String rowOrigen = row.getOrigen() != null ? row.getOrigen().trim() : "";
+        if (!rowOrigen.isEmpty() && palletConfig.getOrigen() != null && !palletConfig.getOrigen().isEmpty()) {
+          if (!rowOrigen.equalsIgnoreCase(palletConfig.getOrigen())) {
+            erroresFila.add("Origen '" + rowOrigen + "' no coincide con el origen seleccionado: '" + palletConfig.getOrigen() + "'");
+          }
+        }
+
+        String rowTipologia = row.getTipologia() != null ? row.getTipologia().trim() : "";
+        if (!rowTipologia.isEmpty() && palletConfig.getTipologia() != null && !palletConfig.getTipologia().isEmpty()) {
+          if (!rowTipologia.equalsIgnoreCase(palletConfig.getTipologia())) {
+            erroresFila.add("Tipologia '" + rowTipologia + "' no coincide con la tipologia del pallet: '" + palletConfig.getTipologia() + "'");
+          }
+        }
+
+        String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
+        if (!rowCodigoSap.isEmpty() && !palletConfig.isMultimodelo() && palletConfig.getCodigoSap() != null && !palletConfig.getCodigoSap().isEmpty()) {
+          if (!rowCodigoSap.equalsIgnoreCase(palletConfig.getCodigoSap())) {
+            erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet: '" + palletConfig.getCodigoSap() + "'");
+          }
+        }
       }
 
       if (erroresFila.isEmpty()) {
