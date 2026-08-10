@@ -42,6 +42,10 @@ import com.woden.wms_backend.dto.clientDTO.ingreso.PackingEntryRequest;
 import com.woden.wms_backend.dto.clientDTO.ingreso.PackingSmartCardRequest;
 import com.woden.wms_backend.dto.clientDTO.ingreso.StateNoUserRequest;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UnifyEntryRequest;
+import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadConfirmRequestDTO;
+import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadConfirmResponseDTO;
+import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadPreviewRequestDTO;
+import com.woden.wms_backend.dto.clientDTO.ingreso.MassUploadPreviewResponseDTO;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateChangeStateRequest;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateLevelRequest;
 import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateNoveltyItemRequest;
@@ -555,5 +559,19 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @GetMapping("/truckroll-status")
   public ResponseEntity<Map<String, Object>> getTruckRollStatus(@RequestParam String serial) {
     return ResponseEntity.ok(ingresoService.getTruckRollStatus(serial));
+  }
+
+  // ── Ingreso Masivo ────────────────────────────────────────────────────────
+
+  @PostMapping("/mass-upload/preview")
+  public ResponseEntity<MassUploadPreviewResponseDTO> massUploadPreview(
+      @RequestBody MassUploadPreviewRequestDTO request) {
+    return ResponseEntity.ok(ingresoService.massUploadPreview(request.getRows()));
+  }
+
+  @PostMapping("/mass-upload/confirm")
+  public ResponseEntity<MassUploadConfirmResponseDTO> massUploadConfirm(
+      @RequestBody MassUploadConfirmRequestDTO request) {
+    return ResponseEntity.ok(ingresoService.massUploadConfirm(request.getSeriales()));
   }
 }
