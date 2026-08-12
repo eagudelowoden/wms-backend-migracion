@@ -133,6 +133,48 @@ public class TruckrollRepository {
     }
 
     /**
+     * Verifica si el serial existe en App_PQRS_TruckRolls (BD del cliente actual,
+     * misma BD que App_PQRS_Tickets — columna serial_equipo). A diferencia de
+     * App_PQRS_Tickets (que solo sube de nivel una clasificación ya en curso),
+     * la sola existencia acá YA confirma TruckRoll — regla de negocio nueva,
+     * independiente del cruce por días contra Despacho.
+     */
+    public boolean existeEnAppPqrsTruckRolls(String serial) {
+        if (serial == null || serial.isBlank()) return false;
+        String sql = "SELECT COUNT(1) FROM App_PQRS_TruckRolls WHERE serial_equipo = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error consultando App_PQRS_TruckRolls para serial={}: {}", serial, e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Marca el ingreso como TruckRoll confirmado (TruckRollId = 7) cuando el serial
+     * existe en App_PQRS_TruckRolls pero no cruzó contra ningún Despacho origen —
+     * mismo patrón que updateIngresoSoloPqrs (14), pero sin ClienteOrigenId ni
+     * ClienteParametroId porque no hay Despacho con qué llenarlos.
+     * ⚠️ TEMPORAL: pendiente de definir con el cliente qué va en esos dos campos
+     * en este escenario (puede ser que ClienteOrigen sea el mismo cliente actual).
+     * WHERE TruckRollId IS NULL asegura idempotencia.
+     */
+    public void updateIngresoTruckRollLiberty(String serial) {
+        String sql = "UPDATE Ingreso SET TruckRollId = 7 WHERE Serial = ? AND TruckRollId IS NULL";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error marcando TruckRoll (App_PQRS_TruckRolls) para serial '{}': {}", serial, e.getMessage());
+        }
+    }
+
+    /**
      * Obtiene el Despacho origen vinculado a un Ingreso antes de eliminarlo.
      * Devuelve { ClienteOrigenId, ClienteParametroId } o null si el serial no fue clasificado.
      */
