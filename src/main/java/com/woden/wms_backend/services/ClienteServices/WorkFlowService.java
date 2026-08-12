@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.woden.wms_backend.exception.DuplicateEntryException;
 import com.woden.wms_backend.repositories.ClienteRepositories.WorkFlowRepository;
 import com.woden.wms_backend.repositories.WmsWdGeneral.EstadoRepository;
 
@@ -61,6 +62,12 @@ public class WorkFlowService {
   @Transactional
   public void create(int moduloId, int origenId, int opcionId, int tipologiaId, int nivelId,
                      String usuario, String cliente) {
+    Integer existingId = repository.findByConfig(moduloId, origenId, opcionId, tipologiaId);
+    if (existingId != null) {
+      throw new DuplicateEntryException(
+        String.format("Ya existe workflow ID: %d con la misma configuración (Módulo: %d, Origen: %d, Opción: %d, Tipología: %d)",
+          existingId, moduloId, origenId, opcionId, tipologiaId));
+    }
     repository.create(moduloId, origenId, opcionId, tipologiaId, nivelId);
     String descripcion = String.format(
       "Se creó el Workflow (ModuloId: %d, OrigenId: %d, OpcionId: %d, TipologiaId: %d, NivelId: %d)",
