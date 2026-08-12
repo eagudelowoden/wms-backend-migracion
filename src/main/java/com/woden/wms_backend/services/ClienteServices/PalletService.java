@@ -43,9 +43,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   private static final Logger log = LoggerFactory.getLogger(PalletService.class);
 
-
-
-
   public PalletModel getModel(int id) {
     List<Object[]> results = palletRepository.getPalletById(id);
 
@@ -212,9 +209,10 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setId((Integer) obj[0]);
       pallet.setNumero((String) obj[1]);
       pallet.setCodigoSap((String) obj[2]);
-      pallet.setCantidad((Integer) obj[3]);
-      pallet.setTipologia((String) obj[4]);
-      pallet.setLote((String) obj[5]);
+      pallet.setDescripcion((String) obj[3]);
+      pallet.setCantidad((Integer) obj[4]);
+      pallet.setTipologia((String) obj[5]);
+      pallet.setLote((String) obj[6]);
       return pallet;
     }).collect(Collectors.toList());
   }
@@ -582,16 +580,16 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     palletRepository.innactivatePallet(palletId, filas);
   }
 
-    public List<Map<String, String>> searchQualityDeliveryPallet() {
-      List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
-      return results.stream().map(result -> {
-        Map<String, String> pallet = new HashMap<>();
-        pallet.put("id", String.valueOf(result[0]));
-        pallet.put("numero", String.valueOf(result[1]));
-        pallet.put("cantidadCaja", String.valueOf(result[2]));
-        return pallet;
-      }).collect(Collectors.toList());
-    }
+  public List<Map<String, String>> searchQualityDeliveryPallet() {
+    List<Object[]> results = palletRepository.searchQualityDeliveryPallet();
+    return results.stream().map(result -> {
+      Map<String, String> pallet = new HashMap<>();
+      pallet.put("id", String.valueOf(result[0]));
+      pallet.put("numero", String.valueOf(result[1]));
+      pallet.put("cantidadCaja", String.valueOf(result[2]));
+      return pallet;
+    }).collect(Collectors.toList());
+  }
 
   public List<Map<String, String>> searchPalletBoxDispatchPallet(String numero) {
     List<Object[]> results = palletRepository.searchPalletBoxDispatchPallet(numero);
@@ -690,9 +688,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
   public void cerrarPallet(Integer palletId, Integer destinoId, Integer estadoId, Integer tipologiaId,
       Integer posicionId, Integer usuarioId, Integer opcion) {
-    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estadoId, usuarioId, opcion, 0, 0);
+    palletRepository.enviarPallet(palletId, destinoId, estadoId, tipologiaId, posicionId, estadoId, usuarioId, opcion,
+        0, 0);
   }
-
 
   public List<ModeloPalletDto> searchModels(Integer palletId) {
     List<Object[]> rows = palletRepository.searchModels(palletId);
@@ -723,14 +721,13 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
         // Insertar nuevo pallet
         palletRepository.insertPallet(
-                dto.getPosicionNumero(),
-                posicionId,
-                codigoSapMultimodelo,
-                tipologiaLibre,
-                0, 0,
-                dto.getUsuarioId(),
-                null
-        );
+            dto.getPosicionNumero(),
+            posicionId,
+            codigoSapMultimodelo,
+            tipologiaLibre,
+            0, 0,
+            dto.getUsuarioId(),
+            null);
         // Obtener el ID del pallet recién creado
         palletDestinoId = palletRepository.getIdPallet(dto.getPosicionNumero());
       } else {
@@ -740,12 +737,11 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
       // 2. Ejecutar la transferencia de modelos
       palletRepository.sendModels(
-              dto.getDestinoId(),
-              dto.getUsuarioId(),
-              palletDestinoId,
-              dto.getPalletOrigenId(),
-              dto.getCodigoSapId()
-      );
+          dto.getDestinoId(),
+          dto.getUsuarioId(),
+          palletDestinoId,
+          dto.getPalletOrigenId(),
+          dto.getCodigoSapId());
 
       return 1;
     } catch (Exception e) {
