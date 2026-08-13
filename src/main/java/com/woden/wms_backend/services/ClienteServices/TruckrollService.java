@@ -118,12 +118,15 @@ public class TruckrollService {
             // Sin cruce en Despacho pero existe en App_PQRS_TruckRolls → TruckRoll
             // confirmado (TruckRollId = 7) igual. ClienteParametroId se llena con
             // el Id de la regla del cliente (ej. 11 para Legacy Costa Rica);
-            // ClienteOrigenId queda NULL porque no hay Despacho real. Prioridad
-            // sobre el fallback "solo PQRS" porque es una señal más fuerte.
+            // ClienteOrigenId se llena con el Id de la fila en App_PQRS_TruckRolls
+            // (no hay despachoId real). Prioridad sobre el fallback "solo PQRS"
+            // porque es una señal más fuerte.
             if (esTruckRollLiberty) {
                 Integer parametroId = reglas.get(0).getId();
-                truckrollRepository.updateIngresoTruckRollLiberty(serial, parametroId);
-                logger.info("[TruckrollService] Serial {} sin cruce Despacho pero existe en App_PQRS_TruckRolls → TruckRollId=7, ClienteParametroId={}", serial, parametroId);
+                Integer idAppPqrsTruckRolls = truckrollRepository.obtenerIdAppPqrsTruckRolls(serial);
+                truckrollRepository.updateIngresoTruckRollLiberty(serial, parametroId, idAppPqrsTruckRolls);
+                logger.info("[TruckrollService] Serial {} sin cruce Despacho pero existe en App_PQRS_TruckRolls → TruckRollId=7, ClienteParametroId={}, ClienteOrigenId={}",
+                        serial, parametroId, idAppPqrsTruckRolls);
                 return;
             }
 
