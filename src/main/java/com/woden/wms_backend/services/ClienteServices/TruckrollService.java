@@ -56,6 +56,13 @@ public class TruckrollService {
 
             boolean adicionalUno = truckrollRepository.isTipoOrigenAdicionalUno(tipoOrigenId);
 
+            // Regla nueva, independiente del cruce por días contra Despacho: si el
+            // serial existe en App_PQRS_TruckRolls (BD del cliente actual), YA es
+            // TruckRoll confirmado — se evalúa una sola vez y se aplica sobre
+            // cualquier regla que sí cruce con un Despacho real (para no perder el
+            // llenado de ClienteOrigenId/ClienteParametroId que da la trazabilidad).
+            boolean esTruckRollLiberty = truckrollRepository.existeEnAppPqrsTruckRolls(serial);
+
             for (ParametroTruckrollModel regla : reglas) {
                 String valorCruce = resolverValorCruce(regla.getCampoCruceDestino(), serial, mac);
                 logger.debug("[TruckrollService] Regla '{}' — campoCruceDestino={}, valorCruce={}",
@@ -75,7 +82,13 @@ public class TruckrollService {
                 long dias = resultado[1];
                 Integer truckRollId;
 
-                if (dias <= regla.getDiasGarantia()) {
+                if (esTruckRollLiberty) {
+                    // Existe en App_PQRS_TruckRolls → TruckRoll confirmado directo,
+                    // sin importar días ni PQRS. Se aprovecha este Despacho real que sí
+                    // cruzó para llenar ClienteOrigenId/ClienteParametroId con trazabilidad.
+                    truckRollId = 7;
+                    logger.debug("[TruckrollService] Serial {} existe en App_PQRS_TruckRolls → TruckRollId=7 (sobre Despacho {} días)", serial, dias);
+                } else if (dias <= regla.getDiasGarantia()) {
                     boolean tienePqrs = truckrollRepository.hasPqrsTicket(serial);
                     truckRollId = tienePqrs ? 1 : 0;
                     logger.debug("[TruckrollService] Garantía ({} días) — PQRS={} → TruckRollId={}", dias, tienePqrs, truckRollId);
@@ -101,6 +114,18 @@ public class TruckrollService {
             }
 
             logger.debug("[TruckrollService] Serial {} sin Despacho matching en {} reglas activas", serial, reglas.size());
+
+            // Sin cruce en Despacho pero existe en App_PQRS_TruckRolls → TruckRoll
+            // confirmado (TruckRollId = 7) igual. ClienteParametroId se llena con
+            // el Id de la regla del cliente (ej. 11 para Legacy Costa Rica);
+            // ClienteOrigenId queda NULL porque no hay Despacho real. Prioridad
+            // sobre el fallback "solo PQRS" porque es una señal más fuerte.
+            if (esTruckRollLiberty) {
+                Integer parametroId = reglas.get(0).getId();
+                truckrollRepository.updateIngresoTruckRollLiberty(serial, parametroId);
+                logger.info("[TruckrollService] Serial {} sin cruce Despacho pero existe en App_PQRS_TruckRolls → TruckRollId=7, ClienteParametroId={}", serial, parametroId);
+                return;
+            }
 
             // Sin cruce en Despacho pero con ticket PQRS → TruckRollId = 14 (solo PQRS)
             if (truckrollRepository.hasPqrsTicket(serial)) {

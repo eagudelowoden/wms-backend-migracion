@@ -133,6 +133,51 @@ public class TruckrollRepository {
     }
 
     /**
+     * Verifica si el serial existe en App_PQRS_TruckRolls (BD del cliente actual,
+     * misma BD que App_PQRS_Tickets — columna serial_equipo). A diferencia de
+     * App_PQRS_Tickets (que solo sube de nivel una clasificación ya en curso),
+     * la sola existencia acá YA confirma TruckRoll — regla de negocio nueva,
+     * independiente del cruce por días contra Despacho.
+     */
+    public boolean existeEnAppPqrsTruckRolls(String serial) {
+        if (serial == null || serial.isBlank()) return false;
+        String sql = "SELECT COUNT(1) FROM App_PQRS_TruckRolls WHERE serial_equipo = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error consultando App_PQRS_TruckRolls para serial={}: {}", serial, e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Marca el ingreso como TruckRoll confirmado (TruckRollId = 7) cuando el serial
+     * existe en App_PQRS_TruckRolls pero no cruzó contra ningún Despacho origen.
+     * ClienteParametroId SÍ se llena (con el Id de la regla del cliente en
+     * Parametro_TruckrollsLiberty, ej. 11 para Legacy Costa Rica) — decisión
+     * confirmada por el usuario. ClienteOrigenId queda NULL (no hay Despacho
+     * real del que sacarlo). Por eso getDespachoVinculado (que exige ambos NOT
+     * NULL) no encuentra estas filas — no hay Despacho que liberar al eliminar,
+     * así que no participan del mecanismo de limpieza, lo cual es correcto acá.
+     * WHERE TruckRollId IS NULL asegura idempotencia.
+     */
+    public void updateIngresoTruckRollLiberty(String serial, Integer parametroId) {
+        String sql = "UPDATE Ingreso SET TruckRollId = 7, ClienteParametroId = ? WHERE Serial = ? AND TruckRollId IS NULL";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (parametroId != null) ps.setInt(1, parametroId); else ps.setNull(1, Types.INTEGER);
+            ps.setString(2, serial);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error marcando TruckRoll (App_PQRS_TruckRolls) para serial '{}': {}", serial, e.getMessage());
+        }
+    }
+
+    /**
      * Obtiene el Despacho origen vinculado a un Ingreso antes de eliminarlo.
      * Devuelve { ClienteOrigenId, ClienteParametroId } o null si el serial no fue clasificado.
      */

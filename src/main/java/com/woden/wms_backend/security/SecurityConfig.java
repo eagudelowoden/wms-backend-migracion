@@ -18,9 +18,12 @@ import java.util.List;
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
 
-  public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+  public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+      ApiKeyAuthenticationFilter apiKeyAuthenticationFilter) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    this.apiKeyAuthenticationFilter = apiKeyAuthenticationFilter;
   }
 
   @Bean
@@ -38,8 +41,13 @@ public class SecurityConfig {
             .requestMatchers("/general/users/ping").permitAll()
             .requestMatchers("/general/avisos/activo").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            // Rutas de integración externa (sistema-a-sistema, sin JWT/usuario) —
+            // permitAll acá porque quien las protege de verdad es
+            // ApiKeyAuthenticationFilter (X-Api-Key), no este filtro de sesión.
+            .requestMatchers("/evidencias/**").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(apiKeyAuthenticationFilter, JwtAuthenticationFilter.class)
         .build();
   }
 
