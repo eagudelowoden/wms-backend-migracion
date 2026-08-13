@@ -156,18 +156,21 @@ public class TruckrollRepository {
 
     /**
      * Marca el ingreso como TruckRoll confirmado (TruckRollId = 7) cuando el serial
-     * existe en App_PQRS_TruckRolls pero no cruzó contra ningún Despacho origen —
-     * mismo patrón que updateIngresoSoloPqrs (14), pero sin ClienteOrigenId ni
-     * ClienteParametroId porque no hay Despacho con qué llenarlos.
-     * ⚠️ TEMPORAL: pendiente de definir con el cliente qué va en esos dos campos
-     * en este escenario (puede ser que ClienteOrigen sea el mismo cliente actual).
+     * existe en App_PQRS_TruckRolls pero no cruzó contra ningún Despacho origen.
+     * ClienteParametroId SÍ se llena (con el Id de la regla del cliente en
+     * Parametro_TruckrollsLiberty, ej. 11 para Legacy Costa Rica) — decisión
+     * confirmada por el usuario. ClienteOrigenId queda NULL (no hay Despacho
+     * real del que sacarlo). Por eso getDespachoVinculado (que exige ambos NOT
+     * NULL) no encuentra estas filas — no hay Despacho que liberar al eliminar,
+     * así que no participan del mecanismo de limpieza, lo cual es correcto acá.
      * WHERE TruckRollId IS NULL asegura idempotencia.
      */
-    public void updateIngresoTruckRollLiberty(String serial) {
-        String sql = "UPDATE Ingreso SET TruckRollId = 7 WHERE Serial = ? AND TruckRollId IS NULL";
+    public void updateIngresoTruckRollLiberty(String serial, Integer parametroId) {
+        String sql = "UPDATE Ingreso SET TruckRollId = 7, ClienteParametroId = ? WHERE Serial = ? AND TruckRollId IS NULL";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, serial);
+            if (parametroId != null) ps.setInt(1, parametroId); else ps.setNull(1, Types.INTEGER);
+            ps.setString(2, serial);
             ps.executeUpdate();
         } catch (SQLException e) {
             logger.error("[TruckrollRepository] Error marcando TruckRoll (App_PQRS_TruckRolls) para serial '{}': {}", serial, e.getMessage());
