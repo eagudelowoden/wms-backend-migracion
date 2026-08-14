@@ -1416,6 +1416,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       sb.append("\"causa\":\"").append(escapeJson(s.getCausa())).append("\",");
       sb.append("\"usuarioId\":").append(s.getUsuarioId()).append(",");
       sb.append("\"estadoCliente\":\"").append(escapeJson(s.getEstadoCliente())).append("\",");
+      sb.append("\"smartCard\":").append(s.getSmartCard() != null && !s.getSmartCard().trim().isEmpty() ? "\"" + escapeJson(s.getSmartCard()) + "\"" : "null").append(",");
       sb.append("\"loteId\":").append(s.getLoteId() != null && s.getLoteId() != 0 ? s.getLoteId() : "null").append(",");
       sb.append("\"modeloId\":").append(s.getModeloId() != null && s.getModeloId() != 0 ? s.getModeloId() : "null");
       sb.append("}");
