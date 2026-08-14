@@ -248,6 +248,11 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_GetModelPalletByNumber :numero", nativeQuery = true)
   List<Object[]> getModelByNumber(@Param("numero") String numero);
 
+  @Query(value = "SELECT p.Id, p.CodigoSapId, cs.Codigo, p.LoteId, p.TipologiaId " +
+      "FROM Pallet p LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId " +
+      "WHERE UPPER(p.Numero) = UPPER(:numero)", nativeQuery = true)
+  List<Object[]> getMassUploadConfigByNumber(@Param("numero") String numero);
+
   /**
    * Incrementa el consecutivo y retorna el número generado en una sola llamada.
    * Delega en pa_IncrementarConsecutivoPallet para evitar el bug de MERGE

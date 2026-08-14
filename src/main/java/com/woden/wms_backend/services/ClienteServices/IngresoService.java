@@ -1090,12 +1090,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         String rowTipologia = row.getTipologia() != null ? row.getTipologia().trim() : "";
         String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
         Object[] palletCfg = palletConfigsByNumero.get(rowPalletWms);
-        if (palletCfg != null) {
-          String palletCodigoSap = palletCfg[7] != null ? palletCfg[7].toString() : "";
-          boolean palletMultimodelo = Boolean.TRUE.equals(TypeMapper.toBoolean(palletCfg[16]))
-              || "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
-          Integer palletCodigoSapId = (Integer) palletCfg[6];
-          Integer palletLoteId = (Integer) palletCfg[14];
+        if (palletCfg != null && palletCfg.length >= 5) {
+          String palletCodigoSap = palletCfg[2] != null ? palletCfg[2].toString() : "";
+          boolean palletMultimodelo = "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
+          Integer palletCodigoSapId = (Integer) palletCfg[1];
+          Integer palletLoteId = (Integer) palletCfg[3];
           Integer palletTipologiaId = (Integer) palletCfg[4];
 
           if (codigoSapId != null && !palletMultimodelo && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
@@ -1389,7 +1388,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Object[]> map = new java.util.HashMap<>();
     for (String numero : numeros) {
       try {
-        List<Object[]> resultados = palletRepository.getModelByNumber(numero);
+        List<Object[]> resultados = palletRepository.getMassUploadConfigByNumber(numero);
         if (resultados != null && !resultados.isEmpty()) {
           map.put(numero, resultados.get(0));
         }
