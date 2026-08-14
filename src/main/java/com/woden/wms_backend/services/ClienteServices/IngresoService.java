@@ -39,6 +39,7 @@ import com.woden.wms_backend.exception.EntryNotFoundException;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.IlegibleRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.util.TypeMapper;
 
@@ -56,6 +57,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @Autowired
   private IngresoRepository ingresoRepository;
+
+  @Autowired
+  private PalletRepository palletRepository;
 
   @Autowired
   private IlegibleRepository ilegibleRepository;
@@ -871,6 +875,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Integer> loteMap = resolverLoteIds(rows);
     Map<String, Integer> codigoSapLargosMap = resolverCodigoSapLargos(rows);
 
+    Map<String, Object[]> palletConfigsByNumero = Map.of();
+    if (palletConfig == null) {
+      palletConfigsByNumero = resolverPalletConfigs(rows);
+    }
+
     List<String> seriales = rows.stream()
         .map(MassUploadRowDTO::getSerial)
         .filter(s -> s != null && !s.isEmpty())
@@ -1074,6 +1083,31 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         if (!rowCodigoSap.isEmpty() && !palletConfig.isMultimodelo() && palletConfig.getCodigoSap() != null && !palletConfig.getCodigoSap().isEmpty()) {
           if (!rowCodigoSap.equalsIgnoreCase(palletConfig.getCodigoSap())) {
             erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet: '" + palletConfig.getCodigoSap() + "'");
+          }
+        }
+      } else {
+        String rowPalletWms = row.getPalletWms() != null ? row.getPalletWms().trim().toUpperCase() : "";
+        String rowTipologia = row.getTipologia() != null ? row.getTipologia().trim() : "";
+        String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
+        Object[] palletCfg = palletConfigsByNumero.get(rowPalletWms);
+        if (palletCfg != null) {
+          String palletCodigoSap = palletCfg[7] != null ? palletCfg[7].toString() : "";
+          boolean palletMultimodelo = Boolean.TRUE.equals(TypeMapper.toBoolean(palletCfg[16]))
+              || "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
+          Integer palletCodigoSapId = (Integer) palletCfg[6];
+          Integer palletLoteId = (Integer) palletCfg[14];
+          Integer palletTipologiaId = (Integer) palletCfg[4];
+
+          if (codigoSapId != null && !palletMultimodelo && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
+            if (!codigoSapId.equals(palletCodigoSapId)) {
+              erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet '" + rowPalletWms + "' (" + palletCodigoSap + ")");
+            }
+          }
+          if (loteId != null && palletLoteId != null && !loteId.equals(palletLoteId)) {
+            erroresFila.add("Lote '" + row.getLote().trim() + "' no coincide con el lote del pallet '" + rowPalletWms + "'");
+          }
+          if (tipologiaId != null && palletTipologiaId != null && !tipologiaId.equals(palletTipologiaId)) {
+            erroresFila.add("Tipologia '" + rowTipologia + "' no coincide con la tipologia del pallet '" + rowPalletWms + "'");
           }
         }
       }
@@ -1340,6 +1374,28 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       }
     } catch (SQLException e) {
       logger.error("[resolverLoteIds] Error: {}", e.getMessage(), e);
+    }
+    return map;
+  }
+
+  private Map<String, Object[]> resolverPalletConfigs(List<MassUploadRowDTO> rows) {
+    Set<String> numeros = rows.stream()
+        .map(MassUploadRowDTO::getPalletWms)
+        .filter(p -> p != null && !p.trim().isEmpty())
+        .map(p -> p.trim().toUpperCase())
+        .collect(Collectors.toSet());
+    if (numeros.isEmpty()) return Map.of();
+
+    Map<String, Object[]> map = new java.util.HashMap<>();
+    for (String numero : numeros) {
+      try {
+        List<Object[]> resultados = palletRepository.getModelByNumber(numero);
+        if (resultados != null && !resultados.isEmpty()) {
+          map.put(numero, resultados.get(0));
+        }
+      } catch (Exception e) {
+        logger.error("[resolverPalletConfigs] Error para pallet {}: {}", numero, e.getMessage(), e);
+      }
     }
     return map;
   }
