@@ -10,6 +10,7 @@ public class MassUploadRowResolvedDTO {
     private String serial4;
     private String serial5;
     private String smartCard;
+    private String palletWms;
     private Integer codigoSapId;
     private Integer palletId;
     private Integer estadoId;

@@ -1081,6 +1081,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       if (erroresFila.isEmpty()) {
         MassUploadRowResolvedDTO resuelto = new MassUploadRowResolvedDTO();
         resuelto.setSerial(serialUpper);
+        resuelto.setPalletWms(row.getPalletWms());
         resuelto.setMac(row.getMac() != null ? row.getMac().toUpperCase().trim() : "");
         resuelto.setSerial3(row.getSerial3() != null ? row.getSerial3().toUpperCase().trim() : "");
         resuelto.setSerial4("");
