@@ -40,6 +40,7 @@ import com.woden.wms_backend.exception.EntryNotFoundException;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.IlegibleRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.util.TypeMapper;
 
@@ -57,6 +58,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   @Autowired
   private IngresoRepository ingresoRepository;
+
+  @Autowired
+  private PalletRepository palletRepository;
 
   @Autowired
   private IlegibleRepository ilegibleRepository;
@@ -904,6 +908,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Integer> loteMap = resolverLoteIds(rows);
     Map<String, Integer> codigoSapLargosMap = resolverCodigoSapLargos(rows);
 
+    Map<String, Object[]> palletConfigsByNumero = Map.of();
+    if (palletConfig == null) {
+      palletConfigsByNumero = resolverPalletConfigs(rows);
+    }
+
     List<String> seriales = rows.stream()
         .map(MassUploadRowDTO::getSerial)
         .filter(s -> s != null && !s.isEmpty())
@@ -1109,11 +1118,36 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
             erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet: '" + palletConfig.getCodigoSap() + "'");
           }
         }
+      } else {
+        String rowPalletWms = row.getPalletWms() != null ? row.getPalletWms().trim().toUpperCase() : "";
+        String rowTipologia = row.getTipologia() != null ? row.getTipologia().trim() : "";
+        String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
+        Object[] palletCfg = palletConfigsByNumero.get(rowPalletWms);
+        if (palletCfg != null && palletCfg.length >= 5) {
+          String palletCodigoSap = palletCfg[2] != null ? palletCfg[2].toString() : "";
+          boolean palletMultimodelo = "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
+          Integer palletCodigoSapId = (Integer) palletCfg[1];
+          Integer palletLoteId = (Integer) palletCfg[3];
+          Integer palletTipologiaId = (Integer) palletCfg[4];
+
+          if (codigoSapId != null && !palletMultimodelo && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
+            if (!codigoSapId.equals(palletCodigoSapId)) {
+              erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet '" + rowPalletWms + "' (" + palletCodigoSap + ")");
+            }
+          }
+          if (loteId != null && palletLoteId != null && !loteId.equals(palletLoteId)) {
+            erroresFila.add("Lote '" + row.getLote().trim() + "' no coincide con el lote del pallet '" + rowPalletWms + "'");
+          }
+          if (tipologiaId != null && palletTipologiaId != null && !tipologiaId.equals(palletTipologiaId)) {
+            erroresFila.add("Tipologia '" + rowTipologia + "' no coincide con la tipologia del pallet '" + rowPalletWms + "'");
+          }
+        }
       }
 
       if (erroresFila.isEmpty()) {
         MassUploadRowResolvedDTO resuelto = new MassUploadRowResolvedDTO();
         resuelto.setSerial(serialUpper);
+        resuelto.setPalletWms(row.getPalletWms());
         resuelto.setMac(row.getMac() != null ? row.getMac().toUpperCase().trim() : "");
         resuelto.setSerial3(row.getSerial3() != null ? row.getSerial3().toUpperCase().trim() : "");
         resuelto.setSerial4("");
@@ -1376,6 +1410,28 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return map;
   }
 
+  private Map<String, Object[]> resolverPalletConfigs(List<MassUploadRowDTO> rows) {
+    Set<String> numeros = rows.stream()
+        .map(MassUploadRowDTO::getPalletWms)
+        .filter(p -> p != null && !p.trim().isEmpty())
+        .map(p -> p.trim().toUpperCase())
+        .collect(Collectors.toSet());
+    if (numeros.isEmpty()) return Map.of();
+
+    Map<String, Object[]> map = new java.util.HashMap<>();
+    for (String numero : numeros) {
+      try {
+        List<Object[]> resultados = palletRepository.getMassUploadConfigByNumber(numero);
+        if (resultados != null && !resultados.isEmpty()) {
+          map.put(numero, resultados.get(0));
+        }
+      } catch (Exception e) {
+        logger.error("[resolverPalletConfigs] Error para pallet {}: {}", numero, e.getMessage(), e);
+      }
+    }
+    return map;
+  }
+
   private Integer getTipoMaestroId(Connection conn, String nombre) throws SQLException {
     try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id FROM TipoMaestro WHERE UPPER(nombre) = ?")) {
       ps.setString(1, nombre.toUpperCase());
@@ -1449,6 +1505,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       sb.append("\"causa\":\"").append(escapeJson(s.getCausa())).append("\",");
       sb.append("\"usuarioId\":").append(s.getUsuarioId()).append(",");
       sb.append("\"estadoCliente\":\"").append(escapeJson(s.getEstadoCliente())).append("\",");
+      sb.append("\"smartCard\":").append(s.getSmartCard() != null && !s.getSmartCard().trim().isEmpty() ? "\"" + escapeJson(s.getSmartCard()) + "\"" : "null").append(",");
       sb.append("\"loteId\":").append(s.getLoteId() != null && s.getLoteId() != 0 ? s.getLoteId() : "null").append(",");
       sb.append("\"modeloId\":").append(s.getModeloId() != null && s.getModeloId() != 0 ? s.getModeloId() : "null");
       sb.append("}");
