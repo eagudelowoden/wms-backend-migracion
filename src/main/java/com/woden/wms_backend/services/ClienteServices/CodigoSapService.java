@@ -180,14 +180,14 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         Integer fallasTmId = tipoMaestroRepository.getTipoCodigoSap("Fallas Funcionales");
 
         Map<String, List<MaestroModel>> result = new HashMap<>();
-        result.put("familias", famTmId != null ? maestroRepository.findByTipoMaestroId(famTmId) : new ArrayList<>());
-        result.put("tipos", tipoTmId != null ? maestroRepository.findByTipoMaestroId(tipoTmId) : new ArrayList<>());
-        result.put("clasificaciones", clasTmId != null ? maestroRepository.findByTipoMaestroId(clasTmId) : new ArrayList<>());
-        result.put("tiposEquipo", tipoEquipoTmId != null ? maestroRepository.findByTipoMaestroId(tipoEquipoTmId) : new ArrayList<>());
-        result.put("areas", areaTmId != null ? maestroRepository.findByTipoMaestroId(areaTmId) : new ArrayList<>());
-        result.put("modelos", modeloProveedor_tmId != null ? maestroRepository.findByTipoMaestroId(modeloProveedor_tmId) : new ArrayList<>());
-        result.put("fabricantes", fabricanteTmId != null ? maestroRepository.findByTipoMaestroId(fabricanteTmId) : new ArrayList<>());
-        result.put("fallas", fallasTmId != null ? maestroRepository.findByTipoMaestroId(fallasTmId) : new ArrayList<>());
+        result.put("familias", famTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(famTmId, 1) : new ArrayList<>());
+        result.put("tipos", tipoTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(tipoTmId, 1) : new ArrayList<>());
+        result.put("clasificaciones", clasTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(clasTmId, 1) : new ArrayList<>());
+        result.put("tiposEquipo", tipoEquipoTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(tipoEquipoTmId, 1) : new ArrayList<>());
+        result.put("areas", areaTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(areaTmId, 1) : new ArrayList<>());
+        result.put("modelos", modeloProveedor_tmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(modeloProveedor_tmId, 1) : new ArrayList<>());
+        result.put("fabricantes", fabricanteTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(fabricanteTmId, 1) : new ArrayList<>());
+        result.put("fallas", fallasTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(fallasTmId, 1) : new ArrayList<>());
         return result;
     }
 

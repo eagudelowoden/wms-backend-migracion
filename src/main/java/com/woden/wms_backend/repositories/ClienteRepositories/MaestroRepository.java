@@ -14,6 +14,7 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface MaestroRepository extends BaseRepository<MaestroModel, Integer> {
 	List<MaestroModel> findByTipoMaestroId(int tipoMaestroId);
+	List<MaestroModel> findByTipoMaestroIdAndActivo(int tipoMaestroId, int activo);
 
 	@Query(value = "EXEC pa_GetTipologyMaster :desc1, :desc2, :desc3, :desc4", nativeQuery = true)
 	List<Object[]> getTipologias(
