@@ -429,10 +429,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     zpl = zpl.replace("codigosap" + sufijo, serial.getCodigoSap() != null ? serial.getCodigoSap() : "");
     zpl = zpl.replace("usuario" + sufijo, usuario != null ? usuario : "");
     zpl = zpl.replace("tipologia" + sufijo, serial.getTipologia() != null ? serial.getTipologia() : "");
-    String modeloVal = (serial.getModelo() != null && !serial.getModelo().isEmpty())
-        ? serial.getModelo()
-        : (datos.getModelo() != null ? datos.getModelo() : "");
-    zpl = zpl.replace("modelo" + sufijo, modeloVal);
+    zpl = zpl.replace("modelo" + sufijo, datos.getModelo() != null ? datos.getModelo() : "");
     zpl = zpl.replace("codProveedor" + sufijo, datos.getCodProveedor() != null ? datos.getCodProveedor() : "");
     zpl = zpl.replace("proveedor" + sufijo, datos.getProveedor() != null ? datos.getProveedor() : "");
     zpl = zpl.replace("lote" + sufijo, serial.getLote() != null ? serial.getLote() : "");
