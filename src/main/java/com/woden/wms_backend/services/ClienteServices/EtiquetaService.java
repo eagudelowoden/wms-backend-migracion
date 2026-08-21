@@ -123,6 +123,7 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     List<Map<String, Object>> etiquetas = new ArrayList<>();
 
     for (Object[] row : results) {
+      if (!isActive(row[5])) continue;
       Map<String, Object> map = new HashMap<>();
       map.put("id", row[0]);
       map.put("nombre", row[1]);
