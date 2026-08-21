@@ -65,7 +65,9 @@ public class CodigoSapFailureService {
 
   public List<Map<String, Object>> getFailuresBySap(Integer codigoSapId) {
     List<Object[]> results = repository.getFailuresBySap(codigoSapId);
-    return results.stream().map(obj -> {
+    return results.stream()
+        .filter(obj -> isActive(obj[4]))
+        .map(obj -> {
       Map<String, Object> map = new HashMap<>();
       map.put("id", (Integer) obj[0]);
       map.put("codigo", (String) obj[1]);

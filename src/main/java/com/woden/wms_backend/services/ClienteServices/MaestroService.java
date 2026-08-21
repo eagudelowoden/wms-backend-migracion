@@ -129,7 +129,10 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
 
   public List<String> getLevelsClasification() {
     List<Object[]> results = maestroRepository.getLevelsClasification();
-    return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
+    return results.stream()
+        .filter(obj -> isActive(obj[1]))
+        .map(obj -> (String) obj[0])
+        .collect(Collectors.toList());
   }
 
   public List<Map<String, String>> getFallas(String nombre) {
