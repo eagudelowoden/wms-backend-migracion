@@ -99,11 +99,20 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
     if (results == null || results.isEmpty()) {
       return Collections.emptyList();
     }
-    return results.stream().map(obj -> {
+    return results.stream()
+        .filter(obj -> isActive(obj[1]))
+        .map(obj -> {
       EtiquetaListDTO etiqueta = new EtiquetaListDTO();
       etiqueta.setNombre((String) obj[0]);
       return etiqueta;
     }).distinct().toList();
+  }
+
+  private boolean isActive(Object activoObj) {
+    if (activoObj == null) return false;
+    if (activoObj instanceof Boolean) return (Boolean) activoObj;
+    if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
+    return "1".equals(activoObj.toString());
   }
 
   public List<Map<String, Object>> searchLabeled(String nombre, String tipo) {
