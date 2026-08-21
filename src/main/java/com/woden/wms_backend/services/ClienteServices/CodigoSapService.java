@@ -47,6 +47,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCodeSerial(id);
         List<Map<String, String>> formattedResults = new ArrayList<>();
         for (Object[] row : results) {
+            if (!isActive(row[2])) continue;
             Map<String, String> map = new HashMap<>();
             map.put("codigo", row[0].toString());
             map.put("descripcion", row[1].toString());
@@ -59,6 +60,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCodeNoSerial(id);
         List<Map<String, String>> formattedResults = new ArrayList<>();
         for (Object[] row : results) {
+            if (!isActive(row[2])) continue;
             Map<String, String> map = new HashMap<>();
             map.put("codigo", row[0].toString());
             map.put("descripcion", row[1].toString());
