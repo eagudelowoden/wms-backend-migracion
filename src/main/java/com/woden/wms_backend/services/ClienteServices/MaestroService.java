@@ -122,7 +122,8 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   public List<String> getModelMaster(String codigoSap) {
     List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
     return results.stream()
-        .map(obj -> (String) obj[0]) // devuelve solo el string
+        .filter(obj -> isActive(obj[1]))
+        .map(obj -> (String) obj[0])
         .collect(Collectors.toList());
   }
 
@@ -146,7 +147,10 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
 
   public List<String> getDesctiption(String codigo) {
     List<Object[]> results = maestroRepository.getDesctiption(codigo);
-    return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
+    return results.stream()
+        .filter(obj -> isActive(obj[1]))
+        .map(obj -> (String) obj[0])
+        .collect(Collectors.toList());
   }
 
   public Integer getWarranty() {

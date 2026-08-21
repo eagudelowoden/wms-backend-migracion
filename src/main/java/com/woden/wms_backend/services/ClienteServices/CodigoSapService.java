@@ -34,6 +34,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCode();
         List<Map<String, String>> formattedResults = new ArrayList<>();
         for (Object[] row : results) {
+            if (!isActive(row[2])) continue;
             Map<String, String> map = new HashMap<>();
             map.put("codigo", row[0].toString());
             map.put("descripcion", row[1].toString());
@@ -314,5 +315,12 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
     @Transactional
     public void removerAccesorio(Integer codigoSapId, Integer accesorioId) {
         codigoSapRepository.deleteAccCodigoSap(codigoSapId, accesorioId);
+    }
+
+    private boolean isActive(Object activoObj) {
+        if (activoObj == null) return false;
+        if (activoObj instanceof Boolean) return (Boolean) activoObj;
+        if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
+        return "1".equals(activoObj.toString());
     }
 }

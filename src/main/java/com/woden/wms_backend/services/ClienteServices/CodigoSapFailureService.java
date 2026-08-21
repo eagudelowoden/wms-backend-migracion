@@ -49,7 +49,9 @@ public class CodigoSapFailureService {
 
   public List<Map<String, String>> getFallas(String nombre) {
     List<Object[]> results = repository.getFallas(nombre);
-    return results.stream().map(obj -> {
+    return results.stream()
+        .filter(obj -> isActive(obj[2]))
+        .map(obj -> {
       Map<String, String> map = new HashMap<>();
       map.put("codigo", (String) obj[0]);
       map.put("descripcion", (String) obj[1]);
@@ -117,5 +119,12 @@ public class CodigoSapFailureService {
       map.put("nivel", (String) obj[2]);
       return map;
     }).collect(Collectors.toList());
+  }
+
+  private boolean isActive(Object activoObj) {
+    if (activoObj == null) return false;
+    if (activoObj instanceof Boolean) return (Boolean) activoObj;
+    if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
+    return "1".equals(activoObj.toString());
   }
 }
