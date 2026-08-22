@@ -114,9 +114,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    List<Object[]> tipologias = maestroRepository.getListByTipo("tipologias");
+    List<String> tipologias = maestroRepository.getListByTipo("tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
-        ? maestroRepository.getIdMaster((String) tipologias.get(0)[0], "tipologias").get(0)
+        ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
         : 1;
     PalletModel pallet = new PalletModel();
     pallet.setNumero(numero);

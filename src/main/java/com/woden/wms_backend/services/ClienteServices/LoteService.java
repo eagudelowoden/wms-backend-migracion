@@ -25,9 +25,7 @@ public class LoteService extends BaseService<LoteModel, Integer> {
 
     public List<LoteDTO> getLotes() {
         List<Object[]> results = loteRepository.searchSP("");
-        return results.stream()
-            .filter(obj -> isActive(obj[3]))
-            .map(obj -> {
+        return results.stream().map(obj -> {
             LoteDTO lote = new LoteDTO();
             lote.setId(obj[0] != null ? ((Number) obj[0]).intValue() : null);
             lote.setNombre((String) obj[1]);
@@ -97,10 +95,4 @@ public class LoteService extends BaseService<LoteModel, Integer> {
         return count != null && count > 0;
     }
 
-    private boolean isActive(Object activoObj) {
-        if (activoObj == null) return false;
-        if (activoObj instanceof Boolean) return (Boolean) activoObj;
-        if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
-        return "1".equals(activoObj.toString());
-    }
 }
