@@ -49,9 +49,7 @@ public class CodigoSapFailureService {
 
   public List<Map<String, String>> getFallas(String nombre) {
     List<Object[]> results = repository.getFallas(nombre);
-    return results.stream()
-        .filter(obj -> isActive(obj[2]))
-        .map(obj -> {
+    return results.stream().map(obj -> {
       Map<String, String> map = new HashMap<>();
       map.put("codigo", (String) obj[0]);
       map.put("descripcion", (String) obj[1]);
@@ -65,9 +63,7 @@ public class CodigoSapFailureService {
 
   public List<Map<String, Object>> getFailuresBySap(Integer codigoSapId) {
     List<Object[]> results = repository.getFailuresBySap(codigoSapId);
-    return results.stream()
-        .filter(obj -> isActive(obj[4]))
-        .map(obj -> {
+    return results.stream().map(obj -> {
       Map<String, Object> map = new HashMap<>();
       map.put("id", (Integer) obj[0]);
       map.put("codigo", (String) obj[1]);
@@ -123,10 +119,4 @@ public class CodigoSapFailureService {
     }).collect(Collectors.toList());
   }
 
-  private boolean isActive(Object activoObj) {
-    if (activoObj == null) return false;
-    if (activoObj instanceof Boolean) return (Boolean) activoObj;
-    if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
-    return "1".equals(activoObj.toString());
-  }
 }

@@ -34,7 +34,6 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCode();
         List<Map<String, String>> formattedResults = new ArrayList<>();
         for (Object[] row : results) {
-            if (!isActive(row[2])) continue;
             Map<String, String> map = new HashMap<>();
             map.put("codigo", row[0].toString());
             map.put("descripcion", row[1].toString());
@@ -47,7 +46,6 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCodeSerial(id);
         List<Map<String, String>> formattedResults = new ArrayList<>();
         for (Object[] row : results) {
-            if (!isActive(row[2])) continue;
             Map<String, String> map = new HashMap<>();
             map.put("codigo", row[0].toString());
             map.put("descripcion", row[1].toString());
@@ -60,7 +58,6 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         List<Object[]> results = codigoSapRepository.getListDescriptionSapCodeNoSerial(id);
         List<Map<String, String>> formattedResults = new ArrayList<>();
         for (Object[] row : results) {
-            if (!isActive(row[2])) continue;
             Map<String, String> map = new HashMap<>();
             map.put("codigo", row[0].toString());
             map.put("descripcion", row[1].toString());
@@ -183,14 +180,14 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         Integer fallasTmId = tipoMaestroRepository.getTipoCodigoSap("Fallas Funcionales");
 
         Map<String, List<MaestroModel>> result = new HashMap<>();
-        result.put("familias", famTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(famTmId, 1) : new ArrayList<>());
-        result.put("tipos", tipoTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(tipoTmId, 1) : new ArrayList<>());
-        result.put("clasificaciones", clasTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(clasTmId, 1) : new ArrayList<>());
-        result.put("tiposEquipo", tipoEquipoTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(tipoEquipoTmId, 1) : new ArrayList<>());
-        result.put("areas", areaTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(areaTmId, 1) : new ArrayList<>());
-        result.put("modelos", modeloProveedor_tmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(modeloProveedor_tmId, 1) : new ArrayList<>());
-        result.put("fabricantes", fabricanteTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(fabricanteTmId, 1) : new ArrayList<>());
-        result.put("fallas", fallasTmId != null ? maestroRepository.findByTipoMaestroIdAndActivo(fallasTmId, 1) : new ArrayList<>());
+        result.put("familias", famTmId != null ? maestroRepository.findByTipoMaestroId(famTmId) : new ArrayList<>());
+        result.put("tipos", tipoTmId != null ? maestroRepository.findByTipoMaestroId(tipoTmId) : new ArrayList<>());
+        result.put("clasificaciones", clasTmId != null ? maestroRepository.findByTipoMaestroId(clasTmId) : new ArrayList<>());
+        result.put("tiposEquipo", tipoEquipoTmId != null ? maestroRepository.findByTipoMaestroId(tipoEquipoTmId) : new ArrayList<>());
+        result.put("areas", areaTmId != null ? maestroRepository.findByTipoMaestroId(areaTmId) : new ArrayList<>());
+        result.put("modelos", modeloProveedor_tmId != null ? maestroRepository.findByTipoMaestroId(modeloProveedor_tmId) : new ArrayList<>());
+        result.put("fabricantes", fabricanteTmId != null ? maestroRepository.findByTipoMaestroId(fabricanteTmId) : new ArrayList<>());
+        result.put("fallas", fallasTmId != null ? maestroRepository.findByTipoMaestroId(fallasTmId) : new ArrayList<>());
         return result;
     }
 
@@ -319,10 +316,4 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
         codigoSapRepository.deleteAccCodigoSap(codigoSapId, accesorioId);
     }
 
-    private boolean isActive(Object activoObj) {
-        if (activoObj == null) return false;
-        if (activoObj instanceof Boolean) return (Boolean) activoObj;
-        if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
-        return "1".equals(activoObj.toString());
-    }
 }

@@ -85,7 +85,6 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   public List<String> obtenerTipologias(String desc1, String desc2, String desc3, String desc4) {
     List<Object[]> result = maestroRepository.getTipologias(desc1, desc2, desc3, desc4);
     return result.stream()
-        .filter(r -> isActive(r[1]))
         .map(r -> (String) r[0])
         .collect(Collectors.toList());
   }
@@ -96,19 +95,11 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   }
 
   public List<String> getListByTipo(String tipo) {
-    List<Object[]> results = maestroRepository.getListByTipo(tipo);
-    return results.stream()
-        .filter(row -> isActive(row[1]))
-        .map(row -> (String) row[0])
-        .collect(Collectors.toList());
+    return maestroRepository.getListByTipo(tipo);
   }
 
   public List<String> obtenerOrigenes(String tipo) {
-    List<Object[]> results = maestroRepository.getOrigenes(tipo);
-    return results.stream()
-        .filter(row -> isActive(row[1]))
-        .map(row -> (String) row[0])
-        .collect(Collectors.toList());
+    return maestroRepository.getOrigenes(tipo);
   }
 
   public int getFamilyNumberPallet(String codigoSap) {
@@ -122,38 +113,29 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   public List<String> getModelMaster(String codigoSap) {
     List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
     return results.stream()
-        .filter(obj -> isActive(obj[1]))
         .map(obj -> (String) obj[0])
         .collect(Collectors.toList());
   }
 
   public List<String> getLevelsClasification() {
     List<Object[]> results = maestroRepository.getLevelsClasification();
-    return results.stream()
-        .filter(obj -> isActive(obj[1]))
-        .map(obj -> (String) obj[0])
-        .collect(Collectors.toList());
+    return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
   }
 
   public List<Map<String, String>> getFallas(String nombre) {
     List<Object[]> results = maestroRepository.getFallas(nombre);
 
-    return results.stream()
-        .filter(obj -> isActive(obj[2]))
-        .map(obj -> {
-          Map<String, String> map = new HashMap<>();
-          map.put("codigo", (String) obj[0]);
-          map.put("descripcion", (String) obj[1]);
-          return map;
-        }).collect(Collectors.toList());
+    return results.stream().map(obj -> {
+      Map<String, String> map = new HashMap<>();
+      map.put("codigo", (String) obj[0]);
+      map.put("descripcion", (String) obj[1]);
+      return map;
+    }).collect(Collectors.toList());
   }
 
   public List<String> getDesctiption(String codigo) {
     List<Object[]> results = maestroRepository.getDesctiption(codigo);
-    return results.stream()
-        .filter(obj -> isActive(obj[1]))
-        .map(obj -> (String) obj[0])
-        .collect(Collectors.toList());
+    return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
   }
 
   public Integer getWarranty() {
@@ -259,13 +241,6 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
     return maestroRepository.getMasterDetailById(id).stream()
         .findFirst()
         .orElse(null);
-  }
-
-  private boolean isActive(Object activoObj) {
-    if (activoObj == null) return false;
-    if (activoObj instanceof Boolean) return (Boolean) activoObj;
-    if (activoObj instanceof Number) return ((Number) activoObj).intValue() == 1;
-    return "1".equals(activoObj.toString());
   }
 
 }
