@@ -1,6 +1,5 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,24 +33,9 @@ public class LoadsController {
   }
 
   @GetMapping("/{base}/search")
-  public ResponseEntity<?> searchBase(
-      @PathVariable String base,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "50") int size) {
-    if (page >= 0 && size > 0 && size <= 500) {
-      Map<String, Object> result = loadsService.searchBasePaged(base, page, size);
-      return ResponseEntity.ok(result);
-    }
+  public ResponseEntity<List<Map<String, Object>>> searchBase(@PathVariable String base) {
     List<Map<String, Object>> results = loadsService.searchBase(base);
     return ResponseEntity.ok(results);
-  }
-
-  @GetMapping("/{base}/count")
-  public ResponseEntity<Map<String, Object>> countBase(@PathVariable String base) {
-    int total = loadsService.countBase(base);
-    Map<String, Object> result = new LinkedHashMap<>();
-    result.put("total", total);
-    return ResponseEntity.ok(result);
   }
 
   @PostMapping("/upload")
