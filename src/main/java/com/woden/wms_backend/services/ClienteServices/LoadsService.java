@@ -67,7 +67,10 @@ public class LoadsService {
     validateBase(base);
     Map<String, Object> result = new LinkedHashMap<>();
     String tmpTable = "#tmpCargues_" + System.currentTimeMillis();
-    String createSql = "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255), Lote varchar(255))";
+    boolean hasLote = BASES_WITH_LOTE.contains(base);
+    String createSql = hasLote
+        ? "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255), Lote varchar(255))"
+        : "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255))";
 
     try (Connection conn = dataSource.getConnection();
          Statement stmt = conn.createStatement()) {
@@ -109,7 +112,10 @@ public class LoadsService {
   public int countBase(String base) {
     validateBase(base);
     String tmpTable = "#tmpCarguesCount_" + System.currentTimeMillis();
-    String createSql = "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255), Lote varchar(255))";
+    boolean hasLote = BASES_WITH_LOTE.contains(base);
+    String createSql = hasLote
+        ? "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255), Lote varchar(255))"
+        : "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255))";
 
     try (Connection conn = dataSource.getConnection();
          Statement stmt = conn.createStatement()) {
