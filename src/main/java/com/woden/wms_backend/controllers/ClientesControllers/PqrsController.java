@@ -41,6 +41,16 @@ public class PqrsController {
     return ResponseEntity.ok(pqrsService.getModelPqrs(serial, stage));
   }
 
+  /**
+   * Detalle de PQRS — reemplazo de getModelPqrs() sobre App_PQRS_Tickets /
+   * App_PQRS_Truckrolls (la tabla PQRS vieja va a eliminarse). Devuelve 200
+   * con null en el body si el serial no tiene PQRS en ninguna de las dos.
+   */
+  @GetMapping("/detalle")
+  public ResponseEntity<?> buscarDetallePqrs(@RequestParam String serial) {
+    return ResponseEntity.ok(pqrsService.buscarDetallePqrs(serial));
+  }
+
   @PostMapping("/updateSerialIdAndSapCodeIdPqrs")
   public ResponseEntity<?> updateSerialIdAndSapCodeIdPqrs(@RequestBody Map<String, Object> request) {
     Integer serialId = (Integer) request.get("serialId");
