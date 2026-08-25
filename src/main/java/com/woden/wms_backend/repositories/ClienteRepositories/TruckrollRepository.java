@@ -155,22 +155,42 @@ public class TruckrollRepository {
     }
 
     /**
+     * Id de la fila en App_PQRS_TruckRolls para el serial (columna Id de esa
+     * tabla) — se usa como ClienteOrigenId cuando la regla confirma TruckRoll
+     * sin cruce de Despacho, para dejar trazado de dónde salió la confirmación.
+     */
+    public Integer obtenerIdAppPqrsTruckRolls(String serial) {
+        if (serial == null || serial.isBlank()) return null;
+        String sql = "SELECT TOP 1 Id FROM App_PQRS_TruckRolls WHERE serial_equipo = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, serial);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            logger.error("[TruckrollRepository] Error consultando Id en App_PQRS_TruckRolls para serial={}: {}", serial, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
      * Marca el ingreso como TruckRoll confirmado (TruckRollId = 7) cuando el serial
      * existe en App_PQRS_TruckRolls pero no cruzó contra ningún Despacho origen.
-     * ClienteParametroId SÍ se llena (con el Id de la regla del cliente en
-     * Parametro_TruckrollsLiberty, ej. 11 para Legacy Costa Rica) — decisión
-     * confirmada por el usuario. ClienteOrigenId queda NULL (no hay Despacho
-     * real del que sacarlo). Por eso getDespachoVinculado (que exige ambos NOT
-     * NULL) no encuentra estas filas — no hay Despacho que liberar al eliminar,
-     * así que no participan del mecanismo de limpieza, lo cual es correcto acá.
+     * ClienteParametroId se llena con el Id de la regla del cliente en
+     * Parametro_TruckrollsLiberty (ej. 11 para Legacy Costa Rica). ClienteOrigenId
+     * se llena con el Id de la fila en App_PQRS_TruckRolls (no con un despachoId
+     * real, porque no lo hay) — decisión confirmada por el usuario, para dejar
+     * trazabilidad de qué registro de esa tabla originó la confirmación.
      * WHERE TruckRollId IS NULL asegura idempotencia.
      */
-    public void updateIngresoTruckRollLiberty(String serial, Integer parametroId) {
-        String sql = "UPDATE Ingreso SET TruckRollId = 7, ClienteParametroId = ? WHERE Serial = ? AND TruckRollId IS NULL";
+    public void updateIngresoTruckRollLiberty(String serial, Integer parametroId, Integer clienteOrigenId) {
+        String sql = "UPDATE Ingreso SET TruckRollId = 7, ClienteParametroId = ?, ClienteOrigenId = ? WHERE Serial = ? AND TruckRollId IS NULL";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             if (parametroId != null) ps.setInt(1, parametroId); else ps.setNull(1, Types.INTEGER);
-            ps.setString(2, serial);
+            if (clienteOrigenId != null) ps.setInt(2, clienteOrigenId); else ps.setNull(2, Types.INTEGER);
+            ps.setString(3, serial);
             ps.executeUpdate();
         } catch (SQLException e) {
             logger.error("[TruckrollRepository] Error marcando TruckRoll (App_PQRS_TruckRolls) para serial '{}': {}", serial, e.getMessage());
