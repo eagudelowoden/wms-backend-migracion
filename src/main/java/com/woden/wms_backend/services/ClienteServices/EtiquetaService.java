@@ -196,7 +196,7 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
           EtiquetaCampoModel novo = new EtiquetaCampoModel();
           novo.setEtiquetaId(etiqueta.getId());
           novo.setNombre(varName);
-          novo.setValor(DEFAULT_VALUES.getOrDefault(varName, "0"));
+          novo.setValor(DEFAULT_VALUES.getOrDefault(varName, varName));
           etiquetaCampoRepository.save(novo);
           added++;
         }

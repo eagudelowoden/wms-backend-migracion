@@ -85,7 +85,7 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   public List<String> obtenerTipologias(String desc1, String desc2, String desc3, String desc4) {
     List<Object[]> result = maestroRepository.getTipologias(desc1, desc2, desc3, desc4);
     return result.stream()
-        .map(r -> (String) r[0]) // extrae el código del resultado
+        .map(r -> (String) r[0])
         .collect(Collectors.toList());
   }
 
@@ -113,7 +113,7 @@ public class MaestroService extends BaseService<MaestroModel, Integer> {
   public List<String> getModelMaster(String codigoSap) {
     List<Object[]> results = maestroRepository.getModelMaster(codigoSap);
     return results.stream()
-        .map(obj -> (String) obj[0]) // devuelve solo el string
+        .map(obj -> (String) obj[0])
         .collect(Collectors.toList());
   }
 
