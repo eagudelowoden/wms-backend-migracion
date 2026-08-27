@@ -207,6 +207,51 @@ public class LoadsService {
   }
 
   @Transactional
+  public Map<String, Object> bulkUpload(String base, List<Map<String, Object>> records) {
+    validateBase(base);
+    deleteBase(base);
+
+    boolean hasLote = BASES_WITH_LOTE.contains(base);
+    String insertSql = buildInsertSql(base, hasLote);
+    int total = executeBatchFromMap(insertSql, records, hasLote);
+
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("ok", true);
+    result.put("registros", total);
+    return result;
+  }
+
+  private int executeBatchFromMap(String sql, List<Map<String, Object>> records, boolean hasLote) {
+    int count = 0;
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+      for (Map<String, Object> row : records) {
+        ps.setString(1, safeMapGet(row, "serial"));
+        ps.setString(2, safeMapGet(row, "codigoSap"));
+        ps.setString(3, safeMapGet(row, "estadoSap"));
+        ps.setString(4, safeMapGet(row, "estadoRR"));
+        if (hasLote) {
+          ps.setString(5, safeMapGet(row, "lote"));
+        }
+        ps.addBatch();
+        count++;
+        if (count % BATCH_SIZE == 0) {
+          ps.executeBatch();
+        }
+      }
+      ps.executeBatch();
+    } catch (SQLException e) {
+      throw new BusinessRuleException("Error al insertar registros: " + e.getMessage());
+    }
+    return count;
+  }
+
+  private String safeMapGet(Map<String, Object> row, String key) {
+    Object val = row.get(key);
+    return val != null ? String.valueOf(val).trim() : null;
+  }
+
+  @Transactional
   public Map<String, Object> updateNotAvailable(List<UpdateNotAvailableRowDTO> rows) {
     Map<String, Object> result = new LinkedHashMap<>();
     int procesados = 0;
