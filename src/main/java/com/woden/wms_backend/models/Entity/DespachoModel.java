@@ -45,4 +45,6 @@ public class DespachoModel {
     private Integer fallaCosmeticaId;
     private String causa;
     private Integer fallaFuncionalId;
+    /** Novedad final de Reparación (Garantía/TruckRoll) — Id de Maestro, se arrastra desde Ingreso. */
+    private Integer novedadId;
 }

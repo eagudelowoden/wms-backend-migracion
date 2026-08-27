@@ -3,6 +3,7 @@ package com.woden.wms_backend.services.ClienteServices;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.models.Entity.DespachoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.DespachoRepository;
@@ -31,6 +32,15 @@ public class DespachoService extends BaseService<DespachoModel, Integer> {
       System.out.println(e);
       return 0;
     }
+  }
+
+  /**
+   * Novedad final de Reparación (Garantía/TruckRoll) — se llama solo cuando el
+   * Ingreso ya trae novedadId (o sea, solo para TruckRoll activo).
+   */
+  @Transactional
+  public void updateNovedadDespacho(Integer novedadId, String serial) {
+    repository.updateNovedadDespacho(novedadId, serial);
   }
 
   public Integer insertDispatchAccesory(

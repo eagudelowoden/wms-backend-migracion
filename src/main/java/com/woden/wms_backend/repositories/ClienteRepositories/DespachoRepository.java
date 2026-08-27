@@ -50,6 +50,17 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 			@Param("fallaFuncionalId") Integer fallaFuncionalId,
 			@Param("causa") String causa);
 
+	/**
+	 * Novedad final de Reparación (Garantía/TruckRoll) arrastrada de Ingreso a
+	 * Despacho — igual que updateNovedadIngreso en IngresoRepository, sin SP
+	 * propio (UPDATE de una sola columna) para no tocar pa_InsertDispatch, que
+	 * se usa para TODOS los clientes (con o sin TruckRoll activo).
+	 */
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE Despacho SET NovedadId = :novedadId WHERE Serial = :serial", nativeQuery = true)
+	void updateNovedadDespacho(@Param("novedadId") Integer novedadId, @Param("serial") String serial);
+
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_InsertDispatchAccesory :id, :codigoSapId, :tipoAccesorio, :tipoOrigenId, " +
