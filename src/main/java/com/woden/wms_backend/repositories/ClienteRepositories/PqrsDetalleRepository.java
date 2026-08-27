@@ -17,12 +17,14 @@ import java.sql.SQLException;
  * App_PQRS_Truckrolls como fallback). Ambas tablas viven en la BD del cliente
  * actual (ya seleccionada por ClientDatabaseContext al momento de la llamada).
  *
- * TODO (pendiente confirmación del usuario): resolver id_contratista,
- * id_razon_escalamiento e id_tipo_equipo de App_PQRS_Tickets contra las
- * tablas maestras App_Master_Contratista / App_Master_RazonEscalamiento /
- * App_Master_TipoEquipo en [WmsWdGeneral] — falta el nombre real de la
- * columna con el texto a mostrar (asumido "Nombre" por ahora, sin join
- * porque no se ha confirmado el esquema). Mientras tanto se muestra el id crudo.
+ * id_contratista, id_razon_escalamiento e id_tipo_equipo de App_PQRS_Tickets
+ * se resuelven contra App_Master_Contratista / App_Master_RazonEscalamiento /
+ * App_Master_TipoEquipo en [WmsWdGeneral] (columna Nombre, confirmado).
+ *
+ * TODO (pendiente confirmación del usuario): columna(s) de Observación en
+ * App_PQRS_Tickets y App_PQRS_Truckrolls (VARCHAR ~100-200, aún sin nombre
+ * definido) — el input de Observación en el frontend sigue siendo solo
+ * visual hasta que se confirme el nombre exacto.
  */
 @Repository
 public class PqrsDetalleRepository {
@@ -46,9 +48,16 @@ public class PqrsDetalleRepository {
         // App_PQRS_Tickets — el serial real siempre está en "mac" (la misma
         // particularidad ya conocida de esta tabla: "mac" en realidad guarda el
         // serial del equipo, no una MAC). Se busca y se muestra por mac.
-        String sql = "SELECT TOP 1 mac, created_at, id_contratista, " +
-                "id_razon_escalamiento, id_tipo_equipo, observaciones, foto_mac_path " +
-                "FROM App_PQRS_Tickets WHERE mac = ? ORDER BY created_at DESC";
+        // Cruce cross-DB a WmsWdGeneral para traer el nombre real de las 3 FKs.
+        String sql = "SELECT TOP 1 t.mac, t.created_at, t.observaciones, t.foto_mac_path, " +
+                "mc.Nombre AS contratista_nombre, " +
+                "mre.Nombre AS razon_nombre, " +
+                "mte.Nombre AS tipo_equipo_nombre " +
+                "FROM App_PQRS_Tickets t " +
+                "LEFT JOIN [WmsWdGeneral].[dbo].[App_Master_Contratista] mc ON mc.id = t.id_contratista " +
+                "LEFT JOIN [WmsWdGeneral].[dbo].[App_Master_RazonEscalamiento] mre ON mre.id = t.id_razon_escalamiento " +
+                "LEFT JOIN [WmsWdGeneral].[dbo].[App_Master_TipoEquipo] mte ON mte.id = t.id_tipo_equipo " +
+                "WHERE t.mac = ? ORDER BY t.created_at DESC";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -61,18 +70,9 @@ public class PqrsDetalleRepository {
                 detalle.setFuente("TICKETS");
                 detalle.setSerial(rs.getString("mac"));
                 detalle.setFechaCreacion(String.valueOf(rs.getTimestamp("created_at")));
-
-                // TODO: reemplazar por el nombre real cuando se confirmen las columnas
-                // de las tablas maestras en WmsWdGeneral.
-                Integer idContratista = (Integer) rs.getObject("id_contratista");
-                detalle.setContratista(idContratista != null ? "Contratista #" + idContratista : null);
-
-                Integer idRazonEscalamiento = (Integer) rs.getObject("id_razon_escalamiento");
-                detalle.setInfDano(idRazonEscalamiento != null ? "Razón #" + idRazonEscalamiento : null);
-
-                Integer idTipoEquipo = (Integer) rs.getObject("id_tipo_equipo");
-                detalle.setTecnologia(idTipoEquipo != null ? "Tipo equipo #" + idTipoEquipo : null);
-
+                detalle.setContratista(rs.getString("contratista_nombre"));
+                detalle.setInfDano(rs.getString("razon_nombre"));
+                detalle.setTecnologia(rs.getString("tipo_equipo_nombre"));
                 detalle.setObsPqrs(rs.getString("observaciones"));
                 detalle.setImagenUrl(rs.getString("foto_mac_path"));
                 return detalle;

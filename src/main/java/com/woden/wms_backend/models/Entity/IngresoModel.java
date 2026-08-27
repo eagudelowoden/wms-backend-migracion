@@ -99,4 +99,9 @@ public class IngresoModel {
     @Transient // La columna TruckRollId solo existe en clientes con TruckRoll activo; se llena desde pa_GetModelEntry
     private Integer truckRollId;
 
+    @Transient // Igual que TruckRollId: columna nueva, solo existe en clientes con TruckRoll activo.
+    // Resultado final de Reparación (Garantía/TruckRoll) como Id de Maestro — se llena vía
+    // updateNovedadIngreso() y se lee en getModelDispatchBox/mapToDispatchModel.
+    private Integer novedadId;
+
 }

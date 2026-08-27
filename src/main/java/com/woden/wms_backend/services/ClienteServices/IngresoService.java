@@ -537,6 +537,15 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         usuarioMovimientoId, loteIdFinal, 4);
   }
 
+  /**
+   * Novedad final de Reparación (Garantía/TruckRoll) — recibe el Id de Maestro
+   * (TipoMaestro "Estados de Novedad") ya resuelto por el frontend.
+   */
+  @Transactional
+  public void updateNovedadIngreso(Integer novedadId, String serial) {
+    ingresoRepository.updateNovedadIngreso(novedadId, serial);
+  }
+
   // ── Regularización ────────────────────────────────────────────────────────────
 
   public void regularizarSap(String serial, int codigoSapId, int usuarioIdMovimiento) {
@@ -878,6 +887,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setFallaFuncionalId((Integer) obj[26]);
     if (obj.length > 27) {
       ingreso.setCausa((String) obj[27]);
+    }
+    if (obj.length > 28) {
+      ingreso.setNovedadId((Integer) obj[28]);
     }
     return ingreso;
   }

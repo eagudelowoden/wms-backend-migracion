@@ -235,6 +235,18 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(ingresoService.getEtiquetadoUser(usuarioIdMovimiento));
   }
 
+  /**
+   * Novedad final de Reparación (Garantía/TruckRoll) — el frontend ya resolvió
+   * el Id de Maestro (TipoMaestro "Estados de Novedad") antes de llamar esto.
+   */
+  @PostMapping("/updateNovedadIngreso")
+  public ResponseEntity<ApiSuccess> updateNovedadIngreso(@RequestBody Map<String, Object> request) {
+    Integer novedadId = (Integer) request.get("novedadId");
+    String serial = (String) request.get("serial");
+    ingresoService.updateNovedadIngreso(novedadId, serial);
+    return ResponseEntity.ok(ApiSuccess.of("Novedad actualizada correctamente."));
+  }
+
   // ── Regularización SAP / lote ─────────────────────────────────────────────
 
   @PostMapping("/regularizacion/sap")
