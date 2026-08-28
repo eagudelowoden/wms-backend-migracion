@@ -20,12 +20,13 @@ public class DespachoService extends BaseService<DespachoModel, Integer> {
       Integer tipologiaId, Integer nivelId, String tramite, String documento, String guia, String falla,
       Integer prealertaId, Integer cruce, String novedad, Integer usuarioId, String fecha,
       String pedidoSap, Integer smartCardId, String smartCard, Integer loteId, String serial3, Integer cajaIngresoId,
-      String numeroSmartcard, Integer fallaCosmeticaId, Integer fallaFuncionalId, String causa) {
+      String numeroSmartcard, Integer fallaCosmeticaId, Integer fallaFuncionalId, String causa,
+      String observaciones) {
     try {
       repository.insertDispatch(id, serial, mac, codigoSapId, palletId, palletIdIngreso, cajaDespachoId, estadoId,
           tipoOrigenId, origenId, tipologiaId, nivelId, tramite, documento, guia, falla, prealertaId, cruce, novedad,
           usuarioId, fecha, pedidoSap, smartCardId, smartCard, loteId, serial3, cajaIngresoId, numeroSmartcard,
-          fallaCosmeticaId,fallaFuncionalId ,causa);
+          fallaCosmeticaId,fallaFuncionalId ,causa, observaciones);
       return 1;
     } catch (Exception e) {
       System.out.println(e);

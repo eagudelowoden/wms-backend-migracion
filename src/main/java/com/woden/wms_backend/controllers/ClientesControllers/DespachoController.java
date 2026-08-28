@@ -68,7 +68,8 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
             despacho.getNumeroSmartcard(),
             despacho.getFallaCosmeticaId(),
             despacho.getFallaFuncionalId(),
-            despacho.getCausa() != null ? despacho.getCausa() : null);
+            despacho.getCausa() != null ? despacho.getCausa() : null,
+            despacho.getObservaciones());
 
         // Si uno falla, devolvemos 0
         if (result == null || result == 0) {

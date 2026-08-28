@@ -45,4 +45,5 @@ public class DespachoModel {
     private Integer fallaCosmeticaId;
     private String causa;
     private Integer fallaFuncionalId;
+    private String observaciones;
 }

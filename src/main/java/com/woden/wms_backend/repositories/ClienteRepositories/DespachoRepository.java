@@ -16,7 +16,7 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 	@Transactional
 	@Query(value = "EXEC pa_InsertDispatch :id, :serial, :mac,:codigoSapId, :palletId,:palletIdIngreso, :cajaDespachoId, :estadoId, :tipoOrigenId, :origenId, :tipologiaId, :nivelId, :tramite, :documento, "
 			+
-			" :guia, :falla, :prealertaId, :cruce, :novedad, :usuarioId, :fecha, :pedidoSap, :smartCardId, :smartCard, :loteId, :serial3, :cajaIngresoId, :numeroSmartcard, :fallaCosmeticaId, :fallaFuncionalId, :causa", nativeQuery = true)
+			" :guia, :falla, :prealertaId, :cruce, :novedad, :usuarioId, :fecha, :pedidoSap, :smartCardId, :smartCard, :loteId, :serial3, :cajaIngresoId, :numeroSmartcard, :fallaCosmeticaId, :fallaFuncionalId, :causa, :observaciones", nativeQuery = true)
 	void insertDispatch(
 			@Param("id") Integer id,
 			@Param("serial") String serial,
@@ -48,7 +48,8 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 			@Param("numeroSmartcard") String numeroSmartcard,
 			@Param("fallaCosmeticaId") Integer fallaCosmeticaId,
 			@Param("fallaFuncionalId") Integer fallaFuncionalId,
-			@Param("causa") String causa);
+			@Param("causa") String causa,
+			@Param("observaciones") String observaciones);
 
 	@Modifying
 	@Transactional
