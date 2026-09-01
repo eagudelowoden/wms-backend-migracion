@@ -229,8 +229,8 @@ public class DiagnosticoService {
     String sqlIngreso = "SELECT TOP 1 Id, TruckRollId FROM Ingreso WHERE Serial = ? ORDER BY Id DESC";
     String sqlDesactivar = "UPDATE HojaVida SET Activo = 0 WHERE Serial = ? AND Activo = 1";
     String sqlInsertar = "INSERT INTO HojaVida " +
-        "(SerialId, Serial, NombreArchivo, RutaCompleta, Extension, Modulo, TruckRollId, UsuarioId) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        "(SerialId, Serial, NombreArchivo, RutaCompleta, Extension, Modulo, TruckRollId, UsuarioId, ClienteId) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try (Connection conn = dataSource.getConnection()) {
       Integer serialId = null;
@@ -263,6 +263,8 @@ public class DiagnosticoService {
         ps.setString(6, modulo != null ? modulo : "DESCONOCIDO");
         if (truckRollId != null) ps.setInt(7, truckRollId); else ps.setNull(7, Types.INTEGER);
         if (usuarioId != null) ps.setInt(8, usuarioId); else ps.setNull(8, Types.INTEGER);
+        Integer clienteId = ClientDatabaseContext.getCurrentClientId();
+        if (clienteId != null) ps.setInt(9, clienteId); else ps.setNull(9, Types.INTEGER);
         ps.executeUpdate();
       }
     } catch (SQLException e) {
