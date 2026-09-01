@@ -74,9 +74,17 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     }
 
     try {
+      // Header primero (integraciones sistema-a-sistema); si no viene, se acepta
+      // por query param ?apiKey=... para permitir pegar el link directo en el
+      // navegador y que descargue (un navegador no puede mandar headers propios
+      // en una navegación simple). Trade-off aceptado: la key queda expuesta en
+      // historial/logs si se usa así — pendiente evaluar token de un solo uso.
       String apiKey = request.getHeader("X-Api-Key");
       if (apiKey == null || apiKey.isBlank()) {
-        responder401(response, "API_KEY_REQUERIDA", "Falta el header X-Api-Key.");
+        apiKey = request.getParameter("apiKey");
+      }
+      if (apiKey == null || apiKey.isBlank()) {
+        responder401(response, "API_KEY_REQUERIDA", "Falta el header X-Api-Key (o el parámetro apiKey).");
         return;
       }
 
