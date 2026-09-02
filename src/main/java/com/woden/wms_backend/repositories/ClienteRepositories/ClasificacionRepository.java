@@ -37,8 +37,8 @@ public interface ClasificacionRepository extends BaseRepository<ClasificacionMod
     @Query(value = "EXEC pa_DeleteClasificacion :serial", nativeQuery = true)
     public void deleteClasificacion(@Param("serial") String serial);
 
-    @Query(value = "EXEC pa_GetClassifiedUser :usuarioId", nativeQuery = true)
-    public List<Object[]> getClassifiedUser(@Param("usuarioId") Integer usuarioId);
+    @Query(value = "EXEC pa_GetClassifiedUser :perfil, :usuarioId", nativeQuery = true)
+    public List<Object[]> getClassifiedUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
     @Transactional
     @Modifying

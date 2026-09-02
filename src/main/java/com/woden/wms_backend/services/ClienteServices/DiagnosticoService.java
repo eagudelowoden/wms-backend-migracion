@@ -129,8 +129,8 @@ public class DiagnosticoService {
     }
   }
 
-  public List<Map<String, Object>> getDiagnosedUser(Integer usuarioId) {
-    List<Object[]> results = repository.getDiagnosedUser(usuarioId);
+  public List<Map<String, Object>> getDiagnosedUser(String perfil, Integer usuarioId) {
+    List<Object[]> results = repository.getDiagnosedUser(perfil, usuarioId);
 
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 

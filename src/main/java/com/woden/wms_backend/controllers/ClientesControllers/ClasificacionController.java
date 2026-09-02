@@ -109,8 +109,9 @@ public class ClasificacionController extends BaseController<ClasificacionModel, 
   }
 
   @GetMapping("/getClassifiedUser")
-  public ResponseEntity<List<Map<String, Object>>> getClassifiedUser(@RequestParam Integer usuarioId) {
-    return ResponseEntity.ok(service.getClassifiedUser(usuarioId));
+  public ResponseEntity<List<Map<String, Object>>> getClassifiedUser(
+      @RequestParam String perfil, @RequestParam Integer usuarioId) {
+    return ResponseEntity.ok(service.getClassifiedUser(perfil, usuarioId));
   }
 
   @PostMapping("/save")

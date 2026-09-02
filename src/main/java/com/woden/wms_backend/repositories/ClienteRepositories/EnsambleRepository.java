@@ -39,6 +39,6 @@ public interface EnsambleRepository extends BaseRepository<EnsambleModel, Intege
   @Query(value = "EXEC pa_DeleteAssemble :ensamble", nativeQuery = true)
   void deleteAssemble(@Param("ensamble") String ensamble);
 
-  @Query(value = "EXEC pa_GetAssembledUser :usuarioId", nativeQuery = true)
-  List<Object[]> getAssembleUser(@Param("usuarioId") Integer usuarioId);
+  @Query(value = "EXEC pa_GetAssembledUser :perfil, :usuarioId", nativeQuery = true)
+  List<Object[]> getAssembleUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 }

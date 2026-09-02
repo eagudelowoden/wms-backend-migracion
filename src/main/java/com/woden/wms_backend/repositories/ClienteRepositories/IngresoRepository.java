@@ -508,8 +508,8 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("serial") String serial,
 			@Param("novedad") String novedad);
 
-	@Query(value = "EXEC pa_GetScrapUser :usuarioIdMovimiento", nativeQuery = true)
-	List<Object[]> getScrapUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
+	@Query(value = "EXEC pa_GetScrapUser :perfil, :usuarioIdMovimiento", nativeQuery = true)
+	List<Object[]> getScrapUser(@Param("perfil") String perfil, @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
 
 	@Query(value = "EXEC pa_GetEtiquetadoUser :usuarioIdMovimiento", nativeQuery = true)
 	List<Object[]> getEtiquetadoUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);

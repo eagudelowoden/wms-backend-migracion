@@ -226,8 +226,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @GetMapping("/getScrapUser")
-  public ResponseEntity<List<Map<String, Object>>> getScrapUser(@RequestParam Integer usuarioIdMovimiento) {
-    return ResponseEntity.ok(ingresoService.getScrapUser(usuarioIdMovimiento));
+  public ResponseEntity<List<Map<String, Object>>> getScrapUser(
+      @RequestParam String perfil, @RequestParam Integer usuarioIdMovimiento) {
+    return ResponseEntity.ok(ingresoService.getScrapUser(perfil, usuarioIdMovimiento));
   }
 
   @GetMapping("/getEtiquetadoUser")

@@ -113,8 +113,9 @@ public class DiagnosticoController {
   }
 
   @GetMapping("/getDiagnosedUser")
-  public ResponseEntity<List<Map<String, Object>>> getDiagnosedUser(@RequestParam Integer usuarioId) {
-    return ResponseEntity.ok(service.getDiagnosedUser(usuarioId));
+  public ResponseEntity<List<Map<String, Object>>> getDiagnosedUser(
+      @RequestParam String perfil, @RequestParam Integer usuarioId) {
+    return ResponseEntity.ok(service.getDiagnosedUser(perfil, usuarioId));
   }
 
   @GetMapping("/getDiagnosticVariables")
