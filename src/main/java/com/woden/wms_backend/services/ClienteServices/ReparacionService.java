@@ -85,8 +85,8 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
     return reparacion;
   }
 
-  public List<ReparacionModel> getRepairUser(Integer usuarioId) {
-    List<Object[]> results = repository.getRepairUser(usuarioId);
+  public List<ReparacionModel> getRepairUser(String perfil, Integer usuarioId) {
+    List<Object[]> results = repository.getRepairUser(perfil, usuarioId);
 
     if (results.isEmpty()) {
       return null;
@@ -110,8 +110,8 @@ public class ReparacionService extends BaseService<ReparacionModel, Integer> {
     return response;
   }
 
-  public List<Map<String, Object>> searchAssignedRepair(Integer tecnicoAsignacionId, String tipo) {
-    List<Object[]> results = repository.searchAssignedRepair(tecnicoAsignacionId, tipo);
+  public List<Map<String, Object>> searchAssignedRepair(String perfil, Integer tecnicoAsignacionId, String tipo) {
+    List<Object[]> results = repository.searchAssignedRepair(perfil, tecnicoAsignacionId, tipo);
     return results.stream().map(obj -> {
       Map<String, Object> map = new HashMap<>();
       map.put("serial", obj[0]);

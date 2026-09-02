@@ -56,9 +56,10 @@ public class EnsambleController extends BaseController<EnsambleModel, Integer> {
   }
 
   @GetMapping("/getAssembleUser")
-  public ResponseEntity<List<Map<String, Object>>> getAssembleUser(@RequestParam Integer usuarioId) {
+  public ResponseEntity<List<Map<String, Object>>> getAssembleUser(
+      @RequestParam String perfil, @RequestParam Integer usuarioId) {
     try {
-      return ResponseEntity.ok(ensambleService.getAssembleUser(usuarioId));
+      return ResponseEntity.ok(ensambleService.getAssembleUser(perfil, usuarioId));
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.badRequest().body(null);

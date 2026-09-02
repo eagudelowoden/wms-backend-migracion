@@ -51,16 +51,17 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
     @Query(value = "EXEC pa_GetLastRepair :serial", nativeQuery = true)
     List<Object[]> getLastRepair(@Param("serial") String serial);
 
-    @Query(value = "EXEC pa_GetRepairUser :usuarioId", nativeQuery = true)
-    List<Object[]> getRepairUser(@Param("usuarioId") Integer usuarioId);
+    @Query(value = "EXEC pa_GetRepairUser :perfil, :usuarioId", nativeQuery = true)
+    List<Object[]> getRepairUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
     @Modifying
     @Transactional
     @Query(value = "EXEC pa_DeleteRepair :serial", nativeQuery = true)
     void deleteRepair(@Param("serial") String serial);
 
-    @Query(value = "EXEC pa_SearchAssignedRepair :tecnicoAsignacionId, :tipo", nativeQuery = true)
-    List<Object[]> searchAssignedRepair(@Param("tecnicoAsignacionId") Integer tecnicoAsignacionId,
+    @Query(value = "EXEC pa_SearchAssignedRepair :perfil, :tecnicoAsignacionId, :tipo", nativeQuery = true)
+    List<Object[]> searchAssignedRepair(@Param("perfil") String perfil,
+            @Param("tecnicoAsignacionId") Integer tecnicoAsignacionId,
             @Param("tipo") String tipo);
 
     @Query(value = "EXEC pa_SearchRepairedRepair :tecnicoReparacionId, :estado", nativeQuery = true)
