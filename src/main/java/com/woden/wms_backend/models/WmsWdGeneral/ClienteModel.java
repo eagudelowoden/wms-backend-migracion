@@ -91,4 +91,14 @@ public class ClienteModel {
     private String archivos;
     @Column(name = "LblEtiquetado")
     private String lblEtiquetado;
+    @Column(name = "Empresa_Nombre")
+    private String empresaNombre;
+    @Column(name = "Ruc")
+    private String ruc;
+    @Column(name = "Telefono")
+    private String telefono;
+    @Column(name = "Email")
+    private String email;
+    @Column(name = "Web")
+    private String web;
 }
