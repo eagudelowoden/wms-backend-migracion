@@ -68,13 +68,14 @@ public class ReparacionController extends BaseController<ReparacionModel, Intege
   }
 
   @GetMapping("/getRepairUser")
-  public ResponseEntity<?> getRepairUser(@RequestParam Integer usuarioId) {
-    return ResponseEntity.ok(service.getRepairUser(usuarioId));
+  public ResponseEntity<?> getRepairUser(@RequestParam String perfil, @RequestParam Integer usuarioId) {
+    return ResponseEntity.ok(service.getRepairUser(perfil, usuarioId));
   }
 
   @GetMapping("/searchAssignedRepair")
-  public ResponseEntity<?> searchAssignedRepair(@RequestParam Integer tecnicoAsignacionId, @RequestParam String tipo) {
-    return ResponseEntity.ok(service.searchAssignedRepair(tecnicoAsignacionId, tipo));
+  public ResponseEntity<?> searchAssignedRepair(@RequestParam String perfil,
+      @RequestParam Integer tecnicoAsignacionId, @RequestParam String tipo) {
+    return ResponseEntity.ok(service.searchAssignedRepair(perfil, tecnicoAsignacionId, tipo));
   }
 
   @GetMapping("/searchRepairedRepair")

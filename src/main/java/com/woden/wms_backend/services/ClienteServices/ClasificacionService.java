@@ -82,8 +82,8 @@ public class ClasificacionService extends BaseService<ClasificacionModel, Intege
     repository.deleteClasificacion(serial);
   }
 
-  public List<Map<String, Object>> getClassifiedUser(Integer usuarioId) {
-    List<Object[]> results = repository.getClassifiedUser(usuarioId);
+  public List<Map<String, Object>> getClassifiedUser(String perfil, Integer usuarioId) {
+    List<Object[]> results = repository.getClassifiedUser(perfil, usuarioId);
 
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 

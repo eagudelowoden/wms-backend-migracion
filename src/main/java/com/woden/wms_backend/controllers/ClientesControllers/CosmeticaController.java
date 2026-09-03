@@ -31,9 +31,9 @@ public class CosmeticaController {
   }
 
   @GetMapping("/searchCosmeticaEntry")
-  public ResponseEntity<?> searchCosmeticaEntry(@RequestParam Integer usuarioId) {
+  public ResponseEntity<?> searchCosmeticaEntry(@RequestParam String perfil, @RequestParam Integer usuarioId) {
     try {
-      return ResponseEntity.ok(service.searchCosmeticaEntry(usuarioId));
+      return ResponseEntity.ok(service.searchCosmeticaEntry(perfil, usuarioId));
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.badRequest().body("Error: " + e.getMessage());

@@ -16,8 +16,8 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface CosmeticaRepository extends BaseRepository<CosmeticaModel, Integer> {
 
-  @Query(value = "EXEC pa_SearchCosmeticaEntry :usuarioId", nativeQuery = true)
-  public List<Object[]> searchCosmeticaEntry(@Param("usuarioId") Integer usuarioId);
+  @Query(value = "EXEC pa_SearchCosmeticaEntry :perfil, :usuarioId", nativeQuery = true)
+  public List<Object[]> searchCosmeticaEntry(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
   @Modifying
   @Transactional

@@ -23,8 +23,8 @@ public class CosmeticaService {
     }
   }
 
-  public List<Map<String, Object>> searchCosmeticaEntry(Integer usuarioId) {
-    List<Object[]> results = repository.searchCosmeticaEntry(usuarioId);
+  public List<Map<String, Object>> searchCosmeticaEntry(String perfil, Integer usuarioId) {
+    List<Object[]> results = repository.searchCosmeticaEntry(perfil, usuarioId);
 
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 

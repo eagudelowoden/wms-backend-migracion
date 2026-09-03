@@ -409,8 +409,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public List<Map<String, Object>> getScrapUser(Integer usuarioIdMovimiento) {
-    return ingresoRepository.getScrapUser(usuarioIdMovimiento).stream().map(row -> {
+  public List<Map<String, Object>> getScrapUser(String perfil, Integer usuarioIdMovimiento) {
+    return ingresoRepository.getScrapUser(perfil, usuarioIdMovimiento).stream().map(row -> {
       Map<String, Object> map = new HashMap<>();
       map.put("id", row[0].toString());
       map.put("serial", row[1].toString());

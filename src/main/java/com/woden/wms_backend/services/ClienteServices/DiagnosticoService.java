@@ -129,8 +129,8 @@ public class DiagnosticoService {
     }
   }
 
-  public List<Map<String, Object>> getDiagnosedUser(Integer usuarioId) {
-    List<Object[]> results = repository.getDiagnosedUser(usuarioId);
+  public List<Map<String, Object>> getDiagnosedUser(String perfil, Integer usuarioId) {
+    List<Object[]> results = repository.getDiagnosedUser(perfil, usuarioId);
 
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 
@@ -150,7 +150,7 @@ public class DiagnosticoService {
       map.put("pqrs", row[11] != null ? row[11].toString() : "");
       map.put("fecha", row[12] != null ? row[12].toString() : "");
       // El SP devuelve: ..., Fecha(12), TruckRollId(13), rn(14). Con el SP viejo (14 cols) la posición 13 es rn — no mapear.
-      map.put("truckRollId", row.length > 14 && row[13] != null ? Integer.parseInt(row[13].toString()) : null);
+      map.put("truckRollId", row.length > 13 && row[13] != null ? Integer.parseInt(row[13].toString()) : null);
       formattedResults.add(map);
     }
     return formattedResults;

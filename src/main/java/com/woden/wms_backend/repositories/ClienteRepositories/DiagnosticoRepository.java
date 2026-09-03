@@ -46,8 +46,8 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
     void delete(@Param("serial") String serial);
 
     
-    @Query(value = "EXEC pa_GetDiagnosedUser :usuarioId", nativeQuery = true)
-    public List<Object[]> getDiagnosedUser(@Param("usuarioId") Integer usuarioId);
+    @Query(value = "EXEC pa_GetDiagnosedUser :perfil, :usuarioId", nativeQuery = true)
+    public List<Object[]> getDiagnosedUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
     @Query(value = "pa_GetDiagnosticVariables :serial", nativeQuery = true)
     public List<Object[]> getDiagnosticVariables(@Param("serial") String serial);
