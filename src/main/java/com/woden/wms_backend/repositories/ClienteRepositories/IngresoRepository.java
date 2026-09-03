@@ -513,4 +513,13 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "EXEC pa_GetEtiquetadoUser :usuarioIdMovimiento", nativeQuery = true)
 	List<Object[]> getEtiquetadoUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
+
+	@Query(value = "SELECT Serial FROM Ingreso WHERE Serial IN (:seriales)", nativeQuery = true)
+	List<String> findExistingSerials(@Param("seriales") List<String> seriales);
+
+	@Query(value = "SELECT Mac FROM Ingreso WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
+	List<String> findExistingMacs(@Param("macs") List<String> macs);
+
+	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
+	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
 }

@@ -24,11 +24,10 @@ public class LoteService extends BaseService<LoteModel, Integer> {
     }
 
     public List<LoteDTO> getLotes() {
-        List<Object[]> results = loteRepository.searchSP("");
+        List<Object[]> results = loteRepository.getLotes();
         return results.stream().map(obj -> {
             LoteDTO lote = new LoteDTO();
-            lote.setId(obj[0] != null ? ((Number) obj[0]).intValue() : null);
-            lote.setNombre((String) obj[1]);
+            lote.setNombre((String) obj[0]);
             return lote;
         }).collect(Collectors.toList());
     }
@@ -94,4 +93,5 @@ public class LoteService extends BaseService<LoteModel, Integer> {
         Integer count = loteRepository.getCount(id);
         return count != null && count > 0;
     }
+
 }

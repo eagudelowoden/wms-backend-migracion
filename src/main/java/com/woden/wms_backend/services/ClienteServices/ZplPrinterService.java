@@ -259,16 +259,20 @@ public class ZplPrinterService {
   }
 
   private String reemplazarGeneralConSufijos(String zpl, List<IngresoModel> seriales, EtiquetaDatosGeneralesDTO datos) {
-    String sapCode = datos.getCodigosap();
-    String desc = datos.getDescripcion();
     for (int i = 0; i < seriales.size(); i++) {
+      IngresoModel ingreso = seriales.get(i);
       String suffix = getKey(i, "");
-      if (sapCode != null && !sapCode.isEmpty()) {
-        zpl = reemplazarSeguro(zpl, "codigosap" + suffix, sapCode);
-      }
-      if (desc != null && !desc.isEmpty()) {
-        zpl = reemplazarSeguro(zpl, "descripcion" + suffix, desc);
-      }
+      zpl = reemplazarSeguro(zpl, "serial" + suffix, nvl(ingreso.getSerial()));
+      zpl = reemplazarSeguro(zpl, "mac" + suffix, nvl(ingreso.getMac()));
+      zpl = reemplazarSeguro(zpl, "smartCard" + suffix, nvl(ingreso.getSmartCard()));
+      zpl = reemplazarSeguro(zpl, "serial3" + suffix, nvl(ingreso.getSerial3()));
+      zpl = reemplazarSeguro(zpl, "serial4" + suffix, nvl(ingreso.getSerial4()));
+      zpl = reemplazarSeguro(zpl, "codigosap" + suffix, nvl(ingreso.getCodigoSap()));
+      zpl = reemplazarSeguro(zpl, "descripcion" + suffix, nvl(ingreso.getDescripcion()));
+      zpl = reemplazarSeguro(zpl, "nivel" + suffix, nvl(ingreso.getNivel()));
+      zpl = reemplazarSeguro(zpl, "lote" + suffix, nvl(ingreso.getLote()));
+      zpl = reemplazarSeguro(zpl, "modelo" + suffix, nvl(ingreso.getModelo()));
+      zpl = reemplazarSeguro(zpl, "tipologia" + suffix, nvl(ingreso.getTipologia()));
     }
     return zpl;
   }
@@ -278,6 +282,10 @@ public class ZplPrinterService {
     if (index == 9) return nombre + "0";
     char letra = (char) ('A' + (index - 10));
     return nombre + letra;
+  }
+
+  private String nvl(String val) {
+    return val != null ? val : "";
   }
 
   public void imprimirZpl(String zpl) throws PrintException {
