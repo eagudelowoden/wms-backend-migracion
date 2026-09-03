@@ -255,6 +255,17 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("fecha") Date fecha,
 			@Param("serial") String serial);
 
+	/**
+	 * Novedad final de Reparación (Garantía/TruckRoll) — Id de Maestro (TipoMaestro
+	 * "Estados de Novedad"). Se llama solo al finalizar Reparación, cuando el
+	 * TruckRollId del serial terminó en la familia de Garantía (4,5) o TruckRoll
+	 * (10-13). No usa SP propio: es un UPDATE de una sola columna.
+	 */
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE Ingreso SET NovedadId = :novedadId WHERE Serial = :serial", nativeQuery = true)
+	void updateNovedadIngreso(@Param("novedadId") Integer novedadId, @Param("serial") String serial);
+
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_UpdatePackingEntry :estadoId, :palletId, :cajaEmpaqueId, :usuarioIdMovimiento, :serial, :loteId, :filas OUT", nativeQuery = true)

@@ -1,6 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,6 +82,19 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0);
     }
+  }
+
+  /**
+   * Novedad final de Reparación (Garantía/TruckRoll) arrastrada de Ingreso a
+   * Despacho — solo se llama cuando el Ingreso trae novedadId (o sea, solo
+   * para clientes con TruckRoll activo).
+   */
+  @PostMapping("/updateNovedadDespacho")
+  public ResponseEntity<Integer> updateNovedadDespacho(@RequestBody Map<String, Object> request) {
+    Integer novedadId = (Integer) request.get("novedadId");
+    String serial = (String) request.get("serial");
+    despachoService.updateNovedadDespacho(novedadId, serial);
+    return ResponseEntity.ok(1);
   }
 
   @PostMapping("/insertDispatchAccesory")
