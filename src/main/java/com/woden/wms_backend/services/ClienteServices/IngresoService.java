@@ -874,6 +874,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Integer> modeloMap = resolverMaestroIds(rows, "Modelos");
     Map<String, Integer> loteMap = resolverLoteIds(rows);
     Map<String, Integer> codigoSapLargosMap = resolverCodigoSapLargos(rows);
+    Map<String, String> codigoSapTipoMap = resolverCodigoSapTipos(rows);
 
     Map<String, Object[]> palletConfigsByNumero = Map.of();
     if (palletConfig == null) {
@@ -1080,9 +1081,17 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         }
 
         String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
-        if (!rowCodigoSap.isEmpty() && !palletConfig.isMultimodelo() && palletConfig.getCodigoSap() != null && !palletConfig.getCodigoSap().isEmpty()) {
+        boolean palletEsSmartCardInfo = "SMARTCARDINFO".equalsIgnoreCase(palletConfig.getCodigoSap());
+        boolean palletEsFlexible = palletConfig.isMultimodelo() || palletEsSmartCardInfo;
+        if (!rowCodigoSap.isEmpty() && !palletEsFlexible && palletConfig.getCodigoSap() != null && !palletConfig.getCodigoSap().isEmpty()) {
           if (!rowCodigoSap.equalsIgnoreCase(palletConfig.getCodigoSap())) {
             erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet: '" + palletConfig.getCodigoSap() + "'");
+          }
+        }
+        if (palletEsSmartCardInfo && !rowCodigoSap.isEmpty() && codigoSapId != null) {
+          String tipoFila = codigoSapTipoMap.get(rowCodigoSap.toUpperCase());
+          if (tipoFila != null && !"SMARTCARD".equalsIgnoreCase(tipoFila)) {
+            erroresFila.add("CodigoSap '" + rowCodigoSap + "' no es tipo SMARTCARD (requerido para pallet SMARTCARDINFO)");
           }
         }
       } else {
@@ -1093,13 +1102,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         if (palletCfg != null && palletCfg.length >= 5) {
           String palletCodigoSap = palletCfg[2] != null ? palletCfg[2].toString() : "";
           boolean palletMultimodelo = "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
+          boolean palletSmartCardInfo = "SMARTCARDINFO".equalsIgnoreCase(palletCodigoSap);
+          boolean palletEsFlexible = palletMultimodelo || palletSmartCardInfo;
           Integer palletCodigoSapId = (Integer) palletCfg[1];
           Integer palletLoteId = (Integer) palletCfg[3];
           Integer palletTipologiaId = (Integer) palletCfg[4];
 
-          if (codigoSapId != null && !palletMultimodelo && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
+          if (codigoSapId != null && !palletEsFlexible && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
             if (!codigoSapId.equals(palletCodigoSapId)) {
               erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet '" + rowPalletWms + "' (" + palletCodigoSap + ")");
+            }
+          }
+          if (palletSmartCardInfo && codigoSapId != null && !rowCodigoSap.isEmpty()) {
+            String tipoFila = codigoSapTipoMap.get(rowCodigoSap.toUpperCase());
+            if (tipoFila != null && !"SMARTCARD".equalsIgnoreCase(tipoFila)) {
+              erroresFila.add("CodigoSap '" + rowCodigoSap + "' no es tipo SMARTCARD (requerido para pallet SMARTCARDINFO '" + rowPalletWms + "')");
             }
           }
           if (loteId != null && palletLoteId != null && !loteId.equals(palletLoteId)) {
@@ -1395,6 +1412,41 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       } catch (Exception e) {
         logger.error("[resolverPalletConfigs] Error para pallet {}: {}", numero, e.getMessage(), e);
       }
+    }
+    return map;
+  }
+
+  private Map<String, String> resolverCodigoSapTipos(List<MassUploadRowDTO> rows) {
+    Set<String> codigos = rows.stream()
+        .map(MassUploadRowDTO::getCodigoSap)
+        .filter(c -> c != null && !c.trim().isEmpty())
+        .map(c -> c.trim().toUpperCase())
+        .collect(java.util.stream.Collectors.toSet());
+    if (codigos.isEmpty()) return Map.of();
+
+    Map<String, String> map = new java.util.HashMap<>();
+    try (Connection conn = dataSource.getConnection()) {
+      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT c.Codigo, m.Codigo AS Tipo FROM CodigoSap c LEFT JOIN Maestro m ON c.TipoId = m.Id WHERE UPPER(c.Codigo) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String codigo : lote) {
+            ps.setString(i++, codigo);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              String codigo = rs.getString("Codigo");
+              String tipo = rs.getString("Tipo");
+              if (codigo != null) {
+                map.put(codigo.toUpperCase(), tipo != null ? tipo.toUpperCase() : "");
+              }
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      logger.error("[resolverCodigoSapTipos] Error: {}", e.getMessage(), e);
     }
     return map;
   }
