@@ -506,4 +506,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
+
+	@Query(value = "EXEC pa_GetDiasUltimoIngreso :serial", nativeQuery = true)
+	List<Object[]> getDiasUltimoIngresoRaw(@Param("serial") String serial);
 }

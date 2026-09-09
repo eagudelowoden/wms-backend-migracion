@@ -574,4 +574,11 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
       @RequestBody MassUploadConfirmRequestDTO request) {
     return ResponseEntity.ok(ingresoService.massUploadConfirm(request.getSeriales()));
   }
+
+  // ── Validación días desde ingreso ──────────────────────────────────────────
+
+  @GetMapping("/getDiasUltimoIngreso")
+  public ResponseEntity<Map<String, Object>> getDiasUltimoIngreso(@RequestParam String serial) {
+    return ResponseEntity.ok(ingresoService.getDiasUltimoIngreso(serial));
+  }
 }

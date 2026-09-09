@@ -1557,4 +1557,26 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       throw new BusinessRuleException("Error al insertar seriales masivamente: " + e.getMessage());
     }
   }
+
+  // ── Validación días desde ingreso ────────────────────────────────────────────
+
+  public Map<String, Object> getDiasUltimoIngreso(String serial) {
+    Map<String, Object> result = new HashMap<>();
+    try {
+      List<Object[]> rows = ingresoRepository.getDiasUltimoIngresoRaw(serial);
+      if (rows != null && !rows.isEmpty()) {
+        Object[] row = rows.get(0);
+        result.put("fechaIngreso", row[0] != null ? row[0].toString() : null);
+        result.put("dias", row[1] != null ? ((Number) row[1]).intValue() : 999);
+      } else {
+        result.put("fechaIngreso", null);
+        result.put("dias", 999);
+      }
+    } catch (Exception e) {
+      logger.warn("[getDiasUltimoIngreso] Error consultando días para serial {}: {}", serial, e.getMessage());
+      result.put("fechaIngreso", null);
+      result.put("dias", 999);
+    }
+    return result;
+  }
 }
