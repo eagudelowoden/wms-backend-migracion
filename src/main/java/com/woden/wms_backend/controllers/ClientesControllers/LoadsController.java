@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.woden.wms_backend.dto.clientDTO.loads.BulkUploadRequest;
 import com.woden.wms_backend.dto.clientDTO.loads.UpdateNotAvailableRowDTO;
 import com.woden.wms_backend.dto.response.ApiSuccess;
 import com.woden.wms_backend.services.ClienteServices.LoadsService;
@@ -43,6 +44,15 @@ public class LoadsController {
       @RequestParam String base,
       @RequestParam("file") MultipartFile file) {
     Map<String, Object> result = loadsService.uploadFile(base, file);
+    if (Boolean.TRUE.equals(result.get("ok"))) {
+      return ResponseEntity.ok(ApiSuccess.of(result.get("registros") + " registro(s) insertado(s)."));
+    }
+    return ResponseEntity.unprocessableEntity().body(result);
+  }
+
+  @PostMapping("/bulk-upload")
+  public ResponseEntity<?> bulkUpload(@RequestBody BulkUploadRequest request) {
+    Map<String, Object> result = loadsService.bulkUpload(request.getBase(), request.getRecords());
     if (Boolean.TRUE.equals(result.get("ok"))) {
       return ResponseEntity.ok(ApiSuccess.of(result.get("registros") + " registro(s) insertado(s)."));
     }
