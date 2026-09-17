@@ -581,4 +581,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public ResponseEntity<Map<String, Object>> getDiasUltimoIngreso(@RequestParam String serial) {
     return ResponseEntity.ok(ingresoService.getDiasUltimoIngreso(serial));
   }
+
+  @GetMapping("/getUltimaTipologiaScrap")
+  public ResponseEntity<Map<String, Object>> getUltimaTipologiaScrap(@RequestParam String serial) {
+    return ResponseEntity.ok(ingresoService.validarReingresoScrap(serial));
+  }
 }
