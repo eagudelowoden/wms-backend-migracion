@@ -60,4 +60,9 @@ public class ClienteDataAccessService {
     return clienteRepository.getEtiquetaUnitariaON(id);
   }
 
+  public Integer getSerialMasterON(int id) {
+    Integer v = clienteRepository.getSerialMasterON(id);
+    return v != null ? v : 0;
+  }
+
 }

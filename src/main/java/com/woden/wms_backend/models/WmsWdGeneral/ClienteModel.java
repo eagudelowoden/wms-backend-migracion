@@ -87,6 +87,8 @@ public class ClienteModel {
     private String prealerta;
     @Column(name = "odooPqrsON")
     private Boolean odooPqrsON;
+    @Column(name = "serialMasterCalidadON")
+    private Integer serialMasterCalidadON;
     @Column(name = "Archivos")
     private String archivos;
     @Column(name = "LblEtiquetado")
