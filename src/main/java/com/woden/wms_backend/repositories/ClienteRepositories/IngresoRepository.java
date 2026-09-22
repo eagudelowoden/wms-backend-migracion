@@ -514,6 +514,12 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_GetEtiquetadoUser :usuarioIdMovimiento", nativeQuery = true)
 	List<Object[]> getEtiquetadoUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
 
+	@Query(value = "SELECT UPPER(d.Serial) AS serial, COUNT(*) AS reingresos " +
+			"FROM Despacho d WITH(NOLOCK) " +
+			"WHERE UPPER(d.Serial) IN (:seriales) " +
+			"GROUP BY UPPER(d.Serial)", nativeQuery = true)
+	List<Object[]> countReingresosBySeriales(@Param("seriales") List<String> seriales);
+
 	@Query(value = "SELECT Serial FROM Ingreso WHERE Serial IN (:seriales)", nativeQuery = true)
 	List<String> findExistingSerials(@Param("seriales") List<String> seriales);
 
@@ -522,4 +528,37 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
+
+	@Query(value = "EXEC pa_GetDiasUltimoIngreso :serial", nativeQuery = true)
+	List<Object[]> getDiasUltimoIngresoRaw(@Param("serial") String serial);
+
+	@Query(value = "EXEC dbo.pa_ValidarReingresoScrap :serial", nativeQuery = true)
+	String getUltimaTipologiaSerial(@Param("serial") String serial);
+
+	@Query(value = "SELECT UPPER(m.Serial) AS serial, m.Descripcion AS descripcion " +
+			"FROM Movimiento m WITH(NOLOCK) " +
+			"INNER JOIN ( " +
+			"SELECT Serial, MAX(Id) AS MaxId " +
+			"FROM Movimiento WITH(NOLOCK) " +
+			"WHERE UPPER(Serial) IN (:seriales) AND Descripcion LIKE '%Tipologia%' " +
+			"GROUP BY Serial " +
+			") latest ON m.Id = latest.MaxId " +
+			"UNION ALL " +
+			"SELECT UPPER(d.Serial) AS serial, 'Despacho con Tipologia: SCRAP' AS descripcion " +
+			"FROM Despacho d WITH(NOLOCK) " +
+			"INNER JOIN ( " +
+			"SELECT Serial, MAX(Id) AS MaxId " +
+			"FROM Despacho WITH(NOLOCK) " +
+			"WHERE UPPER(Serial) IN (:seriales) " +
+			"GROUP BY Serial " +
+			") latestD ON d.Id = latestD.MaxId " +
+			"INNER JOIN Maestro mo WITH(NOLOCK) ON mo.Id = d.TipologiaId " +
+			"WHERE UPPER(mo.Codigo) = 'SCRAP'", nativeQuery = true)
+	List<Object[]> findUltimasTipologias(@Param("seriales") List<String> seriales);
+
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END " +
+			"FROM [WmsWdGeneral].dbo.ClienteValidacion cv " +
+			"JOIN [WmsWdGeneral].dbo.ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id " +
+			"WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
+	Integer tieneValidacionDirecta(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
 }

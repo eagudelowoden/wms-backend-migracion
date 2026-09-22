@@ -97,6 +97,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Creación / eliminación ───────────────────────────────────────────────────
 
   public String createIngresoCallable(IngresoModel ingreso) {
+    if (bloqueoScrapActivo() && esUltimaTipologiaScrap(consultarUltimaTipologia(ingreso.getSerial()))) {
+      return "El serial " + ingreso.getSerial() + " terminó en SCRAP y tiene bloqueado el reingreso.";
+    }
     try (Connection conn = dataSource.getConnection()) {
       CallableStatement stmt = conn.prepareCall(
           "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -919,6 +922,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Integer> modeloMap = resolverMaestroIds(rows, "Modelos");
     Map<String, Integer> loteMap = resolverLoteIds(rows);
     Map<String, Integer> codigoSapLargosMap = resolverCodigoSapLargos(rows);
+    Map<String, String> codigoSapTipoMap = resolverCodigoSapTipos(rows);
 
     Map<String, Object[]> palletConfigsByNumero = Map.of();
     if (palletConfig == null) {
@@ -934,6 +938,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     for (List<String> lote : particionar(seriales, CHUNK_SIZE)) {
       serialesExistentes.addAll(ingresoRepository.findExistingSerials(lote));
     }
+    Set<String> serialesScrap = resolverSerialesScrap(seriales);
+    Map<String, Integer> reingresoLimitMap = resolverReingresosLimites(rows);
+    Map<String, Integer> reingresoCountMap = resolverReingresosCounts(seriales);
     Set<String> serialesEnArchivo = new java.util.HashSet<>();
 
     List<String> macs = rows.stream()
@@ -1061,6 +1068,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         if (serialesExistentes.contains(serialUpper)) {
           erroresFila.add("Serial '" + serialUpper + "' ya existe en el sistema");
         }
+        if (serialesScrap.contains(serialUpper)) {
+          erroresFila.add("Serial '" + serialUpper + "' terminó en SCRAP y tiene bloqueado el reingreso");
+        }
+        String serialReingresoKey = normalizarSerial(serialUpper);
+        if (serialUpper.matches("\\d+(\\.\\d+)?[Ee][+-]?\\d+")) {
+          erroresFila.add("Serial '" + serialUpper + "' tiene formato inválido (notación científica). Corrija el Excel usando formato de texto con el número completo.");
+        }
+        if (reingresoCountMap.containsKey(serialReingresoKey)) {
+          Integer count = reingresoCountMap.get(serialReingresoKey);
+          String codigoSapKey = row.getCodigoSap() != null ? row.getCodigoSap().trim().toUpperCase() : "";
+          Integer limit = reingresoLimitMap.get(codigoSapKey);
+          if (limit != null && count >= limit && !(count == 0 && limit == 0)) {
+            erroresFila.add("Serial '" + serialUpper + "' excedió el límite de reingresos (" + count + "/" + limit + ")");
+          }
+        }
         if (serialesEnArchivo.contains(serialUpper)) {
           erroresFila.add("Serial '" + serialUpper + "' duplicado en el archivo");
         }
@@ -1125,9 +1147,17 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         }
 
         String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
-        if (!rowCodigoSap.isEmpty() && !palletConfig.isMultimodelo() && palletConfig.getCodigoSap() != null && !palletConfig.getCodigoSap().isEmpty()) {
+        boolean palletEsSmartCardInfo = "SMARTCARDINFO".equalsIgnoreCase(palletConfig.getCodigoSap());
+        boolean palletEsFlexible = palletConfig.isMultimodelo() || palletEsSmartCardInfo;
+        if (!rowCodigoSap.isEmpty() && !palletEsFlexible && palletConfig.getCodigoSap() != null && !palletConfig.getCodigoSap().isEmpty()) {
           if (!rowCodigoSap.equalsIgnoreCase(palletConfig.getCodigoSap())) {
             erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet: '" + palletConfig.getCodigoSap() + "'");
+          }
+        }
+        if (palletEsSmartCardInfo && !rowCodigoSap.isEmpty() && codigoSapId != null) {
+          String tipoFila = codigoSapTipoMap.get(rowCodigoSap.toUpperCase());
+          if (tipoFila != null && !"SMARTCARD".equalsIgnoreCase(tipoFila)) {
+            erroresFila.add("CodigoSap '" + rowCodigoSap + "' no es tipo SMARTCARD (requerido para pallet SMARTCARDINFO)");
           }
         }
       } else {
@@ -1138,13 +1168,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         if (palletCfg != null && palletCfg.length >= 5) {
           String palletCodigoSap = palletCfg[2] != null ? palletCfg[2].toString() : "";
           boolean palletMultimodelo = "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
+          boolean palletSmartCardInfo = "SMARTCARDINFO".equalsIgnoreCase(palletCodigoSap);
+          boolean palletEsFlexible = palletMultimodelo || palletSmartCardInfo;
           Integer palletCodigoSapId = (Integer) palletCfg[1];
           Integer palletLoteId = (Integer) palletCfg[3];
           Integer palletTipologiaId = (Integer) palletCfg[4];
 
-          if (codigoSapId != null && !palletMultimodelo && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
+          if (codigoSapId != null && !palletEsFlexible && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
             if (!codigoSapId.equals(palletCodigoSapId)) {
               erroresFila.add("CodigoSap '" + rowCodigoSap + "' no coincide con el codigoSap del pallet '" + rowPalletWms + "' (" + palletCodigoSap + ")");
+            }
+          }
+          if (palletSmartCardInfo && codigoSapId != null && !rowCodigoSap.isEmpty()) {
+            String tipoFila = codigoSapTipoMap.get(rowCodigoSap.toUpperCase());
+            if (tipoFila != null && !"SMARTCARD".equalsIgnoreCase(tipoFila)) {
+              erroresFila.add("CodigoSap '" + rowCodigoSap + "' no es tipo SMARTCARD (requerido para pallet SMARTCARDINFO '" + rowPalletWms + "')");
             }
           }
           if (loteId != null && palletLoteId != null && !loteId.equals(palletLoteId)) {
@@ -1200,13 +1238,56 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     MassUploadConfirmResponseDTO response = new MassUploadConfirmResponseDTO();
     List<MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO> errores = new ArrayList<>();
 
+    List<String> bloqueados = filtrarSerialesScrap(
+        seriales.stream().map(MassUploadRowResolvedDTO::getSerial).toList());
+    List<MassUploadRowResolvedDTO> permitidos = seriales;
+    if (!bloqueados.isEmpty()) {
+      Set<String> bloqueadosSet = new java.util.HashSet<>(bloqueados);
+      for (String serial : bloqueados) {
+        MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO err = new MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO();
+        err.setSerial(serial);
+        err.setError("El serial terminó en SCRAP y tiene bloqueado el reingreso.");
+        errores.add(err);
+      }
+      permitidos = seriales.stream()
+          .filter(s -> s.getSerial() == null || !bloqueadosSet.contains(s.getSerial().toUpperCase().trim()))
+          .toList();
+    }
+
+    Map<Integer, Integer> confirmLimitMap = resolverReingresosLimitesPorId(seriales);
+    Map<String, Integer> confirmCountMap = resolverReingresosCounts(
+        seriales.stream().map(MassUploadRowResolvedDTO::getSerial).toList());
+
+    List<MassUploadRowResolvedDTO> reingresoBloqueados = new ArrayList<>();
+    for (MassUploadRowResolvedDTO row : permitidos) {
+      String serial = row.getSerial() != null ? normalizarSerial(row.getSerial().toUpperCase().trim()) : "";
+      Integer count = confirmCountMap.getOrDefault(serial, 0);
+      Integer limit = confirmLimitMap.get(row.getCodigoSapId());
+      if (limit != null && count >= limit && !(count == 0 && limit == 0)) {
+        reingresoBloqueados.add(row);
+      }
+    }
+    if (!reingresoBloqueados.isEmpty()) {
+      Set<String> reingresoBloqueadosSet = new java.util.HashSet<>();
+      for (MassUploadRowResolvedDTO blocked : reingresoBloqueados) {
+        MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO err = new MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO();
+        err.setSerial(blocked.getSerial());
+        err.setError("El serial excedió el límite de reingresos permitidos.");
+        errores.add(err);
+        reingresoBloqueadosSet.add(blocked.getSerial().toUpperCase().trim());
+      }
+      permitidos = permitidos.stream()
+          .filter(r -> !reingresoBloqueadosSet.contains(r.getSerial().toUpperCase().trim()))
+          .toList();
+    }
+
     try {
-      String json = buildJsonFromResolved(seriales);
+      String json = buildJsonFromResolved(permitidos);
       int insertados = ejecutarBulkInsert(json);
       response.setInsertados(insertados);
     } catch (Exception e) {
       logger.error("[massUploadConfirm] Error en inserción masiva: {}", e.getMessage(), e);
-      for (MassUploadRowResolvedDTO s : seriales) {
+      for (MassUploadRowResolvedDTO s : permitidos) {
         MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO err = new MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO();
         err.setSerial(s.getSerial());
         err.setError("Error en inserción masiva: " + e.getMessage());
@@ -1214,6 +1295,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       }
       response.setErrores(errores);
       response.setInsertados(0);
+    }
+    if (response.getErrores() == null && !errores.isEmpty()) {
+      response.setErrores(errores);
     }
 
     return response;
@@ -1444,6 +1528,141 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return map;
   }
 
+  private Map<String, String> resolverCodigoSapTipos(List<MassUploadRowDTO> rows) {
+    Set<String> codigos = rows.stream()
+        .map(MassUploadRowDTO::getCodigoSap)
+        .filter(c -> c != null && !c.trim().isEmpty())
+        .map(c -> c.trim().toUpperCase())
+        .collect(java.util.stream.Collectors.toSet());
+    if (codigos.isEmpty()) return Map.of();
+
+    Map<String, String> map = new java.util.HashMap<>();
+    try (Connection conn = dataSource.getConnection()) {
+      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT c.Codigo, m.Codigo AS Tipo FROM CodigoSap c LEFT JOIN Maestro m ON c.TipoId = m.Id WHERE UPPER(c.Codigo) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String codigo : lote) {
+            ps.setString(i++, codigo);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              String codigo = rs.getString("Codigo");
+              String tipo = rs.getString("Tipo");
+              if (codigo != null) {
+                map.put(codigo.toUpperCase(), tipo != null ? tipo.toUpperCase() : "");
+              }
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      logger.error("[resolverCodigoSapTipos] Error: {}", e.getMessage(), e);
+    }
+    return map;
+  }
+
+  private Map<String, Integer> resolverReingresosLimites(List<MassUploadRowDTO> rows) {
+    Set<String> codigos = rows.stream()
+        .map(MassUploadRowDTO::getCodigoSap)
+        .filter(c -> c != null && !c.trim().isEmpty())
+        .map(c -> c.trim().toUpperCase())
+        .collect(Collectors.toSet());
+    if (codigos.isEmpty()) return Map.of();
+
+    Map<String, Integer> map = new HashMap<>();
+    try (Connection conn = dataSource.getConnection()) {
+      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT Codigo, Reingreso FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (String codigo : lote) {
+            ps.setString(i++, codigo);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              String codigo = rs.getString("Codigo");
+              int reingreso = rs.getInt("Reingreso");
+              if (codigo != null) {
+                map.put(codigo.toUpperCase(), reingreso);
+              }
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      logger.error("[resolverReingresosLimites] Error: {}", e.getMessage(), e);
+    }
+    return map;
+  }
+
+  private Map<Integer, Integer> resolverReingresosLimitesPorId(List<MassUploadRowResolvedDTO> seriales) {
+    Set<Integer> ids = seriales.stream()
+        .map(MassUploadRowResolvedDTO::getCodigoSapId)
+        .filter(id -> id != null)
+        .collect(Collectors.toSet());
+    if (ids.isEmpty()) return Map.of();
+
+    Map<Integer, Integer> map = new HashMap<>();
+    try (Connection conn = dataSource.getConnection()) {
+      for (List<Integer> lote : particionar(new ArrayList<>(ids), CHUNK_SIZE)) {
+        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
+        String sql = "SELECT Id, Reingreso FROM CodigoSap WHERE Id IN (" + placeholders + ")";
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+          int i = 1;
+          for (Integer id : lote) {
+            ps.setInt(i++, id);
+          }
+          try (java.sql.ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+              map.put(rs.getInt("Id"), rs.getInt("Reingreso"));
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      logger.error("[resolverReingresosLimitesPorId] Error: {}", e.getMessage(), e);
+    }
+    return map;
+  }
+
+  private Map<String, Integer> resolverReingresosCounts(List<String> seriales) {
+    Set<String> unicos = seriales.stream()
+        .filter(s -> s != null && !s.isEmpty())
+        .map(s -> s.trim().toUpperCase())
+        .map(this::normalizarSerial)
+        .collect(Collectors.toSet());
+    if (unicos.isEmpty()) return Map.of();
+
+    Map<String, Integer> map = new HashMap<>();
+    for (List<String> lote : particionar(unicos, CHUNK_SIZE)) {
+      try {
+        for (Object[] row : ingresoRepository.countReingresosBySeriales(lote)) {
+          String serial = row[0] != null ? row[0].toString().toUpperCase() : "";
+          int count = row[1] != null ? ((Number) row[1]).intValue() : 0;
+          if (!serial.isEmpty()) {
+            map.put(serial, count);
+          }
+        }
+      } catch (Exception e) {
+        logger.warn("[resolverReingresosCounts] Error en lote de {} seriales: {}", lote.size(), e.getMessage());
+      }
+    }
+    return map;
+  }
+
+  private String normalizarSerial(String serial) {
+    if (serial == null) return "";
+    try {
+      if (serial.matches("\\d+(\\.\\d+)?[Ee][+-]?\\d+")) {
+        return new java.math.BigDecimal(serial).toPlainString();
+      }
+    } catch (Exception ignored) {}
+    return serial;
+  }
+
   private Integer getTipoMaestroId(Connection conn, String nombre) throws SQLException {
     try (java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id FROM TipoMaestro WHERE UPPER(nombre) = ?")) {
       ps.setString(1, nombre.toUpperCase());
@@ -1549,5 +1768,96 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       logger.error("[ejecutarBulkInsert] Error: {}", e.getMessage(), e);
       throw new BusinessRuleException("Error al insertar seriales masivamente: " + e.getMessage());
     }
+  }
+
+  // ── Validación BLOQUEAR_REINGRESO_SCRAP ──────────────────────────────────
+
+  private boolean bloqueoScrapActivo() {
+    Integer clientId = ClientDatabaseContext.getCurrentClientId();
+    if (clientId == null) return false;
+    try {
+      Integer tiene = ingresoRepository.tieneValidacionDirecta(clientId, "BLOQUEAR_REINGRESO_SCRAP");
+      return tiene != null && tiene > 0;
+    } catch (Exception e) {
+      logger.warn("[bloqueoScrapActivo] Error consultando validación: {}", e.getMessage());
+      return false;
+    }
+  }
+
+  private boolean esUltimaTipologiaScrap(String descripcion) {
+    return descripcion != null && descripcion.toUpperCase().contains("A: SCRAP");
+  }
+
+  private String consultarUltimaTipologia(String serial) {
+    if (serial == null || serial.trim().isEmpty()) return null;
+    try {
+      return ingresoRepository.getUltimaTipologiaSerial(serial.trim());
+    } catch (Exception e) {
+      logger.warn("[consultarUltimaTipologia] Error para serial {}: {}", serial, e.getMessage());
+      return null;
+    }
+  }
+
+  private Set<String> resolverSerialesScrap(List<String> seriales) {
+    Set<String> scrap = new java.util.HashSet<>();
+    if (!bloqueoScrapActivo() || seriales == null || seriales.isEmpty()) return scrap;
+    Set<String> unicos = seriales.stream()
+        .filter(s -> s != null && !s.isEmpty())
+        .collect(Collectors.toSet());
+    for (List<String> lote : particionar(unicos, CHUNK_SIZE)) {
+      try {
+        for (Object[] row : ingresoRepository.findUltimasTipologias(lote)) {
+          String s = row[0] != null ? row[0].toString().toUpperCase() : "";
+          String d = row[1] != null ? row[1].toString() : null;
+          if (!s.isEmpty() && esUltimaTipologiaScrap(d)) scrap.add(s);
+        }
+      } catch (Exception e) {
+        logger.warn("[resolverSerialesScrap] Error en lote de {} seriales: {}", lote.size(), e.getMessage());
+      }
+    }
+    return scrap;
+  }
+
+  private List<String> filtrarSerialesScrap(List<String> seriales) {
+    if (!bloqueoScrapActivo() || seriales == null || seriales.isEmpty()) return List.of();
+    List<String> normalizados = seriales.stream()
+        .filter(s -> s != null && !s.trim().isEmpty())
+        .map(s -> s.trim().toUpperCase())
+        .toList();
+    return new ArrayList<>(resolverSerialesScrap(normalizados));
+  }
+
+  public Map<String, Object> validarReingresoScrap(String serial) {
+    Map<String, Object> result = new HashMap<>();
+    if (!bloqueoScrapActivo()) {
+      result.put("bloqueado", false);
+      return result;
+    }
+    String descripcion = consultarUltimaTipologia(serial);
+    result.put("bloqueado", esUltimaTipologiaScrap(descripcion));
+    result.put("descripcion", descripcion);
+    return result;
+  }
+
+  // ── Validación días desde ingreso ────────────────────────────────────────────
+
+  public Map<String, Object> getDiasUltimoIngreso(String serial) {
+    Map<String, Object> result = new HashMap<>();
+    try {
+      List<Object[]> rows = ingresoRepository.getDiasUltimoIngresoRaw(serial);
+      if (rows != null && !rows.isEmpty()) {
+        Object[] row = rows.get(0);
+        result.put("fechaIngreso", row[0] != null ? row[0].toString() : null);
+        result.put("dias", row[1] != null ? ((Number) row[1]).intValue() : 999);
+      } else {
+        result.put("fechaIngreso", null);
+        result.put("dias", 999);
+      }
+    } catch (Exception e) {
+      logger.warn("[getDiasUltimoIngreso] Error consultando días para serial {}: {}", serial, e.getMessage());
+      result.put("fechaIngreso", null);
+      result.put("dias", 999);
+    }
+    return result;
   }
 }
