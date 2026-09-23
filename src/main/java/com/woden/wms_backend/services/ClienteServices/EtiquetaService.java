@@ -24,12 +24,18 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import com.woden.wms_backend.dto.clientDTO.EtiquetaListDTO;
+import com.woden.wms_backend.exception.BusinessRuleException;
+import com.woden.wms_backend.exception.EntryNotFoundException;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetaCampoRepository;
@@ -241,6 +247,71 @@ public class EtiquetaService extends BaseService<EtiquetaModel, Integer> {
   private int extraerNumeroPrn(String filename) {
     String num = filename.replaceAll("[^0-9]", "");
     return num.isEmpty() ? -1 : Integer.parseInt(num);
+  }
+
+  private static final Pattern SAFE_PRN = Pattern.compile("^[A-Za-z0-9._-]+\\.prn$");
+
+  private String sanitizePrnFilename(String archivo) {
+    if (archivo == null || archivo.isBlank()) throw new BusinessRuleException("Nombre de archivo requerido.");
+    String name = new File(archivo).getName();
+    if (!SAFE_PRN.matcher(name).matches()) throw new BusinessRuleException("Nombre de archivo no valido: " + archivo);
+    return name;
+  }
+
+  public ResponseEntity<ByteArrayResource> downloadPrnFile(String nombre, String tipo, String archivo) {
+    if (nombre == null || nombre.isBlank()) throw new BusinessRuleException("Nombre de etiqueta requerido.");
+    if (tipo == null || tipo.isBlank()) throw new BusinessRuleException("Tipo de etiqueta requerido.");
+    String safeFile = sanitizePrnFilename(archivo);
+    String prnRoute = resolvePrnRoute(tipo);
+    if (prnRoute == null) throw new EntryNotFoundException("Ruta PRN no configurada para tipo: " + tipo);
+    File file = new File(new File(prnRoute, nombre), safeFile);
+    if (!file.exists() || !file.isFile()) throw new EntryNotFoundException("Archivo no encontrado: " + safeFile);
+    try {
+      byte[] data = Files.readAllBytes(file.toPath());
+      ByteArrayResource resource = new ByteArrayResource(data);
+      return ResponseEntity.ok()
+          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + safeFile + "\"")
+          .contentLength(data.length)
+          .contentType(MediaType.APPLICATION_OCTET_STREAM)
+          .body(resource);
+    } catch (IOException e) {
+      throw new BusinessRuleException("Error al leer archivo: " + e.getMessage(), e);
+    }
+  }
+
+  public ResponseEntity<ByteArrayResource> downloadPrnZip(String nombre, String tipo, List<String> archivos) {
+    if (nombre == null || nombre.isBlank()) throw new BusinessRuleException("Nombre de etiqueta requerido.");
+    if (tipo == null || tipo.isBlank()) throw new BusinessRuleException("Tipo de etiqueta requerido.");
+    String prnRoute = resolvePrnRoute(tipo);
+    if (prnRoute == null) throw new EntryNotFoundException("Ruta PRN no configurada para tipo: " + tipo);
+    List<String> targets = archivos;
+    if (targets == null || targets.isEmpty()) {
+      targets = listPrnFiles(nombre, tipo);
+    }
+    if (targets == null || targets.isEmpty()) throw new EntryNotFoundException("No hay archivos .prn para descargar.");
+    List<String> sanitized = targets.stream().map(this::sanitizePrnFilename).toList();
+    File dir = new File(prnRoute, nombre);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos)) {
+      for (String safeFile : sanitized) {
+        File file = new File(dir, safeFile);
+        if (!file.exists() || !file.isFile()) throw new EntryNotFoundException("Archivo no encontrado: " + safeFile);
+        byte[] data = Files.readAllBytes(file.toPath());
+        zos.putNextEntry(new java.util.zip.ZipEntry(safeFile));
+        zos.write(data);
+        zos.closeEntry();
+      }
+    } catch (IOException e) {
+      throw new BusinessRuleException("Error al generar ZIP: " + e.getMessage(), e);
+    }
+    byte[] zipBytes = baos.toByteArray();
+    String zipName = nombre.replaceAll("[^A-Za-z0-9._-]", "_") + ".zip";
+    ByteArrayResource resource = new ByteArrayResource(zipBytes);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipName + "\"")
+        .contentLength(zipBytes.length)
+        .contentType(MediaType.parseMediaType("application/zip"))
+        .body(resource);
   }
 
   public String previewPrn(String nombre, String tipo, String archivo) {
