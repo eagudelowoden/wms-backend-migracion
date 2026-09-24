@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.EtiquetadoRequestDTO;
 import com.woden.wms_backend.dto.clientDTO.EtiquetadoRequestDTO.DatosMaestroDTO;
 import com.woden.wms_backend.dto.clientDTO.EtiquetadoRequestDTO.IngresoImpresionDTO;
@@ -18,6 +19,7 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetadoRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
+import com.woden.wms_backend.services.WmsWdGeneral.ClienteValidacionService;
 
 @Service
 public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
@@ -30,6 +32,33 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
 
   @Autowired
   private PrnPathResolverService prnPathResolver;
+
+  @Autowired
+  private ClienteValidacionService clienteValidacionService;
+
+  private boolean esReemplazoBoxActivo() {
+    Integer clientId = ClientDatabaseContext.getCurrentClientId();
+    if (clientId == null) return false;
+    try {
+      return clienteValidacionService.tieneValidacion(clientId, "REEMPLAZAR_VARIABLE_BOX_PRN");
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private boolean esTipoEmpaque(String tipo) {
+    return tipo != null && tipo.toUpperCase(java.util.Locale.ROOT).startsWith("EMPAQUE");
+  }
+
+  private String reemplazarVariableBox(String zpl, String valor) {
+    String valorSeguro = java.util.regex.Matcher.quoteReplacement(
+        valor != null ? valor : ""
+    );
+    return zpl.replaceAll(
+        "(?:(?<![0-9A-Za-z])|(?<=\\^FD))Box(?![0-9A-Za-z])",
+        valorSeguro
+    );
+  }
 
   public Integer insertEtiquetado(String serial, String mac, String variable1, String variable2,
       String variable3, String variable4, Integer reImpresion, Integer usuarioId, String fecha) {
@@ -67,6 +96,16 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     List<IngresoImpresionDTO> seriales = request.getListaSeriales();
     int totalSeriales = seriales.size();
     int porImpresion = request.getEtiqueta().getImpresion();
+
+    boolean reemplazarBox = esReemplazoBoxActivo()
+        && esTipoEmpaque(request.getEtiqueta().getTipo());
+    String valorBox = "";
+    if (reemplazarBox && !seriales.isEmpty()) {
+      IngresoModel primero = ingresoService.getModelIngreso(seriales.get(0).getSerial());
+      if (primero != null && primero.getCaja() != null) {
+        valorBox = String.valueOf(primero.getCaja());
+      }
+    }
 
     String labelDate = request.getDatosGenerales().getFecha();
     String usuario = request.getDatosGenerales().getUsuario();
@@ -128,6 +167,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
         System.out.println();
       }
 
+      if (reemplazarBox) {
+        zplCommand = reemplazarVariableBox(zplCommand, valorBox);
+      }
       zplFinal.append(zplCommand).append("\n^XZ###DELIMITER_ZPL###^XA\n");
 
     } else {
@@ -167,6 +209,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
           contador++;
         }
 
+        if (reemplazarBox) {
+          zplCommand = reemplazarVariableBox(zplCommand, valorBox);
+        }
         zplFinal.append(zplCommand).append("\n###DELIMITER_ZPL###\n");
       }
 
@@ -200,6 +245,9 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
           contador++;
         }
 
+        if (reemplazarBox) {
+          zplCommand = reemplazarVariableBox(zplCommand, valorBox);
+        }
         zplFinal.append(zplCommand).append("\n###DELIMITER_ZPL###\n");
       }
     }
