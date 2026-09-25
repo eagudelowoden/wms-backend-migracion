@@ -95,4 +95,16 @@ public class ClienteDataAccessController {
     Boolean etiquetaUnitariaON = clienteService.getEtiquetaUnitariaON(id);
     return ResponseEntity.ok(etiquetaUnitariaON);
   }
+
+  @GetMapping("/getSerialMasterON")
+  public ResponseEntity<Integer> getSerialMasterON(@RequestParam Integer idCliente) {
+    Integer v = clienteService.getSerialMasterON(idCliente);
+    return ResponseEntity.ok(v != null ? v : 0);
+  }
+
+  @GetMapping("/getSerialMasterON/{id}")
+  public ResponseEntity<Integer> getSerialMasterONById(@PathVariable Integer id) {
+    Integer v = clienteService.getSerialMasterON(id);
+    return ResponseEntity.ok(v != null ? v : 0);
+  }
 }
