@@ -186,20 +186,41 @@ public class DiagnosticoService {
   private static final List<String> EXTENSIONES_HOJA_VIDA = List.of("pdf", "docx");
 
   /**
-   * Sube la hoja de vida de un serial TruckRoll/Garantía/PQRS.
-   * Ruta final: {RutaEvidencias}\{NOMBRE-CLIENTE}\Hoja de vida-{serial}.{ext}
-   * Un archivo por serial: si ya existe se reemplaza (en cualquier extensión permitida).
-   * Registra el cargue en HojaVida para que se pueda ubicar por SQL sin acceso al filesystem.
+   * Sube la hoja de vida de un serial TruckRoll/Garantía/PQRS (archivo elegido
+   * y firmado a mano por el usuario). Delega en guardarHojaVida — ver ahí el
+   * detalle de ruta/reemplazo/registro.
    */
   public void uploadHojaVida(String serial, MultipartFile file, Integer usuarioId, String modulo) throws IOException {
-    if (serial == null || serial.isBlank()) throw new IllegalArgumentException("Serial requerido");
     if (file == null || file.isEmpty()) throw new IllegalArgumentException("Archivo requerido");
 
     String nombreOriginal = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
     String ext = nombreOriginal.contains(".")
         ? nombreOriginal.substring(nombreOriginal.lastIndexOf('.') + 1).toLowerCase()
         : "";
-    if (!EXTENSIONES_HOJA_VIDA.contains(ext)) {
+    guardarHojaVida(serial, file.getBytes(), ext, usuarioId, modulo);
+  }
+
+  /**
+   * Guarda el PDF del "Informe técnico PQRS" generado por el propio backend
+   * (InformeTecnicoService, plantilla reports/informe-tecnico-pqrs.html) —
+   * mismo almacenamiento y registro en HojaVida que uploadHojaVida, pero sin
+   * pasar por un MultipartFile porque el archivo no lo sube el usuario, lo
+   * genera el servidor. Siempre extensión "pdf".
+   */
+  public void guardarHojaVidaGenerada(String serial, byte[] pdfBytes, Integer usuarioId, String modulo) throws IOException {
+    guardarHojaVida(serial, pdfBytes, "pdf", usuarioId, modulo);
+  }
+
+  /**
+   * Ruta final: {RutaEvidencias}\{NOMBRE-CLIENTE}\Hoja de vida-{serial}.{ext}
+   * Un archivo por serial: si ya existe se reemplaza (en cualquier extensión permitida).
+   * Registra el cargue en HojaVida para que se pueda ubicar por SQL sin acceso al filesystem.
+   */
+  private void guardarHojaVida(String serial, byte[] contenido, String extension, Integer usuarioId, String modulo)
+      throws IOException {
+    if (serial == null || serial.isBlank()) throw new IllegalArgumentException("Serial requerido");
+    if (contenido == null || contenido.length == 0) throw new IllegalArgumentException("Archivo requerido");
+    if (!EXTENSIONES_HOJA_VIDA.contains(extension)) {
       throw new IllegalArgumentException("Solo se permiten archivos PDF o DOCX");
     }
 
@@ -211,12 +232,12 @@ public class DiagnosticoService {
       Files.deleteIfExists(dir.resolve("Hoja de vida-" + serialLimpio + "." + e));
     }
 
-    String nombreArchivo = "Hoja de vida-" + serialLimpio + "." + ext;
+    String nombreArchivo = "Hoja de vida-" + serialLimpio + "." + extension;
     Path destino = dir.resolve(nombreArchivo);
-    Files.copy(file.getInputStream(), destino);
+    Files.write(destino, contenido);
     logger.info("[HOJA-VIDA] Guardada: {}", destino.toAbsolutePath());
 
-    registrarHojaVida(serial, nombreArchivo, destino.toAbsolutePath().toString(), ext, modulo, usuarioId);
+    registrarHojaVida(serial, nombreArchivo, destino.toAbsolutePath().toString(), extension, modulo, usuarioId);
   }
 
   /**
