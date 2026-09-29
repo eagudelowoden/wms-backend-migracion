@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -84,5 +85,22 @@ public class EtiquetaController extends BaseController<EtiquetaModel, Integer> {
     String base64 = etiquetaService.previewPrn(
         body.get("nombre"), body.get("tipo"), body.get("archivo"));
     return ResponseEntity.ok(base64);
+  }
+
+  @GetMapping("/downloadPrnFile")
+  public ResponseEntity<ByteArrayResource> downloadPrnFile(
+      @RequestParam String nombre,
+      @RequestParam String tipo,
+      @RequestParam String archivo) {
+    return etiquetaService.downloadPrnFile(nombre, tipo, archivo);
+  }
+
+  @PostMapping("/downloadPrnZip")
+  public ResponseEntity<ByteArrayResource> downloadPrnZip(@RequestBody Map<String, Object> body) {
+    String nombre = (String) body.get("nombre");
+    String tipo = (String) body.get("tipo");
+    @SuppressWarnings("unchecked")
+    List<String> archivos = (List<String>) body.get("archivos");
+    return etiquetaService.downloadPrnZip(nombre, tipo, archivos);
   }
 }

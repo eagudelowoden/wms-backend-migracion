@@ -34,7 +34,7 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
     Integer countMovements(@Param("id") Integer id);
 
     @Transactional
-    @Query(value = "DECLARE @NewId INT; EXEC pa_InsertCliente @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @ImagenesIngreso = :imagenesIngreso, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @PrnIngreso = :prnIngreso, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @LblIngreso = :lblIngreso, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @Id = @NewId OUTPUT; SELECT @NewId", nativeQuery = true)
+    @Query(value = "DECLARE @NewId INT; EXEC pa_InsertCliente @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @ImagenesIngreso = :imagenesIngreso, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @PrnIngreso = :prnIngreso, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @LblIngreso = :lblIngreso, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @serialMasterCalidadON = :serialMasterCalidadON, @Id = @NewId OUTPUT; SELECT @NewId", nativeQuery = true)
     Integer insertSP(@Param("nombre") String nombre,
                      @Param("colorCorporativo") String colorCorporativo,
                      @Param("activo") Integer activo,
@@ -72,10 +72,11 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
                      @Param("etiquetaUnitariaON") Integer etiquetaUnitariaON,
                      @Param("prealerta") String prealerta,
                      @Param("adicionPrealertaON") Integer adicionPrealertaON,
-                     @Param("odooPqrsON") Boolean odooPqrsON);
+                     @Param("odooPqrsON") Boolean odooPqrsON,
+                     @Param("serialMasterCalidadON") Integer serialMasterCalidadON);
 
     @Transactional
-    @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateCliente @Id = :id, @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @Filas = @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+    @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateCliente @Id = :id, @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @serialMasterCalidadON = :serialMasterCalidadON, @Filas = @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
     Integer updateSP(@Param("id") Integer id,
                      @Param("nombre") String nombre,
                      @Param("colorCorporativo") String colorCorporativo,
@@ -111,7 +112,11 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
                      @Param("etiquetaUnitariaON") Integer etiquetaUnitariaON,
                      @Param("prealerta") String prealerta,
                      @Param("adicionPrealertaON") Integer adicionPrealertaON,
-                     @Param("odooPqrsON") Boolean odooPqrsON);
+                     @Param("odooPqrsON") Boolean odooPqrsON,
+                     @Param("serialMasterCalidadON") Integer serialMasterCalidadON);
+
+    @Query(value = "SELECT CAST(serialMasterCalidadON AS INT) FROM Cliente WHERE id = :id", nativeQuery = true)
+    Integer getSerialMasterCalidadON(@Param("id") int id);
 
     @Modifying
     @Transactional

@@ -25,11 +25,13 @@ import java.awt.print.PrinterJob;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
 import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
+import com.woden.wms_backend.services.WmsWdGeneral.ClienteValidacionService;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -42,6 +44,33 @@ public class ZplPrinterService {
 
   @Autowired
   private PrnPathResolverService prnPathResolver;
+
+  @Autowired
+  private ClienteValidacionService clienteValidacionService;
+
+  private boolean esReemplazoBoxActivo() {
+    Integer clientId = ClientDatabaseContext.getCurrentClientId();
+    if (clientId == null) return false;
+    try {
+      return clienteValidacionService.tieneValidacion(clientId, "REEMPLAZAR_VARIABLE_BOX_PRN");
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private boolean esTipoEmpaque(String tipo) {
+    return tipo != null && tipo.toUpperCase(Locale.ROOT).startsWith("EMPAQUE");
+  }
+
+  private String reemplazarVariableBox(String zpl, String valor) {
+    String valorSeguro = java.util.regex.Matcher.quoteReplacement(
+            valor != null ? valor : ""
+    );
+    return zpl.replaceAll(
+            "(?:(?<![0-9A-Za-z])|(?<=\\^FD))Box(?![0-9A-Za-z])",
+            valorSeguro
+    );
+  }
 
   // ✅ Helper central: reemplaza placeholder exacto, sin afectar variantes con sufijo
   private String reemplazarSeguro(String zpl, String placeholder, String valor) {
@@ -71,6 +100,8 @@ public class ZplPrinterService {
 
     StringBuilder zplFinal = new StringBuilder();
 
+    boolean reemplazarBox = esReemplazoBoxActivo() && esTipoEmpaque(etiqueta.getTipo());
+
     int totalSeriales = seriales.size();
     int porImpresion = etiqueta.getImpresion();
     int cociente = totalSeriales / porImpresion;
@@ -86,6 +117,9 @@ public class ZplPrinterService {
       zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
+      if (reemplazarBox) {
+        zpl = reemplazarVariableBox(zpl, datosGenerales.getCaja());
+      }
       zplFinal.append(zpl).append("\n^XZ###DELIMITER_ZPL###^XA\n");
       contador += porImpresion;
     }
@@ -99,6 +133,9 @@ public class ZplPrinterService {
       zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
+      if (reemplazarBox) {
+        zpl = reemplazarVariableBox(zpl, datosGenerales.getCaja());
+      }
       zplFinal.append(zpl);
     }
 
