@@ -36,6 +36,11 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
         return clienteRepository.getKitIngresoON(id);
     }
 
+    public Integer getSerialMasterValue(int id) {
+        Integer v = clienteRepository.getSerialMasterCalidadON(id);
+        return v != null ? v : 0;
+    }
+
     public String getDbaseById(int id) {
         return clienteRepository.getDbaseById(id);
     }
@@ -113,6 +118,7 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
         map.put("prealerta", r[36]);
         map.put("adicionPrealertaON", r[37]);
         map.put("odooPqrsON", r[38]);
+        map.put("serialMasterCalidadON", r.length > 39 ? r[39] : 0);
         return map;
     }
 
@@ -164,7 +170,8 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
                 model.getEtiquetaUnitariaON() != null ? model.getEtiquetaUnitariaON() : 0,
                 model.getPrealerta(),
                 model.getAdicionPrealertaON() != null ? model.getAdicionPrealertaON() : 0,
-                model.getOdooPqrsON() != null ? model.getOdooPqrsON() : false);
+                model.getOdooPqrsON() != null ? model.getOdooPqrsON() : false,
+                model.getSerialMasterCalidadON() != null ? model.getSerialMasterCalidadON() : 0);
     }
 
     @Transactional
@@ -205,7 +212,8 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
                 model.getEtiquetaUnitariaON(),
                 model.getPrealerta(),
                 model.getAdicionPrealertaON(),
-                model.getOdooPqrsON());
+                model.getOdooPqrsON(),
+                model.getSerialMasterCalidadON());
     }
 
     @Transactional
