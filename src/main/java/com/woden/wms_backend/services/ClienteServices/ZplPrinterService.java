@@ -31,7 +31,7 @@ import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
 import com.woden.wms_backend.models.Entity.EtiquetaModel;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
-import com.woden.wms_backend.services.WmsWdGeneral.ClienteValidacionService;
+import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetaRepository;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -46,13 +46,14 @@ public class ZplPrinterService {
   private PrnPathResolverService prnPathResolver;
 
   @Autowired
-  private ClienteValidacionService clienteValidacionService;
+  private EtiquetaRepository etiquetaRepository;
 
   private boolean esReemplazoBoxActivo() {
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
     if (clientId == null) return false;
     try {
-      return clienteValidacionService.tieneValidacion(clientId, "REEMPLAZAR_VARIABLE_BOX_PRN");
+      Integer tiene = etiquetaRepository.tieneValidacionDirecta(clientId, "REEMPLAZAR_VARIABLE_BOX_PRN");
+      return tiene != null && tiene > 0;
     } catch (Exception e) {
       return false;
     }
@@ -100,7 +101,7 @@ public class ZplPrinterService {
 
     StringBuilder zplFinal = new StringBuilder();
 
-    boolean reemplazarBox = esReemplazoBoxActivo() && esTipoEmpaque(etiqueta.getTipo());
+    boolean reemplazarBox = esTipoEmpaque(etiqueta.getTipo()) && esReemplazoBoxActivo();
 
     int totalSeriales = seriales.size();
     int porImpresion = etiqueta.getImpresion();
