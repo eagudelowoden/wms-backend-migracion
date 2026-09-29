@@ -19,7 +19,6 @@ import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.EtiquetadoRepository;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.services.ClienteServices.PrnPathResolverService;
-import com.woden.wms_backend.services.WmsWdGeneral.ClienteValidacionService;
 
 @Service
 public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
@@ -33,14 +32,12 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   @Autowired
   private PrnPathResolverService prnPathResolver;
 
-  @Autowired
-  private ClienteValidacionService clienteValidacionService;
-
   private boolean esReemplazoBoxActivo() {
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
     if (clientId == null) return false;
     try {
-      return clienteValidacionService.tieneValidacion(clientId, "REEMPLAZAR_VARIABLE_BOX_PRN");
+      Integer tiene = etiquetadoRepository.tieneValidacionDirecta(clientId, "REEMPLAZAR_VARIABLE_BOX_PRN");
+      return tiene != null && tiene > 0;
     } catch (Exception e) {
       return false;
     }
@@ -97,8 +94,8 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     int totalSeriales = seriales.size();
     int porImpresion = request.getEtiqueta().getImpresion();
 
-    boolean reemplazarBox = esReemplazoBoxActivo()
-        && esTipoEmpaque(request.getEtiqueta().getTipo());
+    boolean reemplazarBox = esTipoEmpaque(request.getEtiqueta().getTipo())
+        && esReemplazoBoxActivo();
     String valorBox = "";
     if (reemplazarBox && !seriales.isEmpty()) {
       IngresoModel primero = ingresoService.getModelIngreso(seriales.get(0).getSerial());
