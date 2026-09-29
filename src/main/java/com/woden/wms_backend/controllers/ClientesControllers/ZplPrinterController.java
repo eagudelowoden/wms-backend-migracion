@@ -1,0 +1,204 @@
+package com.woden.wms_backend.controllers.ClientesControllers;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.woden.wms_backend.dto.clientDTO.EtiquetaDatosGeneralesDTO;
+import com.woden.wms_backend.models.Entity.EtiquetaCampoModel;
+import com.woden.wms_backend.models.Entity.EtiquetaModel;
+import com.woden.wms_backend.models.Entity.IngresoModel;
+import com.woden.wms_backend.models.Entity.PalletModel;
+import com.woden.wms_backend.models.Entity.SmartCardModel;
+import com.woden.wms_backend.models.WmsWdGeneral.UsuarioModel;
+import com.woden.wms_backend.services.ClienteServices.ZplPrinterService;
+
+import lombok.Data;
+
+@RestController
+@RequestMapping("/client/zplPrinter")
+public class ZplPrinterController {
+
+  private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ZplPrinterController.class);
+
+  @Autowired
+  private ZplPrinterService zplPrinterService;
+
+  @PostMapping("/generar")
+  public ResponseEntity<String> generarZplMultiple(@RequestBody GenerarZplDTO dto) {
+    String plantillaBasePath = dto.getPlantillaBasePath();
+    EtiquetaModel etiqueta = dto.getEtiqueta();
+    List<EtiquetaCampoModel> campos = dto.getCampos();
+    List<IngresoModel> seriales = dto.getSeriales();
+    EtiquetaDatosGeneralesDTO datosGenerales = dto.getDatosGenerales();
+    String zpl = zplPrinterService.generarZpl(plantillaBasePath, etiqueta, campos, seriales, datosGenerales);
+    return ResponseEntity.ok(zpl);
+  }
+
+  @PostMapping("/imprimir-zpl")
+  public ResponseEntity<byte[]> imprimirZpl(@RequestBody String zpl) {
+    try {
+      URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+      conn.setDoOutput(true);
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Accept", "application/pdf");
+
+      try (OutputStream os = conn.getOutputStream()) {
+        os.write(zpl.getBytes(StandardCharsets.UTF_8));
+      }
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try (InputStream in = conn.getInputStream()) {
+        byte[] buffer = new byte[4096];
+        int n;
+        while ((n = in.read(buffer)) != -1)
+          baos.write(buffer, 0, n);
+      }
+
+      return ResponseEntity.ok()
+          .header("Content-Disposition", "inline; filename=\"etiqueta.pdf\"")
+          .contentType(MediaType.APPLICATION_PDF)
+          .body(baos.toByteArray());
+
+    } catch (IOException e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+  }
+
+  @PostMapping("/preview-base64")
+  public ResponseEntity<String> obtenerPreviewBase64(@RequestBody String zpl) {
+    try {
+      // Endpoint Labelary para generar imagen PNG
+      URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+      conn.setDoOutput(true);
+      conn.setRequestMethod("POST");
+      conn.setRequestProperty("Accept", "image/png");
+
+      try (OutputStream os = conn.getOutputStream()) {
+        os.write(zpl.getBytes(StandardCharsets.UTF_8));
+      }
+
+      // Leer la respuesta en bytes
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try (InputStream in = conn.getInputStream()) {
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = in.read(buffer)) != -1) {
+          baos.write(buffer, 0, bytesRead);
+        }
+      }
+
+      // Convertir a Base64
+      String base64Image = Base64.getEncoder().encodeToString(baos.toByteArray());
+      String dataUrl = "data:image/png;base64," + base64Image;
+
+      return ResponseEntity.ok(dataUrl);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error generando vista previa: " + e.getMessage());
+    }
+  }
+
+  @PostMapping("/vistaPrevia")
+  public ResponseEntity<byte[]> vistaPreviaZpl(@RequestBody String zpl) {
+    final int maxIntentos = 3;
+    IOException ultimoError = null;
+
+    for (int intento = 1; intento <= maxIntentos; intento++) {
+      HttpURLConnection conn = null;
+      try {
+        URL url = new URL("http://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/");
+        conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(8000);
+        conn.setReadTimeout(15000);
+        conn.setDoOutput(true);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Accept", "image/png");
+
+        try (OutputStream os = conn.getOutputStream()) {
+          os.write(zpl.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int status = conn.getResponseCode();
+        if (status != HttpURLConnection.HTTP_OK) {
+          String errorBody = leerStreamSeguro(conn.getErrorStream());
+          logger.warn("[ZplPrinter] Intento {}/{}: Labelary respondió {} en /vistaPrevia. Body: {}",
+              intento, maxIntentos, status, errorBody);
+          esperarAntesDeReintentar(intento);
+          continue;
+        }
+
+        try (InputStream in = conn.getInputStream()) {
+          byte[] imageBytes = in.readAllBytes();
+          return ResponseEntity.ok()
+              .contentType(MediaType.IMAGE_PNG)
+              .body(imageBytes);
+        }
+
+      } catch (IOException e) {
+        ultimoError = e;
+        logger.warn("[ZplPrinter] Intento {}/{}: error de conexión hacia Labelary en /vistaPrevia: {}",
+            intento, maxIntentos, e.toString());
+        esperarAntesDeReintentar(intento);
+      }
+    }
+
+    logger.error("[ZplPrinter] /vistaPrevia falló tras {} intentos.", maxIntentos, ultimoError);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+  }
+
+  /** Backoff simple: 300ms, 600ms, ... antes del siguiente intento. */
+  private void esperarAntesDeReintentar(int intento) {
+    try {
+      Thread.sleep(300L * intento);
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  private String leerStreamSeguro(InputStream in) {
+    if (in == null) return "(sin cuerpo de error)";
+    try {
+      return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+    } catch (IOException ex) {
+      return "(no se pudo leer el cuerpo del error)";
+    }
+  }
+}
+
+@Data
+class GenerarZplDTO {
+  private String plantillaBasePath;
+  private EtiquetaModel etiqueta;
+  private List<EtiquetaCampoModel> campos;
+  private List<IngresoModel> seriales;
+  private PalletModel palletModel;
+  private UsuarioModel usuario;
+  private SmartCardModel smartCardModel;
+  private EtiquetaDatosGeneralesDTO datosGenerales;
+}
+
+@Data
+class EtiquetaDTO {
+  private String nombre;
+  private int impresion;
+  // cualquier otro campo necesario
+}
