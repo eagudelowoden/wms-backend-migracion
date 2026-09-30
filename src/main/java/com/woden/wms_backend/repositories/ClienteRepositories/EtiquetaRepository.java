@@ -19,4 +19,10 @@ public interface EtiquetaRepository extends BaseRepository<EtiquetaModel, Intege
 
   @Query(value = "EXEC pa_SearchLabeled :nombre, :tipo", nativeQuery = true)
   List<Object[]> searchLabeled(@Param("nombre") String nombre, @Param("tipo") String tipo);
+
+  @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END "
+      + "FROM [WmsWdGeneral].dbo.ClienteValidacion cv "
+      + "JOIN [WmsWdGeneral].dbo.ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id "
+      + "WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
+  Integer tieneValidacionDirecta(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
 }
