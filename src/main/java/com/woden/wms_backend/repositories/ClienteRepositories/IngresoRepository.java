@@ -561,4 +561,16 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			"JOIN [WmsWdGeneral].dbo.ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id " +
 			"WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
 	Integer tieneValidacionDirecta(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
+
+	@Query(value = "SELECT UPPER(m.Codigo) " +
+			"FROM Pallet p WITH(NOLOCK) " +
+			"INNER JOIN Maestro m WITH(NOLOCK) ON m.Id = p.TipologiaId " +
+			"WHERE p.Id = :palletId", nativeQuery = true)
+	String findPalletTipologiaCodigo(@Param("palletId") Integer palletId);
+
+	@Query(value = "SELECT UPPER(p.Numero), UPPER(m.Codigo) " +
+			"FROM Pallet p WITH(NOLOCK) " +
+			"INNER JOIN Maestro m WITH(NOLOCK) ON m.Id = p.TipologiaId " +
+			"WHERE UPPER(p.Numero) IN (:numeros)", nativeQuery = true)
+	List<Object[]> findPalletTipologiasPorNumero(@Param("numeros") List<String> numeros);
 }
