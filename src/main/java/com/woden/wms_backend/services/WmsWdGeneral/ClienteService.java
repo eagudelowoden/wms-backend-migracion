@@ -36,11 +36,6 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
         return clienteRepository.getKitIngresoON(id);
     }
 
-    public Integer getSerialMasterValue(int id) {
-        Integer v = clienteRepository.getSerialMasterCalidadON(id);
-        return v != null ? v : 0;
-    }
-
     public String getDbaseById(int id) {
         return clienteRepository.getDbaseById(id);
     }
