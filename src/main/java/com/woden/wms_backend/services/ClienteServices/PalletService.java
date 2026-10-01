@@ -368,10 +368,19 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setCantidad((Integer) obj[2]);
       pallet.setOrigen((String) obj[3]);
       pallet.setTipologia((String) obj[4]);
-      pallet.setCodigoSap((String) obj[5]);
-      pallet.setDescripcion((String) obj[6]);
+      mapearCodigoSap(pallet, obj, "pa_SearchReceivePallet");
       return pallet;
     }).collect(Collectors.toList());
+  }
+
+  private void mapearCodigoSap(PalletDTO pallet, Object[] obj, String sp) {
+    if (obj.length < 7) {
+      logger.warn("{} devolvio {} columnas, se esperaban 7. codigoSap y descripcion quedan null",
+              sp, obj.length);
+      return;
+    }
+    pallet.setCodigoSap((String) obj[5]);
+    pallet.setDescripcion((String) obj[6]);
   }
 
   public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
@@ -383,8 +392,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setCantidad((Integer) obj[2]);
       pallet.setOrigen((String) obj[3]);
       pallet.setTipologia((String) obj[4]);
-      pallet.setCodigoSap((String) obj[5]);
-      pallet.setDescripcion((String) obj[6]);
+      mapearCodigoSap(pallet, obj, "pa_SearchPackingDeliveryPallet");
       return pallet;
     }).collect(Collectors.toList());
   }

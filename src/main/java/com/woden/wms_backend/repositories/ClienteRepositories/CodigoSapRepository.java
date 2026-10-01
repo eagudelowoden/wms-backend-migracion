@@ -2,6 +2,7 @@ package com.woden.wms_backend.repositories.ClienteRepositories;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,7 @@ import com.woden.wms_backend.models.Entity.CodigoSapModel;
 import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
+@Primary
 public interface CodigoSapRepository extends BaseRepository<CodigoSapModel, Integer> {
   @Query(value = "EXEC pa_GetListDescriptionSapCode", nativeQuery = true)
   List<Object[]> getListDescriptionSapCode();
