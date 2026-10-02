@@ -100,4 +100,13 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
 
     @Query(value = "SELECT u.id, u.nombres + ' ' + u.apellidos AS nombres, u.nombreUsuario, COALESCE(ucp.perfilId, -1) AS perfilId FROM Usuario u LEFT JOIN UsuarioCliente uc ON uc.usuarioId = u.id AND uc.clienteId = :clienteId LEFT JOIN UsuarioClientePerfil ucp ON ucp.usuarioClienteId = uc.id WHERE u.id = :usuarioId", nativeQuery = true)
     List<Object[]> getProfileForClient(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
+
+    /**
+     * Usuarios activos con un cargo dado, acotados a un cliente. El cargo se compara
+     * sobre dbo.Cargo (catálogo global de cargos/áreas) y el cliente se filtra por
+     * UsuarioCliente, que es el único puente usuario<->cliente (dbo.Usuario no tiene
+     * ClienteId). Devuelve id, nombres, apellidos, nombreCompleto y nombreUsuario.
+     */
+    @Query(value = "SELECT u.Id, u.Nombres, u.Apellidos, CONCAT(u.Nombres, ' ', u.Apellidos) AS NombreCompleto, u.NombreUsuario FROM Usuario u INNER JOIN UsuarioCliente uc ON uc.UsuarioId = u.Id AND uc.ClienteId = :clienteId INNER JOIN Cargo c ON u.CargoId = c.Id WHERE u.Activo = 1 AND UPPER(LTRIM(RTRIM(c.Nombre))) = :cargo ORDER BY u.Nombres, u.Apellidos", nativeQuery = true)
+    List<Object[]> getUsuariosPorCargo(@Param("clienteId") int clienteId, @Param("cargo") String cargo);
 }

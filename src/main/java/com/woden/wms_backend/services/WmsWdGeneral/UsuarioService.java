@@ -37,6 +37,9 @@ public class UsuarioService {
     @Value("${app.auth.web.url}")
     private String authWebUrl;
 
+    /** Cargo global (dbo.Cargo.Nombre) que identifica al responsable de operacion de un cliente. */
+    private static final String CARGO_JEFE_OPERACION = "JEFE DE OPERACIONES";
+
     public void saveUser(UsuarioModel usuario) {
         String claveEncriptada = encryptUtil.encode(usuario.getClave());
         usuarioRepository.insertUser(
@@ -345,5 +348,26 @@ public class UsuarioService {
         map.put("nombreUsuario", row[2]);
         map.put("perfilId", row[3]);
         return map;
+    }
+
+    /** Usuarios activos con el cargo indicado, registrados en el cliente dado. */
+    public List<Map<String, Object>> getUsuariosPorCargo(int clienteId, String cargo) {
+        List<Object[]> rows = usuarioRepository.getUsuariosPorCargo(clienteId, cargo);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", row[0]);
+            item.put("nombres", row[1]);
+            item.put("apellidos", row[2]);
+            item.put("nombreCompleto", row[3]);
+            item.put("nombreUsuario", row[4]);
+            result.add(item);
+        }
+        return result;
+    }
+
+    /** Responsables de operacion del cliente: los usuarios con cargo JEFE DE OPERACIONES. */
+    public List<Map<String, Object>> getJefesOperacion(int clienteId) {
+        return getUsuariosPorCargo(clienteId, CARGO_JEFE_OPERACION);
     }
 }
