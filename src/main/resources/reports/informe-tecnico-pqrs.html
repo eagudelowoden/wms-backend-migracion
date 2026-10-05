@@ -17,6 +17,12 @@
       estado_aprobacion        "Aceptado" / "Rechazado"
       fecha_aprobacion         ya formateada, ej. "18 / 09 / 2026"
       responsable_tecnico, responsable_operacion
+                                  nombres tal como los grabo el cliente; se
+                                  imprimen solo en su columna de valor
+firma_tecnico, firma_operacion    los mismos nombres en Camel Case, solo para
+                                  el campo Firma (clase .firma-nombre, corte
+                                  bold italic de "Firma Script" que registra
+                                  InformeTecnicoService)
       evidencias               lista de { src (data URI), leyenda (opcional) }, una por fila
 
     OJO OpenHTMLtoPDF: solo CSS 2.1 (+ paged media). SIN flexbox ni grid ->
@@ -176,6 +182,7 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
+      page-break-inside: avoid;
     }
 
     .aprob td {
@@ -192,14 +199,28 @@
       font-size: 9.4px;
     }
 
-    .aprob td.valor { font-size: 12.7px; }
+    .aprob td.valor { font-size: 9pt; }
     .aprob td.centro { text-align: center; }
+
+    /* La celda de Firma no lleva text-align: center a proposito. Centrada, cada
+       linea se centra por separado y un nombre partido en dos queda
+       escalonado; pegada al margen izquierdo la 2da linea cae justo debajo del
+       inicio de la 1ra. */
+    .aprob td.firma-celda { vertical-align: middle; }
     .aprob td.fecha { font-size: 8.5px; }
 
-    .firma-linea {
-      border-bottom: 1px solid #999;
-      width: 92%;
-      height: 12px;
+    /* Firma manuscrita: "Firma Script" la registra InformeTecnicoService desde
+       reports/LobsterTwo-BoldItalic.ttf (cursiva) y LobsterTwo-Regular.ttf
+       (respalado). Si esos recursos no estuvieran en el classpath, cae a la
+       cursive generica sin romper el documento. OpenHTMLtoPDF no sintetiza
+       negrita ni cursiva: ambas tienen que existir como cortes reales. */
+    .firma-nombre {
+      font-family: "Firma Script", cursive;
+      font-weight: bold;
+      font-style: italic;
+      font-size: 9pt;
+      line-height: 1.1;
+      padding: 2px 2px;
     }
 
     /* ==========================================
@@ -359,6 +380,20 @@
 
   <h2><span class="num">5.</span>Aprobación</h2>
   <table class="aprob">
+    <!--
+      Los anchos van en <colgroup> y no en las celdas porque la tabla usa
+      table-layout: fixed, y OpenHTMLtoPDF saca el ancho de columna SOLO de la
+      primera fila (TableBox.FixedTableLayout). Como la primera fila termina en
+      .fecha y no en la celda de firma, un width puesto en el TD no se aplicaba.
+      El <col> tiene prioridad sobre las celdas, asi que el reparto queda fijo:
+      20% etiqueta / 25% nombre / 20% etiqueta / 35% firma.
+    -->
+    <colgroup>
+      <col style="width: 20%;"/>
+      <col style="width: 25%;"/>
+      <col style="width: 20%;"/>
+      <col style="width: 35%;"/>
+    </colgroup>
     <tr>
       <td class="label">Estado de aprobación</td>
       <td class="valor centro">{{ estado_aprobacion }}</td>
@@ -369,13 +404,17 @@
       <td class="label">Responsable técnico</td>
       <td class="valor">{{ responsable_tecnico }}</td>
       <td class="label">Firma</td>
-      <td><div class="firma-linea">&nbsp;</div></td>
+      <td class="firma-celda">
+        <div class="firma-nombre">{{ firma_tecnico }}</div>
+      </td>
     </tr>
     <tr>
       <td class="label">Responsable operación</td>
       <td class="valor">{{ responsable_operacion }}</td>
       <td class="label">Firma</td>
-      <td><div class="firma-linea">&nbsp;</div></td>
+      <td class="firma-celda">
+        <div class="firma-nombre">{{ firma_operacion }}</div>
+      </td>
     </tr>
   </table>
 
