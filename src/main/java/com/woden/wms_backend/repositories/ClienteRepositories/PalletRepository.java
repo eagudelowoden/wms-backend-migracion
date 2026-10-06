@@ -262,4 +262,6 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC WmsWdGeneral.dbo.pa_IncrementarConsecutivoPallet :minutoActual",
       nativeQuery = true)
   String incrementarYObtenerConsecutivo(@Param("minutoActual") String minutoActual);
+
+  boolean existsByNumero(String numero);
 }
