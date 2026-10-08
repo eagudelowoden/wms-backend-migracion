@@ -1,144 +1,100 @@
-2026-10-06T09:07:50.148-05:00  INFO 27128 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 27128 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
-2026-10-06T09:07:50.162-05:00  INFO 27128 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
-2026-10-06T09:07:52.955-05:00  INFO 27128 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-06T09:07:53.860-05:00  INFO 27128 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 791 ms. Found 59 JPA repository interfaces.
-2026-10-06T09:07:58.259-05:00  INFO 27128 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
-2026-10-06T09:07:58.310-05:00  INFO 27128 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-06T09:07:58.311-05:00  INFO 27128 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
-2026-10-06T09:07:58.537-05:00  INFO 27128 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-06T09:07:58.538-05:00  INFO 27128 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 8251 ms
-2026-10-06T09:07:59.567-05:00  INFO 27128 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
-2026-10-06T09:08:01.268-05:00  INFO 27128 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 6252dac2-0e62-49f3-b024-3d30b4881aea
-2026-10-06T09:08:01.273-05:00  INFO 27128 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
-2026-10-06T09:08:01.459-05:00  INFO 27128 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-06T09:08:01.620-05:00  INFO 27128 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
-2026-10-06T09:08:01.712-05:00  INFO 27128 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-06T09:08:03.031-05:00  INFO 27128 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-06T09:08:03.408-05:00  WARN 27128 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-10-06T09:08:03.640-05:00  INFO 27128 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@4bdef487']
+2026-10-08T07:34:40.889-05:00  INFO 20672 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 20672 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
+2026-10-08T07:34:40.900-05:00  INFO 20672 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-10-08T07:34:43.332-05:00  INFO 20672 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-08T07:34:43.945-05:00  INFO 20672 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 581 ms. Found 60 JPA repository interfaces.
+2026-10-08T07:34:47.357-05:00  INFO 20672 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
+2026-10-08T07:34:47.403-05:00  INFO 20672 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-08T07:34:47.404-05:00  INFO 20672 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-10-08T07:34:47.614-05:00  INFO 20672 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-08T07:34:47.615-05:00  INFO 20672 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6648 ms
+2026-10-08T07:34:48.278-05:00  INFO 20672 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
+2026-10-08T07:34:49.948-05:00  INFO 20672 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 89d9da21-b50f-4c61-9d2a-c966bd15a244
+2026-10-08T07:34:49.951-05:00  INFO 20672 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
+2026-10-08T07:34:50.052-05:00  INFO 20672 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-08T07:34:50.208-05:00  INFO 20672 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-10-08T07:34:50.326-05:00  INFO 20672 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-08T07:34:52.183-05:00  INFO 20672 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-08T07:34:52.690-05:00  WARN 20672 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-08T07:34:53.056-05:00  INFO 20672 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@6651efa4']
 	Database driver: undefined/unknown
 	Database version: 12.0
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-10-06T09:08:08.989-05:00  INFO 27128 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-06T09:08:09.028-05:00  INFO 27128 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-06T09:08:09.865-05:00  INFO 27128 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-06T09:08:17.234-05:00  WARN 27128 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-06T09:08:17.414-05:00  WARN 27128 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-10-08T07:34:56.718-05:00  INFO 20672 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-08T07:34:56.748-05:00  INFO 20672 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-08T07:34:57.503-05:00  INFO 20672 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-08T07:35:09.214-05:00  WARN 20672 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-08T07:35:09.307-05:00  WARN 20672 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 189647a5-f5f1-4477-be69-9d28b6035d79
+Using generated security password: d032f115-1320-41f0-a910-58f01a2bde8c
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-10-06T09:08:17.733-05:00  INFO 27128 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-06T09:08:20.770-05:00  INFO 27128 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
-2026-10-06T09:08:21.278-05:00  INFO 27128 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-10-06T09:08:21.724-05:00  WARN 27128 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2026-10-06T09:08:26.778-05:00  INFO 27128 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
-2026-10-06T09:08:26.817-05:00  INFO 27128 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 37.609 seconds (process running for 38.173)
-2026-10-06T09:08:27.453-05:00  WARN 27128 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
-2026-10-06T09:08:53.034-05:00  INFO 27128 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-06T09:08:53.035-05:00  INFO 27128 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-06T09:08:53.046-05:00  INFO 27128 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 11 ms
-2026-10-06T09:09:06.169-05:00  INFO 27128 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
-2026-10-06T09:09:06.925-05:00  INFO 27128 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: dcce4fe2-d2f6-44d9-ac82-e082bafbf65e
-2026-10-06T09:09:06.926-05:00  INFO 27128 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
-2026-10-06T09:28:47.544-05:00  INFO 29280 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 29280 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
-2026-10-06T09:28:47.546-05:00  INFO 29280 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
-2026-10-06T09:28:48.783-05:00  INFO 29280 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-06T09:28:49.392-05:00  INFO 29280 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 588 ms. Found 59 JPA repository interfaces.
-2026-10-06T09:28:51.824-05:00  INFO 29280 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
-2026-10-06T09:28:51.845-05:00  INFO 29280 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-06T09:28:51.845-05:00  INFO 29280 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
-2026-10-06T09:28:51.994-05:00  INFO 29280 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-06T09:28:51.995-05:00  INFO 29280 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4411 ms
-2026-10-06T09:28:52.559-05:00  INFO 29280 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
-2026-10-06T09:28:53.944-05:00  INFO 29280 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 68c7b7f3-850d-4b03-8429-fb872758aafe
-2026-10-06T09:28:53.948-05:00  INFO 29280 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
-2026-10-06T09:28:54.061-05:00  INFO 29280 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-06T09:28:54.207-05:00  INFO 29280 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
-2026-10-06T09:28:54.277-05:00  INFO 29280 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-06T09:28:55.198-05:00  INFO 29280 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-06T09:28:55.538-05:00  WARN 29280 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-10-06T09:28:55.771-05:00  INFO 29280 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@5abb7a8f']
+2026-10-08T07:35:09.346-05:00  INFO 20672 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-08T07:35:12.214-05:00  INFO 20672 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
+2026-10-08T07:35:12.982-05:00  INFO 20672 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-10-08T07:35:13.249-05:00  WARN 20672 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-10-08T07:35:15.613-05:00  INFO 20672 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
+2026-10-08T07:35:15.636-05:00  INFO 20672 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 36.187 seconds (process running for 36.866)
+2026-10-08T07:35:16.029-05:00  WARN 20672 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
+2026-10-08T07:35:46.467-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-08T07:35:46.468-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-08T07:35:46.480-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 12 ms
+2026-10-08T07:35:59.932-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
+2026-10-08T07:36:00.687-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: 5888ca25-4ddc-4e48-94bf-92f4998b370a
+2026-10-08T07:36:00.689-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
+2026-10-08T07:37:28.202-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-42] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya existe con el serial: FC126313F650
+2026-10-08T07:37:55.580-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-9] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
+2026-10-08T07:43:42.429-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-14] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=El Serial ya existe como MAC en: 7493DA2BCA30
+2026-10-08T07:44:44.330-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-26] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=El Serial ya existe como MAC en: 4CABF81BEDD0
+2026-10-08T07:47:08.253-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-3] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
+2026-10-08T07:47:31.063-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-18] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya existe con el serial: FC126313F650
+2026-10-08T07:47:55.526-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-32] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
+2026-10-08T07:47:56.000-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-33] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
+2026-10-08T07:50:30.374-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-6] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
+2026-10-08T07:50:42.999-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-14] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=El Serial ya existe como MAC en: C8B42252E8A0
+2026-10-08T10:05:30.955-05:00  INFO 29484 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 29484 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
+2026-10-08T10:05:30.958-05:00  INFO 29484 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-10-08T10:05:33.148-05:00  INFO 29484 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-08T10:05:33.831-05:00  INFO 29484 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 660 ms. Found 60 JPA repository interfaces.
+2026-10-08T10:05:37.115-05:00  INFO 29484 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
+2026-10-08T10:05:37.150-05:00  INFO 29484 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-08T10:05:37.151-05:00  INFO 29484 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-10-08T10:05:37.352-05:00  INFO 29484 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-08T10:05:37.354-05:00  INFO 29484 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6325 ms
+2026-10-08T10:05:38.338-05:00  INFO 29484 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
+2026-10-08T10:05:40.155-05:00  INFO 29484 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 739f7dd1-53c7-4319-893a-9bc4b3880ae2
+2026-10-08T10:05:40.164-05:00  INFO 29484 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
+2026-10-08T10:05:40.343-05:00  INFO 29484 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-08T10:05:41.154-05:00  INFO 29484 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-10-08T10:05:41.211-05:00  INFO 29484 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-08T10:05:42.834-05:00  INFO 29484 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-08T10:05:43.745-05:00  WARN 29484 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-08T10:05:44.107-05:00  INFO 29484 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@7cbe3a05']
 	Database driver: undefined/unknown
 	Database version: 12.0
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-10-06T09:28:58.847-05:00  INFO 29280 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-06T09:28:58.876-05:00  INFO 29280 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-06T09:28:59.534-05:00  INFO 29280 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-06T09:29:03.902-05:00  WARN 29280 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-06T09:29:03.956-05:00  WARN 29280 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-10-08T10:05:48.567-05:00  INFO 29484 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-08T10:05:48.602-05:00  INFO 29484 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-08T10:05:49.386-05:00  INFO 29484 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-08T10:05:55.702-05:00  WARN 29484 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-08T10:05:55.798-05:00  WARN 29484 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 72b03225-d565-401e-ae2e-6e9ae5f0fe1c
-
-This generated password is for development use only. Your security configuration must be updated before running your application in production.
-
-2026-10-06T09:29:03.982-05:00  INFO 29280 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-06T09:29:04.950-05:00  INFO 29280 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
-2026-10-06T09:29:05.547-05:00  INFO 29280 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-10-06T09:29:05.741-05:00  WARN 29280 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2026-10-06T09:29:06.763-05:00  INFO 29280 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
-2026-10-06T09:29:06.781-05:00  INFO 29280 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 20.892 seconds (process running for 21.335)
-2026-10-06T09:29:07.052-05:00  WARN 29280 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
-2026-10-06T09:29:43.331-05:00  INFO 29280 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-06T09:29:43.332-05:00  INFO 29280 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-06T09:29:43.336-05:00  INFO 29280 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
-2026-10-06T09:35:10.188-05:00  INFO 29280 --- [wms-backend] [http-nio-9000-exec-35] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
-2026-10-06T09:35:10.966-05:00  INFO 29280 --- [wms-backend] [http-nio-9000-exec-35] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: 7c161387-05ab-4cac-acd5-4db994f7d395
-2026-10-06T09:35:10.967-05:00  INFO 29280 --- [wms-backend] [http-nio-9000-exec-35] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
-2026-10-06T09:57:18.150-05:00  INFO 5760 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 5760 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
-2026-10-06T09:57:18.153-05:00  INFO 5760 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
-2026-10-06T09:57:19.364-05:00  INFO 5760 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-06T09:57:19.943-05:00  INFO 5760 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 564 ms. Found 60 JPA repository interfaces.
-2026-10-06T09:57:23.074-05:00  INFO 5760 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
-2026-10-06T09:57:23.107-05:00  INFO 5760 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-06T09:57:23.109-05:00  INFO 5760 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
-2026-10-06T09:57:23.279-05:00  INFO 5760 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-06T09:57:23.280-05:00  INFO 5760 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 5072 ms
-2026-10-06T09:57:23.844-05:00  INFO 5760 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
-2026-10-06T09:57:25.299-05:00  INFO 5760 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 7de7b37b-af87-47a4-bbb7-183dfce7d2a5
-2026-10-06T09:57:25.305-05:00  INFO 5760 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
-2026-10-06T09:57:25.453-05:00  INFO 5760 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-06T09:57:25.582-05:00  INFO 5760 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
-2026-10-06T09:57:25.665-05:00  INFO 5760 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-06T09:57:26.852-05:00  INFO 5760 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-06T09:57:27.272-05:00  WARN 5760 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-10-06T09:57:27.526-05:00  INFO 5760 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@437c1a87']
-	Database driver: undefined/unknown
-	Database version: 12.0
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2026-10-06T09:57:31.337-05:00  INFO 5760 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-06T09:57:31.367-05:00  INFO 5760 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-06T09:57:32.013-05:00  INFO 5760 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-06T09:57:36.541-05:00  WARN 5760 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-06T09:57:36.624-05:00  WARN 5760 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
-
-Using generated security password: d5d6c451-568d-4898-bd19-f271bb268296
+Using generated security password: 862d2e71-54a3-4d69-8bc6-9d35f2373e9f
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-10-06T09:57:36.665-05:00  INFO 5760 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-06T09:57:38.016-05:00  INFO 5760 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
-2026-10-06T09:57:38.456-05:00  INFO 5760 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-10-06T09:57:38.696-05:00  WARN 5760 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2026-10-06T09:57:39.904-05:00  INFO 5760 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
-2026-10-06T09:57:39.931-05:00  INFO 5760 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 22.791 seconds (process running for 23.445)
-2026-10-06T09:57:40.239-05:00  WARN 5760 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
-2026-10-06T09:57:43.363-05:00  INFO 5760 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-06T09:57:43.364-05:00  INFO 5760 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-06T09:57:43.367-05:00  INFO 5760 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
-2026-10-06T10:01:16.444-05:00  INFO 5760 --- [wms-backend] [http-nio-9000-exec-19] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
-2026-10-06T10:01:17.180-05:00  INFO 5760 --- [wms-backend] [http-nio-9000-exec-19] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: 38039892-fd9c-4934-968c-b37fde03961b
-2026-10-06T10:01:17.182-05:00  INFO 5760 --- [wms-backend] [http-nio-9000-exec-19] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
+2026-10-08T10:05:55.956-05:00  INFO 29484 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-08T10:05:57.573-05:00  INFO 29484 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
+2026-10-08T10:05:58.280-05:00  INFO 29484 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-10-08T10:05:58.588-05:00  WARN 29484 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-10-08T10:05:59.453-05:00  INFO 29484 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
+2026-10-08T10:05:59.479-05:00  INFO 29484 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 29.2 seconds (process running for 30.157)
+2026-10-08T10:05:59.778-05:00  WARN 29484 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
