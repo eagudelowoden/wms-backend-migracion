@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public interface CalidadRepository extends BaseRepository<CalidadModel, Integer> {
 
 
-    @Procedure(procedureName = "pa_UpdateFinalStateQuality")
+    @Query(value = "SELECT pa_updatefinalstatequality(p_palletid => CAST(:palletId AS integer), p_estadofinalid => CAST(:estadoFinalId AS integer), p_filas => CAST(NULL AS integer))", nativeQuery = true)
     Integer updateFinalStateQuality(
             @Param("palletId") Integer palletId,
             @Param("estadoFinalId") Integer estadoFinalId
@@ -24,13 +24,13 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE dbo.Calidad SET EstadoFinalId = :estadoFinalId WHERE CajaEmpaqueId = :cajaEmpaqueId", nativeQuery = true)
+    @Query(value = "UPDATE Calidad SET EstadoFinalId = :estadoFinalId WHERE CajaEmpaqueId = :cajaEmpaqueId", nativeQuery = true)
     void updateFinalStateQualityByCaja(
             @Param("cajaEmpaqueId") Integer cajaEmpaqueId,
             @Param("estadoFinalId") Integer estadoFinalId
     );
 
-    @Procedure(name = "pa_InsertQuality", procedureName = "pa_InsertQuality")
+    @Query(value = "SELECT 1 FROM pa_insertquality(p_serialid => CAST(:SerialId AS integer), p_serial => CAST(:Serial AS character varying), p_mac => CAST(:Mac AS character varying), p_codigosapid => CAST(:CodigoSapId AS integer), p_palletid => CAST(:PalletId AS integer), p_cajaempaqueid => CAST(:CajaEmpaqueId AS integer), p_usuarioid => CAST(:UsuarioId AS integer), p_fecha => CAST(:Fecha AS timestamp without time zone))", nativeQuery = true)
     void createInsertCalidad(
             @Param("SerialId") Integer serialId,
             @Param("Serial") String serial,
@@ -42,21 +42,20 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("Fecha") LocalDateTime fecha
     );
 
-    @Procedure(procedureName = "pa_DeleteQuality")
+    @Query(value = "SELECT 1 FROM pa_deletequality(p_serial => CAST(:serial AS character varying))", nativeQuery = true)
     void eliminarSerialCalidad(@Param("serial") String serial);
 
 
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_UpdateQualityEntry :estadoId, :usuarioIdMovimiento, :serial", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_updatequalityentry(CAST(:estadoId AS integer), CAST(:usuarioIdMovimiento AS integer), CAST(:serial AS character varying))", nativeQuery = true)
     void updateQualityEntry(
             @Param("estadoId") Integer estadoId,
             @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
             @Param("serial") String serial);
 
 
-    @Procedure(procedureName = "pa_UpdateQualityPalletEntryBatch")
+    @Query(value = "SELECT 1 FROM pa_updatequalitypalletentrybatch(p_estadoid => CAST(:estadoId AS integer), p_usuarioid => CAST(:usuarioIdMovimiento AS integer), p_palletids => CAST(:palletId AS text))", nativeQuery = true)
     /*SP optimizado pa_UpdateQualityPalletEntryBatch*/
     /*SP optimizado pa_UpdateQualityPalletEntry*/
     void updateQualityPalletEntry(
@@ -65,7 +64,7 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("palletId") Integer palletId
     );
 
-    @Procedure(procedureName = "pa_UpdateQuality")
+    @Query(value = "SELECT 1 FROM pa_updatequality(p_fallafuncionalid => CAST(:fallaFuncionalId AS integer), p_fallacosmeticaid => CAST(:fallaComesticaId AS integer), p_serial => CAST(:serial AS character varying))", nativeQuery = true)
     void updateQuality(
             @Param("fallaFuncionalId") Integer fallaFuncionalId,
             @Param("fallaComesticaId") Integer fallaComesticaId,

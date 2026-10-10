@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "ClienteValidacion", schema = "dbo")
+@Table(name = "ClienteValidacion")
 public class ClienteValidacionModel {
 
     @Id

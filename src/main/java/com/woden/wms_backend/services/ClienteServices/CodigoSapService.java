@@ -20,6 +20,11 @@ import com.woden.wms_backend.util.TypeMapper;
 
 @Service
 public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
+    /** Las columnas son boolean; las funciones PostgreSQL reciben integer (1/0). */
+    private static Integer b(Boolean v) {
+        return v != null && v ? 1 : 0;
+    }
+
     public CodigoSapService(CodigoSapRepository codigoSapRepository) {
     }
 
@@ -213,7 +218,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
                 model.getReingreso() != null ? model.getReingreso() : 0,
                 model.getClasificacionId(),
                 model.getNumSerial() != null ? model.getNumSerial() : 0,
-                model.getAsignar() != null ? model.getAsignar() : 0,
+                b(model.getAsignar()),
                 model.getLargosMac() != null ? model.getLargosMac() : "0",
                 model.getLargosSerial3() != null ? model.getLargosSerial3() : "0",
                 model.getLargosSerial4() != null ? model.getLargosSerial4() : "0",
@@ -222,10 +227,10 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
                 model.getValidacionMac() != null ? model.getValidacionMac() : 0,
                 model.getDireccionMac() != null ? model.getDireccionMac() : "NINGUNA",
                 model.getRecorteMac() != null ? model.getRecorteMac() : 0,
-                model.getAsignarFa() != null ? model.getAsignarFa() : 0,
-                model.getMultimodelo() != null ? model.getMultimodelo() : 0,
+                b(model.getAsignarFa()),
+                b(model.getMultimodelo()),
                 model.getCantidadCaja() != null ? model.getCantidadCaja() : 0,
-                model.getSmartCard() != null ? model.getSmartCard() : 0);
+                b(model.getSmartCard()));
     }
 
     @Transactional
@@ -251,7 +256,7 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
                 model.getClasificacionId(),
                 model.getNumSerial() != null ? model.getNumSerial() : 0,
                 model.getId(),
-                model.getAsignar() != null ? model.getAsignar() : 0,
+                b(model.getAsignar()),
                 model.getLargosMac() != null ? model.getLargosMac() : "0",
                 model.getLargosSerial3() != null ? model.getLargosSerial3() : "0",
                 model.getLargosSerial4() != null ? model.getLargosSerial4() : "0",
@@ -260,10 +265,10 @@ public class CodigoSapService extends BaseService<CodigoSapModel, Integer> {
                 model.getValidacionMac() != null ? model.getValidacionMac() : 0,
                 model.getDireccionMac() != null ? model.getDireccionMac() : "NINGUNA",
                 model.getRecorteMac() != null ? model.getRecorteMac() : 0,
-                model.getAsignarFa() != null ? model.getAsignarFa() : 0,
-                model.getMultimodelo() != null ? model.getMultimodelo() : 0,
+                b(model.getAsignarFa()),
+                b(model.getMultimodelo()),
                 model.getCantidadCaja() != null ? model.getCantidadCaja() : 0,
-                model.getSmartCard() != null ? model.getSmartCard() : 0);
+                b(model.getSmartCard()));
     }
 
     @Transactional

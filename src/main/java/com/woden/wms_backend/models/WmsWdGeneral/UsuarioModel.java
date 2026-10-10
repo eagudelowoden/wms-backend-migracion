@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Usuario", schema = "dbo")
+@Table(name = "Usuario")
 public class UsuarioModel implements Activable {
 
     @Id

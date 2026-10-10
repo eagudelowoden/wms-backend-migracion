@@ -1,5 +1,10 @@
 package com.woden.wms_backend.models.WmsWdGeneral;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.woden.wms_backend.util.BooleanAsIntSerializer;
+import org.hibernate.annotations.JdbcTypeRegistration;
+
+import com.woden.wms_backend.config.DataSource.TolerantIntegerJdbcType;
 import com.woden.wms_backend.dto.ClienteDTO;
 
 import jakarta.persistence.Column;
@@ -11,9 +16,11 @@ import jakarta.persistence.StoredProcedureParameter;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+// Lectura de Integer tolerante a columnas boolean de PostgreSQL (aplica a toda la SessionFactory)
+@JdbcTypeRegistration(TolerantIntegerJdbcType.class)
 @Data
 @Entity
-@Table(name = "Cliente", schema = "dbo")
+@Table(name = "Cliente")
 @NamedStoredProcedureQuery(name = "pa_GetListClient", procedureName = "pa_GetListClient", resultClasses = ClienteDTO.class, parameters = {
         @StoredProcedureParameter(mode = ParameterMode.IN, type = Integer.class, name = "usuarioId")
 })
@@ -25,8 +32,9 @@ public class ClienteModel {
     private String nombre;
     @Column(name = "dbase")
     private String dbase;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "Activo")
-    private Integer activo;
+    private Boolean activo;
     @Column(name = "ColorCorporativo")
     private String ColorCorporativo;
     @Column(name = "conn")
@@ -55,40 +63,52 @@ public class ClienteModel {
     private String db_pass;
     @Column(name = "bandera")
     private String bandera;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "RecogidaON")
-    private Integer recogidaON;
+    private Boolean recogidaON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "BaseIngresoON")
-    private Integer baseIngresoON;
+    private Boolean baseIngresoON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "BaseNoDisponibleON")
-    private Integer baseNoDisponibleON;
+    private Boolean baseNoDisponibleON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "LoteEmpaqueON")
-    private Integer loteEmpaqueON;
+    private Boolean loteEmpaqueON;
     @Column(name = "LargoGuia")
     private String largoGuia;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "KitIngresoON")
-    private Integer kitIngresoON;
+    private Boolean kitIngresoON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "componenteON")
-    private Integer componenteON;
+    private Boolean componenteON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "TipoOrigenUsuarioON")
-    private Integer tipoOrigenUsuarioON;
+    private Boolean tipoOrigenUsuarioON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "nivelClasificacionON")
-    private Integer nivelClasificacionON;
+    private Boolean nivelClasificacionON;
     @Column(name = "CalidadON")
     private Integer calidadON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "smartCardInfoON")
-    private Integer smartCardInfoON;
+    private Boolean smartCardInfoON;
     @Column(name = "BloqueoReimpresionON")
     private Integer bloqueoReimpresionON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "etiquetaUnitariaON")
-    private Integer etiquetaUnitariaON;
+    private Boolean etiquetaUnitariaON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "adicionPrealertaON")
-    private Integer adicionPrealertaON;
+    private Boolean adicionPrealertaON;
     @Column(name = "prealerta")
     private String prealerta;
     @Column(name = "odooPqrsON")
     private Boolean odooPqrsON;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "serialMasterCalidadON")
-    private Integer serialMasterCalidadON;
+    private Boolean serialMasterCalidadON;
     @Column(name = "Archivos")
     private String archivos;
     @Column(name = "LblEtiquetado")

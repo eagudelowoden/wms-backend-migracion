@@ -14,9 +14,8 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface EnsambleRepository extends BaseRepository<EnsambleModel, Integer> {
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertAssemble :serialId, :serial, :mac, :serial3, :serial4, :serial5, :codigoSapId, :palletId, :estadoId, :tipologiaId, :nivelId, :usuarioId, :usuarioIdAsignado, :loteId, :smartCard", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertassemble(CAST(:serialId AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:serial3 AS character varying), CAST(:serial4 AS character varying), CAST(:serial5 AS character varying), CAST(:codigoSapId AS integer), CAST(:palletId AS integer), CAST(:estadoId AS integer), CAST(:tipologiaId AS integer), CAST(:nivelId AS integer), CAST(:usuarioId AS integer), CAST(:usuarioIdAsignado AS integer), CAST(:loteId AS character varying), CAST(:smartCard AS integer))", nativeQuery = true)
   void insertAssemble(
       @Param("serialId") Integer serialId,
       @Param("serial") String serial,
@@ -34,11 +33,10 @@ public interface EnsambleRepository extends BaseRepository<EnsambleModel, Intege
       @Param("loteId") Integer loteId,
       @Param("smartCard") String smartCard);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteAssemble :ensamble", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_deleteassemble(CAST(:ensamble AS character varying))", nativeQuery = true)
   void deleteAssemble(@Param("ensamble") String ensamble);
 
-  @Query(value = "EXEC pa_GetAssembledUser :perfil, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.serial, f.mac, f.serial3, f.serial4, f.serial5, f.codigosap, f.descripcion, f.usuarioasignado, CAST(f.nivelid AS integer), CAST(f.loteid AS integer), f.lote, f.modelo, f.fecha, f.rn FROM pa_getassembleduser(CAST(:perfil AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
   List<Object[]> getAssembleUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 }

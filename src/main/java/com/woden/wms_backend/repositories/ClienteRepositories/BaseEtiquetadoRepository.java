@@ -11,10 +11,10 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface BaseEtiquetadoRepository extends BaseRepository<BaseEtiquetadoModel, Integer> {
 
-  @Query(value = "EXEC pa_GetModelBase :base, :serial", nativeQuery = true)
+  @Query(value = "SELECT f.serial, f.\"codigoSap\", f.\"estadoSap\", f.\"estadoRR\", f.\"Lote\" FROM pa_getmodelbase(CAST(:base AS character varying), CAST(:serial AS character varying)) f", nativeQuery = true)
   List<Object[]> getModelBase(@Param("base") String base, @Param("serial") String serial);
 
-  @Query(value = "EXEC pa_getCountBase :baseEtiquetado", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cantidad AS integer) FROM pa_getcountbase(CAST(:baseEtiquetado AS character varying)) f", nativeQuery = true)
   Integer getCountBase(@Param("baseEtiquetado") String baseEtiquetado);
 
 }

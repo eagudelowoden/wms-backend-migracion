@@ -17,9 +17,8 @@ public interface UsuarioSysRepository extends JpaRepository<UsuarioSysModel, Int
 
   @Modifying
   @Transactional
-  @Query(value = "IF EXISTS (SELECT 1 FROM UsuarioSys WHERE id = :id) " +
-         "UPDATE UsuarioSys SET nombres = :nombres, nombre_usuario = :nombreUsuario, perfil_id = :perfilId WHERE id = :id " +
-         "ELSE INSERT INTO UsuarioSys (id, nombres, nombre_usuario, perfil_id) VALUES (:id, :nombres, :nombreUsuario, :perfilId)",
+  @Query(value = "INSERT INTO UsuarioSys (id, nombres, nombre_usuario, perfil_id) VALUES (:id, :nombres, :nombreUsuario, :perfilId) " +
+         "ON CONFLICT (id) DO UPDATE SET nombres = EXCLUDED.nombres, nombre_usuario = EXCLUDED.nombre_usuario, perfil_id = EXCLUDED.perfil_id",
          nativeQuery = true)
   void syncUsuarioSys(@Param("id") int id, @Param("nombres") String nombres,
                       @Param("nombreUsuario") String nombreUsuario, @Param("perfilId") int perfilId);

@@ -16,13 +16,13 @@ import java.util.List;
 public interface SmartCardRepository extends BaseRepository <SmartCardModel, Integer> {
 
 
-    @Procedure(name = "pa_validateSmartCardInfo")
+    @Query(value = "SELECT * FROM pa_validatesmartcardinfo(p_smartcard => CAST(:SmartCard AS character varying), p_filas => CAST(:Filas AS integer)) f", nativeQuery = true)
     Object validateSmartCardInfoo(
             @Param("SmartCard") String smartCard,
             @Param("Filas") Integer filas
     );
 
-    @Query(value = "EXEC pa_validateSmartCardInfo :smartCard, :filas OUT", nativeQuery = true)
+    @Query(value = "SELECT f.\"Serial\" FROM pa_validatesmartcardinfo(CAST(:smartCard AS character varying), CAST(NULL AS integer)) f", nativeQuery = true)
     List<Object[]> validateSmartCardInfo(
             @Param("smartCard") String smartCard,
             @Param("filas") int filas // <-- aquí también String
@@ -49,15 +49,14 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
     @Query(value = "EXEC pa_GetSmartcardAsingUserWeb :usuarioId", nativeQuery = true)
     List<Object[]> getSmartcardsPreasignadas(@Param("usuarioId") Integer usuarioId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_UpdateSmartCard :estadoFinalId, :fallaId, :serial", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_updatesmartcard(CAST(:estadoFinalId AS integer), CAST(:fallaId AS integer), CAST(:serial AS character varying))", nativeQuery = true)
     void updateEstadosSmartcard(
             @Param("estadoFinalId") Integer estadoFinalId,
             @Param("fallaId") Integer fallaId,
             @Param("serial") String serial);
 
-    @Query(value = "EXEC pa_SearchSmartCardEntry :estadoFinal", nativeQuery = true)
+    @Query(value = "SELECT f.serial, f.codigo, f.descripcion, f.falla, f.estado FROM pa_searchsmartcardentry(CAST(:estadoFinal AS character varying)) f", nativeQuery = true)
     List<Object[]> searchSmartCardEntry(@Param("estadoFinal") String estadoFinal);
 
 

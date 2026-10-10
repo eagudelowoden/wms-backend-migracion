@@ -15,10 +15,10 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 @Primary
 public interface ClienteRepository extends BaseRepository<ClienteModel, Integer> {
-    @Query(value = "EXEC pa_GetListClient :Id", nativeQuery = true)
+    @Query(value = "SELECT f.nombre FROM general.pa_getlistclient(:Id) f", nativeQuery = true)
     List<String> getListClient(@Param("Id") int usuarioId);
 
-    @Query(value = "EXEC pa_GetIdClient :nombre", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer) FROM general.pa_getidclient(:nombre) f", nativeQuery = true)
     Integer getIdClient(@Param("nombre") String nombre);
 
     @Query(value = "SELECT kitIngresoON FROM Cliente WHERE id = :id", nativeQuery = true)
@@ -30,11 +30,11 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
     @Query(value = "SELECT dbase FROM Cliente WHERE id = :id", nativeQuery = true)
     String getDbaseById(@Param("id") int id);
 
-    @Query(value = "SELECT ISNULL(SUM(cnt), 0) FROM (SELECT COUNT(*) cnt FROM UsuarioCliente WHERE clienteId = :id UNION ALL SELECT COUNT(*) FROM ClienteParametro WHERE clienteId = :id) refs", nativeQuery = true)
+    @Query(value = "SELECT COALESCE(SUM(cnt), 0) FROM (SELECT COUNT(*) cnt FROM UsuarioCliente WHERE clienteId = :id UNION ALL SELECT COUNT(*) FROM ClienteParametro WHERE clienteId = :id) refs", nativeQuery = true)
     Integer countMovements(@Param("id") Integer id);
 
     @Transactional
-    @Query(value = "DECLARE @NewId INT; EXEC pa_InsertCliente @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @ImagenesIngreso = :imagenesIngreso, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @PrnIngreso = :prnIngreso, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @LblIngreso = :lblIngreso, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @serialMasterCalidadON = :serialMasterCalidadON, @Id = @NewId OUTPUT; SELECT @NewId", nativeQuery = true)
+    @Query(value = "SELECT general.pa_insertcliente(p_nombre => CAST(:nombre AS varchar), p_colorcorporativo => CAST(:colorCorporativo AS varchar), p_activo => CAST(:activo AS integer), p_conn => CAST(:conn AS varchar), p_man_app => CAST(:manApp AS integer), p_imagenesetiquetado => CAST(:imagenesEtiquetado AS varchar), p_imagenesempaque => CAST(:imagenesEmpaque AS varchar), p_imagenesingreso => CAST(:imagenesIngreso AS varchar), p_prnetiquetado => CAST(:prnEtiquetado AS varchar), p_prnempaque => CAST(:prnEmpaque AS varchar), p_prningreso => CAST(:prnIngreso AS varchar), p_lbletiquetado => CAST(:lblEtiquetado AS varchar), p_lblempaque => CAST(:lblEmpaque AS varchar), p_lblingreso => CAST(:lblIngreso AS varchar), p_archivos => CAST(:archivos AS varchar), p_pallet => CAST(:pallet AS varchar), p_codigosap => CAST(:codigoSap AS varchar), p_ip_server => CAST(:ipServer AS varchar), p_dbase => CAST(:dbase AS varchar), p_db_user => CAST(:dbUser AS varchar), p_db_pass => CAST(:dbPass AS varchar), p_bandera => CAST(:bandera AS varchar), p_recogidaon => CAST(:recogidaON AS integer), p_baseingresoon => CAST(:baseIngresoON AS integer), p_basenodisponibleon => CAST(:baseNoDisponibleON AS integer), p_loteempaqueon => CAST(:loteEmpaqueON AS integer), p_largoguia => CAST(:largoGuia AS varchar), p_kitingresoon => CAST(:kitIngresoON AS integer), p_componenteon => CAST(:componenteON AS integer), p_tipoorigenusuarioon => CAST(:tipoOrigenUsuarioON AS integer), p_nivelclasificacionon => CAST(:nivelClasificacionON AS integer), p_calidadon => CAST(:calidadON AS integer), p_smartcardinfoon => CAST(:smartCardInfoON AS integer), p_bloqueoreimpresionon => CAST(:bloqueoReimpresionON AS integer), p_etiquetaunitariaon => CAST(:etiquetaUnitariaON AS integer), p_prealerta => CAST(:prealerta AS varchar), p_adicionprealertaon => CAST(:adicionPrealertaON AS integer), p_odoopqrson => CAST(:odooPqrsON AS boolean))", nativeQuery = true)
     Integer insertSP(@Param("nombre") String nombre,
                      @Param("colorCorporativo") String colorCorporativo,
                      @Param("activo") Integer activo,
@@ -76,7 +76,7 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
                      @Param("serialMasterCalidadON") Integer serialMasterCalidadON);
 
     @Transactional
-    @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateCliente @Id = :id, @Nombre = :nombre, @ColorCorporativo = :colorCorporativo, @Activo = :activo, @conn = :conn, @man_app = :manApp, @ImagenesEtiquetado = :imagenesEtiquetado, @ImagenesEmpaque = :imagenesEmpaque, @PrnEtiquetado = :prnEtiquetado, @PrnEmpaque = :prnEmpaque, @LblEtiquetado = :lblEtiquetado, @LblEmpaque = :lblEmpaque, @Archivos = :archivos, @Pallet = :pallet, @CodigoSap = :codigoSap, @ip_server = :ipServer, @dbase = :dbase, @db_user = :dbUser, @db_pass = :dbPass, @bandera = :bandera, @recogidaON = :recogidaON, @baseIngresoON = :baseIngresoON, @baseNoDisponibleON = :baseNoDisponibleON, @loteEmpaqueON = :loteEmpaqueON, @largoGuia = :largoGuia, @kitIngresoON = :kitIngresoON, @componenteON = :componenteON, @tipoOrigenUsuarioON = :tipoOrigenUsuarioON, @nivelClasificacionON = :nivelClasificacionON, @calidadON = :calidadON, @smartCardInfoON = :smartCardInfoON, @bloqueoReimpresionON = :bloqueoReimpresionON, @etiquetaUnitariaON = :etiquetaUnitariaON, @prealerta = :prealerta, @adicionPrealertaON = :adicionPrealertaON, @odooPqrsON = :odooPqrsON, @serialMasterCalidadON = :serialMasterCalidadON, @Filas = @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+    @Query(value = "SELECT general.pa_updatecliente(p_id => CAST(:id AS integer), p_nombre => CAST(:nombre AS varchar), p_colorcorporativo => CAST(:colorCorporativo AS varchar), p_activo => CAST(:activo AS integer), p_conn => CAST(:conn AS varchar), p_man_app => CAST(:manApp AS integer), p_imagenesetiquetado => CAST(:imagenesEtiquetado AS varchar), p_imagenesempaque => CAST(:imagenesEmpaque AS varchar), p_prnetiquetado => CAST(:prnEtiquetado AS varchar), p_prnempaque => CAST(:prnEmpaque AS varchar), p_lbletiquetado => CAST(:lblEtiquetado AS varchar), p_lblempaque => CAST(:lblEmpaque AS varchar), p_archivos => CAST(:archivos AS varchar), p_pallet => CAST(:pallet AS varchar), p_codigosap => CAST(:codigoSap AS varchar), p_ip_server => CAST(:ipServer AS varchar), p_dbase => CAST(:dbase AS varchar), p_db_user => CAST(:dbUser AS varchar), p_db_pass => CAST(:dbPass AS varchar), p_bandera => CAST(:bandera AS varchar), p_recogidaon => CAST(:recogidaON AS integer), p_baseingresoon => CAST(:baseIngresoON AS integer), p_basenodisponibleon => CAST(:baseNoDisponibleON AS integer), p_loteempaqueon => CAST(:loteEmpaqueON AS integer), p_largoguia => CAST(:largoGuia AS varchar), p_kitingresoon => CAST(:kitIngresoON AS integer), p_componenteon => CAST(:componenteON AS integer), p_tipoorigenusuarioon => CAST(:tipoOrigenUsuarioON AS integer), p_nivelclasificacionon => CAST(:nivelClasificacionON AS integer), p_calidadon => CAST(:calidadON AS integer), p_smartcardinfoon => CAST(:smartCardInfoON AS integer), p_bloqueoreimpresionon => CAST(:bloqueoReimpresionON AS integer), p_etiquetaunitariaon => CAST(:etiquetaUnitariaON AS integer), p_prealerta => CAST(:prealerta AS varchar), p_adicionprealertaon => CAST(:adicionPrealertaON AS integer), p_odoopqrson => CAST(:odooPqrsON AS boolean))", nativeQuery = true)
     Integer updateSP(@Param("id") Integer id,
                      @Param("nombre") String nombre,
                      @Param("colorCorporativo") String colorCorporativo,
@@ -120,17 +120,21 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE Cliente SET Activo = :estado WHERE Id = :id", nativeQuery = true)
-    void toggle(@Param("id") Integer id, @Param("estado") Integer estado);
+    @Query(value = "UPDATE Cliente SET serialMasterCalidadON = (CAST(:valor AS integer) <> 0) WHERE Id = :id", nativeQuery = true)
+    void setSerialMasterCalidadON(@Param("id") Integer id, @Param("valor") Integer valor);
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC pa_DeleteCliente @Id = :id", nativeQuery = true)
+    @Query(value = "UPDATE Cliente SET Activo = (CAST(:estado AS integer) <> 0) WHERE Id = :id", nativeQuery = true)
+    void toggle(@Param("id") Integer id, @Param("estado") Integer estado);
+
+    @Transactional
+    @Query(value = "SELECT 1 FROM general.pa_deletecliente(:id)", nativeQuery = true)
     void deleteSP(@Param("id") Integer id);
 
-    @Query(value = "EXEC pa_GetClienteById @Id = :id", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Nombre\", f.\"ColorCorporativo\", CAST(f.\"Activo\" AS boolean), f.conn, CAST(f.man_app AS integer), f.\"ImagenesEtiquetado\", f.\"ImagenesEmpaque\", f.\"ImagenesIngreso\", f.\"PrnEtiquetado\", f.\"PrnEmpaque\", f.\"PrnIngreso\", f.\"LblEtiquetado\", f.\"LblEmpaque\", f.\"LblIngreso\", f.\"Archivos\", f.\"Pallet\", f.\"CodigoSap\", f.ip_server, f.dbase, f.db_user, f.db_pass, f.bandera, CAST(f.\"recogidaON\" AS boolean), CAST(f.\"baseIngresoON\" AS boolean), CAST(f.\"baseNoDisponibleON\" AS boolean), CAST(f.\"loteEmpaqueON\" AS boolean), f.\"largoGuia\", CAST(f.\"kitIngresoON\" AS boolean), CAST(f.\"componenteON\" AS boolean), CAST(f.\"tipoOrigenUsuarioON\" AS boolean), CAST(f.\"nivelClasificacionON\" AS boolean), CAST(f.\"calidadON\" AS integer), CAST(f.\"smartCardInfoON\" AS boolean), CAST(f.\"bloqueoReimpresionON\" AS integer), CAST(f.\"etiquetaUnitariaON\" AS boolean), f.prealerta, CAST(f.\"adicionPrealertaON\" AS boolean), CAST(f.\"odooPqrsON\" AS boolean), (SELECT CAST(c.serialmastercalidadon AS integer) FROM general.cliente c WHERE c.id = :id) FROM general.pa_getclientebyid(:id) f", nativeQuery = true)
     List<Object[]> findByIdSP(@Param("id") Integer id);
 
-    @Query(value = "EXEC pa_GetAllClientes @Termino = :termino", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Nombre\", f.\"ColorCorporativo\", CAST(f.\"Activo\" AS boolean), f.dbase, f.ip_server, f.bandera FROM general.pa_getallclientes(CAST(:termino AS varchar)) f", nativeQuery = true)
     List<Object[]> searchSP(@Param("termino") String termino);
 }

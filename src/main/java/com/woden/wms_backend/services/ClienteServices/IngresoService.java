@@ -101,8 +101,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       return "El serial " + ingreso.getSerial() + " terminó en SCRAP y tiene bloqueado el reingreso.";
     }
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall(
-          "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+      java.sql.PreparedStatement stmt = conn.prepareStatement(
+          "SELECT p_codigoerror, p_mensajeerror FROM pa_insertentry(CAST(? AS character varying), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(NULL AS integer), CAST(NULL AS character varying))");
 
       stmt.setString(1, ingreso.getSerial());
       stmt.setString(2, ingreso.getMac());
@@ -132,13 +132,14 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       stmt.setObject(26, ingreso.getLoteId(), Types.INTEGER);
       stmt.setObject(27, ingreso.getCajaIngresoId(), Types.INTEGER);
       stmt.setObject(28, ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null, Types.INTEGER);
-      stmt.registerOutParameter(29, Types.INTEGER);
-      stmt.registerOutParameter(30, Types.VARCHAR);
-
-      stmt.execute();
-
-      Integer codigo = stmt.getInt(29);
-      String mensaje = stmt.getString(30);
+      Integer codigo = 0;
+      String mensaje = null;
+      try (java.sql.ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          codigo = rs.getInt(1); // NULL (sin error) -> 0
+          mensaje = rs.getString(2);
+        }
+      }
 
       if (codigo == 0) {
         String clientDb = ClientDatabaseContext.getCurrentClientDb();
@@ -315,12 +316,13 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   }
 
   public Integer getProactiveRepair(String serial) {
-    try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_GetProactiveRepair(?, ?)}");
+    try (Connection conn = dataSource.getConnection();
+         java.sql.PreparedStatement stmt = conn.prepareStatement(
+             "SELECT count(*) FROM pa_getproactiverepair(CAST(? AS character varying), 0)")) {
       stmt.setString(1, serial);
-      stmt.registerOutParameter(2, Types.INTEGER);
-      stmt.execute();
-      return stmt.getInt(2);
+      try (java.sql.ResultSet rs = stmt.executeQuery()) {
+        return rs.next() ? rs.getInt(1) : 0;
+      }
     } catch (SQLException e) {
       logger.error("[getProactiveRepair] Error para serial {}: {}", serial, e.getMessage(), e);
       throw new BusinessRuleException("Error al consultar reparación proactiva: " + e.getMessage());
@@ -1674,7 +1676,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   private Integer obtenerEstadoIdIngreso() {
     try (Connection conn = dataSource.getConnection();
-         java.sql.PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 id FROM Estado WHERE nombre = 'INGRESO'")) {
+         java.sql.PreparedStatement ps = conn.prepareStatement("SELECT id FROM Estado WHERE nombre = 'INGRESO' LIMIT 1")) {
       try (java.sql.ResultSet rs = ps.executeQuery()) {
         return rs.next() ? rs.getInt("id") : 1;
       }
@@ -1687,7 +1689,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private Integer obtenerNivelIdIngreso() {
     try (Connection conn = dataSource.getConnection();
          java.sql.PreparedStatement ps = conn.prepareStatement(
-             "SELECT TOP 1 id FROM Maestro WHERE descripcion = 'INGRESO' AND TipoMaestroId = (SELECT id FROM TipoMaestro WHERE descripcion = 'Niveles')")) {
+             "SELECT id FROM Maestro WHERE descripcion = 'INGRESO' AND TipoMaestroId = (SELECT id FROM TipoMaestro WHERE descripcion = 'Niveles') LIMIT 1")) {
       try (java.sql.ResultSet rs = ps.executeQuery()) {
         return rs.next() ? rs.getInt("id") : 63;
       }
@@ -1752,15 +1754,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   private int ejecutarBulkInsert(String json) {
     try (Connection conn = dataSource.getConnection();
-         CallableStatement stmt = conn.prepareCall("{call pa_BulkInsertEntry(?)}")) {
+         java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT * FROM pa_bulkinsertentry(CAST(? AS text))")) {
       stmt.setString(1, json);
-      boolean hasResultSet = stmt.execute();
-      while (!hasResultSet) {
-        hasResultSet = stmt.getMoreResults();
-      }
-      try (java.sql.ResultSet rs = stmt.getResultSet()) {
+      try (java.sql.ResultSet rs = stmt.executeQuery()) {
         if (rs.next()) {
-          return rs.getInt("Insertados");
+          return rs.getInt(1);
         }
       }
       return 0;

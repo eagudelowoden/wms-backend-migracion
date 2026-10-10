@@ -47,8 +47,7 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
   @SuppressWarnings("null")
   private DataSource createDataSource(String databaseName) {
     HikariConfig config = new HikariConfig();
-    String baseUrl = env.getProperty("spring.datasource.url")
-        .replace("databaseName=WmsWdGeneral", "databaseName=" + databaseName);
+    String baseUrl = ClientSchema.jdbcUrlFor(env.getProperty("spring.datasource.url"), databaseName);
 
     config.setJdbcUrl(baseUrl);
     config.setUsername(env.getProperty("spring.datasource.username"));

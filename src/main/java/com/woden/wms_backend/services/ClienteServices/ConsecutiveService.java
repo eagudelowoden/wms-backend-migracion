@@ -10,7 +10,7 @@ public class ConsecutiveService {
   private JdbcTemplate jdbcTemplate;
 
   public String getConsecutive(String cliente) {
-    String sql = "EXEC pa_GetConsecutiveUnreadable ?";
+    String sql = "SELECT \"consecutivoSerial\" FROM pa_getconsecutiveunreadable(CAST(? AS character varying))";
     return jdbcTemplate.queryForObject(sql, String.class, cliente);
   }
 }

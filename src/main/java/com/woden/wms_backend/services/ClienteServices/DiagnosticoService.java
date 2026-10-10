@@ -67,17 +67,17 @@ public class DiagnosticoService {
 
   public Integer updateSapCode(String serial) {
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_UpdateSapCodeDiagnostic(?, ?)}");
+      java.sql.PreparedStatement stmt = conn.prepareStatement(
+          "SELECT pa_updatesapcodediagnostic(CAST(? AS character varying), CAST(NULL AS integer))");
 
-      // Parámetro de entrada
       stmt.setString(1, serial);
 
-      // Parámetro de salida
-      stmt.registerOutParameter(2, Types.INTEGER); // "Filas" está en la posición 2
-
-      stmt.execute();
-
-      Integer filas = stmt.getInt(2); // Obtener el valor del OUT param
+      Integer filas = 0;
+      try (java.sql.ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          filas = rs.getInt(1); // p_filas (INOUT)
+        }
+      }
 
       stmt.close();
       return filas > 0 ? 1 : 0;
@@ -247,8 +247,8 @@ public class DiagnosticoService {
    */
   private void registrarHojaVida(String serial, String nombreArchivo, String rutaCompleta,
                                   String extension, String modulo, Integer usuarioId) {
-    String sqlIngreso = "SELECT TOP 1 Id, TruckRollId FROM Ingreso WHERE Serial = ? ORDER BY Id DESC";
-    String sqlDesactivar = "UPDATE HojaVida SET Activo = 0 WHERE Serial = ? AND Activo = 1";
+    String sqlIngreso = "SELECT Id, TruckRollId FROM Ingreso WHERE Serial = ? ORDER BY Id DESC LIMIT 1";
+    String sqlDesactivar = "UPDATE HojaVida SET Activo = false WHERE Serial = ? AND Activo = true";
     String sqlInsertar = "INSERT INTO HojaVida " +
         "(SerialId, Serial, NombreArchivo, RutaCompleta, Extension, Modulo, TruckRollId, UsuarioId, ClienteId) " +
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -326,8 +326,8 @@ public class DiagnosticoService {
 
   /** Marca como inactivo (soft-delete) el registro activo del serial en HojaVida. */
   private void desactivarHojaVida(String serial, Integer usuarioId) {
-    String sql = "UPDATE HojaVida SET Activo = 0, UsuarioIdEliminacion = ?, FechaEliminacion = GETDATE() " +
-        "WHERE Serial = ? AND Activo = 1";
+    String sql = "UPDATE HojaVida SET Activo = false, UsuarioIdEliminacion = ?, FechaEliminacion = NOW() " +
+        "WHERE Serial = ? AND Activo = true";
     try (Connection conn = dataSource.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
       if (usuarioId != null) ps.setInt(1, usuarioId); else ps.setNull(1, Types.INTEGER);
@@ -397,8 +397,8 @@ public class DiagnosticoService {
   /** Lee RutaArchivos de la regla TruckRoll activa del cliente actual. */
   private String getRutaArchivos() {
     String clientDb = ClientDatabaseContext.getCurrentClientDb();
-    String sql = "SELECT TOP 1 RutaArchivos FROM [WmsWdGeneral].[dbo].[Parametro_TruckrollsLiberty] " +
-        "WHERE Activo = 1 AND BaseDestino = ?";
+    String sql = "SELECT RutaArchivos FROM general.Parametro_TruckrollsLiberty " +
+        "WHERE Activo = true AND BaseDestino = ? LIMIT 1";
     try (Connection conn = dataSource.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, clientDb);

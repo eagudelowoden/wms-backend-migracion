@@ -15,12 +15,11 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
 
-  @Query(value = "EXEC pa_GetModelPallet :id", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.\"posicionId\" AS integer), f.posicion, CAST(f.\"tipologiaId\" AS integer), f.tipologia, CAST(f.\"codigoSapId\" AS integer), f.\"codigoSap\", f.descripcion, CAST(f.\"origenId\" AS integer), f.origen, CAST(f.\"destinoId\" AS integer), CAST(f.activo AS boolean), f.\"nombreUsuario\", CAST(f.\"loteId\" AS integer), f.fecha, CAST(f.multimodelo AS boolean), CAST(f.\"cantidadCaja\" AS integer), CAST(f.smartcard AS boolean) FROM pa_getmodelpallet(CAST(:id AS integer)) f", nativeQuery = true)
   List<Object[]> getPalletById(@Param("id") int id);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertPallet :numero, :posicionId, :codigoSapId, :tipologiaId, :origenId, :destinoId, :usuarioId, :loteId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertpallet(CAST(:numero AS character varying), CAST(:posicionId AS integer), CAST(:codigoSapId AS integer), CAST(:tipologiaId AS integer), CAST(:origenId AS integer), CAST(:destinoId AS integer), CAST(:usuarioId AS integer), CAST(:loteId AS integer))", nativeQuery = true)
   void insertPallet(
       @Param("numero") String numero,
       @Param("posicionId") Integer posicionId,
@@ -31,16 +30,16 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("usuarioId") Integer usuarioId,
       @Param("loteId") Integer loteId);
 
-  @Query(value = "SELECT TOP 1 numero FROM Pallet ORDER BY id DESC", nativeQuery = true)
+  @Query(value = "SELECT numero FROM Pallet ORDER BY id DESC LIMIT 1", nativeQuery = true)
   String getLastInsertedPalletNumber();
 
-  @Query(value = "EXEC pa_SearchEntryPallet :numero, :destino, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Numero\", f.\"Codigo\", f.\"Descripcion\", CAST(f.\"Cantidad\" AS integer), f.\"Tipologia\", f.\"Lote\" FROM pa_searchentrypallet(CAST(:numero AS character varying), CAST(:destino AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
   List<Object[]> searchEntry(
       @Param("numero") String numero,
       @Param("destino") String destino,
       @Param("usuarioId") int usuarioId);
 
-  @Query(value = "EXEC pa_SearchAccesoryPallet :numero, :destino, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.codigo, f.descripcion, CAST(f.cantidad AS integer), f.tipologia, f.lote FROM pa_searchaccesorypallet(CAST(:numero AS character varying), CAST(:destino AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
   List<Object[]> searchAccesory(
       @Param("numero") String numero,
       @Param("destino") String destino,
@@ -49,12 +48,11 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "EXEC pa_SearchAccesoryNovedadPallet :numero", nativeQuery = true)
   List<Object[]> searchAccesoryNovedad(@Param("numero") String numero);
 
-  @Query(value = "EXEC pa_SearchTransitPallet :numero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.origen, f.tipologia, f.lote FROM pa_searchtransitpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> searchTransitPallet(@Param("numero") String numero);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_SendPallet :destinoId, :tipologiaId, :posicionId, :estado, :palletId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_sendpallet(CAST(:destinoId AS integer), CAST(:tipologiaId AS integer), CAST(:posicionId AS integer), CAST(:estado AS integer), CAST(:palletId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void sendPallet(
       @Param("destinoId") Integer destinoId,
       @Param("tipologiaId") Integer tipologiaId,
@@ -63,99 +61,92 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("palletId") Integer palletId,
       @Param("filas") Integer filas);
 
-  @Query(value = "EXEC pa_GetCountPallet :palletId, :tabla", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cantidad AS integer) FROM pa_getcountpallet(CAST(:palletId AS integer), CAST(:tabla AS character varying)) f", nativeQuery = true)
   Integer getCountPallet(
       @Param("palletId") Integer palletId,
       @Param("tabla") String tabla);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeletePallet :palletId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_deletepallet(CAST(:palletId AS integer))", nativeQuery = true)
   void deletePallet(@Param("palletId") Integer palletId);
 
-  @Query(value = "EXEC pa_GetBoxPallet :palletId, :tabla", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cajas AS integer) FROM pa_getboxpallet(CAST(:palletId AS integer), CAST(:tabla AS character varying)) f", nativeQuery = true)
   Integer getBoxPallet(@Param("palletId") Integer palletId, @Param("tabla") String tabla);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdateBatchPalletEntry :loteId, :usuarioIdMovimiento, :palletId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatebatchpalletentry(CAST(:loteId AS integer), CAST(:usuarioIdMovimiento AS integer), CAST(:palletId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void updateBatchPallet(
       @Param("palletId") int palletId,
       @Param("loteId") int loteId,
       @Param("usuarioIdMovimiento") int usuarioIdMovimiento,
       @Param("filas") int filas);
 
-  @Query(value = "EXEC pa_SearchReceivePallet :numero, :destino, :tipo", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.origen, f.tipologia, f.\"CodigoSap\", f.\"Descripcion\" FROM pa_searchreceivepallet(CAST(:numero AS character varying), CAST(:destino AS character varying), CAST(:tipo AS character varying)) f", nativeQuery = true)
   List<Object[]> searchReceivePallet(
       @Param("numero") String numero,
       @Param("destino") String destino,
       @Param("tipo") String tipo);
 
-  @Query(value = "EXEC pa_SearchPackingDeliveryPallet :numero, :tipologia, :tipo", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.origen, f.tipologia, f.\"CodigoSap\", f.\"Descripcion\" FROM pa_searchpackingdeliverypallet(CAST(:numero AS character varying), CAST(:tipologia AS character varying), CAST(:tipo AS character varying)) f", nativeQuery = true)
   List<Object[]> SearchPackingDeliveryPallet(
       @Param("numero") String numero,
       @Param("tipologia") String tipologia,
       @Param("tipo") String tipo);
 
-  @Query(value = "EXEC pa_SearchPalletBoxPallet :numero, :destino", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.cajas, f.tipologia, f.\"Descripcion\" FROM pa_searchpalletboxpallet(CAST(:numero AS character varying), CAST(:destino AS character varying)) f", nativeQuery = true)
   List<Object[]> SearchPalletBoxPallet(
       @Param("numero") String numero,
       @Param("destino") String destino);
 
-  @Query(value = "EXEC pa_SearchPalletBoxPalletWeb :numero, :destino", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.\"Numero\", f.cajas, f.\"Descripcion\", f.tipologia FROM pa_searchpalletboxpalletweb(CAST(:numero AS character varying), CAST(:destino AS character varying)) f", nativeQuery = true)
   List<Object[]> SearchPalletBoxPalletWeb(
       @Param("numero") String numero,
       @Param("destino") String destino);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteAccesory :palletId, :cantidad, :codigoSapId, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_deleteaccesory(CAST(:palletId AS integer), CAST(:cantidad AS integer), CAST(:codigoSapId AS integer))", nativeQuery = true)
   Integer eliminarAccesorio(@Param("palletId") Integer palletId, @Param("cantidad") Integer cantidad,
       @Param("codigoSapId") Integer codigoSapId, @Param("usuarioId") Integer usuarioId);
 
-  @Query(value = "EXEC pa_SearchStoragePallet :numero, :tipo, :tipoAccesorio", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.origen, f.tipologia, f.\"codigoSap\", f.descripcion, f.lote, f.posicion FROM pa_searchstoragepallet(CAST(:numero AS character varying), CAST(:tipo AS character varying), CAST(:tipoAccesorio AS character varying)) f", nativeQuery = true)
   List<Object[]> searchStoragePallet(@Param("numero") String numero, @Param("tipo") String tipo,
       @Param("tipoAccesorio") String tipoAccesorio);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdatePositionPallet :palletId, :posicionId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatepositionpallet(CAST(:palletId AS integer), CAST(:posicionId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void updatePosition(@Param("palletId") Integer palletId,
       @Param("posicionId") Integer posicionId, @Param("filas") Integer filas);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdateTipologyPallet :palletId, :tipologiaId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatetipologypallet(CAST(:palletId AS integer), CAST(:tipologiaId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void updateTipologia(@Param("palletId") Integer palletId,
       @Param("tipologiaId") Integer tipologiaId, @Param("filas") Integer filas);
 
   // Inhabilitar pallet de empaque
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InnactivatePallet :palletId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_innactivatepallet(CAST(:palletId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void innactivatePallet(@Param("palletId") int palletId, @Param("filas") int filas);
 
-  @Query(value = "EXEC pa_SearchStorageGroupPalletAccesory :numero, :tipoAccesorio", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.\"codigoSap\", f.\"Descripcion\", f.tipologia, f.posicion, f.origen FROM pa_searchstoragegrouppalletaccesory(CAST(:numero AS character varying), CAST(:tipoAccesorio AS character varying)) f", nativeQuery = true)
   List<Object[]> searchStorageGroupPalletAccesory(@Param("numero") String numero,
       @Param("tipoAccesorio") String tipoAccesorio);
 
-  @Query(value = "EXEC pa_SearchStorageGroupPalletAccesoryCreated :numero, :tipoAccesorio", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.\"codigoSap\", f.tipologia, f.posicion, f.origen, f.lote FROM pa_searchstoragegrouppalletaccesorycreated(CAST(:numero AS character varying), CAST(:tipoAccesorio AS character varying)) f", nativeQuery = true)
   List<Object[]> searchStorageGroupPalletAccesoryCreated(@Param("numero") String numero,
       @Param("tipoAccesorio") String tipoAccesorio);
 
-  @Query(value = "EXEC pa_SearchStorageGroupPallet :numero, :tipoEquipo", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.\"codigoSap\", f.\"Descripcion\", f.tipologia, f.posicion, f.origen, f.lote FROM pa_searchstoragegrouppallet(CAST(:numero AS character varying), CAST(:tipoEquipo AS character varying)) f", nativeQuery = true)
   List<Object[]> searchStorageGroupPallet(@Param("numero") String numero,
       @Param("tipoEquipo") String tipoEquipo);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UnifyPallet :palletId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_unifypallet(CAST(:palletId AS integer))", nativeQuery = true)
   Integer unifyPallet(@Param("palletId") Integer palletId);
 
-  @Query(value = "EXEC pa_GetListPallet :destino", nativeQuery = true)
+  @Query(value = "SELECT f.numero FROM pa_getlistpallet(CAST(:destino AS character varying)) f", nativeQuery = true)
   List<Object[]> getListPallets(@Param("destino") String destino);
 
-  @Query(value = "pa_GetIdPallet :numero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer) FROM pa_getidpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
   Integer getIdPallet(@Param("numero") String numero);
 
   @Modifying
@@ -164,13 +155,13 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   Integer updateSapCodePallet(@Param("palletId") Integer palletId, @Param("codigoSapId") Integer codigoSapId,
       @Param("filas") Integer filas);
 
-  @Query(value = "EXEC pa_SearchQualityDeliveryPallet", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.cajas FROM pa_searchqualitydeliverypallet() f", nativeQuery = true)
   List<Object[]> searchQualityDeliveryPallet();
 
-  @Query(value = "EXEC pa_SearchPalletBoxDispatchPallet :numero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.\"Codigo\", f.\"Descripcion\", f.cajas, CAST(f.\"Cantidad\" AS integer), CAST(f.\"Cantidad\" AS integer), CAST(f.\"Cantidad\" AS integer), f.tipologia FROM pa_searchpalletboxdispatchpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> searchPalletBoxDispatchPallet(@Param("numero") String numero);
 
-  @Procedure(procedureName = "pa_SendAllPallet")
+  @Query(value = "SELECT 1 FROM pa_sendallpallet(p_destinoid => CAST(:destinoId AS integer), p_palletid => CAST(:palletId AS integer))", nativeQuery = true)
   void sendAllPallet(
       @Param("destinoId") Integer destinoId,
       @Param("palletId") Integer palletId);
@@ -195,28 +186,26 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "UPDATE Pallet SET EstadoInventario=0 WHERE Id=:palletId", nativeQuery = true)
   Integer innactivatePalletInventory(@Param("palletId") Integer palletId);
 
-  @Query(value = "EXEC pa_SearchReceivePartsPallet :destino, :numero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.origen, f.tipologia FROM pa_searchreceivepartspallet(CAST(:destino AS character varying), CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> searchReceivePartsPallet(@Param("destino") String destino, @Param("numero") String numero);
 
-  @Query(value = "EXEC pa_SearchGeneralInventoryPallet :numero, :estado, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.posicion FROM pa_searchgeneralinventorypallet(CAST(:numero AS character varying), CAST(:estado AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
   List<Object[]> searchGeneralInventoryPallet(@Param("numero") String numero, @Param("estado") String estado,
       @Param("usuarioId") Integer usuarioId);
 
   @Transactional
-  @Modifying
-  @Query(value = "EXEC pa_UpdateStateInventoryPallet :palletId, :estadoInventario, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatestateinventorypallet(CAST(:palletId AS integer), CAST(:estadoInventario AS integer), CAST(NULL AS integer))", nativeQuery = true)
   Integer updateStateInventoryPallet(@Param("palletId") Integer palletId,
       @Param("estadoInventario") Integer estadoInventario, @Param("filas") Integer filas);
 
-  @Query(value = "EXEC pa_SearchGeneralSettingsPallet :numero, :estado", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.posicion FROM pa_searchgeneralsettingspallet(CAST(:numero AS character varying), CAST(:estado AS character varying)) f", nativeQuery = true)
   List<Object[]> searchGeneralSettingsPallet(@Param("numero") String numero, @Param("estado") String estado);
 
-  @Query(value = "EXEC pa_GetPalletNumero :palletNumero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.\"Existe\" AS boolean) FROM pa_getpalletnumero(CAST(:palletNumero AS character varying)) f", nativeQuery = true)
   Boolean getPalletNumero(@Param("palletNumero") String palletNumero);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_EnviarPallet :palletId, :destinoId, :estadoId, :tipologiaId, :posicionId, :estado, :usuarioId, :opcion, :filasIngreso OUT, :filasPallet OUT", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_enviarpallet(CAST(:palletId AS integer), CAST(:destinoId AS integer), CAST(:estadoId AS integer), CAST(:tipologiaId AS integer), CAST(:posicionId AS integer), CAST(:estado AS integer), CAST(:usuarioId AS integer), CAST(:opcion AS integer), CAST(NULL AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void enviarPallet(
       @Param("palletId") Integer palletId,
       @Param("destinoId") Integer destinoId,
@@ -229,14 +218,13 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("filasIngreso") Integer filasIngreso,
       @Param("filasPallet") Integer filasPallet);
 
-  @Query(value = "EXEC pa_SearchModelsPallet :palletId", nativeQuery = true)
+  @Query(value = "SELECT f.codigo, CAST(f.cantidad AS integer) FROM pa_searchmodelspallet(CAST(:palletId AS integer)) f", nativeQuery = true)
   List<Object[]> searchModels(@Param("palletId") Integer palletId);
 
 
 
-  @Modifying
   @Transactional
-  @Query(value = "DECLARE @out int; EXEC pa_SendModelsEntry :estadoId, :usuarioId, :palletDestinoId, :palletId, :codigoSapId, @out OUTPUT", nativeQuery = true)
+  @Query(value = "SELECT pa_sendmodelsentry(CAST(:estadoId AS integer), CAST(:usuarioId AS integer), CAST(:palletDestinoId AS integer), CAST(:palletId AS integer), CAST(:codigoSapId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void sendModels(
           @Param("estadoId")        Integer estadoId,
           @Param("usuarioId")       Integer usuarioId,
@@ -245,7 +233,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
           @Param("codigoSapId")     Integer codigoSapId
   );
 
-  @Query(value = "EXEC pa_GetModelPalletByNumber :numero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.\"posicionId\" AS integer), f.posicion, CAST(f.\"tipologiaId\" AS integer), f.tipologia, CAST(f.\"codigoSapId\" AS integer), f.\"codigoSap\", f.descripcion, CAST(f.\"origenId\" AS integer), f.origen, CAST(f.\"destinoId\" AS integer), CAST(f.activo AS boolean), f.\"nombreUsuario\" FROM pa_getmodelpalletbynumber(CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> getModelByNumber(@Param("numero") String numero);
 
   @Query(value = "SELECT p.Id, p.CodigoSapId, cs.Codigo, p.LoteId, p.TipologiaId " +
@@ -259,7 +247,6 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
    * que referenciaba la tabla target dentro del INSERT, causando updates
    * incorrectos en filas de otros minutos al superar el valor xx99.
    */
-  @Query(value = "EXEC WmsWdGeneral.dbo.pa_IncrementarConsecutivoPallet :minutoActual",
-      nativeQuery = true)
+  @Query(value = "SELECT f.* FROM general.pa_incrementarconsecutivopallet(CAST(:minutoActual AS timestamp)) f", nativeQuery = true)
   String incrementarYObtenerConsecutivo(@Param("minutoActual") String minutoActual);
 }

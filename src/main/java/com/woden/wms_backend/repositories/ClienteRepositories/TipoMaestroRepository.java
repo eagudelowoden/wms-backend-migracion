@@ -17,33 +17,31 @@ public interface TipoMaestroRepository extends BaseRepository<TipoMaestroModel, 
   @Query(value = "SELECT id FROM TipoMaestro WHERE descripcion = :descripcion", nativeQuery = true)
   Integer getTipoCodigoSap(@Param("descripcion") String descripcion);
 
-  @Query(value = "EXEC pa_SearchMasterType", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Nombre\", f.\"Descripcion\", CAST(f.\"Activo\" AS boolean) FROM pa_searchmastertype() f", nativeQuery = true)
   List<Object[]> search();
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertMasterType :nombre, :descripcion", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertmastertype(CAST(:nombre AS character varying), CAST(:descripcion AS character varying))", nativeQuery = true)
   void insertSP(@Param("nombre") String nombre, @Param("descripcion") String descripcion);
 
   @Transactional
-  @Query(value = "DECLARE @Filas INT; EXEC pa_UpdateMasterType :nombre, :descripcion, :id, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+  @Query(value = "SELECT pa_updatemastertype(CAST(:nombre AS character varying), CAST(:descripcion AS character varying), CAST(:id AS integer), CAST(NULL AS integer))", nativeQuery = true)
   Integer updateSP(@Param("nombre") String nombre, @Param("descripcion") String descripcion, @Param("id") Integer id);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteMasterType :id", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_deletemastertype(CAST(:id AS integer))", nativeQuery = true)
   void deleteSP(@Param("id") Integer id);
 
   @Transactional
-  @Query(value = "DECLARE @Filas INT; EXEC pa_InnactivateMasterType :id, :estado, @Filas OUTPUT; SELECT @Filas", nativeQuery = true)
+  @Query(value = "SELECT pa_innactivatemastertype(CAST(:id AS integer), CAST(:estado AS integer), CAST(NULL AS integer))", nativeQuery = true)
   Integer innactivateSP(@Param("id") Integer id, @Param("estado") Integer estado);
 
-  @Query(value = "EXEC pa_GetCountMasterType :id", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cantidad AS integer) FROM pa_getcountmastertype(CAST(:id AS integer)) f", nativeQuery = true)
   Integer getCount(@Param("id") Integer id);
 
-  @Query(value = "EXEC pa_GetListMasterType", nativeQuery = true)
+  @Query(value = "SELECT f.nombre FROM pa_getlistmastertype() f", nativeQuery = true)
   List<Object[]> getList();
 
-  @Query(value = "EXEC pa_GetIdMasterType :nombre", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer) FROM pa_getidmastertype(CAST(:nombre AS character varying)) f", nativeQuery = true)
   Integer getIdByNombre(@Param("nombre") String nombre);
 }

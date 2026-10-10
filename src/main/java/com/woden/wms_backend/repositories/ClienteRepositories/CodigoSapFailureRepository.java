@@ -11,15 +11,15 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface CodigoSapFailureRepository extends BaseRepository<CodigoSapFailureModel, Integer> {
-  @Query(value = "EXEC pa_GetListFailuresCodigoSapNoId :nombre", nativeQuery = true)
+  @Query(value = "SELECT f.codigo, f.descripcion FROM pa_getlistfailurescodigosapnoid(CAST(:nombre AS character varying)) f", nativeQuery = true)
   List<Object[]> getFallas(@Param("nombre") String nombre);
 
-  @Query(value = "EXEC pa_SearchMandatoryComponent :codigoSapId, :fallaId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.\"ComponenteObligatorio\" AS boolean) FROM pa_searchmandatorycomponent(CAST(:codigoSapId AS integer), CAST(:fallaId AS integer)) f", nativeQuery = true)
   Boolean searchMandatoryComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
 
   @Query (value = "EXEC pa_SearchSapCodeFailureComponent :codigoSapId, :fallaId", nativeQuery = true)
   List<Object[]> searchSapCodeFailureComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
 
-  @Query(value = "EXEC pa_GetListFailuresCodigoSap :codigoSapId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.codigo, f.descripcion, f.\"ComponenteObligatorio\" FROM pa_getlistfailurescodigosap(CAST(:codigoSapId AS integer)) f", nativeQuery = true)
   List<Object[]> getFailuresBySap(@Param("codigoSapId") Integer codigoSapId);
 }

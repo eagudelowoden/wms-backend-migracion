@@ -17,7 +17,7 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name = "IntegracionApiKey", schema = "dbo")
+@Table(name = "IntegracionApiKey")
 public class IntegracionApiKeyModel {
 
   @Id

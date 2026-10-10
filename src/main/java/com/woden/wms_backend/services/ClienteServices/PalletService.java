@@ -118,9 +118,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    List<String> tipologias = maestroRepository.getListByTipo("tipologias");
+    List<String> tipologias = maestroRepository.getListByTipo("Tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
-        ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
+        ? maestroRepository.getIdMaster(tipologias.get(0), "Tipologias").get(0)
         : 1;
 
     // Si dos usuarios (relojes/husos distintos) terminan cayendo en el mismo
@@ -133,23 +133,25 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     for (int intento = 1; intento <= MAX_INTENTOS_RESERVA_PALLET; intento++) {
       String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
       numeroUsado = numero;
-      try {
-        PalletModel pallet = new PalletModel();
-        pallet.setNumero(numero);
-        pallet.setOrigenId(origenId);
-        pallet.setDestinoId(destinoId);
-        pallet.setUsuarioId(usuarioId);
-        pallet.setCodigoSapId(defaultCodigoSapId);
-        pallet.setTipologiaId(defaultTipologiaId);
-        pallet.setPosicionId(0);
-        pallet.setActivo(true);
-        pallet.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        saved = palletRepository.save(pallet);
-        break;
-      } catch (org.springframework.dao.DataIntegrityViolationException e) {
+      // En PostgreSQL un INSERT fallido deja la transacción/sesión inutilizable, así que no se puede
+      // 'atrapar y reintentar' como en SQL Server: se verifica antes si el número ya existe.
+      if (Boolean.TRUE.equals(palletRepository.getPalletNumero(numero))) {
         logger.warn("[reservePallet] Número {} ya existía (intento {}/{}), reintentando con uno nuevo",
             numero, intento, MAX_INTENTOS_RESERVA_PALLET);
+        continue;
       }
+      PalletModel pallet = new PalletModel();
+      pallet.setNumero(numero);
+      pallet.setOrigenId(origenId);
+      pallet.setDestinoId(destinoId);
+      pallet.setUsuarioId(usuarioId);
+      pallet.setCodigoSapId(defaultCodigoSapId);
+      pallet.setTipologiaId(defaultTipologiaId);
+      pallet.setPosicionId(0);
+      pallet.setActivo(true);
+      pallet.setFecha(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+      saved = palletRepository.save(pallet);
+      break;
     }
 
     if (saved == null) {

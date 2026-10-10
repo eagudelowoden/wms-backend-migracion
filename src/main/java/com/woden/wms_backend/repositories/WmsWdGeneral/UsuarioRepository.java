@@ -18,13 +18,13 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
 
     List<UsuarioModel> findByActivoTrue();
 
-    @Query(value = "EXEC pa_GetModelUser :nombreUsuario, :clave", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), CAST(f.identificacion AS bigint), f.nombres, f.apellidos, f.nombreusuario, f.clave, f.\"fechaCreacion\", f.ip, CAST(f.activo AS boolean), f.\"fechaUltimoAcceso\", f.sede, f.correo, f.\"fechaNacimiento\", CAST(f.\"TemaId\" AS integer), f.cargo, f.area FROM general.pa_getmodeluser(:nombreUsuario, :clave) f", nativeQuery = true)
     List<Object[]> getModelUser(@Param("nombreUsuario") String nombreUsuario, @Param("clave") String clave);
 
-    @Query(value = "EXEC pa_GetListUser :idCliente, :tipoPerfil", nativeQuery = true)
-    List<Object[]> getListUser(@Param("idCliente") Integer idCliente, @Param("tipoPerfil") String tipoPerfil);
+    @Query(value = "SELECT f.\"nombreUsuario\" FROM general.pa_getlistuser(:idCliente, :tipoPerfil) f", nativeQuery = true)
+    List<String> getListUser(@Param("idCliente") Integer idCliente, @Param("tipoPerfil") String tipoPerfil);
 
-    @Query(value = "EXEC pa_GetIdUser :nombreUsuario", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer) FROM general.pa_getiduser(:nombreUsuario) f", nativeQuery = true)
     Integer getIdUser(@Param("nombreUsuario") String nombreUsuario);
 
     @Query(value = "SELECT NombreUsuario FROM Usuario WHERE Id = :id", nativeQuery = true)
@@ -33,18 +33,17 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
     @Query(value = "SELECT Clave FROM Usuario WHERE Id = :id", nativeQuery = true)
     List<String> getClaveById(@Param("id") Integer id);
 
-    @Query(value = "EXEC pa_SearchUser :usuario", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.nombres, f.apellidos, f.nombreusuario FROM general.pa_searchuser(:usuario) f", nativeQuery = true)
     List<Object[]> searchUser(@Param("usuario") String usuario);
 
-    @Query(value = "EXEC pa_SearchFilterUser", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), CAST(f.identificacion AS bigint), f.nombreusuario FROM general.pa_searchfilteruser() f", nativeQuery = true)
     List<Object[]> searchFilterUser();
 
-    @Query(value = "EXEC pa_SearchEditUser :usuario", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), CAST(f.identificacion AS bigint), f.nombres, f.apellidos, f.nombreusuario, CAST(f.activo AS boolean), f.\"fechaNacimiento\", f.correo, f.cargo, f.area, CAST(f.\"MaestroCargoId\" AS integer), CAST(f.\"MaestroAreaId\" AS integer), f.\"activo web\" FROM general.pa_searchedituser(:usuario) f", nativeQuery = true)
     List<Object[]> searchEditUser(@Param("usuario") String usuario);
 
-    @Modifying
     @Transactional
-    @Query(value = "DECLARE @f int; EXEC pa_UpdateUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId, :maestroCargoId, :maestroAreaId, :id, @f OUTPUT", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_updateuser(CAST(:identificacion AS integer), :nombres, :apellidos, :usuario, :clave, CAST(CAST(:fechaNacimiento AS timestamp) AS date), :correo, CAST(:cargoId AS integer), CAST(:areaId AS integer), CAST(:maestroCargoId AS integer), CAST(:maestroAreaId AS integer), :id, CAST(NULL AS integer))", nativeQuery = true)
     void updateUser(@Param("identificacion") Long identificacion, @Param("nombres") String nombres,
                     @Param("apellidos") String apellidos, @Param("usuario") String usuario,
                     @Param("clave") String clave, @Param("fechaNacimiento") String fechaNacimiento,
@@ -52,9 +51,8 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
                     @Param("areaId") Integer areaId, @Param("maestroCargoId") Integer maestroCargoId,
                     @Param("maestroAreaId") Integer maestroAreaId, @Param("id") Integer id);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertUser :identificacion, :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, :cargoId, :areaId, :maestroCargoId, :maestroAreaId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_insertuser(CAST(:identificacion AS bigint), :nombres, :apellidos, :usuario, :clave, :fechaNacimiento, :correo, CAST(:cargoId AS integer), CAST(:areaId AS integer), CAST(:maestroCargoId AS integer), CAST(:maestroAreaId AS integer))", nativeQuery = true)
     void insertUser(@Param("identificacion") Long identificacion, @Param("nombres") String nombres,
                     @Param("apellidos") String apellidos, @Param("usuario") String usuario,
                     @Param("clave") String clave, @Param("fechaNacimiento") String fechaNacimiento,
@@ -62,27 +60,25 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
                     @Param("areaId") Integer areaId, @Param("maestroCargoId") Integer maestroCargoId,
                     @Param("maestroAreaId") Integer maestroAreaId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InnactivateUser :id, :estado", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_innactivateuser(:id, :estado)", nativeQuery = true)
     void innactivateUser(@Param("id") int id, @Param("estado") int estado);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_DeleteUser :id", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_deleteuser(:id)", nativeQuery = true)
     void deleteUser(@Param("id") int id);
 
-    @Query(value = "EXEC pa_GetListPosition", nativeQuery = true)
-    List<Object[]> getListPosition();
+    @Query(value = "SELECT f.nombre FROM general.pa_getlistposition() f", nativeQuery = true)
+    List<String> getListPosition();
 
-    @Query(value = "EXEC pa_GetListArea", nativeQuery = true)
-    List<Object[]> getListArea();
+    @Query(value = "SELECT f.nombre FROM general.pa_getlistarea() f", nativeQuery = true)
+    List<String> getListArea();
 
-    @Query(value = "EXEC pa_GetIdPosition :nombre", nativeQuery = true)
-    List<Object[]> getIdPosition(@Param("nombre") String nombre);
+    @Query(value = "SELECT CAST(f.id AS integer) FROM general.pa_getidposition(:nombre) f", nativeQuery = true)
+    List<Integer> getIdPosition(@Param("nombre") String nombre);
 
-    @Query(value = "EXEC pa_GetIdArea :nombre", nativeQuery = true)
-    List<Object[]> getIdArea(@Param("nombre") String nombre);
+    @Query(value = "SELECT CAST(f.id AS integer) FROM general.pa_getidarea(:nombre) f", nativeQuery = true)
+    List<Integer> getIdArea(@Param("nombre") String nombre);
 
     @Query(value = "SELECT c.dbase, c.id, c.nombre FROM UsuarioCliente uc INNER JOIN Cliente c ON uc.clienteId = c.id WHERE uc.usuarioId = :usuarioId", nativeQuery = true)
     List<Object[]> getDbsByUsuarioId(@Param("usuarioId") int usuarioId);
@@ -98,6 +94,6 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
     @Query(value = "SELECT clave_hash FROM Usuario WHERE id = :id", nativeQuery = true)
     List<String> getClaveHashById(@Param("id") int id);
 
-    @Query(value = "SELECT u.id, u.nombres + ' ' + u.apellidos AS nombres, u.nombreUsuario, COALESCE(ucp.perfilId, -1) AS perfilId FROM Usuario u LEFT JOIN UsuarioCliente uc ON uc.usuarioId = u.id AND uc.clienteId = :clienteId LEFT JOIN UsuarioClientePerfil ucp ON ucp.usuarioClienteId = uc.id WHERE u.id = :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT u.id, u.nombres || ' ' || u.apellidos AS nombres, u.nombreUsuario, COALESCE(ucp.perfilId, -1) AS perfilId FROM Usuario u LEFT JOIN UsuarioCliente uc ON uc.usuarioId = u.id AND uc.clienteId = :clienteId LEFT JOIN UsuarioClientePerfil ucp ON ucp.usuarioClienteId = uc.id WHERE u.id = :usuarioId", nativeQuery = true)
     List<Object[]> getProfileForClient(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
 }

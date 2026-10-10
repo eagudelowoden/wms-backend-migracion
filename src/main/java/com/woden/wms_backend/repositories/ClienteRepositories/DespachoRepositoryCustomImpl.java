@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -24,14 +23,15 @@ public class DespachoRepositoryCustomImpl implements DespachoRepositoryCustom {
             Integer usuarioId,
             String pedidoSap) {
 
-        String sql = "{call pa_InsertDispatchAccesory(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+        String sql = "SELECT 1 FROM pa_insertdispatchaccesory(CAST(? AS integer), CAST(? AS integer), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS timestamp), CAST(? AS character varying), CAST(? AS integer), CAST(? AS character varying), CAST(? AS timestamp), CAST(? AS timestamp), CAST(? AS integer))";
         Connection conn = null;
 //METODO PARA DESPACHAR DE MANERA MASIVA
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
-            CallableStatement cs = conn.prepareCall(sql);
+            java.sql.PreparedStatement cs = conn.prepareStatement(sql);
 
+            int ejecutadas = 0;
             for (AccesorioModel a : accesorios) {
                 cs.setInt(1,  a.getId());
                 cs.setInt(2,  a.getCodigoSapId());
@@ -52,12 +52,13 @@ public class DespachoRepositoryCustomImpl implements DespachoRepositoryCustom {
                 cs.setTimestamp(17, toTimestamp(a.getFechaLimpieza()));
                 cs.setTimestamp(18, toTimestamp(a.getFechaEmpaque()));
                 cs.setInt(19, a.getUsuarioLimpiezaId());
-                cs.addBatch();
+                // El driver de PostgreSQL no admite batch sobre SELECT: se ejecuta por fila en la misma transacción
+                cs.executeQuery().close();
+                ejecutadas++;
             }
 
-            int[] filas = cs.executeBatch();
             conn.commit();
-            return filas.length > 0 ? 1 : 0;
+            return ejecutadas > 0 ? 1 : 0;
 
         } catch (Exception e) {
             if (conn != null) {

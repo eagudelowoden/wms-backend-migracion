@@ -26,8 +26,8 @@ public class PedidoService extends BaseService<PedidoModel, Integer> {
     sql.append("SELECT p.id, cs.codigo AS producto, cs.descripcion, p.cantidad, r.id AS remitenteId ")
         .append("FROM WmsWdAplicaciones.dbo.Pedido p ")
         .append("INNER JOIN ").append(baseDatos).append(".dbo.CodigoSap cs ON p.productoId = cs.id ")
-        .append("INNER JOIN WmsWdgeneral.dbo.usuario r ON p.remitenteId = r.id ")
-        .append("INNER JOIN WmsWdgeneral.dbo.cliente c ON p.clienteId = c.id ")
+        .append("INNER JOIN general.usuario r ON p.remitenteId = r.id ")
+        .append("INNER JOIN general.cliente c ON p.clienteId = c.id ")
         .append("WHERE p.estado = 'APROBADO' AND c.nombre = ? ");
 
     List<Object> params = new ArrayList<>();

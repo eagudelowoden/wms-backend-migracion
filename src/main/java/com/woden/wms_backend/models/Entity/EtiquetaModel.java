@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Etiqueta", schema = "dbo")
+@Table(name = "Etiqueta")
 public class EtiquetaModel implements Activable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

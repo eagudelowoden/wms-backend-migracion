@@ -11,10 +11,10 @@ import java.util.List;
 @Repository
 public interface BaseEmpaqueRepository extends BaseRepository<BaseEmpaqueModel, Integer> {
 
-  @Query(value = "EXEC pa_GetModelBaseWeb :base, :serial", nativeQuery = true)
+  @Query(value = "SELECT f.serial, f.\"codigoSap\", f.\"estadoSap\", f.\"estadoRR\", f.\"Lote\" FROM pa_getmodelbaseweb(CAST(:base AS character varying), CAST(:serial AS character varying)) f", nativeQuery = true)
   List<Object[]> getModel(@Param("base") String base, @Param("serial") String serial);
 
-  @Query(value = "EXEC pa_GetCountBase :base", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cantidad AS integer) FROM pa_getcountbase(CAST(:base AS character varying)) f", nativeQuery = true)
   List<Object[]> getCountBase(@Param("base") String base);
 
 }

@@ -14,90 +14,80 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface PerfilRepository extends BaseRepository<PerfilModel, Integer> {
 
-  @Query(value = "EXEC pa_GetNameProfile :usuarioClienteId", nativeQuery = true)
+  @Query(value = "SELECT f.nombre FROM general.pa_getnameprofile(:usuarioClienteId) f", nativeQuery = true)
   String getNameProfile(@Param("usuarioClienteId") Integer usuarioClienteId);
 
-  @Query(value = "EXEC pa_SearchProfile :nombre, :cliente", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchprofile(:nombre, :cliente) f", nativeQuery = true)
   List<Object[]> searchProfile(@Param("nombre") String nombre, @Param("cliente") String cliente);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertProfile :nombre, :clienteId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_insertprofile(:nombre, :clienteId)", nativeQuery = true)
   void insertProfile(@Param("nombre") String nombre, @Param("clienteId") int clienteId);
 
   @Transactional
-  @Query(value = "DECLARE @f int; EXEC pa_UpdateProfile :nombre, :id, :clienteId, @f OUTPUT; SELECT @f", nativeQuery = true)
+  @Query(value = "SELECT general.pa_updateprofile(:nombre, :id, :clienteId, CAST(NULL AS integer))", nativeQuery = true)
   Integer updateProfile(@Param("nombre") String nombre, @Param("id") int id, @Param("clienteId") int clienteId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteProfile :id", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_deleteprofile(:id)", nativeQuery = true)
   void deleteProfile(@Param("id") int id);
 
-  @Query(value = "EXEC pa_SearchAvailableSection :perfilId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchavailablesection(:perfilId) f", nativeQuery = true)
   List<Object[]> searchAvailableSection(@Param("perfilId") int perfilId);
 
-  @Query(value = "EXEC pa_SearchAggregatesSection :perfilId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchaggregatessection(:perfilId) f", nativeQuery = true)
   List<Object[]> searchAggregatesSection(@Param("perfilId") int perfilId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertProfileSection :perfilId, :seccionId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_insertprofilesection(:perfilId, :seccionId)", nativeQuery = true)
   void insertProfileSection(@Param("perfilId") int perfilId, @Param("seccionId") int seccionId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteProfileSection :perfilId, :seccionId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_deleteprofilesection(:perfilId, :seccionId)", nativeQuery = true)
   void deleteProfileSection(@Param("perfilId") int perfilId, @Param("seccionId") int seccionId);
 
-  @Query(value = "EXEC pa_SearchAvailableModule :perfilId, :seccionId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchavailablemodule(:perfilId, :seccionId) f", nativeQuery = true)
   List<Object[]> searchAvailableModule(@Param("perfilId") int perfilId, @Param("seccionId") int seccionId);
 
-  @Query(value = "EXEC pa_SearchAggregateModule :perfilId, :seccionId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchaggregatemodule(:perfilId, :seccionId) f", nativeQuery = true)
   List<Object[]> searchAggregatesModule(@Param("perfilId") int perfilId, @Param("seccionId") int seccionId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertProfileModule :perfilId, :moduloId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_insertprofilemodule(:perfilId, :moduloId)", nativeQuery = true)
   void insertProfileModule(@Param("perfilId") int perfilId, @Param("moduloId") int moduloId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteProfileModule :perfilId, :moduloId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_deleteprofilemodule(:perfilId, :moduloId)", nativeQuery = true)
   void deleteProfileModule(@Param("perfilId") int perfilId, @Param("moduloId") int moduloId);
 
-  @Query(value = "EXEC pa_SearchAvailablePermit :moduloId, :perfilId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchavailablepermit(:moduloId, :perfilId) f", nativeQuery = true)
   List<Object[]> searchAvailablePermit(@Param("moduloId") int moduloId, @Param("perfilId") int perfilId);
 
-  @Query(value = "EXEC pa_SearchAggregatesPermit :perfilId, :moduloId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchaggregatespermit(:perfilId, :moduloId) f", nativeQuery = true)
   List<Object[]> searchAggregatesPermit(@Param("perfilId") int perfilId, @Param("moduloId") int moduloId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertProfilePermit :perfilId, :permisoId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_insertprofilepermit(:perfilId, :permisoId)", nativeQuery = true)
   void insertProfilePermit(@Param("perfilId") int perfilId, @Param("permisoId") int permisoId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteProfilePermit :perfilId, :permisoId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_deleteprofilepermit(:perfilId, :permisoId)", nativeQuery = true)
   void deleteProfilePermit(@Param("perfilId") int perfilId, @Param("permisoId") int permisoId);
 
-  @Query(value = "EXEC pa_SearchAvailableProfileType :perfilId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchavailableprofiletype(:perfilId) f", nativeQuery = true)
   List<Object[]> searchAvailableProfileType(@Param("perfilId") int perfilId);
 
-  @Query(value = "EXEC pa_SearchAggregatesProfileType :perfilId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchaggregatesprofiletype(:perfilId) f", nativeQuery = true)
   List<Object[]> searchAggregatesProfileType(@Param("perfilId") int perfilId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertPerfilTipoPerfil :perfilId, :tipoPerfilId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_insertperfiltipoperfil(:perfilId, :tipoPerfilId)", nativeQuery = true)
   void insertPerfilTipoPerfil(@Param("perfilId") int perfilId, @Param("tipoPerfilId") int tipoPerfilId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeletePerfilTipoPerfil :perfilId, :tipoPerfilId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM general.pa_deleteperfiltipoperfil(:perfilId, :tipoPerfilId)", nativeQuery = true)
   void deletePerfilTipoPerfil(@Param("perfilId") int perfilId, @Param("tipoPerfilId") int tipoPerfilId);
 
-  @Query(value = "EXEC pa_GetListProfileType", nativeQuery = true)
+  @Query(value = "SELECT CAST(t.id AS integer), t.nombre FROM general.tipoperfil t ORDER BY t.nombre", nativeQuery = true)
   List<Object[]> listTipoPerfil();
 }

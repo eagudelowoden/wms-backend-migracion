@@ -100,8 +100,8 @@ public class DynamicDataSourceConfig {
     HikariConfig config = new HikariConfig();
 
     // Configuración básica de conexión
-    String baseUrl = env.getProperty("spring.datasource.url")
-        .replace("databaseName=WmsWdGeneral", "databaseName=" + databaseName);
+    // PostgreSQL: una sola base; cada cliente es un esquema (currentSchema en la URL)
+    String baseUrl = ClientSchema.jdbcUrlFor(env.getProperty("spring.datasource.url"), databaseName);
     config.setJdbcUrl(baseUrl);
     config.setUsername(env.getProperty("spring.datasource.username"));
     config.setPassword(env.getProperty("spring.datasource.password"));
@@ -115,17 +115,8 @@ public class DynamicDataSourceConfig {
     config.setIdleTimeout(env.getProperty("spring.datasource.hikari.idle-timeout", Long.class, 600000L)); // 10 minutos
     config.setMaxLifetime(env.getProperty("spring.datasource.hikari.max-lifetime", Long.class, 1800000L)); // 30 minutos
 
-    // Configuración para SQL Server optimizada
-    config.addDataSourceProperty("cachePrepStmts", "true");
-    config.addDataSourceProperty("prepStmtCacheSize", "250");
-    config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-    config.addDataSourceProperty("useServerPrepStmts", "true");
-    config.addDataSourceProperty("useLocalSessionState", "true");
-    config.addDataSourceProperty("rewriteBatchedStatements", "true");
-    config.addDataSourceProperty("cacheResultSetMetadata", "true");
-    config.addDataSourceProperty("cacheServerConfiguration", "true");
-    config.addDataSourceProperty("elideSetAutoCommits", "true");
-    config.addDataSourceProperty("maintainTimeStats", "false");
+    // Optimización PostgreSQL: agrupa INSERT en batch
+    config.addDataSourceProperty("reWriteBatchedInserts", "true");
 
     // Validación de conexiones
     config.setConnectionTestQuery("SELECT 1");
@@ -160,6 +151,11 @@ public class DynamicDataSourceConfig {
     JpaTransactionManager transactionManager = new JpaTransactionManager();
     transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
     return transactionManager;
+  }
+
+  /** URL JDBC (base única + esquema del cliente) que usa el pool de ese cliente. */
+  public String getJdbcUrl(String dbName) {
+    return ClientSchema.jdbcUrlFor(env.getProperty("spring.datasource.url"), dbName);
   }
 
   // Métodos para verificar estado

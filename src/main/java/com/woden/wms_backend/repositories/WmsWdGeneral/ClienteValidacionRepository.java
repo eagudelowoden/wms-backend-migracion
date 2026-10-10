@@ -14,30 +14,27 @@ import com.woden.wms_backend.models.WmsWdGeneral.ClienteValidacionModel;
 @Repository
 public interface ClienteValidacionRepository extends JpaRepository<ClienteValidacionModel, Integer> {
 
-    @Query(value = "EXEC dbo.pa_GetValidacionesCliente :clienteId", nativeQuery = true)
+    @Query(value = "SELECT f.codigo, CAST(f.activo AS boolean) FROM general.pa_getvalidacionescliente(:clienteId) f", nativeQuery = true)
     List<Object[]> getValidacionesByClienteId(@Param("clienteId") Integer clienteId);
 
-    @Query(value = "EXEC dbo.pa_GetValidacionTiposDisponibles :clienteId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Codigo\", f.\"Descripcion\" FROM general.pa_getvalidaciontiposdisponibles(:clienteId) f", nativeQuery = true)
     List<Object[]> getDisponibles(@Param("clienteId") Integer clienteId);
 
-    @Query(value = "EXEC dbo.pa_GetValidacionesAsignadas :clienteId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"Id\" AS integer), CAST(f.\"ValidacionTipoId\" AS integer), f.\"Codigo\", f.\"Descripcion\", CAST(f.\"Activo\" AS boolean) FROM general.pa_getvalidacionesasignadas(:clienteId) f", nativeQuery = true)
     List<Object[]> getAsignadas(@Param("clienteId") Integer clienteId);
 
-    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM ClienteValidacion cv JOIN ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
+    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM ClienteValidacion cv JOIN ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = true", nativeQuery = true)
     Integer tieneValidacion(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC dbo.pa_InsertClienteValidacion :clienteId, :validacionTipoId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_insertclientevalidacion(:clienteId, :validacionTipoId)", nativeQuery = true)
     void insertValidacion(@Param("clienteId") Integer clienteId, @Param("validacionTipoId") Integer validacionTipoId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC dbo.pa_DeleteClienteValidacion :clienteId, :validacionTipoId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_deleteclientevalidacion(:clienteId, :validacionTipoId)", nativeQuery = true)
     void deleteValidacion(@Param("clienteId") Integer clienteId, @Param("validacionTipoId") Integer validacionTipoId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC dbo.pa_ToggleClienteValidacion :clienteId, :validacionTipoId, :activo", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_toggleclientevalidacion(:clienteId, :validacionTipoId, CAST(:activo AS boolean))", nativeQuery = true)
     void toggleValidacion(@Param("clienteId") Integer clienteId, @Param("validacionTipoId") Integer validacionTipoId, @Param("activo") Boolean activo);
 }

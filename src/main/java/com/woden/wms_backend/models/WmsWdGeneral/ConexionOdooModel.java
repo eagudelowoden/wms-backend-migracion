@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "ConexionOdoo", schema = "dbo")
+@Table(name = "ConexionOdoo")
 public class ConexionOdooModel {
   @Id
   @Column(name = "Id")

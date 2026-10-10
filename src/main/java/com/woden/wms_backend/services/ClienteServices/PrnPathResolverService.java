@@ -35,7 +35,7 @@ public class PrnPathResolverService {
     if (clientId == null) return null;
 
     String columna = "ETIQUETADO".equalsIgnoreCase(tipo) ? "PrnEtiquetado" : "PrnEmpaque";
-    String sql = "SELECT " + columna + " FROM [WmsWdGeneral].[dbo].[Cliente] WHERE Id = ?";
+    String sql = "SELECT " + columna + " FROM general.Cliente WHERE Id = ?";
     try (Connection conn = dataSource.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setInt(1, clientId);

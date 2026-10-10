@@ -23,9 +23,8 @@ public interface InventarioTerminadoRepository extends BaseRepository<Inventario
       @Param("usuarioIdTermina") Integer usuarioIdTerminado, @Param("documento") String documento,
       @Param("serialId") Integer serialId, @Param("mac") String mac, @Param("sobrante") Boolean sobrante);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertInventarioFaltante :usuarioIdTerminado, :documento, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_insertinventariofaltante(CAST(:usuarioIdTerminado AS integer), CAST(:documento AS character varying), CAST(NULL AS integer))", nativeQuery = true)
   Integer insertInventarioFaltante(
       @Param("usuarioIdTerminado") Integer usuarioIdTerminado, @Param("documento") String documento,
       @Param("filas") Integer filas);

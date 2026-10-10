@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "BaseSeparacion", schema = "dbo")
+@Table(name = "BaseSeparacion")
 public class BaseSeparacion {
     @Id
     @Column(name = "Id")

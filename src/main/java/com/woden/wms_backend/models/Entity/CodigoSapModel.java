@@ -1,5 +1,7 @@
 package com.woden.wms_backend.models.Entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.woden.wms_backend.util.BooleanAsIntSerializer;
 import com.woden.wms_backend.models.Activable;
 
 
@@ -12,7 +14,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "CodigoSap", schema = "dbo")
+@Table(name = "CodigoSap")
 public class CodigoSapModel implements Activable {
     @Id
     @Column(name = "Id")
@@ -43,8 +45,9 @@ public class CodigoSapModel implements Activable {
     private Integer clasificacionId;
     @Column(name = "NumSerial")
     private Integer numSerial;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "AsignacionAcc")
-    private Integer asignar;
+    private Boolean asignar;
     @Column(name = "LargosMac")
     private String largosMac;
     @Column(name = "LargosSerial3")
@@ -61,10 +64,12 @@ public class CodigoSapModel implements Activable {
     private String direccionMac;
     @Column(name = "recorteMac")
     private Integer recorteMac;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "AsignacionFalla")
-    private Integer asignarFa;
+    private Boolean asignarFa;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "multimodelo")
-    private Integer multimodelo;
+    private Boolean multimodelo;
     @Column(name = "cantidadCaja")
     private Integer cantidadCaja;
     @Column(name = "Valor")
@@ -77,8 +82,9 @@ public class CodigoSapModel implements Activable {
     private Integer modeloId;
     @Column(name = "proveedorId")
     private Integer proveedorId;
+    @JsonSerialize(using = BooleanAsIntSerializer.class)
     @Column(name = "smartcard")
-    private Integer smartCard;
+    private Boolean smartCard;
     @Column(name = "Activo")
     private Boolean activo;
 

@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Reparacion", schema = "dbo")
+@Table(name = "Reparacion")
 public class ReparacionModel {
     @Id
     @Column(name = "Id")

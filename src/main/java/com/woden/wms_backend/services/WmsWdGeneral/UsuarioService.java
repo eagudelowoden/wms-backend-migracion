@@ -189,8 +189,7 @@ public class UsuarioService {
     }
 
     public List<String> getListUser(Integer idCliente, String tipoPerfil) {
-        List<Object[]> results = usuarioRepository.getListUser(idCliente, tipoPerfil);
-        return results.stream().map(obj -> (String) obj[0]).collect(Collectors.toList());
+        return usuarioRepository.getListUser(idCliente, tipoPerfil);
     }
 
     public Integer getIdUser(String nombreUsuario) {
@@ -302,37 +301,35 @@ public class UsuarioService {
     }
 
     public List<Map<String, Object>> getCargos() {
-        List<Object[]> rows = usuarioRepository.getListPosition();
+        List<String> rows = usuarioRepository.getListPosition();
         List<Map<String, Object>> result = new ArrayList<>();
-        for (Object[] row : rows) {
+        for (String nombre : rows) {
             Map<String, Object> item = new HashMap<>();
-            item.put("nombre", row[0]);
+            item.put("nombre", nombre);
             result.add(item);
         }
         return result;
     }
 
     public List<Map<String, Object>> getAreas() {
-        List<Object[]> rows = usuarioRepository.getListArea();
+        List<String> rows = usuarioRepository.getListArea();
         List<Map<String, Object>> result = new ArrayList<>();
-        for (Object[] row : rows) {
+        for (String nombre : rows) {
             Map<String, Object> item = new HashMap<>();
-            item.put("nombre", row[0]);
+            item.put("nombre", nombre);
             result.add(item);
         }
         return result;
     }
 
     public Integer getCargoIdByName(String nombre) {
-        List<Object[]> rows = usuarioRepository.getIdPosition(nombre);
-        if (rows.isEmpty()) return null;
-        return toInt(rows.get(0)[0]);
+        List<Integer> rows = usuarioRepository.getIdPosition(nombre);
+        return rows.isEmpty() ? null : rows.get(0);
     }
 
     public Integer getAreaIdByName(String nombre) {
-        List<Object[]> rows = usuarioRepository.getIdArea(nombre);
-        if (rows.isEmpty()) return null;
-        return toInt(rows.get(0)[0]);
+        List<Integer> rows = usuarioRepository.getIdArea(nombre);
+        return rows.isEmpty() ? null : rows.get(0);
     }
 
     public Map<String, Object> getProfileForClient(int usuarioId, int clienteId) {

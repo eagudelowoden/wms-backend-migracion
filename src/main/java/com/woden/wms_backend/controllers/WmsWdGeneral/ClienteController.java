@@ -104,8 +104,7 @@ public class ClienteController extends BaseController<ClienteModel, Integer> {
     @GetMapping("/current-db")
     public ResponseEntity<DatabaseInfo> getCurrentDatabase() {
         String currentDb = ClientDatabaseContext.getCurrentClientDb();
-        String connectionUrl = "jdbc:sqlserver://wd-wms-prd.cyeyhpu1wzr0.us-east-2.rds.amazonaws.com:14331;" +
-                "databaseName=" + currentDb + ";trustServerCertificate=true";
+        String connectionUrl = dynamicDataSourceConfig.getJdbcUrl(currentDb);
 
         return ResponseEntity.ok(new DatabaseInfo(currentDb, connectionUrl));
     }

@@ -15,38 +15,33 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface CajaDespachoRepository extends BaseRepository<CajaDespachoModel, Integer> {
   @Transactional
-  @Modifying
-  @Query(value = "EXEC pa_InsertBoxDispatch :numero, :palletId, :usuarioId, :fecha", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertboxdispatch(CAST(:numero AS character varying), CAST(:palletId AS integer), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone))", nativeQuery = true)
   void insertBoxDispatch(@Param("numero") String numero, @Param("palletId") Integer palletId,
       @Param("usuarioId") Integer usuarioId, @Param("fecha") String fecha);
 
-  @Query(value = "EXEC pa_SearchDispatch :palletId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.seriales AS integer) FROM pa_searchdispatch(CAST(:palletId AS integer)) f", nativeQuery = true)
   List<Object[]> searchDispatch(
       Integer palletId);
 
-  @Query(value = "EXEC pa_GetLastBoxDispatch :palletId", nativeQuery = true)
+  @Query(value = "SELECT f.\"Numero\" FROM pa_getlastboxdispatch(CAST(:palletId AS integer)) f", nativeQuery = true)
   List<Object[]> getLastBoxDispatch(@Param("palletId") Integer palletId);
 
   @Transactional
-  @Modifying
-  @Query(value = "EXEC pa_DeleteBoxDispatch :id", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_deleteboxdispatch(CAST(:id AS integer))", nativeQuery = true)
   void deleteBoxDispatch(@Param("id") Integer id);
 
-  @Query(value = "EXEC pa_GetCountBoxDispatch :cajaId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cantidad AS integer) FROM pa_getcountboxdispatch(CAST(:cajaId AS integer)) f", nativeQuery = true)
   Integer getCountBoxDispatch(@Param("cajaId") Integer cajaId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InactivateAllBoxDispatch :palletId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_inactivateallboxdispatch(CAST(:palletId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void inactivateAllBoxDispatch(@Param("palletId") Integer palletId, @Param("filas") Integer filas);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InactivateBoxDispatch :cajaDespachoId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_inactivateboxdispatch(CAST(:cajaDespachoId AS integer))", nativeQuery = true)
   void inactivateBoxDispatch(@Param("cajaDespachoId") Integer cajaDespachoId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertDispatchBoxFromPackedBox :palletId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertdispatchboxfrompackedbox(CAST(:palletId AS integer))", nativeQuery = true)
   void insertDispatchBoxFromPackedBox(@Param("palletId") Integer palletId);
 }

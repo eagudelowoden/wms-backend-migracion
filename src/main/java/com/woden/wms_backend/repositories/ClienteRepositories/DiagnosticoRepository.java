@@ -13,9 +13,8 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, Integer> {
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertDiagnostic :serialId, :serial, :mac, :codigoSapId, :variable1, :variable2, :variable3, :variable4, :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_insertdiagnostic(CAST(:serialId AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:codigoSapId AS integer), CAST(:variable1 AS character varying), CAST(:variable2 AS character varying), CAST(:variable3 AS character varying), CAST(:variable4 AS character varying), CAST(:usuarioId AS integer))", nativeQuery = true)
     void create(@Param("serialId") Integer serialId,
             @Param("serial") String serial,
             @Param("mac") String mac,
@@ -26,35 +25,32 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
             @Param("variable3") String variable3,
             @Param("variable4") String variable4);
 
-    @Modifying
-    @Query(value = "EXEC pa_UpdateDiagnostic :estadoFinalId, :fallaId, :serial, :estadoCalidadId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_updatediagnostic(CAST(:estadoFinalId AS integer), CAST(:fallaId AS integer), CAST(:serial AS character varying), CAST(:estadoCalidadId AS integer))", nativeQuery = true)
     void updateDiagnostico(
             @Param("estadoFinalId") Integer estadoFinalId,
             @Param("fallaId") Integer fallaId,
             @Param("serial") String serial,
             @Param("estadoCalidadId") Integer estadoCalidadId);
 
-    @Query(value = "EXEC pa_GetFailureIdDiagnostic :serialId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"FallaId\" AS integer) FROM pa_getfailureiddiagnostic(CAST(:serialId AS integer)) f", nativeQuery = true)
     Integer getFailureIdDiagnostic(@Param("serialId") Integer serialId);
 
-    @Query(value = "EXEC pa_GetFailureDiagnostic :serial", nativeQuery = true)
+    @Query(value = "SELECT f.falla, f.descripcion FROM pa_getfailurediagnostic(CAST(:serial AS character varying)) f", nativeQuery = true)
     String getFailureDiagnostic(@Param("serial") String serial);
 
-    @Modifying
     @Transactional
-    @Query(value  = "EXEC pa_DeleteDiagnostic :serial", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_deletediagnostic(CAST(:serial AS character varying))", nativeQuery = true)
     void delete(@Param("serial") String serial);
 
     
-    @Query(value = "EXEC pa_GetDiagnosedUser :perfil, :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"Id\" AS integer), CAST(f.\"SerialId\" AS integer), f.\"Serial\", f.\"Mac\", f.\"CodigoSap\", f.\"Descripcion\", CAST(f.\"Fallaid\" AS integer), CAST(f.\"EstadoFinalid\" AS integer), f.\"Usuario\", CAST(f.\"LoteId\" AS integer), f.\"Lote\", f.\"PQRS\", f.\"Fecha\", CAST(f.\"TruckRollId\" AS integer) FROM pa_getdiagnoseduser(CAST(:perfil AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
     public List<Object[]> getDiagnosedUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
-    @Query(value = "pa_GetDiagnosticVariables :serial", nativeQuery = true)
+    @Query(value = "SELECT f.variable1, f.variable2, f.variable3, f.variable4 FROM pa_getdiagnosticvariables(CAST(:serial AS character varying)) f", nativeQuery = true)
     public List<Object[]> getDiagnosticVariables(@Param("serial") String serial);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_SaveDiagnostic :datos", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_savediagnostic(CAST(:datos AS text))", nativeQuery = true)
     void save(@Param("datos") String datos);
 
     @Modifying

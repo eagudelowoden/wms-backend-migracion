@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Diagnostico", schema = "dbo")
+@Table(name = "Diagnostico")
 public class DiagnosticoGibgoEntity {
     @Id
     @Column(name = "Id")

@@ -35,16 +35,16 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Modifying
   @Transactional
-  @Query(value = "UPDATE Cliente SET BaseEmpaqueON = :baseEmpaqueON WHERE Id = :id", nativeQuery = true)
+  @Query(value = "UPDATE Cliente SET BaseEmpaqueON = (CAST(:baseEmpaqueON AS integer) <> 0) WHERE Id = :id", nativeQuery = true)
   int updateBaseEmpaqueON(@Param("baseEmpaqueON") int baseEmpaqueON, @Param("id") int id);
 
-  @Query(value = "SELECT CASE WHEN BaseEmpaqueON = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
+  @Query(value = "SELECT CASE WHEN CAST(BaseEmpaqueON AS integer) = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
   Integer getBaseEmpaqueON(@Param("id") int id);
 
   @Query(value = "SELECT etiquetaUnitariaON FROM Cliente WHERE Id = :id", nativeQuery = true)
   Boolean getEtiquetaUnitariaON(@Param("id") int id);
 
-  @Query(value = "SELECT CASE WHEN serialMasterCalidadON = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
+  @Query(value = "SELECT CASE WHEN CAST(serialMasterCalidadON AS integer) = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
   Integer getSerialMasterCalidadON(@Param("id") int id);
 
   @Query(value = "SELECT CAST(serialMasterCalidadON AS INT) FROM Cliente WHERE Id = :id", nativeQuery = true)

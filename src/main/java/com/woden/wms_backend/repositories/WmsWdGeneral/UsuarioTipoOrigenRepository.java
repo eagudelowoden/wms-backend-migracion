@@ -12,6 +12,6 @@ import com.woden.wms_backend.models.WmsWdGeneral.UsuarioTipoOrigenModel;
 @Repository
 public interface UsuarioTipoOrigenRepository extends JpaRepository<UsuarioTipoOrigenModel, Integer> {
     
-    @Query(value = "EXEC pa_GetListUsuarioTipoOrigen :usuarioId, :clienteId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Codigo\" FROM general.pa_getlistusuariotipoorigen(:usuarioId, :clienteId) f", nativeQuery = true)
     List<Object[]> getListAssigned(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
 }

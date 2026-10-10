@@ -133,7 +133,7 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
     }
 
     public int getPackedAccesoriesSerials(String codigoSap, String tipoAccesorio, Integer palletId) {
-        String sql = "EXEC pa_GetPackedAccesoriesSerials ?, ?, ?";
+        String sql = "SELECT * FROM pa_getpackedaccesoriesserials(CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer))";
         try {
             // long start = System.currentTimeMillis();
 
@@ -172,7 +172,7 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
 
     @Transactional
     public int updatePackingBatch(List<String[]> packingDataList) {
-        String sql = "EXEC pa_UpdatePackingAccesory ?, ?, ?, ?, ?, ?, ?";
+        String sql = "SELECT 1 FROM pa_updatepackingaccesory(CAST(? AS character varying), CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer))";
 
         int batchSize = 200; // 🔹 puedes ajustar (100–500 según tu entorno)
 
@@ -180,15 +180,20 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
             for (int i = 0; i < packingDataList.size(); i += batchSize) {
                 List<String[]> batch = packingDataList.subList(i, Math.min(i + batchSize, packingDataList.size()));
 
-                jdbcTemplate.batchUpdate(sql, batch, batch.size(), (ps, data) -> {
-                    ps.setString(1, data[0]); // CodigoSap
-                    ps.setString(2, data[1]); // Tipo
-                    ps.setString(3, data[2]); // Estado
-                    ps.setInt(4, Integer.parseInt(data[3])); // DestinoId
-                    ps.setString(5, data[4]); // Serial
-                    ps.setInt(6, Integer.parseInt(data[5])); // PalletId
-                    ps.setInt(7, Integer.parseInt(data[6])); // Cantidad
-                });
+                // El driver de PostgreSQL no admite batch sobre SELECT: se ejecuta por fila
+                // dentro de la misma transacción.
+                for (String[] data : batch) {
+                    jdbcTemplate.query(sql, ps -> {
+                        ps.setString(1, data[0]); // CodigoSap
+                        ps.setString(2, data[1]); // Tipo
+                        ps.setString(3, data[2]); // Estado
+                        ps.setInt(4, Integer.parseInt(data[3])); // DestinoId
+                        ps.setString(5, data[4]); // Serial
+                        ps.setInt(6, Integer.parseInt(data[5])); // PalletId
+                        ps.setInt(7, Integer.parseInt(data[6])); // Cantidad
+                    }, rs -> {
+                    });
+                }
 
                 // total += batch.size();
             }

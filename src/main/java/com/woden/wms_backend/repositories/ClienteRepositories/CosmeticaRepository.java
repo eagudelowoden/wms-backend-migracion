@@ -16,12 +16,11 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface CosmeticaRepository extends BaseRepository<CosmeticaModel, Integer> {
 
-  @Query(value = "EXEC pa_SearchCosmeticaEntry :perfil, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT f.serial, f.mac, f.codigo, f.descripcion FROM pa_searchcosmeticaentry(CAST(:perfil AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
   public List<Object[]> searchCosmeticaEntry(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertCosmetica :serial, :usuarioId, :fecha", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertcosmetica(CAST(:serial AS character varying), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone))", nativeQuery = true)
   void insertCosmetica(
       @Param("serial") String serial,
       @Param("usuarioId") Integer usuarioId,

@@ -122,6 +122,15 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
         return map;
     }
 
+    /** Las entidades usan Boolean para columnas boolean; las funciones PostgreSQL reciben integer (1/0). */
+    private static Integer b(Boolean v) {
+        return v == null ? null : (v ? 1 : 0);
+    }
+
+    private static Integer b(Boolean v, int porDefecto) {
+        return v == null ? porDefecto : (v ? 1 : 0);
+    }
+
     @Transactional
     public Integer create(ClienteModel model) {
         String ipServer = model.getIp_server();
@@ -132,10 +141,10 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
         if (dbPass != null && !dbPass.isBlank()) {
             dbPass = encryptUtil.encode(dbPass);
         }
-        return clienteRepository.insertSP(
+        Integer nuevoId = clienteRepository.insertSP(
                 model.getNombre(),
                 model.getColorCorporativo(),
-                model.getActivo() != null ? model.getActivo() : 1,
+                b(model.getActivo(), 1),
                 model.getConn(),
                 model.getMan_app() != null ? model.getMan_app() : 0,
                 model.getImagenesEtiquetado(),
@@ -155,32 +164,38 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
                 model.getDb_user(),
                 dbPass,
                 model.getBandera(),
-                model.getRecogidaON() != null ? model.getRecogidaON() : 0,
-                model.getBaseIngresoON() != null ? model.getBaseIngresoON() : 0,
-                model.getBaseNoDisponibleON() != null ? model.getBaseNoDisponibleON() : 0,
-                model.getLoteEmpaqueON() != null ? model.getLoteEmpaqueON() : 0,
+                b(model.getRecogidaON(), 0),
+                b(model.getBaseIngresoON(), 0),
+                b(model.getBaseNoDisponibleON(), 0),
+                b(model.getLoteEmpaqueON(), 0),
                 model.getLargoGuia(),
-                model.getKitIngresoON() != null ? model.getKitIngresoON() : 0,
-                model.getComponenteON() != null ? model.getComponenteON() : 0,
-                model.getTipoOrigenUsuarioON() != null ? model.getTipoOrigenUsuarioON() : 0,
-                model.getNivelClasificacionON() != null ? model.getNivelClasificacionON() : 0,
+                b(model.getKitIngresoON(), 0),
+                b(model.getComponenteON(), 0),
+                b(model.getTipoOrigenUsuarioON(), 0),
+                b(model.getNivelClasificacionON(), 0),
                 model.getCalidadON() != null ? model.getCalidadON() : 0,
-                model.getSmartCardInfoON() != null ? model.getSmartCardInfoON() : 0,
+                b(model.getSmartCardInfoON(), 0),
                 model.getBloqueoReimpresionON() != null ? model.getBloqueoReimpresionON() : 0,
-                model.getEtiquetaUnitariaON() != null ? model.getEtiquetaUnitariaON() : 0,
+                b(model.getEtiquetaUnitariaON(), 0),
                 model.getPrealerta(),
-                model.getAdicionPrealertaON() != null ? model.getAdicionPrealertaON() : 0,
+                b(model.getAdicionPrealertaON(), 0),
                 model.getOdooPqrsON() != null ? model.getOdooPqrsON() : false,
-                model.getSerialMasterCalidadON() != null ? model.getSerialMasterCalidadON() : 0);
+                b(model.getSerialMasterCalidadON(), 0));
+        // pa_insertcliente no recibe serialMasterCalidadON: se guarda aparte
+        if (nuevoId != null) {
+            clienteRepository.setSerialMasterCalidadON(nuevoId,
+                    b(model.getSerialMasterCalidadON(), 0));
+        }
+        return nuevoId;
     }
 
     @Transactional
     public Integer update(Integer id, ClienteModel model) {
-        return clienteRepository.updateSP(
+        Integer filas = clienteRepository.updateSP(
                 id,
                 model.getNombre(),
                 model.getColorCorporativo(),
-                model.getActivo(),
+                b(model.getActivo()),
                 model.getConn(),
                 model.getMan_app(),
                 model.getImagenesEtiquetado(),
@@ -197,23 +212,28 @@ public class ClienteService extends BaseService<ClienteModel, Integer> {
                 model.getDb_user(),
                 model.getDb_pass(),
                 model.getBandera(),
-                model.getRecogidaON(),
-                model.getBaseIngresoON(),
-                model.getBaseNoDisponibleON(),
-                model.getLoteEmpaqueON(),
+                b(model.getRecogidaON()),
+                b(model.getBaseIngresoON()),
+                b(model.getBaseNoDisponibleON()),
+                b(model.getLoteEmpaqueON()),
                 model.getLargoGuia(),
-                model.getKitIngresoON(),
-                model.getComponenteON(),
-                model.getTipoOrigenUsuarioON(),
-                model.getNivelClasificacionON(),
+                b(model.getKitIngresoON()),
+                b(model.getComponenteON()),
+                b(model.getTipoOrigenUsuarioON()),
+                b(model.getNivelClasificacionON()),
                 model.getCalidadON(),
-                model.getSmartCardInfoON(),
+                b(model.getSmartCardInfoON()),
                 model.getBloqueoReimpresionON(),
-                model.getEtiquetaUnitariaON(),
+                b(model.getEtiquetaUnitariaON()),
                 model.getPrealerta(),
-                model.getAdicionPrealertaON(),
+                b(model.getAdicionPrealertaON()),
                 model.getOdooPqrsON(),
-                model.getSerialMasterCalidadON());
+                b(model.getSerialMasterCalidadON()));
+        // pa_updatecliente no recibe serialMasterCalidadON: se guarda aparte
+        if (model.getSerialMasterCalidadON() != null) {
+            clienteRepository.setSerialMasterCalidadON(id, b(model.getSerialMasterCalidadON()));
+        }
+        return filas;
     }
 
     @Transactional

@@ -15,10 +15,10 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface PosicionRepository extends BaseRepository<PosicionModel, Integer> {
-  @Query(value = "select numero from Posicion where codigoSapId !=0 AND Activo = 1 order by numero", nativeQuery = true)
+  @Query(value = "select numero from Posicion where codigoSapId !=0 AND Activo = true order by numero", nativeQuery = true)
   List<String> getListNoReservado();
 
-  @Query(value = "select numero from Posicion where codigoSapId = 0 AND Activo = 1 order by numero", nativeQuery = true)
+  @Query(value = "select numero from Posicion where codigoSapId = 0 AND Activo = true order by numero", nativeQuery = true)
   List<String> getListReservado();
 
   @Query(value = "select id from Posicion where numero= :numero", nativeQuery = true)
@@ -65,12 +65,12 @@ public interface PosicionRepository extends BaseRepository<PosicionModel, Intege
 
   @Modifying
   @Transactional
-  @Query(value = "UPDATE Posicion SET activo = :estado WHERE id = :id", nativeQuery = true)
+  @Query(value = "UPDATE Posicion SET activo = (CAST(:estado AS integer) <> 0) WHERE id = :id", nativeQuery = true)
   void innactivatePosicion(@Param("id") Integer id, @Param("estado") Integer estado);
 
   @Query(value = "SELECT COUNT(p.id) FROM Posicion p INNER JOIN Pallet pa ON p.id = pa.posicionId WHERE p.id = :id", nativeQuery = true)
   Integer getCountPosition(@Param("id") Integer id);
 
-  @Query(value = "SELECT id, numero FROM Posicion WHERE codigoSapId = 0 AND activo = 1 ORDER BY numero", nativeQuery = true)
+  @Query(value = "SELECT id, numero FROM Posicion WHERE codigoSapId = 0 AND activo = true ORDER BY numero", nativeQuery = true)
   List<Object[]> listDisponibles();
 }

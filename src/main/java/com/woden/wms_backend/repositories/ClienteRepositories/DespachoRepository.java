@@ -12,11 +12,8 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface DespachoRepository extends BaseRepository<DespachoModel, Integer>, DespachoRepositoryCustom {
 
-	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_InsertDispatch :id, :serial, :mac,:codigoSapId, :palletId,:palletIdIngreso, :cajaDespachoId, :estadoId, :tipoOrigenId, :origenId, :tipologiaId, :nivelId, :tramite, :documento, "
-			+
-			" :guia, :falla, :prealertaId, :cruce, :novedad, :usuarioId, :fecha, :pedidoSap, :smartCardId, :smartCard, :loteId, :serial3, :cajaIngresoId, :numeroSmartcard, :fallaCosmeticaId, :fallaFuncionalId, :causa, :observaciones", nativeQuery = true)
+	@Query(value = "SELECT 1 FROM pa_insertdispatch(CAST(:id AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:codigoSapId AS integer), CAST(:palletId AS integer), CAST(:palletIdIngreso AS integer), CAST(:cajaDespachoId AS integer), CAST(:estadoId AS integer), CAST(:tipoOrigenId AS integer), CAST(:origenId AS integer), CAST(:tipologiaId AS integer), CAST(:nivelId AS integer), CAST(:tramite AS character varying), CAST(:documento AS character varying), CAST(:guia AS character varying), CAST(:falla AS character varying), CAST(:prealertaId AS integer), CAST(:cruce AS integer), CAST(:novedad AS character varying), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone), CAST(:pedidoSap AS character varying), CAST(:smartCardId AS integer), CAST(:smartCard AS character varying), CAST(:loteId AS integer), CAST(:serial3 AS character varying), CAST(:cajaIngresoId AS integer), CAST(:numeroSmartcard AS character varying), CAST(:fallaCosmeticaId AS integer), CAST(:fallaFuncionalId AS integer), CAST(:causa AS character varying), CAST(:observaciones AS character varying))", nativeQuery = true)
 	void insertDispatch(
 			@Param("id") Integer id,
 			@Param("serial") String serial,
@@ -62,12 +59,8 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 	@Query(value = "UPDATE Despacho SET NovedadId = :novedadId WHERE Serial = :serial", nativeQuery = true)
 	void updateNovedadDespacho(@Param("novedadId") Integer novedadId, @Param("serial") String serial);
 
-	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_InsertDispatchAccesory :id, :codigoSapId, :tipoAccesorio, :tipoOrigenId, " +
-			":origenId, :palletId, :estadoId, :estadoLimpiezaId, :documento, :observacion, :guia, " +
-			":usuarioId, :fechaIngreso, :serialEmpaque, :caja, :pedidoSap, :fechaLimpieza, " +
-			":fechaEmpaque, :usuarioLimpiezaId", nativeQuery = true)
+	@Query(value = "SELECT 1 FROM pa_insertdispatchaccesory(CAST(:id AS integer), CAST(:codigoSapId AS integer), CAST(:tipoAccesorio AS character varying), CAST(:tipoOrigenId AS integer), CAST(:origenId AS integer), CAST(:palletId AS integer), CAST(:estadoId AS integer), CAST(:estadoLimpiezaId AS integer), CAST(:documento AS character varying), CAST(:observacion AS character varying), CAST(:guia AS character varying), CAST(:usuarioId AS integer), CAST(:fechaIngreso AS timestamp without time zone), CAST(:serialEmpaque AS character varying), CAST(:caja AS integer), CAST(:pedidoSap AS character varying), CAST(:fechaLimpieza AS timestamp without time zone), CAST(:fechaEmpaque AS timestamp without time zone), CAST(:usuarioLimpiezaId AS integer))", nativeQuery = true)
 	void insertDispatchAccesory(
 			@Param("id") Integer id,
 			@Param("codigoSapId") Integer codigoSapId,

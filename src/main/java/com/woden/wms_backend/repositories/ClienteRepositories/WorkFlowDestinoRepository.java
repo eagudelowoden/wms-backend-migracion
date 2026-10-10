@@ -14,35 +14,33 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface WorkFlowDestinoRepository extends BaseRepository<WorkFlowDestinoModel, Integer> {
 
-  @Query(value = "EXEC pa_GetIdWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer) FROM pa_getidworflowdestiny(CAST(:opcion AS character varying), CAST(:origen AS character varying), CAST(:descripcion AS character varying), CAST(:tipologiaId AS integer)) f", nativeQuery = true)
   List<Integer> getIdDestino(
       @Param("opcion") String opcion,
       @Param("origen") String origen,
       @Param("descripcion") String descripcion,
       @Param("tipologiaId") int tipologiaId);
 
-  @Query(value = "EXEC pa_GetNameWorflowDestiny :opcion, :origen, :descripcion, :tipologiaId", nativeQuery = true)
+  @Query(value = "SELECT f.\"Nombre\" FROM pa_getnameworflowdestiny(CAST(:opcion AS character varying), CAST(:origen AS character varying), CAST(:descripcion AS character varying), CAST(:tipologiaId AS integer)) f", nativeQuery = true)
   List<String> listarDestinosWorkflow(
       @Param("opcion") String opcion,
       @Param("origen") String origen,
       @Param("descripcion") String descripcion,
       @Param("tipologiaId") int tipologiaId);
 
-  @Query(value = "EXEC pa_SearchWorflowDestiny :workFlowId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM pa_searchworflowdestiny(CAST(:workFlowId AS integer)) f", nativeQuery = true)
   List<Object[]> search(@Param("workFlowId") int workFlowId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertWorflowDestiny :workFlowId, :destinoId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertworflowdestiny(CAST(:workFlowId AS integer), CAST(:destinoId AS integer))", nativeQuery = true)
   void createDestino(@Param("workFlowId") int workFlowId, @Param("destinoId") int destinoId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_DeleteWorflowDestiny :workFlowId, :destinoId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_deleteworflowdestiny(CAST(:workFlowId AS integer), CAST(:destinoId AS integer))", nativeQuery = true)
   void deleteDestino(@Param("workFlowId") int workFlowId, @Param("destinoId") int destinoId);
 
   @Modifying
   @Transactional
-  @Query(value = "INSERT INTO WmsWdGeneral.dbo.WorkflowLogs (UsuarioModifica, Cliente, Descripcion, Fecha) VALUES (:usuario, :cliente, :descripcion, GETDATE())", nativeQuery = true)
+  @Query(value = "INSERT INTO general.WorkflowLogs (UsuarioModifica, Cliente, Descripcion, Fecha) VALUES (:usuario, :cliente, :descripcion, NOW())", nativeQuery = true)
   void insertLog(@Param("usuario") String usuario, @Param("cliente") String cliente, @Param("descripcion") String descripcion);
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Repository
 public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer> {
 
-  @Procedure(procedureName = "pa_InsertPacking")
+  @Query(value = "SELECT pa_insertpacking(p_serialid => CAST(:SerialId AS integer), p_serial => CAST(:Serial AS character varying), p_mac => CAST(:Mac AS character varying), p_codigosapid => CAST(:CodigoSapId AS integer), p_palletid => CAST(:PalletId AS integer), p_cajaempaqueid => CAST(:CajaEmpaqueId AS integer), p_nivelid => CAST(:NivelId AS integer), p_usuarioid => CAST(:UsuarioId AS integer), p_fecha => CAST(:Fecha AS timestamp without time zone), p_loteid => CAST(:LoteId AS integer), p_smartcardid => CAST(:SmartCardId AS integer), p_smartcard => CAST(:SmartCard AS character varying), p_filas => CAST(NULL AS integer))", nativeQuery = true)
   Integer createInsert(
       @Param("SerialId") Integer serialId,
       @Param("Serial") String serial,
@@ -30,14 +30,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("SmartCard") String smartCard);
 
   @Transactional
-  @Query(value = "DECLARE @FilasOut INT; " +
-          "EXEC [dbo].[pa_InsertPackingWebD2] " +
-          ":SerialId, :Serial, :Mac, :CodigoSapId, :PalletId, :CajaEmpaqueId, " +
-          ":EstadoId, " +
-          ":NivelId, :UsuarioId, :Fecha, :LoteId, :SmartCardId, :SmartCard, " +
-          ":EstadoSmartCard, :SmartCardCode, " +
-          "@FilasOut OUTPUT; " +
-          "SELECT @FilasOut;", nativeQuery = true)
+  @Query(value = "SELECT pa_insertpackingwebd2(CAST(:SerialId AS integer), CAST(:Serial AS character varying), CAST(:Mac AS character varying), CAST(:CodigoSapId AS integer), CAST(:PalletId AS integer), CAST(:CajaEmpaqueId AS integer), CAST(:EstadoId AS integer), CAST(:NivelId AS integer), CAST(:UsuarioId AS integer), CAST(:Fecha AS timestamp without time zone), CAST(:LoteId AS integer), CAST(:SmartCardId AS integer), CAST(:SmartCard AS character varying), CAST(:EstadoSmartCard AS integer), CAST(:SmartCardCode AS character varying), CAST(NULL AS integer))", nativeQuery = true)
   Integer executeInsertPacking(
           @Param("SerialId") Integer serialId,
           @Param("Serial") String serial,
@@ -56,12 +49,11 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
           @Param("SmartCardCode") String smartCardCode
   );
 
-  @Procedure(procedureName = "pa_DeletePacking")
+  @Query(value = "SELECT 1 FROM pa_deletepacking(p_serial => CAST(:serial AS character varying))", nativeQuery = true)
   void eliminarSeriesEmpaque(@Param("serial") String serial);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdatePackingSmartCard :smartCardId, :smartCardNuevo, :serial, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatepackingsmartcard(CAST(:smartCardId AS integer), CAST(:smartCardNuevo AS character varying), CAST(:serial AS character varying), CAST(NULL AS integer))", nativeQuery = true)
   void updateSmartCard(
       @Param("smartCardId") Integer smartCardId,
       @Param("smartCardNuevo") String smartCardNuevo,
@@ -70,9 +62,8 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
 
 //sp nuevo
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdatePacking :serialId, :serialNuevo, :mac, :serialAnterior ,:filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatepacking(CAST(:serialId AS integer), CAST(:serialNuevo AS character varying), CAST(:mac AS character varying), CAST(:serialAnterior AS character varying), CAST(NULL AS integer))", nativeQuery = true)
   void UpdatePacking(
       @Param("serialId") Integer serialId,
       @Param("serialNuevo") String serialNuevo,
@@ -80,9 +71,8 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("serialAnterior") String serialAnterior,
       @Param("filas") Integer filas);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdatePackingWeb :serialId, :serialNuevo, :nivelNuevo, :mac, :serialAnterior, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatepackingweb(CAST(:serialId AS integer), CAST(:serialNuevo AS character varying), CAST(:nivelNuevo AS integer), CAST(:mac AS character varying), CAST(:serialAnterior AS character varying), CAST(NULL AS integer))", nativeQuery = true)
   void UpdatePackingWeb(
       @Param("serialId") Integer serialId,
       @Param("serialNuevo") String serialNuevo,

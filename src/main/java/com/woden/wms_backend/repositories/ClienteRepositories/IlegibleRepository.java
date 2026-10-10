@@ -14,9 +14,8 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface IlegibleRepository extends BaseRepository<IlegibleModel, Integer> {
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertUnreadable :serial, :mac, :serialId, :fecha", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertunreadable(CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:serialId AS integer), CAST(:fecha AS timestamp without time zone))", nativeQuery = true)
   int insertIlegible(
       @Param("serial") String serial,
       @Param("mac") String mac,

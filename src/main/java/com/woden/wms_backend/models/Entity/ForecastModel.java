@@ -14,7 +14,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Forecast", schema = "dbo")
+@Table(name = "Forecast")
 public class ForecastModel {
 
     @Id

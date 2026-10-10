@@ -30,13 +30,13 @@ public class HojaVidaIntegracionService {
 
   /**
    * Archivo de hoja de vida activo para el serial, o null si no existe.
-   * ORDER BY Id DESC: en teoría solo debería existir una fila Activo=1 por
+   * ORDER BY Id DESC: en teoría solo debería existir una fila Activo=true por
    * serial (índice único UQ_HojaVida_SerialId_Activo), pero no todas las BD
    * de cliente lo tienen creado todavía — con esto, si llega a haber más de
    * una fila activa por algún motivo, siempre se toma la más reciente.
    */
   public Path buscarArchivo(String serial) {
-    String sql = "SELECT TOP 1 NombreArchivo, RutaCompleta FROM HojaVida WHERE Serial = ? AND Activo = 1 ORDER BY Id DESC";
+    String sql = "SELECT NombreArchivo, RutaCompleta FROM HojaVida WHERE Serial = ? AND Activo = true ORDER BY Id DESC LIMIT 1";
     try (Connection conn = dataSource.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setString(1, serial);

@@ -187,7 +187,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 
   @Transactional(readOnly = true)
   public List<String> getSerialesByPallet(Integer palletId) {
-    Query query = entityManager.createNativeQuery("EXEC pa_SerialesByPallet :palletId");
+    Query query = entityManager.createNativeQuery("SELECT f.serial FROM pa_serialesbypallet(CAST(:palletId AS integer)) f");
     query.setParameter("palletId", palletId);
     return query.getResultList();
   }
