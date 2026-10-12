@@ -948,6 +948,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Integer> reingresoLimitMap = resolverReingresosLimites(rows);
     Map<String, Integer> reingresoCountMap = resolverReingresosCounts(seriales);
     Set<String> serialesEnArchivo = new java.util.HashSet<>();
+    Set<String> macsEnArchivo = new java.util.HashSet<>();
+    Set<String> serial3sEnArchivo = new java.util.HashSet<>();
+    Set<String> smartCardsEnArchivo = new java.util.HashSet<>();
 
     List<String> macs = rows.stream()
         .map(MassUploadRowDTO::getMac)
@@ -967,6 +970,16 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Set<String> serial3sExistentes = new java.util.HashSet<>();
     for (List<String> lote : particionar(serial3s, CHUNK_SIZE)) {
       serial3sExistentes.addAll(ingresoRepository.findExistingSerial3s(lote));
+    }
+
+    List<String> smartCards = rows.stream()
+        .map(MassUploadRowDTO::getSmartCard)
+        .filter(s -> s != null && !s.trim().isEmpty() && !"0".equals(s.trim()))
+        .map(s -> s.trim().toUpperCase())
+        .toList();
+    Set<String> smartCardsExistentes = new java.util.HashSet<>();
+    for (List<String> lote : particionar(smartCards, CHUNK_SIZE)) {
+      smartCardsExistentes.addAll(ingresoRepository.findExistingSmartCards(lote));
     }
 
     Integer estadoIdIngreso = obtenerEstadoIdIngreso();
@@ -1104,13 +1117,33 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       }
 
       String macUpper = row.getMac() != null ? row.getMac().toUpperCase().trim() : "";
-      if (!macUpper.isEmpty() && macsExistentes.contains(macUpper)) {
-        erroresFila.add("Mac '" + macUpper + "' ya existe en el sistema");
+      if (!macUpper.isEmpty() && !"0".equals(macUpper)) {
+        if (macsExistentes.contains(macUpper)) {
+          erroresFila.add("Mac '" + macUpper + "' ya existe en el sistema");
+        }
+        if (!macsEnArchivo.add(macUpper)) {
+          erroresFila.add("Mac '" + macUpper + "' duplicada en el archivo");
+        }
       }
 
       String serial3Upper = row.getSerial3() != null ? row.getSerial3().toUpperCase().trim() : "";
-      if (!serial3Upper.isEmpty() && serial3sExistentes.contains(serial3Upper)) {
-        erroresFila.add("Serial3 '" + serial3Upper + "' ya existe en el sistema");
+      if (!serial3Upper.isEmpty() && !"0".equals(serial3Upper)) {
+        if (serial3sExistentes.contains(serial3Upper)) {
+          erroresFila.add("Serial3 '" + serial3Upper + "' ya existe en el sistema");
+        }
+        if (!serial3sEnArchivo.add(serial3Upper)) {
+          erroresFila.add("Serial3 '" + serial3Upper + "' duplicado en el archivo");
+        }
+      }
+
+      String smartCardUpper = row.getSmartCard() != null ? row.getSmartCard().toUpperCase().trim() : "";
+      if (!smartCardUpper.isEmpty() && !"0".equals(smartCardUpper)) {
+        if (smartCardsExistentes.contains(smartCardUpper)) {
+          erroresFila.add("SmartCard '" + smartCardUpper + "' ya existe en el sistema");
+        }
+        if (!smartCardsEnArchivo.add(smartCardUpper)) {
+          erroresFila.add("SmartCard '" + smartCardUpper + "' duplicada en el archivo");
+        }
       }
 
       if (codigoSapId != null && codigoSapLargosMap.containsKey(row.getCodigoSap().trim().toUpperCase())) {
