@@ -596,7 +596,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @GetMapping("/getUltimaTipologiaScrap")
-  public ResponseEntity<Map<String, Object>> getUltimaTipologiaScrap(@RequestParam String serial) {
-    return ResponseEntity.ok(ingresoService.validarReingresoScrap(serial));
+  public ResponseEntity<Map<String, Object>> getUltimaTipologiaScrap(
+      @RequestParam String serial,
+      @RequestParam(required = false) Integer palletId) {
+    return ResponseEntity.ok(ingresoService.validarReingresoScrap(serial, palletId));
   }
 }

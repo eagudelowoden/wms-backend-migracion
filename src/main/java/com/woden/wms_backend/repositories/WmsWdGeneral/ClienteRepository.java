@@ -115,9 +115,6 @@ public interface ClienteRepository extends BaseRepository<ClienteModel, Integer>
                      @Param("odooPqrsON") Boolean odooPqrsON,
                      @Param("serialMasterCalidadON") Integer serialMasterCalidadON);
 
-    @Query(value = "SELECT CAST(serialMasterCalidadON AS INT) FROM Cliente WHERE id = :id", nativeQuery = true)
-    Integer getSerialMasterCalidadON(@Param("id") int id);
-
     @Modifying
     @Transactional
     @Query(value = "UPDATE Cliente SET serialMasterCalidadON = (CAST(:valor AS integer) <> 0) WHERE Id = :id", nativeQuery = true)

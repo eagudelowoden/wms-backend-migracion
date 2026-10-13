@@ -249,4 +249,6 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
    */
   @Query(value = "SELECT f.* FROM general.pa_incrementarconsecutivopallet(CAST(:minutoActual AS timestamp)) f", nativeQuery = true)
   String incrementarYObtenerConsecutivo(@Param("minutoActual") String minutoActual);
+
+  boolean existsByNumero(String numero);
 }

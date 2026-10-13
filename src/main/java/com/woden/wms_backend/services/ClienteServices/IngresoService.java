@@ -56,6 +56,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   private static final int CHUNK_SIZE = 1500;
 
+  private static final String TIPOLOGIA_CUARENTENA = "SCRAP CUARENTENA";
+
   @Autowired
   private IngresoRepository ingresoRepository;
 
@@ -97,8 +99,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Creación / eliminación ───────────────────────────────────────────────────
 
   public String createIngresoCallable(IngresoModel ingreso) {
-    if (bloqueoScrapActivo() && esUltimaTipologiaScrap(consultarUltimaTipologia(ingreso.getSerial()))) {
-      return "El serial " + ingreso.getSerial() + " terminó en SCRAP y tiene bloqueado el reingreso.";
+    String reglaScrap = validarReglaScrap(ingreso.getSerial(), ingreso.getPalletId());
+    if (reglaScrap != null) {
+      return reglaScrap;
     }
     try (Connection conn = dataSource.getConnection()) {
       java.sql.PreparedStatement stmt = conn.prepareStatement(
@@ -941,6 +944,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       serialesExistentes.addAll(ingresoRepository.findExistingSerials(lote));
     }
     Set<String> serialesScrap = resolverSerialesScrap(seriales);
+    Map<String, String> tipologiasPalletMap = bloqueoScrapActivo()
+        ? tipologiasPalletsPorNumero(rows.stream().map(MassUploadRowDTO::getPalletWms).toList())
+        : Map.of();
     Map<String, Integer> reingresoLimitMap = resolverReingresosLimites(rows);
     Map<String, Integer> reingresoCountMap = resolverReingresosCounts(seriales);
     Set<String> serialesEnArchivo = new java.util.HashSet<>();
@@ -1070,8 +1076,16 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         if (serialesExistentes.contains(serialUpper)) {
           erroresFila.add("Serial '" + serialUpper + "' ya existe en el sistema");
         }
+        String palletNumero = row.getPalletWms() != null ? row.getPalletWms().trim().toUpperCase() : "";
+        String tipologiaPallet = tipologiasPalletMap.get(palletNumero);
         if (serialesScrap.contains(serialUpper)) {
-          erroresFila.add("Serial '" + serialUpper + "' terminó en SCRAP y tiene bloqueado el reingreso");
+          if (tipologiaPallet == null) {
+            erroresFila.add("Serial '" + serialUpper + "' terminó en SCRAP y tiene bloqueado el reingreso");
+          } else {
+            erroresFila.add(mensajeSerialScrapFueraDeCuarentena(serialUpper));
+          }
+        } else if (esPalletCuarentena(tipologiaPallet)) {
+          erroresFila.add(mensajePalletCuarentenaNoScrap());
         }
         String serialReingresoKey = normalizarSerial(serialUpper);
         if (serialUpper.matches("\\d+(\\.\\d+)?[Ee][+-]?\\d+")) {
@@ -1240,20 +1254,46 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     MassUploadConfirmResponseDTO response = new MassUploadConfirmResponseDTO();
     List<MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO> errores = new ArrayList<>();
 
-    List<String> bloqueados = filtrarSerialesScrap(
-        seriales.stream().map(MassUploadRowResolvedDTO::getSerial).toList());
     List<MassUploadRowResolvedDTO> permitidos = seriales;
-    if (!bloqueados.isEmpty()) {
-      Set<String> bloqueadosSet = new java.util.HashSet<>(bloqueados);
-      for (String serial : bloqueados) {
-        MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO err = new MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO();
-        err.setSerial(serial);
-        err.setError("El serial terminó en SCRAP y tiene bloqueado el reingreso.");
-        errores.add(err);
+    if (bloqueoScrapActivo()) {
+      Set<String> serialesScrap = resolverSerialesScrap(
+          seriales.stream().map(MassUploadRowResolvedDTO::getSerial).toList());
+      Map<Integer, String> tipologiasPorPallet = new java.util.HashMap<>();
+      List<MassUploadRowResolvedDTO> filtrados = new ArrayList<>();
+      for (MassUploadRowResolvedDTO row : seriales) {
+        Integer palletId = row.getPalletId();
+        if (palletId == null || palletId <= 0) {
+          filtrados.add(row);
+          continue;
+        }
+        if (!tipologiasPorPallet.containsKey(palletId)) {
+          tipologiasPorPallet.put(palletId, consultarTipologiaPallet(palletId));
+        }
+        String tipologiaPallet = tipologiasPorPallet.get(palletId);
+        if (tipologiaPallet == null) {
+          filtrados.add(row);
+          continue;
+        }
+        String serial = row.getSerial() != null ? row.getSerial().toUpperCase().trim() : "";
+        boolean serialScrap = serialesScrap.contains(serial);
+        boolean palletCuarentena = esPalletCuarentena(tipologiaPallet);
+        String motivo = null;
+        if (serialScrap && !palletCuarentena) {
+          motivo = mensajeSerialScrapFueraDeCuarentena(serial);
+        } else if (!serialScrap && palletCuarentena) {
+          motivo = mensajePalletCuarentenaNoScrap();
+        }
+        if (motivo != null) {
+          MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO err =
+              new MassUploadConfirmResponseDTO.MassUploadConfirmErrorDTO();
+          err.setSerial(row.getSerial());
+          err.setError(motivo);
+          errores.add(err);
+        } else {
+          filtrados.add(row);
+        }
       }
-      permitidos = seriales.stream()
-          .filter(s -> s.getSerial() == null || !bloqueadosSet.contains(s.getSerial().toUpperCase().trim()))
-          .toList();
+      permitidos = filtrados;
     }
 
     Map<Integer, Integer> confirmLimitMap = resolverReingresosLimitesPorId(seriales);
@@ -1816,25 +1856,95 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return scrap;
   }
 
-  private List<String> filtrarSerialesScrap(List<String> seriales) {
-    if (!bloqueoScrapActivo() || seriales == null || seriales.isEmpty()) return List.of();
-    List<String> normalizados = seriales.stream()
-        .filter(s -> s != null && !s.trim().isEmpty())
-        .map(s -> s.trim().toUpperCase())
-        .toList();
-    return new ArrayList<>(resolverSerialesScrap(normalizados));
+  private Map<String, String> tipologiasPalletsPorNumero(List<String> numeros) {
+    Map<String, String> mapa = new java.util.HashMap<>();
+    Set<String> unicos = numeros.stream()
+        .filter(n -> n != null && !n.trim().isEmpty())
+        .map(n -> n.trim().toUpperCase())
+        .collect(Collectors.toSet());
+    if (unicos.isEmpty()) return mapa;
+    for (List<String> lote : particionar(unicos, CHUNK_SIZE)) {
+      try {
+        for (Object[] row : ingresoRepository.findPalletTipologiasPorNumero(lote)) {
+          if (row == null || row.length < 2) continue;
+          String numero = row[0] != null ? row[0].toString().toUpperCase() : "";
+          String codigo = row[1] != null ? row[1].toString().toUpperCase() : "";
+          if (!numero.isEmpty()) mapa.put(numero, codigo);
+        }
+      } catch (Exception e) {
+        logger.warn("[tipologiasPalletsPorNumero] Error en lote de {} pallets: {}", lote.size(), e.getMessage());
+      }
+    }
+    return mapa;
   }
 
-  public Map<String, Object> validarReingresoScrap(String serial) {
+  private String consultarTipologiaPallet(Integer palletId) {
+    if (palletId == null || palletId <= 0) return null;
+    try {
+      return ingresoRepository.findPalletTipologiaCodigo(palletId);
+    } catch (Exception e) {
+      logger.warn("[consultarTipologiaPallet] Error para pallet {}: {}", palletId, e.getMessage());
+      return null;
+    }
+  }
+
+  private boolean esPalletCuarentena(String codigoTipologia) {
+    return codigoTipologia != null && TIPOLOGIA_CUARENTENA.equals(codigoTipologia.trim().toUpperCase());
+  }
+
+  private String mensajeSerialScrapFueraDeCuarentena(String serial) {
+    return "El serial " + serial + " terminó en SCRAP. Debe ingresarlo en un pallet con tipología "
+        + TIPOLOGIA_CUARENTENA + ".";
+  }
+
+  private String mensajePalletCuarentenaNoScrap() {
+    return "El pallet es de tipología " + TIPOLOGIA_CUARENTENA
+        + " y solo admite seriales con tipología SCRAP.";
+  }
+
+  public Map<String, Object> validarReingresoScrap(String serial, Integer palletId) {
     Map<String, Object> result = new HashMap<>();
     if (!bloqueoScrapActivo()) {
       result.put("bloqueado", false);
+      result.put("descripcion", null);
+      result.put("motivo", null);
       return result;
     }
     String descripcion = consultarUltimaTipologia(serial);
-    result.put("bloqueado", esUltimaTipologiaScrap(descripcion));
+    boolean serialScrap = esUltimaTipologiaScrap(descripcion);
     result.put("descripcion", descripcion);
+
+    if (palletId == null || palletId <= 0) {
+      result.put("bloqueado", false);
+      result.put("motivo", null);
+      return result;
+    }
+
+    String tipologiaPallet = consultarTipologiaPallet(palletId);
+    if (tipologiaPallet == null) {
+      result.put("bloqueado", false);
+      result.put("motivo", null);
+      return result;
+    }
+
+    boolean palletCuarentena = esPalletCuarentena(tipologiaPallet);
+    String motivo = null;
+    if (palletCuarentena && !serialScrap) {
+      motivo = mensajePalletCuarentenaNoScrap();
+    } else if (!palletCuarentena && serialScrap) {
+      motivo = mensajeSerialScrapFueraDeCuarentena(serial);
+    }
+
+    result.put("bloqueado", motivo != null);
+    result.put("motivo", motivo);
     return result;
+  }
+
+  private String validarReglaScrap(String serial, Integer palletId) {
+    Map<String, Object> resultado = validarReingresoScrap(serial, palletId);
+    return resultado.get("bloqueado") != null && Boolean.TRUE.equals(resultado.get("bloqueado"))
+        ? (String) resultado.get("motivo")
+        : null;
   }
 
   // ── Validación días desde ingreso ────────────────────────────────────────────

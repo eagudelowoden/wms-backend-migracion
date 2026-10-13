@@ -46,7 +46,4 @@ public interface ClienteDataAccessRepository extends JpaRepository<ClienteModel,
 
   @Query(value = "SELECT CASE WHEN CAST(serialMasterCalidadON AS integer) = 1 THEN 1 ELSE 0 END FROM Cliente WHERE Id = :id", nativeQuery = true)
   Integer getSerialMasterCalidadON(@Param("id") int id);
-
-  @Query(value = "SELECT CAST(serialMasterCalidadON AS INT) FROM Cliente WHERE Id = :id", nativeQuery = true)
-  Integer getSerialMasterON(@Param("id") int id);
 }
