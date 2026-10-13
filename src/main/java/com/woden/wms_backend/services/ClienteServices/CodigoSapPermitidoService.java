@@ -1,6 +1,5 @@
 package com.woden.wms_backend.services.ClienteServices;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -59,9 +58,9 @@ public class CodigoSapPermitidoService {
       return false;
     }
     String sql = "SELECT cv.Activo "
-        + "FROM [WmsWdGeneral].[dbo].[ClienteValidacion] cv "
-        + "INNER JOIN [WmsWdGeneral].[dbo].[ClienteValidacionTipo] cvt ON cvt.Id = cv.ValidacionTipoId "
-        + "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = 1 AND cvt.Activo = 1";
+        + "FROM general.ClienteValidacion cv "
+        + "INNER JOIN general.ClienteValidacionTipo cvt ON cvt.Id = cv.ValidacionTipoId "
+        + "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = true AND cvt.Activo = true";
     try (Connection conn = dataSource.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setInt(1, clienteId);
@@ -156,10 +155,15 @@ public class CodigoSapPermitidoService {
       validos.add(permitidoId);
     }
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_InsertCodigoSapPermitido(?, ?)}");
+      // Reemplaza pa_InsertCodigoSapPermitido: inserta el par solo si todavia no existe
+      PreparedStatement stmt = conn.prepareStatement(
+          "INSERT INTO CodigoSapPermitido (CodigoSapId, PermitidoId) SELECT ?, ? "
+              + "WHERE NOT EXISTS (SELECT 1 FROM CodigoSapPermitido WHERE CodigoSapId = ? AND PermitidoId = ?)");
       for (Integer permitidoId : validos) {
         stmt.setInt(1, codigoSapId);
         stmt.setInt(2, permitidoId);
+        stmt.setInt(3, codigoSapId);
+        stmt.setInt(4, permitidoId);
         stmt.addBatch();
       }
       stmt.executeBatch();
@@ -182,7 +186,9 @@ public class CodigoSapPermitidoService {
       return 0;
     }
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_DeleteCodigoSapPermitido(?, ?)}");
+      // Reemplaza pa_DeleteCodigoSapPermitido
+      PreparedStatement stmt = conn.prepareStatement(
+          "DELETE FROM CodigoSapPermitido WHERE CodigoSapId = ? AND PermitidoId = ?");
       for (Integer permitidoId : permitidosIds) {
         stmt.setInt(1, codigoSapId);
         stmt.setInt(2, permitidoId);

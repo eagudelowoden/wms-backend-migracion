@@ -322,7 +322,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("cajaDespachoId") Integer cajaDespachoId, @Param("usuarioMovimientoId") Integer usuarioMovimientoId,
 			@Param("loteId") Integer loteId, @Param("filas") Integer filas);
 
-	@Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Serial\", f.\"Mac\", CAST(f.\"CodigoSapId\" AS integer), CAST(f.\"PalletId\" AS integer), CAST(f.\"PalletIdIngreso\" AS integer), CAST(f.\"CajaDespachoId\" AS integer), CAST(f.\"TipoOrigenId\" AS integer), CAST(f.\"OrigenId\" AS integer), CAST(f.\"TipologiaId\" AS integer), CAST(f.\"NivelId\" AS integer), f.\"Tramite\", f.\"Documento\", f.\"Guia\", f.\"Falla\", CAST(f.\"PrealertaId\" AS integer), f.\"Cruce\", f.\"Novedad\", f.\"Fecha\", f.\"SmartCard\", CAST(f.\"smartCardId\" AS integer), CAST(f.\"loteId\" AS integer), f.serial3, CAST(f.\"cajaIngresoId\" AS integer), f.\"numeroSmartcard\", CAST(f.\"FallaCosmeticaId\" AS integer), CAST(f.\"FallaFuncionalId\" AS integer), f.\"Causa\" FROM pa_getmodeldispatch(CAST(:palletId AS integer), CAST(:cajaId AS integer)) f", nativeQuery = true)
+	@Query(value = "SELECT CAST(f.\"Id\" AS integer), f.\"Serial\", f.\"Mac\", CAST(f.\"CodigoSapId\" AS integer), CAST(f.\"PalletId\" AS integer), CAST(f.\"PalletIdIngreso\" AS integer), CAST(f.\"CajaDespachoId\" AS integer), CAST(f.\"TipoOrigenId\" AS integer), CAST(f.\"OrigenId\" AS integer), CAST(f.\"TipologiaId\" AS integer), CAST(f.\"NivelId\" AS integer), f.\"Tramite\", f.\"Documento\", f.\"Guia\", f.\"Falla\", CAST(f.\"PrealertaId\" AS integer), CAST(f.\"Cruce\" AS boolean), f.\"Novedad\", CAST(f.\"Fecha\" AS timestamp), f.\"SmartCard\", CAST(f.\"smartCardId\" AS integer), CAST(f.\"loteId\" AS integer), f.serial3, CAST(f.\"cajaIngresoId\" AS integer), f.\"numeroSmartcard\", CAST(f.\"FallaCosmeticaId\" AS integer), CAST(f.\"FallaFuncionalId\" AS integer), f.\"Causa\" FROM pa_getmodeldispatch(CAST(:palletId AS integer), CAST(:cajaId AS integer)) f", nativeQuery = true)
 	List<Object[]> getModelDispatch(@Param("palletId") Integer palletId, @Param("cajaId") Integer cajaId);
 
 	@Query(value = "SELECT f.serial, f.mac, f.pallet, f.caja, f.\"SmartCard\" FROM pa_searchqualityentry() f", nativeQuery = true)
@@ -364,9 +364,8 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	List<Object[]> searchNoveltyEntryDelivery(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId,
 			@Param("tipoNovedad") String tipoNovedad);
 
-	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_SendNoveltyEntry :estadoId, :tipologiaId, :usuarioId, :palletId, :opcion, :filas OUT", nativeQuery = true)
+	@Query(value = "SELECT pa_sendnoveltyentry(CAST(:estadoId AS integer), CAST(:tipologiaId AS integer), CAST(:usuarioId AS integer), CAST(:palletId AS integer), CAST(:opcion AS integer), CAST(NULL AS integer))", nativeQuery = true)
 	void sendNoveltyEntry(
 			@Param("estadoId") Integer estadoId,
 			@Param("tipologiaId") Integer tipologiaId,
@@ -381,9 +380,8 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			@Param("usuarioIdMovimiento") Integer usuarioId, @Param("fecha") Integer fecha, @Param("serial") String serial,
 			@Param("loteId") Integer loteId);
 
-	@Modifying
 	@Transactional
-	@Query(value = "EXEC pa_UpdateEntryDispatchWeb :estadoId, :palletId, :usuarioIdMovimiento, :serial, :loteId, :filas OUT", nativeQuery = true)
+	@Query(value = "SELECT pa_updateentrydispatchweb(CAST(:estadoId AS integer), CAST(:palletId AS integer), CAST(:usuarioIdMovimiento AS integer), CAST(:serial AS character varying), CAST(:loteId AS integer), CAST(NULL AS integer))", nativeQuery = true)
 	void UpdateEntryDispatch(@Param("estadoId") Integer estadoId,
 			@Param("palletId") Integer palletId,
 			@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
@@ -470,7 +468,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT CAST(f.id AS integer), f.serial, f.mac, f.serial3, f.serial4, f.serial5, f.codigosap, f.descripcion, CAST(f.nivelid AS integer), CAST(f.loteid AS integer), f.lote, f.modelo, f.fecha, f.rn FROM pa_getscrapuser(CAST(:perfil AS character varying), CAST(:usuarioIdMovimiento AS integer)) f", nativeQuery = true)
 	List<Object[]> getScrapUser(@Param("perfil") String perfil, @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
 
-	@Query(value = "EXEC pa_GetEtiquetadoUser :usuarioIdMovimiento", nativeQuery = true)
+	@Query(value = "SELECT CAST(f.id AS integer), f.serial, f.mac, f.serial3, f.serial4, f.serial5, f.codigosap, f.descripcion, f.estado, f.modelo, f.fecha, f.rn FROM pa_getetiquetadouser(CAST(:usuarioIdMovimiento AS integer)) f", nativeQuery = true)
 	List<Object[]> getEtiquetadoUser(@Param("usuarioIdMovimiento") Integer usuarioIdMovimiento);
 
 	@Query(value = "SELECT UPPER(d.Serial) AS serial, COUNT(*) AS reingresos " +
@@ -488,10 +486,10 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
 
-	@Query(value = "EXEC pa_GetDiasUltimoIngreso :serial", nativeQuery = true)
+	@Query(value = "SELECT f.fechaingreso, f.dias FROM pa_getdiasultimoingreso(CAST(:serial AS character varying)) f", nativeQuery = true)
 	List<Object[]> getDiasUltimoIngresoRaw(@Param("serial") String serial);
 
-	@Query(value = "EXEC dbo.pa_ValidarReingresoScrap :serial", nativeQuery = true)
+	@Query(value = "SELECT f.descripcion FROM pa_validarreingresoscrap(CAST(:serial AS character varying)) f", nativeQuery = true)
 	String getUltimaTipologiaSerial(@Param("serial") String serial);
 
 	@Query(value = "SELECT UPPER(m.Serial) AS serial, m.Descripcion AS descripcion " +
@@ -522,14 +520,14 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	Integer tieneValidacionDirecta(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
 
 	@Query(value = "SELECT UPPER(m.Codigo) " +
-			"FROM Pallet p WITH(NOLOCK) " +
-			"INNER JOIN Maestro m WITH(NOLOCK) ON m.Id = p.TipologiaId " +
+			"FROM Pallet p " +
+			"INNER JOIN Maestro m ON m.Id = p.TipologiaId " +
 			"WHERE p.Id = :palletId", nativeQuery = true)
 	String findPalletTipologiaCodigo(@Param("palletId") Integer palletId);
 
 	@Query(value = "SELECT UPPER(p.Numero), UPPER(m.Codigo) " +
-			"FROM Pallet p WITH(NOLOCK) " +
-			"INNER JOIN Maestro m WITH(NOLOCK) ON m.Id = p.TipologiaId " +
+			"FROM Pallet p " +
+			"INNER JOIN Maestro m ON m.Id = p.TipologiaId " +
 			"WHERE UPPER(p.Numero) IN (:numeros)", nativeQuery = true)
 	List<Object[]> findPalletTipologiasPorNumero(@Param("numeros") List<String> numeros);
 }

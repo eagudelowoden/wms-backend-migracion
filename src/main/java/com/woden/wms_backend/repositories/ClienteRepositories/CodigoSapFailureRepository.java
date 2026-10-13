@@ -17,7 +17,7 @@ public interface CodigoSapFailureRepository extends BaseRepository<CodigoSapFail
   @Query(value = "SELECT CAST(f.\"ComponenteObligatorio\" AS boolean) FROM pa_searchmandatorycomponent(CAST(:codigoSapId AS integer), CAST(:fallaId AS integer)) f", nativeQuery = true)
   Boolean searchMandatoryComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
 
-  @Query (value = "EXEC pa_SearchSapCodeFailureComponent :codigoSapId, :fallaId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.\"Id\" AS integer), f.codigo, f.nivel FROM pa_searchsapcodefailurecomponent(CAST(:codigoSapId AS integer), CAST(:fallaId AS integer)) f", nativeQuery = true)
   List<Object[]> searchSapCodeFailureComponent(@Param("codigoSapId") Integer codigoSapId, @Param("fallaId") Integer fallaId);
 
   @Query(value = "SELECT CAST(f.id AS integer), f.codigo, f.descripcion, f.\"ComponenteObligatorio\" FROM pa_getlistfailurescodigosap(CAST(:codigoSapId AS integer)) f", nativeQuery = true)

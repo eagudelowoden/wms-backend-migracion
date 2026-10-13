@@ -95,7 +95,7 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
      * Columnas: serial, mac, codigo, descripcion, tipologia, SmartCard,
      * fallaFuncional, fallaFuncionalDescripcion, fallaCosmetica, fallaCosmeticaDescripcion.
      */
-    @Query(value = "EXEC pa_SearchBoxEntryQuality :cajaEmpaqueId", nativeQuery = true)
+    @Query(value = "SELECT f.serial, f.mac, f.codigo, f.descripcion, f.tipologia, f.smartcard, f.fallafuncional, f.fallafuncionaldescripcion, f.fallacosmetica, f.fallacosmeticadescripcion FROM pa_searchboxentryquality(CAST(:cajaEmpaqueId AS integer)) f", nativeQuery = true)
     List<Object[]> searchBoxEntryQuality(@Param("cajaEmpaqueId") Integer cajaEmpaqueId);
 
     /**
@@ -124,7 +124,7 @@ public interface CajaEmpaqueRepository extends BaseRepository<CajaEmpaqueModel, 
     List<Object[]> searchAllRejectedBoxes(@Param("estadoId") Integer estadoId);
 
     /** Serial Master (Calidad): seriales de una caja dado el pallet y el número de caja. */
-    @Query(value = "EXEC pa_SearchSerialesByCajaMaster :palletId, :numeroCaja", nativeQuery = true)
+    @Query(value = "SELECT f.serial FROM pa_searchserialesbycajamaster(CAST(:palletId AS integer), CAST(:numeroCaja AS character varying)) f", nativeQuery = true)
     List<String> searchSerialesByCajaMaster(
             @Param("palletId") Integer palletId,
             @Param("numeroCaja") String numeroCaja);

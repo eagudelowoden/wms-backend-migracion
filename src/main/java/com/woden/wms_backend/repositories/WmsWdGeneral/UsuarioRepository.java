@@ -103,6 +103,6 @@ public interface UsuarioRepository extends JpaRepository<UsuarioModel, Integer> 
      * UsuarioCliente, que es el único puente usuario<->cliente (dbo.Usuario no tiene
      * ClienteId). Devuelve id, nombres, apellidos, nombreCompleto y nombreUsuario.
      */
-    @Query(value = "SELECT u.Id, u.Nombres, u.Apellidos, CONCAT(u.Nombres, ' ', u.Apellidos) AS NombreCompleto, u.NombreUsuario FROM Usuario u INNER JOIN UsuarioCliente uc ON uc.UsuarioId = u.Id AND uc.ClienteId = :clienteId INNER JOIN Cargo c ON u.CargoId = c.Id WHERE u.Activo = 1 AND UPPER(LTRIM(RTRIM(c.Nombre))) = :cargo ORDER BY u.Nombres, u.Apellidos", nativeQuery = true)
+    @Query(value = "SELECT u.Id, u.Nombres, u.Apellidos, CONCAT(u.Nombres, ' ', u.Apellidos) AS NombreCompleto, u.NombreUsuario FROM Usuario u INNER JOIN UsuarioCliente uc ON uc.UsuarioId = u.Id AND uc.ClienteId = :clienteId INNER JOIN Cargo c ON u.CargoId = c.Id WHERE u.Activo = true AND UPPER(LTRIM(RTRIM(c.Nombre))) = :cargo ORDER BY u.Nombres, u.Apellidos", nativeQuery = true)
     List<Object[]> getUsuariosPorCargo(@Param("clienteId") int clienteId, @Param("cargo") String cargo);
 }

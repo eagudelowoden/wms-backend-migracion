@@ -125,9 +125,8 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
   @Query(value = "SELECT pa_backcleanentry(CAST(:id AS character varying), CAST(NULL AS integer))", nativeQuery = true)
   void BackCleanEntry(@Param("id") Integer id, @Param("filas") Integer filas);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdateNoveltyAllAccesory :palletId, :estadoId, :observaciones, :novedad, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_updatenoveltyallaccesory(CAST(:palletId AS integer), CAST(:estadoId AS integer), CAST(:observaciones AS character varying), CAST(:novedad AS character varying), CAST(:usuarioId AS integer))", nativeQuery = true)
   void updateNoveltyAllAccesory(
       @Param("palletId") Integer palletId,
       @Param("estadoId") Integer estadoId,
@@ -135,25 +134,24 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
       @Param("novedad") String novedad,
       @Param("usuarioId") Integer usuarioId);
 
-  @Query(value = "EXEC pa_SearchNoveltyAccesoryPallet :tipoNovedad", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.codigosap, f.descripcion, CAST(f.cantidad AS integer), f.tipologia, f.novedad FROM pa_searchnoveltyaccesorypallet(CAST(:tipoNovedad AS character varying)) f", nativeQuery = true)
   List<Object[]> searchNoveltyAccesoryPallet(@Param("tipoNovedad") String tipoNovedad);
 
-  @Query(value = "EXEC pa_SearchNoveltyAccesory :palletId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.palletid AS integer), CAST(f.codigosapid AS integer), f.codigo, f.descripcion, f.tipoaccesorio, f.origen, f.documento, f.guia, f.caja FROM pa_searchnoveltyaccesory(CAST(:palletId AS integer)) f", nativeQuery = true)
   List<Object[]> searchNoveltyAccesory(@Param("palletId") Integer palletId);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_UpdateAccesoryNovedad :palletId, :codigoSapId, :usuarioId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updateaccesorynovedad(CAST(:palletId AS integer), CAST(:codigoSapId AS integer), CAST(:usuarioId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   void updateAccesoryNovedad(
       @Param("palletId") Integer palletId,
       @Param("codigoSapId") Integer codigoSapId,
       @Param("usuarioId") Integer usuarioId,
       @Param("filas") Integer filas);
 
-  @Query(value = "EXEC pa_CountAvailableAccesory :codigoSapId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.cantidad AS integer) FROM pa_countavailableaccesory(CAST(:codigoSapId AS integer)) f", nativeQuery = true)
   Integer countAvailableAccesory(@Param("codigoSapId") Integer codigoSapId);
 
-  @Query(value = "EXEC pa_UpdateAccesoryNovedadCantidad :palletId, :codigoSapId, :cantidad, :accion, :usuarioId", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.resultado AS integer) FROM pa_updateaccesorynovedadcantidad(CAST(:palletId AS integer), CAST(:codigoSapId AS integer), CAST(:cantidad AS integer), CAST(:accion AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
   Integer updateAccesoryNovedadCantidad(
       @Param("palletId") Integer palletId,
       @Param("codigoSapId") Integer codigoSapId,

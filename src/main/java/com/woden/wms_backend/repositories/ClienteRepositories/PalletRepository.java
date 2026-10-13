@@ -45,7 +45,7 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
       @Param("destino") String destino,
       @Param("usuarioId") int usuarioId);
 
-  @Query(value = "EXEC pa_SearchAccesoryNovedadPallet :numero", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.codigosap, f.descripcion, CAST(f.cantidad AS integer), f.tipologia, f.estado FROM pa_searchaccesorynovedadpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> searchAccesoryNovedad(@Param("numero") String numero);
 
   @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.cantidad AS integer), f.origen, f.tipologia, f.lote FROM pa_searchtransitpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
@@ -149,16 +149,15 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "SELECT CAST(f.id AS integer) FROM pa_getidpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
   Integer getIdPallet(@Param("numero") String numero);
 
-  @Modifying
   @Transactional
-  @Query(value = "EXEC pa_updateSapCodePallet :palletId, :codigoSapId, :filas OUT", nativeQuery = true)
+  @Query(value = "SELECT pa_updatesapcodepallet(CAST(:palletId AS integer), CAST(:codigoSapId AS integer), CAST(NULL AS integer))", nativeQuery = true)
   Integer updateSapCodePallet(@Param("palletId") Integer palletId, @Param("codigoSapId") Integer codigoSapId,
       @Param("filas") Integer filas);
 
   @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.cajas FROM pa_searchqualitydeliverypallet() f", nativeQuery = true)
   List<Object[]> searchQualityDeliveryPallet();
 
-  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.\"Codigo\", f.\"Descripcion\", f.cajas, CAST(f.\"Cantidad\" AS integer), CAST(f.\"Cantidad\" AS integer), CAST(f.\"Cantidad\" AS integer), f.tipologia FROM pa_searchpalletboxdispatchpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
+  @Query(value = "SELECT CAST(f.id AS integer), f.numero, f.\"Codigo\", f.\"Descripcion\", f.cajas, CAST(f.\"Cantidad Equip.\" AS integer), CAST(f.\"Cantidad Acc.\" AS integer), CAST(f.\"Cantidad SmartC.\" AS integer), f.tipologia FROM pa_searchpalletboxdispatchpallet(CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> searchPalletBoxDispatchPallet(@Param("numero") String numero);
 
   @Query(value = "SELECT 1 FROM pa_sendallpallet(p_destinoid => CAST(:destinoId AS integer), p_palletid => CAST(:palletId AS integer))", nativeQuery = true)

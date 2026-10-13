@@ -118,9 +118,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    List<String> tipologias = maestroRepository.getListByTipo("tipologias");
+    List<String> tipologias = maestroRepository.getListByTipo("Tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
-        ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
+        ? maestroRepository.getIdMaster(tipologias.get(0), "Tipologias").get(0)
         : 1;
 
     // Si dos usuarios (relojes/husos distintos) terminan cayendo en el mismo

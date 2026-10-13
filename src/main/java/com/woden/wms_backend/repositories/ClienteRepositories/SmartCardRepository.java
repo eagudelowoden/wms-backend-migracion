@@ -28,9 +28,8 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("filas") int filas // <-- aquí también String
     );
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertSmartCardWeb @SerialId = :serialId, @Serial = :serial, @CodigoSapId = :codigoSapId, @UsuarioId = :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_insertsmartcardweb(p_serialid => CAST(:serialId AS integer), p_serial => CAST(:serial AS character varying), p_codigosapid => CAST(:codigoSapId AS integer), p_usuarioid => CAST(:usuarioId AS integer))", nativeQuery = true)
     void createInsert(
             @Param("serialId") Integer serialId,
             @Param("serial") String serial,
@@ -38,15 +37,14 @@ public interface SmartCardRepository extends BaseRepository <SmartCardModel, Int
             @Param("usuarioId") Integer usuarioId
     );
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_UpdateEstadoSmartCardAsign :serial, :usuarioId, :filas OUT", nativeQuery = true)
+    @Query(value = "SELECT pa_updateestadosmartcardasign(CAST(:serial AS character varying), CAST(:usuarioId AS integer), CAST(NULL AS integer))", nativeQuery = true)
     void updateEstadoPreasignado(
             @Param("serial") String serial,
             @Param("usuarioId") Integer usuarioId,
             @Param("filas") Integer filas);
 
-    @Query(value = "EXEC pa_GetSmartcardAsingUserWeb :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.serial, f.mac, f.codigosap, f.descripcion, f.usuarioasignado, CAST(f.nivelid AS integer), CAST(f.loteid AS integer), f.lote, f.modelo, f.fecha, f.rn FROM pa_getsmartcardasinguserweb(CAST(:usuarioId AS integer)) f", nativeQuery = true)
     List<Object[]> getSmartcardsPreasignadas(@Param("usuarioId") Integer usuarioId);
 
     @Transactional

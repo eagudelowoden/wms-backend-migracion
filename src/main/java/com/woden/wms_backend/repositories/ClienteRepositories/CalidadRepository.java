@@ -72,7 +72,7 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
     );
 
 
-    @Query(value = "EXEC pa_ValidateQualityByPallet :palletId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.resultado AS integer) FROM pa_validatequalitybypallet(CAST(:palletId AS integer)) f", nativeQuery = true)
     Integer validateQualityByPallet(@Param("palletId") Integer palletId);
 
 
