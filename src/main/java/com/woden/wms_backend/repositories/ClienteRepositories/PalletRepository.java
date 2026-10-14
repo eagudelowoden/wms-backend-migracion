@@ -249,8 +249,8 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   List<Object[]> getModelByNumber(@Param("numero") String numero);
 
   @Query(value = "SELECT UPPER(p.Numero), p.Id, p.CodigoSapId, cs.Codigo, p.LoteId, p.TipologiaId " +
-      "FROM Pallet p LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId " +
-      "WHERE UPPER(p.Numero) IN (:numeros)", nativeQuery = true)
+      "FROM Pallet p WITH(NOLOCK) LEFT JOIN CodigoSap cs WITH(NOLOCK) ON cs.Id = p.CodigoSapId " +
+      "WHERE p.Numero IN (:numeros)", nativeQuery = true)
   List<Object[]> getMassUploadConfigsByNumbers(@Param("numeros") List<String> numeros);
 
   /**
