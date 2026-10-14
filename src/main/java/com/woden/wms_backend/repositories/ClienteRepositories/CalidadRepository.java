@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface CalidadRepository extends BaseRepository<CalidadModel, Integer> {
@@ -75,6 +76,9 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
 
     @Query(value = "EXEC pa_ValidateQualityByPallet :palletId", nativeQuery = true)
     Integer validateQualityByPallet(@Param("palletId") Integer palletId);
+
+    @Query(value = "SELECT TOP 1 Id, SerialId, Serial, Mac, CodigoSapId, PalletId, CajaEmpaqueId, FallaFuncionalId, FallaCosmeticaId, UsuarioId, Fecha FROM dbo.Calidad WHERE Serial = :serial ORDER BY Id DESC", nativeQuery = true)
+    List<Object[]> findLatestBySerial(@Param("serial") String serial);
 
 
 }

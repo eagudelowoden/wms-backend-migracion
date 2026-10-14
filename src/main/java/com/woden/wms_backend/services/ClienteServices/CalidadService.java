@@ -1,9 +1,12 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
+import com.woden.wms_backend.dto.AuditoriaInSituRequest;
 import com.woden.wms_backend.dto.ConfirmarPalletDTO;
+import com.woden.wms_backend.exception.BusinessRuleException;
 import com.woden.wms_backend.models.Entity.CalidadModel;
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
+import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.repositories.ClienteRepositories.CalidadRepository;
 import com.woden.wms_backend.repositories.ClienteRepositories.EmpaqueRepository;
 import com.woden.wms_backend.services.BaseService;
@@ -15,7 +18,9 @@ import org.springframework.stereotype.Service;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CalidadService extends BaseService<CalidadModel, Integer> {
@@ -28,6 +33,9 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
 
   @Autowired
   private PalletRepository palletRepository;
+
+  @Autowired
+  private IngresoService ingresoService;
 
   public CalidadService(CalidadRepository repository) {
   }
@@ -119,6 +127,71 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
             // SP no existe o error → dejar pasar
             return 0;
         }
+    }
+
+    public Map<String, Object> getAuditoriaBySerial(String serial) {
+        List<Object[]> rows = calidadRepository.findLatestBySerial(serial);
+        if (rows == null || rows.isEmpty()) {
+            return null;
+        }
+        Object[] r = rows.get(0);
+        Map<String, Object> out = new HashMap<>();
+        out.put("id", r[0]);
+        out.put("serialId", r[1]);
+        out.put("serial", r[2]);
+        out.put("mac", r[3]);
+        out.put("codigoSapId", r[4]);
+        out.put("palletId", r[5]);
+        out.put("cajaEmpaqueId", r[6]);
+        out.put("fallaFuncionalId", r[7]);
+        out.put("fallaCosmeticaId", r[8]);
+        out.put("usuarioId", r[9]);
+        out.put("fecha", r[10] != null ? r[10].toString() : null);
+        return out;
+    }
+
+    @Transactional
+    public Map<String, Object> auditarInSitu(AuditoriaInSituRequest req) {
+        if (req == null || req.getSerial() == null || req.getSerial().trim().isEmpty()) {
+            throw new BusinessRuleException("Serial requerido para auditoria in-situ.");
+        }
+        if (req.getFallaFuncionalId() == null || req.getFallaCosmeticaId() == null) {
+            throw new BusinessRuleException("Falla funcional y cosmetica requeridas.");
+        }
+        if (req.getUsuarioId() == null) {
+            throw new BusinessRuleException("Usuario requerido para auditoria in-situ.");
+        }
+        String serial = req.getSerial().trim();
+        IngresoModel ingreso = ingresoService.getModelIngreso(serial);
+        if (ingreso.getCodigoSapId() == null) {
+            throw new BusinessRuleException("Serial sin codigo SAP asignado.");
+        }
+        List<Object[]> existing = calidadRepository.findLatestBySerial(serial);
+        boolean created = false;
+        if (existing == null || existing.isEmpty()) {
+            calidadRepository.createInsertCalidad(
+                    ingreso.getId(),
+                    ingreso.getSerial(),
+                    ingreso.getMac(),
+                    ingreso.getCodigoSapId(),
+                    ingreso.getPalletId(),
+                    ingreso.getCajaEmpaqueId(),
+                    req.getUsuarioId(),
+                    LocalDateTime.now());
+            created = true;
+        }
+        calidadRepository.updateQuality(req.getFallaFuncionalId(), req.getFallaCosmeticaId(), serial);
+        List<Object[]> after = calidadRepository.findLatestBySerial(serial);
+        if (after == null || after.isEmpty()) {
+            throw new BusinessRuleException("No se pudo insertar la fila de calidad, verifique pallet y caja del serial.");
+        }
+        Map<String, Object> out = new HashMap<>();
+        out.put("success", true);
+        out.put("serial", serial);
+        out.put("created", created);
+        out.put("fallaFuncionalId", req.getFallaFuncionalId());
+        out.put("fallaCosmeticaId", req.getFallaCosmeticaId());
+        return out;
     }
 
 
