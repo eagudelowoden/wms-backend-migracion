@@ -520,16 +520,16 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			"GROUP BY UPPER(d.Serial)", nativeQuery = true)
 	List<Object[]> countReingresosBySeriales(@Param("seriales") List<String> seriales);
 
-	@Query(value = "SELECT Serial FROM Ingreso WHERE Serial IN (:seriales)", nativeQuery = true)
+	@Query(value = "SELECT Serial FROM Ingreso WITH(NOLOCK) WHERE Serial IN (:seriales)", nativeQuery = true)
 	List<String> findExistingSerials(@Param("seriales") List<String> seriales);
 
-	@Query(value = "SELECT Mac FROM Ingreso WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT Mac FROM Ingreso WITH(NOLOCK) WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingMacs(@Param("macs") List<String> macs);
 
-	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT Serial3 FROM Ingreso WITH(NOLOCK) WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
 
-	@Query(value = "SELECT SmartCard FROM Ingreso WHERE SmartCard IN (:smartCards) AND SmartCard NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT SmartCard FROM Ingreso WITH(NOLOCK) WHERE SmartCard IN (:smartCards) AND SmartCard NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSmartCards(@Param("smartCards") List<String> smartCards);
 
 	@Query(value = "EXEC pa_GetDiasUltimoIngreso :serial", nativeQuery = true)
