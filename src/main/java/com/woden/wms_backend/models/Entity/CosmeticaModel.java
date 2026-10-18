@@ -24,6 +24,7 @@ public class CosmeticaModel {
   private Integer nivelId;
   private Integer loteId;
   private Integer usuarioId;
+  private Integer usuarioAsignadoId;
   private String fecha;
   private String fechaCierre;
 }

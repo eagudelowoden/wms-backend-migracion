@@ -1,462 +1,98 @@
-2026-10-08T07:34:40.889-05:00  INFO 20672 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 20672 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
-2026-10-08T07:34:40.900-05:00  INFO 20672 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
-2026-10-08T07:34:43.332-05:00  INFO 20672 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-08T07:34:43.945-05:00  INFO 20672 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 581 ms. Found 60 JPA repository interfaces.
-2026-10-08T07:34:47.357-05:00  INFO 20672 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
-2026-10-08T07:34:47.403-05:00  INFO 20672 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-08T07:34:47.404-05:00  INFO 20672 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
-2026-10-08T07:34:47.614-05:00  INFO 20672 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-08T07:34:47.615-05:00  INFO 20672 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6648 ms
-2026-10-08T07:34:48.278-05:00  INFO 20672 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
-2026-10-08T07:34:49.948-05:00  INFO 20672 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 89d9da21-b50f-4c61-9d2a-c966bd15a244
-2026-10-08T07:34:49.951-05:00  INFO 20672 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
-2026-10-08T07:34:50.052-05:00  INFO 20672 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-08T07:34:50.208-05:00  INFO 20672 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
-2026-10-08T07:34:50.326-05:00  INFO 20672 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-08T07:34:52.183-05:00  INFO 20672 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-08T07:34:52.690-05:00  WARN 20672 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-10-08T07:34:53.056-05:00  INFO 20672 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@6651efa4']
+2026-10-18T10:49:26.155-05:00  INFO 17372 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.12 with PID 17372 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
+2026-10-18T10:49:26.165-05:00  INFO 17372 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-10-18T10:49:27.558-05:00  INFO 17372 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-18T10:49:27.866-05:00  INFO 17372 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 292 ms. Found 60 JPA repository interfaces.
+2026-10-18T10:49:30.616-05:00  INFO 17372 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
+2026-10-18T10:49:30.644-05:00  INFO 17372 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-18T10:49:30.644-05:00  INFO 17372 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-10-18T10:49:30.800-05:00  INFO 17372 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-18T10:49:30.800-05:00  INFO 17372 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4594 ms
+2026-10-18T10:49:31.290-05:00  INFO 17372 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
+2026-10-18T10:49:32.730-05:00  INFO 17372 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 60088a99-f74c-4d85-a2c1-57a731c23cab
+2026-10-18T10:49:32.734-05:00  INFO 17372 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
+2026-10-18T10:49:32.877-05:00  INFO 17372 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-18T10:49:32.996-05:00  INFO 17372 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-10-18T10:49:33.080-05:00  INFO 17372 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-18T10:49:34.166-05:00  INFO 17372 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-18T10:49:34.539-05:00  WARN 17372 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-18T10:49:34.836-05:00  INFO 17372 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@aa23f11']
 	Database driver: undefined/unknown
 	Database version: 12.0
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-10-08T07:34:56.718-05:00  INFO 20672 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-08T07:34:56.748-05:00  INFO 20672 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-08T07:34:57.503-05:00  INFO 20672 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-08T07:35:09.214-05:00  WARN 20672 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-08T07:35:09.307-05:00  WARN 20672 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-10-18T10:49:38.723-05:00  INFO 17372 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-18T10:49:38.759-05:00  INFO 17372 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-18T10:49:40.279-05:00  INFO 17372 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-18T10:49:45.783-05:00  WARN 17372 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-18T10:49:45.853-05:00  WARN 17372 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: d032f115-1320-41f0-a910-58f01a2bde8c
+Using generated security password: 94edb80b-db83-40b7-a965-7c5d84034be5
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-10-08T07:35:09.346-05:00  INFO 20672 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-08T07:35:12.214-05:00  INFO 20672 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
-2026-10-08T07:35:12.982-05:00  INFO 20672 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-10-08T07:35:13.249-05:00  WARN 20672 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2026-10-08T07:35:15.613-05:00  INFO 20672 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
-2026-10-08T07:35:15.636-05:00  INFO 20672 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 36.187 seconds (process running for 36.866)
-2026-10-08T07:35:16.029-05:00  WARN 20672 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
-2026-10-08T07:35:46.467-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-08T07:35:46.468-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-08T07:35:46.480-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 12 ms
-2026-10-08T07:35:59.932-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
-2026-10-08T07:36:00.687-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: 5888ca25-4ddc-4e48-94bf-92f4998b370a
-2026-10-08T07:36:00.689-05:00  INFO 20672 --- [wms-backend] [http-nio-9000-exec-27] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
-2026-10-08T07:37:28.202-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-42] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya existe con el serial: FC126313F650
-2026-10-08T07:37:55.580-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-9] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
-2026-10-08T07:43:42.429-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-14] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=El Serial ya existe como MAC en: 7493DA2BCA30
-2026-10-08T07:44:44.330-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-26] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=El Serial ya existe como MAC en: 4CABF81BEDD0
-2026-10-08T07:47:08.253-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-3] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
-2026-10-08T07:47:31.063-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-18] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya existe con el serial: FC126313F650
-2026-10-08T07:47:55.526-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-32] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
-2026-10-08T07:47:56.000-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-33] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
-2026-10-08T07:50:30.374-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-6] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=La MAC ya se encuentra registrada en el sistema.
-2026-10-08T07:50:42.999-05:00  WARN 20672 --- [wms-backend] [http-nio-9000-exec-14] c.w.w.exception.GlobalExceptionHandler   : [DUPLICATE_ENTRY] path=/client/ingresos/create message=El Serial ya existe como MAC en: C8B42252E8A0
-2026-10-08T10:05:30.955-05:00  INFO 29484 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 29484 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
-2026-10-08T10:05:30.958-05:00  INFO 29484 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
-2026-10-08T10:05:33.148-05:00  INFO 29484 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-08T10:05:33.831-05:00  INFO 29484 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 660 ms. Found 60 JPA repository interfaces.
-2026-10-08T10:05:37.115-05:00  INFO 29484 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
-2026-10-08T10:05:37.150-05:00  INFO 29484 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-08T10:05:37.151-05:00  INFO 29484 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
-2026-10-08T10:05:37.352-05:00  INFO 29484 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-08T10:05:37.354-05:00  INFO 29484 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6325 ms
-2026-10-08T10:05:38.338-05:00  INFO 29484 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
-2026-10-08T10:05:40.155-05:00  INFO 29484 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 739f7dd1-53c7-4319-893a-9bc4b3880ae2
-2026-10-08T10:05:40.164-05:00  INFO 29484 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
-2026-10-08T10:05:40.343-05:00  INFO 29484 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-08T10:05:41.154-05:00  INFO 29484 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
-2026-10-08T10:05:41.211-05:00  INFO 29484 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-08T10:05:42.834-05:00  INFO 29484 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-08T10:05:43.745-05:00  WARN 29484 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-10-08T10:05:44.107-05:00  INFO 29484 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@7cbe3a05']
+2026-10-18T10:49:45.893-05:00  INFO 17372 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-18T10:49:47.232-05:00  INFO 17372 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
+2026-10-18T10:49:47.787-05:00  INFO 17372 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-10-18T10:49:48.105-05:00  WARN 17372 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-10-18T10:49:49.720-05:00  INFO 17372 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
+2026-10-18T10:49:49.742-05:00  INFO 17372 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 24.108 seconds (process running for 24.588)
+2026-10-18T10:49:50.183-05:00  WARN 17372 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
+2026-10-18T10:53:45.287-05:00  INFO 17372 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-18T10:53:45.289-05:00  INFO 17372 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-18T10:53:45.298-05:00  INFO 17372 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 9 ms
+2026-10-18T10:54:15.479-05:00  INFO 17372 --- [wms-backend] [http-nio-9000-exec-17] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
+2026-10-18T10:54:16.161-05:00  INFO 17372 --- [wms-backend] [http-nio-9000-exec-17] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: 433d7af1-140c-4e80-84a7-8a4a59a2abe1
+2026-10-18T10:54:16.162-05:00  INFO 17372 --- [wms-backend] [http-nio-9000-exec-17] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
+2026-10-18T12:01:01.705-05:00  WARN 17372 --- [wms-backend] [HikariPool-WmsWdLegacyCostaRica housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Thread starvation or clock leap detected (housekeeper delta=1m41s439ms488µs900ns).
+2026-10-18T12:01:18.082-05:00  WARN 17372 --- [wms-backend] [HikariPool-WmsWdGeneral housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Thread starvation or clock leap detected (housekeeper delta=1m41s442ms77µs300ns).
+2026-10-18T12:12:20.762-05:00  INFO 18756 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.12 with PID 18756 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
+2026-10-18T12:12:20.765-05:00  INFO 18756 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-10-18T12:12:23.115-05:00  INFO 18756 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-18T12:12:23.837-05:00  INFO 18756 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 698 ms. Found 60 JPA repository interfaces.
+2026-10-18T12:12:29.052-05:00  INFO 18756 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
+2026-10-18T12:12:29.101-05:00  INFO 18756 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-18T12:12:29.103-05:00  INFO 18756 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-10-18T12:12:29.310-05:00  INFO 18756 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-18T12:12:29.312-05:00  INFO 18756 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 8458 ms
+2026-10-18T12:12:30.275-05:00  INFO 18756 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
+2026-10-18T12:12:31.681-05:00  INFO 18756 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: 706a546a-331d-440d-adcb-cc077c016df6
+2026-10-18T12:12:31.688-05:00  INFO 18756 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
+2026-10-18T12:12:31.844-05:00  INFO 18756 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-18T12:12:31.997-05:00  INFO 18756 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-10-18T12:12:32.103-05:00  INFO 18756 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-18T12:12:33.272-05:00  INFO 18756 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-18T12:12:33.679-05:00  WARN 18756 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-18T12:12:33.952-05:00  INFO 18756 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@2006fdaa']
 	Database driver: undefined/unknown
 	Database version: 12.0
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-10-08T10:05:48.567-05:00  INFO 29484 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-08T10:05:48.602-05:00  INFO 29484 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-08T10:05:49.386-05:00  INFO 29484 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-08T10:05:55.702-05:00  WARN 29484 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-08T10:05:55.798-05:00  WARN 29484 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
+2026-10-18T12:12:39.135-05:00  INFO 18756 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-18T12:12:39.305-05:00  INFO 18756 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-18T12:12:40.846-05:00  INFO 18756 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-18T12:12:49.717-05:00  WARN 18756 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-18T12:12:49.825-05:00  WARN 18756 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 862d2e71-54a3-4d69-8bc6-9d35f2373e9f
-
-This generated password is for development use only. Your security configuration must be updated before running your application in production.
-
-2026-10-08T10:05:55.956-05:00  INFO 29484 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-08T10:05:57.573-05:00  INFO 29484 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
-2026-10-08T10:05:58.280-05:00  INFO 29484 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-10-08T10:05:58.588-05:00  WARN 29484 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2026-10-08T10:05:59.453-05:00  INFO 29484 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
-2026-10-08T10:05:59.479-05:00  INFO 29484 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 29.2 seconds (process running for 30.157)
-2026-10-08T10:05:59.778-05:00  WARN 29484 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
-2026-10-08T12:56:56.226-05:00  INFO 26384 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Starting WmsBackendApplication using Java 21.0.7 with PID 26384 (C:\Users\e.agudelo\Documents\WMS\Backend\target\classes started by e.agudelo in C:\Users\e.agudelo\Documents\WMS\Backend)
-2026-10-08T12:56:56.227-05:00  INFO 26384 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : No active profile set, falling back to 1 default profile: "default"
-2026-10-08T12:56:57.286-05:00  INFO 26384 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-10-08T12:56:57.569-05:00  INFO 26384 --- [wms-backend] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 271 ms. Found 60 JPA repository interfaces.
-2026-10-08T12:56:59.906-05:00  INFO 26384 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
-2026-10-08T12:56:59.926-05:00  INFO 26384 --- [wms-backend] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-08T12:56:59.927-05:00  INFO 26384 --- [wms-backend] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
-2026-10-08T12:57:00.014-05:00  INFO 26384 --- [wms-backend] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-08T12:57:00.014-05:00  INFO 26384 --- [wms-backend] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3751 ms
-2026-10-08T12:57:00.366-05:00  INFO 26384 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Starting...
-2026-10-08T12:57:01.798-05:00  INFO 26384 --- [wms-backend] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdGeneral - Added connection ConnectionID:1 ClientConnectionId: a7e66d00-5269-4e2e-9e1c-1056c8ac8ec2
-2026-10-08T12:57:01.880-05:00  INFO 26384 --- [wms-backend] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdGeneral - Start completed.
-2026-10-08T12:57:02.215-05:00  INFO 26384 --- [wms-backend] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-10-08T12:57:02.298-05:00  INFO 26384 --- [wms-backend] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
-2026-10-08T12:57:02.341-05:00  INFO 26384 --- [wms-backend] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-10-08T12:57:03.194-05:00  INFO 26384 --- [wms-backend] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-10-08T12:57:03.507-05:00  WARN 26384 --- [wms-backend] [main] org.hibernate.orm.deprecation            : HHH90000025: SQLServerDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-10-08T12:57:03.728-05:00  INFO 26384 --- [wms-backend] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'com.woden.wms_backend.config.DataSource.DynamicDataSourceConfig$1@7cbe3a05']
-	Database driver: undefined/unknown
-	Database version: 12.0
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2026-10-08T12:57:06.773-05:00  INFO 26384 --- [wms-backend] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-10-08T12:57:06.787-05:00  INFO 26384 --- [wms-backend] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-10-08T12:57:07.152-05:00  INFO 26384 --- [wms-backend] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-10-08T12:57:09.343-05:00  WARN 26384 --- [wms-backend] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-10-08T12:57:09.378-05:00  WARN 26384 --- [wms-backend] [main] .s.s.UserDetailsServiceAutoConfiguration : 
-
-Using generated security password: 7582f3ce-fd73-4a90-bfa5-2d2afb738501
+Using generated security password: 17270cea-552a-4d5b-85bd-1ec49e175ea2
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2026-10-08T12:57:09.395-05:00  INFO 26384 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-10-08T12:57:09.922-05:00  INFO 26384 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
-2026-10-08T12:57:10.081-05:00  INFO 26384 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-10-08T12:57:10.170-05:00  WARN 26384 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2026-10-08T12:57:10.748-05:00  INFO 26384 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
-2026-10-08T12:57:10.758-05:00  INFO 26384 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 17.313 seconds (process running for 17.808)
-2026-10-08T12:57:10.967-05:00  WARN 26384 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
-2026-10-08T12:57:35.388-05:00  INFO 26384 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-08T12:57:35.388-05:00  INFO 26384 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-08T12:57:35.391-05:00  INFO 26384 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
-2026-10-08T12:58:08.660-05:00  INFO 26384 --- [wms-backend] [http-nio-9000-exec-13] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
-2026-10-08T12:58:09.377-05:00  INFO 26384 --- [wms-backend] [http-nio-9000-exec-13] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:11 ClientConnectionId: 6aad656a-a73b-4bdb-98fc-96d2e102c326
-2026-10-08T12:58:09.377-05:00  INFO 26384 --- [wms-backend] [http-nio-9000-exec-13] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
-2026-10-08T12:58:30.487-05:00 ERROR 26384 --- [wms-backend] [http-nio-9000-exec-26] c.w.w.exception.GlobalExceptionHandler   : [INTERNAL_ERROR] path=/client/zplPrinter/generar error=Error al leer plantilla ZPL: Z:\archivos\ENV\PRD\archivos\etiquetas\LEGACY COSTARICA\prns\empaque\PRUEBA\codigo2.prn (El sistema no puede encontrar la ruta especificada)
-
-java.lang.RuntimeException: Error al leer plantilla ZPL: Z:\archivos\ENV\PRD\archivos\etiquetas\LEGACY COSTARICA\prns\empaque\PRUEBA\codigo2.prn (El sistema no puede encontrar la ruta especificada)
-	at com.woden.wms_backend.services.ClienteServices.ZplPrinterService.leerPlantilla(ZplPrinterService.java:150) ~[classes/:na]
-	at com.woden.wms_backend.services.ClienteServices.ZplPrinterService.generarZpl(ZplPrinterService.java:132) ~[classes/:na]
-	at com.woden.wms_backend.controllers.ClientesControllers.ZplPrinterController.generarZplMultiple(ZplPrinterController.java:48) ~[classes/:na]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.46.jar:6.0]
-	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.46.jar:6.0]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.servlet.resource.ResourceUrlEncodingFilter.doFilter(ResourceUrlEncodingFilter.java:66) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:490) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:351) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:83) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:129) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at com.woden.wms_backend.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:87) ~[classes/:na]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at com.woden.wms_backend.security.ApiKeyAuthenticationFilter.doFilterInternal(ApiKeyAuthenticationFilter.java:72) ~[classes/:na]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:334) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:225) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$4(HandlerMappingIntrospector.java:267) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238) ~[spring-security-config-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at com.woden.wms_backend.config.DataSource.ClientContextCleanupFilter.doFilterInternal(ClientContextCleanupFilter.java:25) ~[classes/:na]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1776) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:975) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:493) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
-
-2026-10-08T12:58:37.527-05:00 ERROR 26384 --- [wms-backend] [http-nio-9000-exec-1] c.w.w.exception.GlobalExceptionHandler   : [INTERNAL_ERROR] path=/client/zplPrinter/generar error=Error al leer plantilla ZPL: Z:\archivos\ENV\PRD\archivos\etiquetas\LEGACY COSTARICA\prns\empaque\MATER RUBY\codigo2.prn (El sistema no puede encontrar el archivo especificado)
-
-java.lang.RuntimeException: Error al leer plantilla ZPL: Z:\archivos\ENV\PRD\archivos\etiquetas\LEGACY COSTARICA\prns\empaque\MATER RUBY\codigo2.prn (El sistema no puede encontrar el archivo especificado)
-	at com.woden.wms_backend.services.ClienteServices.ZplPrinterService.leerPlantilla(ZplPrinterService.java:150) ~[classes/:na]
-	at com.woden.wms_backend.services.ClienteServices.ZplPrinterService.generarZpl(ZplPrinterService.java:132) ~[classes/:na]
-	at com.woden.wms_backend.controllers.ClientesControllers.ZplPrinterController.generarZplMultiple(ZplPrinterController.java:48) ~[classes/:na]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.46.jar:6.0]
-	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.46.jar:6.0]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.servlet.resource.ResourceUrlEncodingFilter.doFilter(ResourceUrlEncodingFilter.java:66) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:490) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:351) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:83) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:129) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at com.woden.wms_backend.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:87) ~[classes/:na]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at com.woden.wms_backend.security.ApiKeyAuthenticationFilter.doFilterInternal(ApiKeyAuthenticationFilter.java:72) ~[classes/:na]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:228) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:241) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:334) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:225) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:138) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$4(HandlerMappingIntrospector.java:267) ~[spring-webmvc-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238) ~[spring-security-config-6.4.11.jar:6.4.11]
-	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at com.woden.wms_backend.config.DataSource.ClientContextCleanupFilter.doFilterInternal(ClientContextCleanupFilter.java:25) ~[classes/:na]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:110) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.11.jar:6.2.11]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1776) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:975) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:493) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.46.jar:10.1.46]
-	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
-
+2026-10-18T12:12:49.871-05:00  INFO 18756 --- [wms-backend] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-10-18T12:12:51.417-05:00  INFO 18756 --- [wms-backend] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 16 endpoints beneath base path '/actuator'
+2026-10-18T12:12:51.826-05:00  INFO 18756 --- [wms-backend] [main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-10-18T12:12:52.057-05:00  WARN 18756 --- [wms-backend] [main] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-10-18T12:12:53.339-05:00  INFO 18756 --- [wms-backend] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
+2026-10-18T12:12:53.370-05:00  INFO 18756 --- [wms-backend] [main] c.w.wms_backend.WmsBackendApplication    : Started WmsBackendApplication in 34.732 seconds (process running for 35.824)
+2026-10-18T12:12:53.797-05:00  WARN 18756 --- [wms-backend] [registrationTask1] d.c.b.a.c.r.ApplicationRegistrator       : Failed to register application as Application(name=WMS-Backend-Daniel, managementUrl=http://ACT-003812.Woden.net:9000/actuator, healthUrl=http://ACT-003812.Woden.net:9000/actuator/health, serviceUrl=http://ACT-003812.Woden.net:9000/) at spring-boot-admin ([http://localhost:9001/instances]): I/O error on POST request for "http://localhost:9001/instances": Connect to http://localhost:9001 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt. Further attempts are logged on DEBUG level
+2026-10-18T12:17:09.936-05:00  INFO 18756 --- [wms-backend] [http-nio-9000-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-18T12:17:09.936-05:00  INFO 18756 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-18T12:17:09.940-05:00  INFO 18756 --- [wms-backend] [http-nio-9000-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+2026-10-18T12:39:25.377-05:00  INFO 18756 --- [wms-backend] [http-nio-9000-exec-25] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Starting...
+2026-10-18T12:39:26.012-05:00  INFO 18756 --- [wms-backend] [http-nio-9000-exec-25] com.zaxxer.hikari.pool.HikariPool        : HikariPool-WmsWdLegacyCostaRica - Added connection ConnectionID:21 ClientConnectionId: d4277389-30c0-4068-bf52-da0076dbaaed
+2026-10-18T12:39:26.012-05:00  INFO 18756 --- [wms-backend] [http-nio-9000-exec-25] com.zaxxer.hikari.HikariDataSource       : HikariPool-WmsWdLegacyCostaRica - Start completed.
