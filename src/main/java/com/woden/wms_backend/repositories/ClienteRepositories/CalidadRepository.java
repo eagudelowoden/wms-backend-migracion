@@ -73,6 +73,14 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("serial") String serial
     );
 
+    @Modifying
+    @Transactional
+    @Query(value = "EXEC pa_UpdateEstadoCalidadBySerial :serial, :estadoCalidadId", nativeQuery = true)
+    void updateEstadoCalidadBySerial(
+            @Param("serial") String serial,
+            @Param("estadoCalidadId") Integer estadoCalidadId
+    );
+
 
     @Query(value = "EXEC pa_ValidateQualityByPallet :palletId", nativeQuery = true)
     Integer validateQualityByPallet(@Param("palletId") Integer palletId);

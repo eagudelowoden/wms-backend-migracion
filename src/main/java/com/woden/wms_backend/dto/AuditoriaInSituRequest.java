@@ -8,4 +8,5 @@ public class AuditoriaInSituRequest {
   private Integer fallaFuncionalId;
   private Integer fallaCosmeticaId;
   private Integer usuarioId;
+  private Integer estadoCalidadId;
 }

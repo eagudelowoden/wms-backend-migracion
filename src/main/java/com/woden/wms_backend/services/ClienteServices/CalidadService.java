@@ -181,6 +181,9 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
             created = true;
         }
         calidadRepository.updateQuality(req.getFallaFuncionalId(), req.getFallaCosmeticaId(), serial);
+        if (req.getEstadoCalidadId() != null) {
+            calidadRepository.updateEstadoCalidadBySerial(serial, req.getEstadoCalidadId());
+        }
         List<Object[]> after = calidadRepository.findLatestBySerial(serial);
         if (after == null || after.isEmpty()) {
             throw new BusinessRuleException("No se pudo insertar la fila de calidad, verifique pallet y caja del serial.");
@@ -191,6 +194,7 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         out.put("created", created);
         out.put("fallaFuncionalId", req.getFallaFuncionalId());
         out.put("fallaCosmeticaId", req.getFallaCosmeticaId());
+        out.put("estadoCalidadId", req.getEstadoCalidadId());
         return out;
     }
 

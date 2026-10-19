@@ -408,6 +408,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }).collect(Collectors.toList());
   }
 
+  public List<Map<String, String>> searchAuditoriaInSituEntry() {
+    return ingresoRepository.searchAuditoriaInSituEntry().stream().map(obj -> {
+      Map<String, String> fila = new HashMap<>();
+      fila.put("serial", toStr(obj[0]));
+      fila.put("mac", toStr(obj[1]));
+      fila.put("pallet", toStr(obj[2]));
+      fila.put("caja", toStr(obj[3]));
+      fila.put("smartCard", toStr(obj[4]));
+      fila.put("codigoSap", toStr(obj[5]));
+      fila.put("codigoSapId", toStr(obj[6]));
+      fila.put("estado", toStr(obj[7]));
+      return fila;
+    }).collect(Collectors.toList());
+  }
+
   public List<Map<String, Object>> searchNoveltyEntry(String tipoNovedad) {
     return ingresoRepository.searchNoveltyEntry(tipoNovedad).stream().map(result -> {
       Map<String, Object> entry = new HashMap<>();
