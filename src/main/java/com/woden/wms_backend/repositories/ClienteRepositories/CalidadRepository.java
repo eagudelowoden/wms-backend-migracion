@@ -73,6 +73,15 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("serial") String serial
     );
 
+    @Query(value = "DECLARE @filas INT; EXEC pa_UpdateQualityExtrasBySerial :serial, :personal, :dni, :voltaje, :observaciones, @filas OUTPUT; SELECT @filas", nativeQuery = true)
+    Integer updateQualityExtrasBySerial(
+            @Param("serial") String serial,
+            @Param("personal") String personal,
+            @Param("dni") String dni,
+            @Param("voltaje") String voltaje,
+            @Param("observaciones") String observaciones
+    );
+
     @Modifying
     @Transactional
     @Query(value = "EXEC pa_UpdateEstadoCalidadBySerial :serial, :estadoCalidadId", nativeQuery = true)
@@ -85,7 +94,15 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
     @Query(value = "EXEC pa_ValidateQualityByPallet :palletId", nativeQuery = true)
     Integer validateQualityByPallet(@Param("palletId") Integer palletId);
 
-    @Query(value = "SELECT TOP 1 Id, SerialId, Serial, Mac, CodigoSapId, PalletId, CajaEmpaqueId, FallaFuncionalId, FallaCosmeticaId, UsuarioId, Fecha FROM dbo.Calidad WHERE Serial = :serial ORDER BY Id DESC", nativeQuery = true)
+    @Query(value = "SELECT TOP 1 c.Id, c.SerialId, c.Serial, c.Mac, c.CodigoSapId, c.PalletId, c.CajaEmpaqueId, " +
+            "c.FallaFuncionalId, c.FallaCosmeticaId, c.UsuarioId, c.Fecha, " +
+            "mf.Codigo AS FallaFuncionalCodigo, mc.Codigo AS FallaCosmeticaCodigo, " +
+            "CASE WHEN ISNULL(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo " +
+            "FROM dbo.Calidad c " +
+            "LEFT JOIN dbo.Maestro mf ON mf.Id = c.FallaFuncionalId " +
+            "LEFT JOIN dbo.Maestro mc ON mc.Id = c.FallaCosmeticaId " +
+            "LEFT JOIN dbo.Maestro me ON me.Id = c.EstadoFinalId " +
+            "WHERE c.Serial = :serial ORDER BY c.Id DESC", nativeQuery = true)
     List<Object[]> findLatestBySerial(@Param("serial") String serial);
 
 

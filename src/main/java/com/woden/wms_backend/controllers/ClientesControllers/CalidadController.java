@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.woden.wms_backend.dto.AuditoriaInSituRequest;
+import com.woden.wms_backend.dto.CalidadExtrasRequest;
 
 
 
@@ -131,6 +132,11 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(0);
         }
+    }
+
+    @PostMapping("/updateQualityExtras")
+    public ResponseEntity<Integer> updateQualityExtras(@RequestBody CalidadExtrasRequest request) {
+        return ResponseEntity.ok(calidadService.updateQualityExtras(request));
     }
 
     @GetMapping("/validateQualityByPallet")

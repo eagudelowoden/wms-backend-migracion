@@ -419,6 +419,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       fila.put("codigoSap", toStr(obj[5]));
       fila.put("codigoSapId", toStr(obj[6]));
       fila.put("estado", toStr(obj[7]));
+      fila.put("fallaFuncionalCodigo", obj.length > 8 ? toStr(obj[8]) : "");
+      fila.put("fallaCosmeticaCodigo", obj.length > 9 ? toStr(obj[9]) : "");
+      fila.put("estadoFinalCodigo", obj.length > 10 ? toStr(obj[10]) : "");
       return fila;
     }).collect(Collectors.toList());
   }

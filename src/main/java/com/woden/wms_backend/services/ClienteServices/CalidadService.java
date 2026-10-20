@@ -2,6 +2,7 @@ package com.woden.wms_backend.services.ClienteServices;
 
 import com.woden.wms_backend.controllers.ClientesControllers.JasperReportController;
 import com.woden.wms_backend.dto.AuditoriaInSituRequest;
+import com.woden.wms_backend.dto.CalidadExtrasRequest;
 import com.woden.wms_backend.dto.ConfirmarPalletDTO;
 import com.woden.wms_backend.exception.BusinessRuleException;
 import com.woden.wms_backend.models.Entity.CalidadModel;
@@ -16,11 +17,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.woden.wms_backend.repositories.ClienteRepositories.PalletRepository;
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 @Service
 public class CalidadService extends BaseService<CalidadModel, Integer> {
@@ -37,10 +45,15 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
   @Autowired
   private IngresoService ingresoService;
 
+  @Autowired
+  private DataSource dataSource;
+
   public CalidadService(CalidadRepository repository) {
   }
 
   private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
+
+  private static final String CODIGO_CAMPOS_EXTRAS = "CALIDAD_CAMPOS_EXTRAS";
 
     public void updateFinalStateQuality(Integer palletId, Integer estadoFinalId) {
         Integer filas = 0;
@@ -111,6 +124,49 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
             return 0;
         }
     }
+
+    @Transactional
+    public int updateQualityExtras(CalidadExtrasRequest req) {
+        if (req == null || req.getSerial() == null || req.getSerial().trim().isEmpty()) {
+            throw new BusinessRuleException("Serial requerido para guardar los campos extras.");
+        }
+        if (!camposExtrasActivos()) {
+            throw new BusinessRuleException(
+                    "Los campos extras no estan habilitados para este cliente o falta el procedimiento pa_UpdateQualityExtrasBySerial.");
+        }
+        Integer filas = calidadRepository.updateQualityExtrasBySerial(
+                req.getSerial().trim(),
+                req.getPersonal() == null ? "" : req.getPersonal(),
+                req.getDni() == null ? "" : req.getDni(),
+                req.getVoltaje() == null ? "" : req.getVoltaje(),
+                req.getObservaciones() == null ? "" : req.getObservaciones());
+        return filas != null ? filas : 0;
+    }
+
+    private boolean camposExtrasActivos() {
+        Integer clienteId = ClientDatabaseContext.getCurrentClientId();
+        if (clienteId == null) {
+            return false;
+        }
+        String sql = "SELECT cv.Activo "
+                + "FROM [WmsWdGeneral].[dbo].[ClienteValidacion] cv "
+                + "INNER JOIN [WmsWdGeneral].[dbo].[ClienteValidacionTipo] cvt ON cvt.Id = cv.ValidacionTipoId "
+                + "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = 1 AND cvt.Activo = 1 "
+                + "AND OBJECT_ID('dbo.pa_UpdateQualityExtrasBySerial') IS NOT NULL";
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, clienteId);
+            ps.setString(2, CODIGO_CAMPOS_EXTRAS);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("[CalidadService] Error consultando validacion '{}' para clienteId={}: {}",
+                    CODIGO_CAMPOS_EXTRAS, clienteId, e.getMessage());
+            return false;
+        }
+    }
+
     public boolean sendCalidad(ConfirmarPalletDTO dto) {
         palletRepository.enviarPallet(
                 dto.getPalletId(), dto.getDestinoId(), dto.getDestinoId(),
@@ -147,6 +203,9 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         out.put("fallaCosmeticaId", r[8]);
         out.put("usuarioId", r[9]);
         out.put("fecha", r[10] != null ? r[10].toString() : null);
+        out.put("fallaFuncionalCodigo", r[11] != null ? r[11].toString() : null);
+        out.put("fallaCosmeticaCodigo", r[12] != null ? r[12].toString() : null);
+        out.put("estadoFinalCodigo", r[13] != null ? r[13].toString() : null);
         return out;
     }
 
@@ -166,32 +225,22 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         if (ingreso.getCodigoSapId() == null) {
             throw new BusinessRuleException("Serial sin codigo SAP asignado.");
         }
-        List<Object[]> existing = calidadRepository.findLatestBySerial(serial);
-        boolean created = false;
-        if (existing == null || existing.isEmpty()) {
-            calidadRepository.createInsertCalidad(
-                    ingreso.getId(),
-                    ingreso.getSerial(),
-                    ingreso.getMac(),
-                    ingreso.getCodigoSapId(),
-                    ingreso.getPalletId(),
-                    ingreso.getCajaEmpaqueId(),
-                    req.getUsuarioId(),
-                    LocalDateTime.now());
-            created = true;
-        }
+        calidadRepository.createInsertCalidad(
+                ingreso.getId(),
+                ingreso.getSerial(),
+                ingreso.getMac() == null ? "" : ingreso.getMac(),
+                ingreso.getCodigoSapId(),
+                ingreso.getPalletId(),
+                ingreso.getCajaEmpaqueId(),
+                req.getUsuarioId(),
+                LocalDateTime.now());
         calidadRepository.updateQuality(req.getFallaFuncionalId(), req.getFallaCosmeticaId(), serial);
         if (req.getEstadoCalidadId() != null) {
             calidadRepository.updateEstadoCalidadBySerial(serial, req.getEstadoCalidadId());
         }
-        List<Object[]> after = calidadRepository.findLatestBySerial(serial);
-        if (after == null || after.isEmpty()) {
-            throw new BusinessRuleException("No se pudo insertar la fila de calidad, verifique pallet y caja del serial.");
-        }
         Map<String, Object> out = new HashMap<>();
         out.put("success", true);
         out.put("serial", serial);
-        out.put("created", created);
         out.put("fallaFuncionalId", req.getFallaFuncionalId());
         out.put("fallaCosmeticaId", req.getFallaCosmeticaId());
         out.put("estadoCalidadId", req.getEstadoCalidadId());
