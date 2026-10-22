@@ -62,14 +62,47 @@ BEGIN
 END
 GO
 
--- 3) Estados destino: solo Produccion -------------------------------------
+-- 2b) Estados destino permitidos por ambito ----------------------------------
+--     SERIAL: a donde se puede mover un serial
+--     PALLET: a donde se puede mover un pallet (estados P-* y *-ENTREGA)
+--     Es una tabla para poder ajustar la lista sin tocar codigo.
+IF OBJECT_ID('dbo.AutogestionEstadoDestino', 'U') IS NULL
+CREATE TABLE dbo.AutogestionEstadoDestino (
+    Ambito   VARCHAR(10) NOT NULL,   -- SERIAL | PALLET
+    EstadoId INT         NOT NULL,
+    CONSTRAINT PK_AutogestionEstadoDestino PRIMARY KEY (Ambito, EstadoId)
+);
+GO
+
+-- Semilla SERIAL (ajustar los nombres si en tu base se llaman distinto)
+INSERT INTO dbo.AutogestionEstadoDestino (Ambito, EstadoId)
+SELECT 'SERIAL', e.id
+FROM WmsWdGeneral.dbo.Estado e
+WHERE e.nombre IN ('DIAGNOSTICO', 'EMPAQUE', 'CLASIFICACION', 'REPARACION', 'REPARACION-ASIGNACION',
+                   'COSMETICA', 'ETIQUETADO', 'ENSAMBLE', 'AUTOGESTION')
+  AND dbo.fn_AutogestionEsProduccion(e.id) = 1
+  AND NOT EXISTS (SELECT 1 FROM dbo.AutogestionEstadoDestino d WHERE d.Ambito = 'SERIAL' AND d.EstadoId = e.id);
+GO
+
+-- Semilla PALLET: estados que empiezan por P- o terminan en -ENTREGA, de Produccion
+INSERT INTO dbo.AutogestionEstadoDestino (Ambito, EstadoId)
+SELECT 'PALLET', e.id
+FROM WmsWdGeneral.dbo.Estado e
+WHERE (e.nombre LIKE 'P-%' OR e.nombre LIKE '%-ENTREGA')
+  AND dbo.fn_AutogestionEsProduccion(e.id) = 1
+  AND NOT EXISTS (SELECT 1 FROM dbo.AutogestionEstadoDestino d WHERE d.Ambito = 'PALLET' AND d.EstadoId = e.id);
+GO
+
+-- 3) Estados destino por ambito ------------------------------------------------
 CREATE OR ALTER PROCEDURE dbo.pa_AutogestionEstados
+    @Ambito VARCHAR(10) = 'SERIAL'
 AS
 BEGIN
     SET NOCOUNT ON;
     SELECT e.id, e.nombre
-    FROM WmsWdGeneral.dbo.Estado e
-    WHERE dbo.fn_AutogestionEsProduccion(e.id) = 1
+    FROM dbo.AutogestionEstadoDestino d
+    INNER JOIN WmsWdGeneral.dbo.Estado e ON e.id = d.EstadoId
+    WHERE d.Ambito = @Ambito
     ORDER BY e.nombre;
 END
 GO
@@ -98,9 +131,9 @@ END
 GO
 
 -- 5) Accion sobre un serial -------------------------------------------------
---    ESTADO: mueve a un estado de Produccion y lo saca del pallet y de la caja
---    CAJA  : lo saca de la caja de empaque
---    PALLET: lo pasa a otro pallet (de Produccion) y lo saca de la caja
+--    ESTADO: mueve a un estado de Produccion; palletId = 0, cajaEmpaqueId = 0 y se borra de Empaque
+--    CAJA  : "sacar": palletId = 0, cajaEmpaqueId = 0, estado = P-EMPAQUE y se borra de Empaque
+--    PALLET: lo pasa a otro pallet (de Produccion); cajaEmpaqueId = 0 y se borra de Empaque
 CREATE OR ALTER PROCEDURE dbo.pa_AutogestionSerial
     @Serial          VARCHAR(50),
     @Accion          VARCHAR(20),
@@ -130,19 +163,27 @@ BEGIN
             @NuevoPallet INT = @PalletOrigen,
             @NuevaCaja   INT = @CajaOrigen;
 
+    -- Estado al que vuelve un serial "sacado" de su caja (mismo que usa Empaque al quitar un serial)
+    DECLARE @EstadoSacado INT = (SELECT TOP 1 id FROM WmsWdGeneral.dbo.Estado WHERE nombre = 'P-EMPAQUE');
+
     IF @Accion = 'ESTADO'
     BEGIN
-        IF @EstadoDestinoId IS NULL OR dbo.fn_AutogestionEsProduccion(@EstadoDestinoId) = 0
-            THROW 50012, 'El estado destino debe ser un modulo de Produccion.', 1;
+        IF @EstadoDestinoId IS NULL
+           OR NOT EXISTS (SELECT 1 FROM dbo.AutogestionEstadoDestino WHERE Ambito = 'SERIAL' AND EstadoId = @EstadoDestinoId)
+            THROW 50012, 'El estado destino no esta permitido para seriales.', 1;
         SET @NuevoEstado = @EstadoDestinoId;
-        SET @NuevoPallet = NULL;
-        SET @NuevaCaja   = NULL;
+        SET @NuevoPallet = 0;
+        SET @NuevaCaja   = 0;
     END
     ELSE IF @Accion = 'CAJA'
     BEGIN
         IF ISNULL(@CajaOrigen, 0) = 0
             THROW 50013, 'El serial no esta en una caja.', 1;
-        SET @NuevaCaja = NULL;
+        IF @EstadoSacado IS NULL
+            THROW 50018, 'No se encontro el estado P-EMPAQUE para dejar el serial.', 1;
+        SET @NuevoEstado = @EstadoSacado;
+        SET @NuevoPallet = 0;
+        SET @NuevaCaja   = 0;
     END
     ELSE IF @Accion = 'PALLET'
     BEGIN
@@ -153,7 +194,7 @@ BEGIN
         IF dbo.fn_AutogestionEsProduccion(@PalletDestinoEstado) = 0
             THROW 50020, 'El pallet destino esta en Logistica (o fuera de Produccion).', 1;
         SET @NuevoPallet = @PalletDestinoId;
-        SET @NuevaCaja   = NULL;
+        SET @NuevaCaja   = 0;
     END
     ELSE
         THROW 50015, 'Accion no valida.', 1;
@@ -168,6 +209,10 @@ BEGIN
         fechaMovimiento = GETDATE()
     WHERE Id = @Id;
 
+    -- El serial ya no esta en ninguna caja: se elimina de la tabla Empaque (por serialId)
+    IF @NuevaCaja = 0
+        DELETE FROM Empaque WHERE serialId = @Id;
+
     IF ISNULL(@NuevoEstado, 0) <> ISNULL(@EstadoOrigen, 0)
         INSERT INTO Movimiento (SerialId, Serial, OrigenId, DestinoId, Descripcion, UsuarioId, Fecha)
         VALUES (@Id, @Serial, @EstadoOrigen, @NuevoEstado, 'AUTOGESTION', @UsuarioId, GETDATE());
@@ -175,7 +220,8 @@ BEGIN
     INSERT INTO AutogestionLog (UsuarioId, Accion, SerialId, Serial, EstadoOrigenId, EstadoDestinoId,
                                 PalletOrigenId, PalletDestinoId, CajaOrigenId, CajaDestinoId, Cantidad, Justificacion)
     VALUES (@UsuarioId, @Accion, @Id, @Serial, @EstadoOrigen, @NuevoEstado,
-            @PalletOrigen, @NuevoPallet, @CajaOrigen, @NuevaCaja, 1, LTRIM(RTRIM(@Justificacion)));
+            NULLIF(@PalletOrigen, 0), NULLIF(@NuevoPallet, 0), NULLIF(@CajaOrigen, 0), NULLIF(@NuevaCaja, 0),
+            1, LTRIM(RTRIM(@Justificacion)));
 
     COMMIT TRAN;
 END
@@ -218,9 +264,10 @@ GO
 
 -- 8) Accion sobre un pallet / sus cajas -------------------------------------------
 --    MOVER        : el pallet y TODOS sus seriales (y cajas) pasan a un estado de Produccion
---    CAJA_VACIAR  : saca los seriales de la caja (quedan en el pallet sin caja)
---    CAJA_ELIMINAR: saca los seriales y desactiva la caja
---    CAJA_PALLET  : pasa los seriales de la caja a otro pallet de Produccion
+--    CAJA_VACIAR  : saca los seriales de la caja: palletId = 0, cajaEmpaqueId = 0, estado P-EMPAQUE
+--                   y se borran de la tabla Empaque
+--    CAJA_ELIMINAR: igual que CAJA_VACIAR y ademas desactiva la caja
+--    CAJA_PALLET  : pasa los seriales de la caja a otro pallet de Produccion (sin caja, fuera de Empaque)
 CREATE OR ALTER PROCEDURE dbo.pa_AutogestionPallet
     @Pallet          VARCHAR(50),
     @Accion          VARCHAR(20),
@@ -247,11 +294,16 @@ BEGIN
         THROW 50020, 'El pallet esta en un modulo de Logistica (o fuera de Produccion): solo se puede consultar.', 1;
 
     DECLARE @Cantidad INT = 0, @CajaId INT = NULL, @PalletDestinoId INT = NULL, @NuevoEstado INT = @EstadoActual;
+    DECLARE @EstadoSacado INT = (SELECT TOP 1 id FROM WmsWdGeneral.dbo.Estado WHERE nombre = 'P-EMPAQUE');
+
+    IF @Accion IN ('CAJA_VACIAR', 'CAJA_ELIMINAR') AND @EstadoSacado IS NULL
+        THROW 50018, 'No se encontro el estado P-EMPAQUE para dejar los seriales.', 1;
 
     IF @Accion = 'MOVER'
     BEGIN
-        IF @EstadoDestinoId IS NULL OR dbo.fn_AutogestionEsProduccion(@EstadoDestinoId) = 0
-            THROW 50012, 'El estado destino debe ser un modulo de Produccion.', 1;
+        IF @EstadoDestinoId IS NULL
+           OR NOT EXISTS (SELECT 1 FROM dbo.AutogestionEstadoDestino WHERE Ambito = 'PALLET' AND EstadoId = @EstadoDestinoId)
+            THROW 50012, 'El estado destino no esta permitido para pallets (solo P-* y *-ENTREGA).', 1;
         SET @NuevoEstado = @EstadoDestinoId;
     END
     ELSE IF @Accion IN ('CAJA_VACIAR', 'CAJA_ELIMINAR', 'CAJA_PALLET')
@@ -289,21 +341,45 @@ BEGIN
         WHERE palletId = @PalletId;
         SET @Cantidad = @@ROWCOUNT;
 
-        UPDATE CajaEmpaque SET estadoId = @NuevoEstado WHERE palletId = @PalletId AND activo = 1;
-
         UPDATE Pallet
         SET destinoId = @NuevoEstado, usuarioIdModifica = @UsuarioId, fechaModifica = GETDATE()
         WHERE id = @PalletId;
     END
     ELSE
     BEGIN
-        UPDATE Ingreso
-        SET cajaEmpaqueId = NULL,
-            palletId = CASE WHEN @Accion = 'CAJA_PALLET' THEN @PalletDestinoId ELSE palletId END,
-            usuarioIdMovimiento = @UsuarioId,
-            fechaMovimiento = GETDATE()
-        WHERE cajaEmpaqueId = @CajaId;
-        SET @Cantidad = @@ROWCOUNT;
+        -- Seriales de la caja (se toman antes de modificar Ingreso)
+        DECLARE @Seriales TABLE (SerialId INT PRIMARY KEY);
+        INSERT INTO @Seriales (SerialId)
+        SELECT Id FROM Ingreso WHERE cajaEmpaqueId = @CajaId;
+
+        -- Se eliminan de la tabla Empaque (por serialId)
+        DELETE FROM Empaque
+        WHERE serialId IN (SELECT SerialId FROM @Seriales);
+
+        IF @Accion IN ('CAJA_VACIAR', 'CAJA_ELIMINAR')
+        BEGIN
+            -- "Sacar": palletId = 0, cajaEmpaqueId = 0 y vuelven a P-EMPAQUE
+            INSERT INTO Movimiento (SerialId, Serial, OrigenId, DestinoId, Descripcion, UsuarioId, Fecha)
+            SELECT i.Id, i.Serial, i.estadoId, @EstadoSacado, 'AUTOGESTION', @UsuarioId, GETDATE()
+            FROM Ingreso i
+            WHERE i.Id IN (SELECT SerialId FROM @Seriales) AND ISNULL(i.estadoId, 0) <> @EstadoSacado;
+
+            UPDATE Ingreso
+            SET estadoId = @EstadoSacado, palletId = 0, cajaEmpaqueId = 0,
+                usuarioIdMovimiento = @UsuarioId, fechaMovimiento = GETDATE()
+            WHERE Id IN (SELECT SerialId FROM @Seriales);
+            SET @Cantidad = @@ROWCOUNT;
+            SET @NuevoEstado = @EstadoSacado;
+        END
+        ELSE
+        BEGIN
+            -- CAJA_PALLET: pasan al otro pallet sin caja
+            UPDATE Ingreso
+            SET palletId = @PalletDestinoId, cajaEmpaqueId = 0,
+                usuarioIdMovimiento = @UsuarioId, fechaMovimiento = GETDATE()
+            WHERE Id IN (SELECT SerialId FROM @Seriales);
+            SET @Cantidad = @@ROWCOUNT;
+        END
 
         IF @Accion = 'CAJA_ELIMINAR'
             UPDATE CajaEmpaque SET activo = 0 WHERE id = @CajaId;
@@ -349,4 +425,15 @@ FROM WmsWdGeneral.dbo.Estado e
 LEFT JOIN WmsWdGeneral.dbo.Modulo m ON m.id = e.moduloId
 LEFT JOIN WmsWdGeneral.dbo.Seccion s ON s.id = m.seccionId
 ORDER BY s.nombre, m.nombre, e.nombre;
+--------------------------------------------------------------------------------- */
+
+/* ---- Revisar las listas de destino que quedaron sembradas ---------------------
+SELECT d.Ambito, e.id, e.nombre
+FROM dbo.AutogestionEstadoDestino d
+JOIN WmsWdGeneral.dbo.Estado e ON e.id = d.EstadoId
+ORDER BY d.Ambito, e.nombre;
+
+-- Para agregar o quitar destinos manualmente:
+-- INSERT INTO dbo.AutogestionEstadoDestino (Ambito, EstadoId) VALUES ('SERIAL', <id>);
+-- DELETE FROM dbo.AutogestionEstadoDestino WHERE Ambito = 'SERIAL' AND EstadoId = <id>;
 --------------------------------------------------------------------------------- */

@@ -41,6 +41,9 @@ public class SecurityConfig {
             .requestMatchers("/general/users/ping").permitAll()
             .requestMatchers("/general/avisos/activo").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            // Aprobación de Autogestión desde el enlace del correo: la credencial es un
+            // token de un solo uso (ver AutogestionPublicController).
+            .requestMatchers("/public/autogestion/**").permitAll()
             // Rutas de integración externa (sistema-a-sistema, sin JWT/usuario) —
             // permitAll acá porque quien las protege de verdad es
             // ApiKeyAuthenticationFilter (X-Api-Key), no este filtro de sesión.
