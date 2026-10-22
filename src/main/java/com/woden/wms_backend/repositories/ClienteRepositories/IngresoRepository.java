@@ -360,6 +360,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_SearchQualityEntry", nativeQuery = true)
 	List<Object[]> searchQualityEntry();
 
+	@Query(value = "EXEC pa_SearchAuditoriaInSituEntry", nativeQuery = true)
+	List<Object[]> searchAuditoriaInSituEntry();
+
 	@Modifying
 	@Transactional
 	@Query(value = "EXEC pa_PackOffPalletEntry :palletId, :usuarioId", nativeQuery = true)
@@ -516,18 +519,21 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 
 	@Query(value = "SELECT UPPER(d.Serial) AS serial, COUNT(*) AS reingresos " +
 			"FROM Despacho d WITH(NOLOCK) " +
-			"WHERE UPPER(d.Serial) IN (:seriales) " +
+			"WHERE d.Serial IN (:seriales) " +
 			"GROUP BY UPPER(d.Serial)", nativeQuery = true)
 	List<Object[]> countReingresosBySeriales(@Param("seriales") List<String> seriales);
 
-	@Query(value = "SELECT Serial FROM Ingreso WHERE Serial IN (:seriales)", nativeQuery = true)
+	@Query(value = "SELECT Serial FROM Ingreso WITH(NOLOCK) WHERE Serial IN (:seriales)", nativeQuery = true)
 	List<String> findExistingSerials(@Param("seriales") List<String> seriales);
 
-	@Query(value = "SELECT Mac FROM Ingreso WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT Mac FROM Ingreso WITH(NOLOCK) WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingMacs(@Param("macs") List<String> macs);
 
-	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT Serial3 FROM Ingreso WITH(NOLOCK) WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
+
+	@Query(value = "SELECT SmartCard FROM Ingreso WITH(NOLOCK) WHERE SmartCard IN (:smartCards) AND SmartCard NOT IN ('', '0')", nativeQuery = true)
+	List<String> findExistingSmartCards(@Param("smartCards") List<String> smartCards);
 
 	@Query(value = "EXEC pa_GetDiasUltimoIngreso :serial", nativeQuery = true)
 	List<Object[]> getDiasUltimoIngresoRaw(@Param("serial") String serial);
@@ -535,25 +541,16 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC dbo.pa_ValidarReingresoScrap :serial", nativeQuery = true)
 	String getUltimaTipologiaSerial(@Param("serial") String serial);
 
-	@Query(value = "SELECT UPPER(m.Serial) AS serial, m.Descripcion AS descripcion " +
-			"FROM Movimiento m WITH(NOLOCK) " +
-			"INNER JOIN ( " +
-			"SELECT Serial, MAX(Id) AS MaxId " +
-			"FROM Movimiento WITH(NOLOCK) " +
-			"WHERE UPPER(Serial) IN (:seriales) AND Descripcion LIKE '%Tipologia%' " +
-			"GROUP BY Serial " +
-			") latest ON m.Id = latest.MaxId " +
-			"UNION ALL " +
-			"SELECT UPPER(d.Serial) AS serial, 'Despacho con Tipologia: SCRAP' AS descripcion " +
+	@Query(value = "SELECT UPPER(d.Serial) AS serial, 'Despacho con Tipologia: SCRAP' AS descripcion " +
 			"FROM Despacho d WITH(NOLOCK) " +
 			"INNER JOIN ( " +
 			"SELECT Serial, MAX(Id) AS MaxId " +
 			"FROM Despacho WITH(NOLOCK) " +
-			"WHERE UPPER(Serial) IN (:seriales) " +
+			"WHERE Serial IN (:seriales) " +
 			"GROUP BY Serial " +
 			") latestD ON d.Id = latestD.MaxId " +
 			"INNER JOIN Maestro mo WITH(NOLOCK) ON mo.Id = d.TipologiaId " +
-			"WHERE UPPER(mo.Codigo) = 'SCRAP'", nativeQuery = true)
+			"WHERE mo.Codigo = 'SCRAP'", nativeQuery = true)
 	List<Object[]> findUltimasTipologias(@Param("seriales") List<String> seriales);
 
 	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END " +
@@ -571,6 +568,6 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT UPPER(p.Numero), UPPER(m.Codigo) " +
 			"FROM Pallet p WITH(NOLOCK) " +
 			"INNER JOIN Maestro m WITH(NOLOCK) ON m.Id = p.TipologiaId " +
-			"WHERE UPPER(p.Numero) IN (:numeros)", nativeQuery = true)
+			"WHERE p.Numero IN (:numeros)", nativeQuery = true)
 	List<Object[]> findPalletTipologiasPorNumero(@Param("numeros") List<String> numeros);
 }

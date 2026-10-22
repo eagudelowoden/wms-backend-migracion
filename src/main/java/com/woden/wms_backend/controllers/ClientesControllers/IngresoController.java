@@ -153,6 +153,11 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(ingresoService.searchQualityEntry());
   }
 
+  @GetMapping("/searchAuditoriaInSituEntry")
+  public ResponseEntity<List<Map<String, String>>> searchAuditoriaInSituEntry() {
+    return ResponseEntity.ok(ingresoService.searchAuditoriaInSituEntry());
+  }
+
   @GetMapping("/searchDiagnosticEntry")
   public ResponseEntity<List<Map<String, Object>>> searchDiagnosticEntry(
       @RequestParam String estadoFinal,
