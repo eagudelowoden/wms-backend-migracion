@@ -54,7 +54,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
   private static final Logger logger = LoggerFactory.getLogger(IngresoService.class);
 
-  private static final int CHUNK_SIZE = 1500;
+  private static final int CHUNK_SIZE = 500;
 
   private static final String TIPOLOGIA_CUARENTENA = "SCRAP CUARENTENA";
 
@@ -406,6 +406,24 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       fila.put("pallet", toStr(obj[2]));
       fila.put("caja", toStr(obj[3]));
       fila.put("smartCard", toStr(obj[4]));
+      return fila;
+    }).collect(Collectors.toList());
+  }
+
+  public List<Map<String, String>> searchAuditoriaInSituEntry() {
+    return ingresoRepository.searchAuditoriaInSituEntry().stream().map(obj -> {
+      Map<String, String> fila = new HashMap<>();
+      fila.put("serial", toStr(obj[0]));
+      fila.put("mac", toStr(obj[1]));
+      fila.put("pallet", toStr(obj[2]));
+      fila.put("caja", toStr(obj[3]));
+      fila.put("smartCard", toStr(obj[4]));
+      fila.put("codigoSap", toStr(obj[5]));
+      fila.put("codigoSapId", toStr(obj[6]));
+      fila.put("estado", toStr(obj[7]));
+      fila.put("fallaFuncionalCodigo", obj.length > 8 ? toStr(obj[8]) : "");
+      fila.put("fallaCosmeticaCodigo", obj.length > 9 ? toStr(obj[9]) : "");
+      fila.put("estadoFinalCodigo", obj.length > 10 ? toStr(obj[10]) : "");
       return fila;
     }).collect(Collectors.toList());
   }
@@ -914,11 +932,23 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Ingreso Masivo ─────────────────────────────────────────────────────────
 
   public MassUploadPreviewResponseDTO massUploadPreview(List<MassUploadRowDTO> rows, PalletConfigDTO palletConfig) {
+    long inicioPreview = System.currentTimeMillis();
     MassUploadPreviewResponseDTO response = new MassUploadPreviewResponseDTO();
     List<MassUploadRowResolvedDTO> validos = new ArrayList<>();
     List<MassUploadErrorDTO> errores = new ArrayList<>();
 
-    Map<String, Integer> codigoSapMap = resolverCodigoSapIds(rows);
+    Map<String, CodigoSapInfo> codigoSapInfoMap = resolverCodigoSapInfo(rows);
+    Map<String, Integer> codigoSapMap = new HashMap<>();
+    Map<String, Integer> codigoSapLargosMap = new HashMap<>();
+    Map<String, String> codigoSapTipoMap = new HashMap<>();
+    Map<String, Integer> reingresoLimitMap = new HashMap<>();
+    for (Map.Entry<String, CodigoSapInfo> entry : codigoSapInfoMap.entrySet()) {
+      CodigoSapInfo info = entry.getValue();
+      codigoSapMap.put(entry.getKey(), info.id);
+      if (info.largos != null) codigoSapLargosMap.put(entry.getKey(), info.largos);
+      codigoSapTipoMap.put(entry.getKey(), info.tipo);
+      reingresoLimitMap.put(entry.getKey(), info.reingreso);
+    }
     Map<String, Integer> palletMap = resolverPalletIds(rows);
     Map<String, Integer> usuarioMap = resolverUsuarioIds(rows);
     Map<String, Integer> tipoOrigenMap = resolverMaestroIds(rows, "Tipo Origenes");
@@ -926,8 +956,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, Integer> tipologiaMap = resolverMaestroIds(rows, "Tipologias");
     Map<String, Integer> modeloMap = resolverMaestroIds(rows, "Modelos");
     Map<String, Integer> loteMap = resolverLoteIds(rows);
-    Map<String, Integer> codigoSapLargosMap = resolverCodigoSapLargos(rows);
-    Map<String, String> codigoSapTipoMap = resolverCodigoSapTipos(rows);
 
     Map<String, Object[]> palletConfigsByNumero = Map.of();
     if (palletConfig == null) {
@@ -947,9 +975,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Map<String, String> tipologiasPalletMap = bloqueoScrapActivo()
         ? tipologiasPalletsPorNumero(rows.stream().map(MassUploadRowDTO::getPalletWms).toList())
         : Map.of();
-    Map<String, Integer> reingresoLimitMap = resolverReingresosLimites(rows);
     Map<String, Integer> reingresoCountMap = resolverReingresosCounts(seriales);
     Set<String> serialesEnArchivo = new java.util.HashSet<>();
+    Set<String> macsEnArchivo = new java.util.HashSet<>();
+    Set<String> serial3sEnArchivo = new java.util.HashSet<>();
+    Set<String> smartCardsEnArchivo = new java.util.HashSet<>();
 
     List<String> macs = rows.stream()
         .map(MassUploadRowDTO::getMac)
@@ -969,6 +999,16 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     Set<String> serial3sExistentes = new java.util.HashSet<>();
     for (List<String> lote : particionar(serial3s, CHUNK_SIZE)) {
       serial3sExistentes.addAll(ingresoRepository.findExistingSerial3s(lote));
+    }
+
+    List<String> smartCards = rows.stream()
+        .map(MassUploadRowDTO::getSmartCard)
+        .filter(s -> s != null && !s.trim().isEmpty() && !"0".equals(s.trim()))
+        .map(s -> s.trim().toUpperCase())
+        .toList();
+    Set<String> smartCardsExistentes = new java.util.HashSet<>();
+    for (List<String> lote : particionar(smartCards, CHUNK_SIZE)) {
+      smartCardsExistentes.addAll(ingresoRepository.findExistingSmartCards(lote));
     }
 
     Integer estadoIdIngreso = obtenerEstadoIdIngreso();
@@ -1106,13 +1146,33 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       }
 
       String macUpper = row.getMac() != null ? row.getMac().toUpperCase().trim() : "";
-      if (!macUpper.isEmpty() && macsExistentes.contains(macUpper)) {
-        erroresFila.add("Mac '" + macUpper + "' ya existe en el sistema");
+      if (!macUpper.isEmpty() && !"0".equals(macUpper)) {
+        if (macsExistentes.contains(macUpper)) {
+          erroresFila.add("Mac '" + macUpper + "' ya existe en el sistema");
+        }
+        if (!macsEnArchivo.add(macUpper)) {
+          erroresFila.add("Mac '" + macUpper + "' duplicada en el archivo");
+        }
       }
 
       String serial3Upper = row.getSerial3() != null ? row.getSerial3().toUpperCase().trim() : "";
-      if (!serial3Upper.isEmpty() && serial3sExistentes.contains(serial3Upper)) {
-        erroresFila.add("Serial3 '" + serial3Upper + "' ya existe en el sistema");
+      if (!serial3Upper.isEmpty() && !"0".equals(serial3Upper)) {
+        if (serial3sExistentes.contains(serial3Upper)) {
+          erroresFila.add("Serial3 '" + serial3Upper + "' ya existe en el sistema");
+        }
+        if (!serial3sEnArchivo.add(serial3Upper)) {
+          erroresFila.add("Serial3 '" + serial3Upper + "' duplicado en el archivo");
+        }
+      }
+
+      String smartCardUpper = row.getSmartCard() != null ? row.getSmartCard().toUpperCase().trim() : "";
+      if (!smartCardUpper.isEmpty() && !"0".equals(smartCardUpper)) {
+        if (smartCardsExistentes.contains(smartCardUpper)) {
+          erroresFila.add("SmartCard '" + smartCardUpper + "' ya existe en el sistema");
+        }
+        if (!smartCardsEnArchivo.add(smartCardUpper)) {
+          erroresFila.add("SmartCard '" + smartCardUpper + "' duplicada en el archivo");
+        }
       }
 
       if (codigoSapId != null && codigoSapLargosMap.containsKey(row.getCodigoSap().trim().toUpperCase())) {
@@ -1181,14 +1241,14 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         String rowTipologia = row.getTipologia() != null ? row.getTipologia().trim() : "";
         String rowCodigoSap = row.getCodigoSap() != null ? row.getCodigoSap().trim() : "";
         Object[] palletCfg = palletConfigsByNumero.get(rowPalletWms);
-        if (palletCfg != null && palletCfg.length >= 5) {
-          String palletCodigoSap = palletCfg[2] != null ? palletCfg[2].toString() : "";
+        if (palletCfg != null && palletCfg.length >= 6) {
+          String palletCodigoSap = palletCfg[3] != null ? palletCfg[3].toString() : "";
           boolean palletMultimodelo = "MULTIMODELO".equalsIgnoreCase(palletCodigoSap);
           boolean palletSmartCardInfo = "SMARTCARDINFO".equalsIgnoreCase(palletCodigoSap);
           boolean palletEsFlexible = palletMultimodelo || palletSmartCardInfo;
-          Integer palletCodigoSapId = (Integer) palletCfg[1];
-          Integer palletLoteId = (Integer) palletCfg[3];
-          Integer palletTipologiaId = (Integer) palletCfg[4];
+          Integer palletCodigoSapId = (Integer) palletCfg[2];
+          Integer palletLoteId = (Integer) palletCfg[4];
+          Integer palletTipologiaId = (Integer) palletCfg[5];
 
           if (codigoSapId != null && !palletEsFlexible && palletCodigoSapId != null && !rowCodigoSap.isEmpty()) {
             if (!codigoSapId.equals(palletCodigoSapId)) {
@@ -1247,6 +1307,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
     response.setValidos(validos);
     response.setErrores(errores);
+    logger.info("[massUploadPreview] filas={} validos={} errores={} ms={}",
+        rows.size(), validos.size(), errores.size(), System.currentTimeMillis() - inicioPreview);
     return response;
   }
 
@@ -1345,38 +1407,21 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     return response;
   }
 
-  private Map<String, Integer> resolverCodigoSapIds(List<MassUploadRowDTO> rows) {
-    Set<String> codigos = rows.stream()
-        .map(MassUploadRowDTO::getCodigoSap)
-        .filter(c -> c != null && !c.trim().isEmpty())
-        .map(c -> c.trim().toUpperCase())
-        .collect(java.util.stream.Collectors.toSet());
-    if (codigos.isEmpty()) return Map.of();
+  private static final class CodigoSapInfo {
+    final int id;
+    final Integer largos;
+    final String tipo;
+    final int reingreso;
 
-    Map<String, Integer> map = new java.util.HashMap<>();
-    try (Connection conn = dataSource.getConnection()) {
-      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
-        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
-        String sql = "SELECT Id, Codigo FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
-        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-          int i = 1;
-          for (String codigo : lote) {
-            ps.setString(i++, codigo);
-          }
-          try (java.sql.ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-              map.put(rs.getString("Codigo").toUpperCase(), rs.getInt("Id"));
-            }
-          }
-        }
-      }
-    } catch (SQLException e) {
-      logger.error("[resolverCodigoSapIds] Error: {}", e.getMessage(), e);
+    CodigoSapInfo(int id, Integer largos, String tipo, int reingreso) {
+      this.id = id;
+      this.largos = largos;
+      this.tipo = tipo;
+      this.reingreso = reingreso;
     }
-    return map;
   }
 
-  private Map<String, Integer> resolverCodigoSapLargos(List<MassUploadRowDTO> rows) {
+  private Map<String, CodigoSapInfo> resolverCodigoSapInfo(List<MassUploadRowDTO> rows) {
     Set<String> codigos = rows.stream()
         .map(MassUploadRowDTO::getCodigoSap)
         .filter(c -> c != null && !c.trim().isEmpty())
@@ -1384,11 +1429,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         .collect(java.util.stream.Collectors.toSet());
     if (codigos.isEmpty()) return Map.of();
 
-    Map<String, Integer> map = new java.util.HashMap<>();
+    Map<String, CodigoSapInfo> map = new java.util.HashMap<>();
     try (Connection conn = dataSource.getConnection()) {
       for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
         String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
-        String sql = "SELECT Codigo, Largos FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
+        String sql = "SELECT c.Codigo, c.Id, c.Largos, m.Codigo AS Tipo, c.Reingreso FROM CodigoSap c LEFT JOIN Maestro m ON c.TipoId = m.Id WHERE UPPER(c.Codigo) IN (" + placeholders + ")";
         try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
           int i = 1;
           for (String codigo : lote) {
@@ -1396,18 +1441,27 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
           }
           try (java.sql.ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-              String largos = rs.getString("Largos");
-              if (largos != null && !largos.isEmpty()) {
+              String codigo = rs.getString("Codigo");
+              if (codigo == null) continue;
+              String largosStr = rs.getString("Largos");
+              Integer largos = null;
+              if (largosStr != null && !largosStr.isEmpty()) {
                 try {
-                  map.put(rs.getString("Codigo").toUpperCase(), Integer.parseInt(largos));
+                  largos = Integer.parseInt(largosStr);
                 } catch (NumberFormatException ignored) {}
               }
+              String tipo = rs.getString("Tipo");
+              map.put(codigo.toUpperCase(), new CodigoSapInfo(
+                  rs.getInt("Id"),
+                  largos,
+                  tipo != null ? tipo.toUpperCase() : "",
+                  rs.getInt("Reingreso")));
             }
           }
         }
       }
     } catch (SQLException e) {
-      logger.error("[resolverCodigoSapLargos] Error: {}", e.getMessage(), e);
+      logger.error("[resolverCodigoSapInfo] Error: {}", e.getMessage(), e);
     }
     return map;
   }
@@ -1557,85 +1611,19 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     if (numeros.isEmpty()) return Map.of();
 
     Map<String, Object[]> map = new java.util.HashMap<>();
-    for (String numero : numeros) {
+    for (List<String> lote : particionar(new ArrayList<>(numeros), CHUNK_SIZE)) {
       try {
-        List<Object[]> resultados = palletRepository.getMassUploadConfigByNumber(numero);
-        if (resultados != null && !resultados.isEmpty()) {
-          map.put(numero, resultados.get(0));
+        List<Object[]> resultados = palletRepository.getMassUploadConfigsByNumbers(lote);
+        if (resultados != null) {
+          for (Object[] fila : resultados) {
+            if (fila != null && fila.length >= 6 && fila[0] != null) {
+              map.put(fila[0].toString().toUpperCase(), fila);
+            }
+          }
         }
       } catch (Exception e) {
-        logger.error("[resolverPalletConfigs] Error para pallet {}: {}", numero, e.getMessage(), e);
+        logger.error("[resolverPalletConfigs] Error en lote de {} pallets: {}", lote.size(), e.getMessage(), e);
       }
-    }
-    return map;
-  }
-
-  private Map<String, String> resolverCodigoSapTipos(List<MassUploadRowDTO> rows) {
-    Set<String> codigos = rows.stream()
-        .map(MassUploadRowDTO::getCodigoSap)
-        .filter(c -> c != null && !c.trim().isEmpty())
-        .map(c -> c.trim().toUpperCase())
-        .collect(java.util.stream.Collectors.toSet());
-    if (codigos.isEmpty()) return Map.of();
-
-    Map<String, String> map = new java.util.HashMap<>();
-    try (Connection conn = dataSource.getConnection()) {
-      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
-        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
-        String sql = "SELECT c.Codigo, m.Codigo AS Tipo FROM CodigoSap c LEFT JOIN Maestro m ON c.TipoId = m.Id WHERE UPPER(c.Codigo) IN (" + placeholders + ")";
-        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-          int i = 1;
-          for (String codigo : lote) {
-            ps.setString(i++, codigo);
-          }
-          try (java.sql.ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-              String codigo = rs.getString("Codigo");
-              String tipo = rs.getString("Tipo");
-              if (codigo != null) {
-                map.put(codigo.toUpperCase(), tipo != null ? tipo.toUpperCase() : "");
-              }
-            }
-          }
-        }
-      }
-    } catch (SQLException e) {
-      logger.error("[resolverCodigoSapTipos] Error: {}", e.getMessage(), e);
-    }
-    return map;
-  }
-
-  private Map<String, Integer> resolverReingresosLimites(List<MassUploadRowDTO> rows) {
-    Set<String> codigos = rows.stream()
-        .map(MassUploadRowDTO::getCodigoSap)
-        .filter(c -> c != null && !c.trim().isEmpty())
-        .map(c -> c.trim().toUpperCase())
-        .collect(Collectors.toSet());
-    if (codigos.isEmpty()) return Map.of();
-
-    Map<String, Integer> map = new HashMap<>();
-    try (Connection conn = dataSource.getConnection()) {
-      for (List<String> lote : particionar(codigos, CHUNK_SIZE)) {
-        String placeholders = String.join(",", java.util.Collections.nCopies(lote.size(), "?"));
-        String sql = "SELECT Codigo, Reingreso FROM CodigoSap WHERE UPPER(Codigo) IN (" + placeholders + ")";
-        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-          int i = 1;
-          for (String codigo : lote) {
-            ps.setString(i++, codigo);
-          }
-          try (java.sql.ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-              String codigo = rs.getString("Codigo");
-              int reingreso = rs.getInt("Reingreso");
-              if (codigo != null) {
-                map.put(codigo.toUpperCase(), reingreso);
-              }
-            }
-          }
-        }
-      }
-    } catch (SQLException e) {
-      logger.error("[resolverReingresosLimites] Error: {}", e.getMessage(), e);
     }
     return map;
   }

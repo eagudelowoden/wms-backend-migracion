@@ -23,7 +23,7 @@ public class CosmeticaController {
   @PostMapping("/insertCosmetica")
   public ResponseEntity<?> insertCosmetica(@RequestBody InsertCosmeticaDTO request) {
     try {
-      service.insertCosmetica(request.getSeriales(), request.getUsuarioId());
+      service.insertCosmetica(request.getSeriales(), request.getUsuarioId(), request.getUsuarioAsignadoId());
       return ResponseEntity.ok(Map.of("message", "Registros insertados correctamente.", "success", true));
     } catch (Exception e) {
       return ResponseEntity.ok(Map.of("message", "Error al insertar: " + e.getMessage(), "success", false));

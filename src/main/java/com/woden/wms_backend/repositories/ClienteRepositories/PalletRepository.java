@@ -235,10 +235,10 @@ public interface PalletRepository extends BaseRepository<PalletModel, Integer> {
   @Query(value = "SELECT CAST(f.id AS integer), f.numero, CAST(f.\"posicionId\" AS integer), f.posicion, CAST(f.\"tipologiaId\" AS integer), f.tipologia, CAST(f.\"codigoSapId\" AS integer), f.\"codigoSap\", f.descripcion, CAST(f.\"origenId\" AS integer), f.origen, CAST(f.\"destinoId\" AS integer), CAST(f.activo AS boolean), f.\"nombreUsuario\" FROM pa_getmodelpalletbynumber(CAST(:numero AS character varying)) f", nativeQuery = true)
   List<Object[]> getModelByNumber(@Param("numero") String numero);
 
-  @Query(value = "SELECT p.Id, p.CodigoSapId, cs.Codigo, p.LoteId, p.TipologiaId " +
-      "FROM Pallet p LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId " +
-      "WHERE UPPER(p.Numero) = UPPER(:numero)", nativeQuery = true)
-  List<Object[]> getMassUploadConfigByNumber(@Param("numero") String numero);
+  @Query(value = "SELECT UPPER(p.Numero), p.Id, p.CodigoSapId, cs.Codigo, p.LoteId, p.TipologiaId " +
+      "FROM Pallet p WITH(NOLOCK) LEFT JOIN CodigoSap cs WITH(NOLOCK) ON cs.Id = p.CodigoSapId " +
+      "WHERE p.Numero IN (:numeros)", nativeQuery = true)
+  List<Object[]> getMassUploadConfigsByNumbers(@Param("numeros") List<String> numeros);
 
   /**
    * Incrementa el consecutivo y retorna el número generado en una sola llamada.

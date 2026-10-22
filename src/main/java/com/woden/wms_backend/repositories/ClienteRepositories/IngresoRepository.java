@@ -328,6 +328,9 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT f.serial, f.mac, f.pallet, f.caja, f.\"SmartCard\" FROM pa_searchqualityentry() f", nativeQuery = true)
 	List<Object[]> searchQualityEntry();
 
+	@Query(value = "SELECT * FROM pa_searchauditoriainsituentry() f", nativeQuery = true)
+	List<Object[]> searchAuditoriaInSituEntry();
+
 	@Transactional
 	@Query(value = "SELECT 1 FROM pa_packoffpalletentry(CAST(:palletId AS integer), CAST(:usuarioId AS integer))", nativeQuery = true)
 	void packOffPalletEntry(@Param("palletId") Integer palletId, @Param("usuarioId") Integer usuarioId);
@@ -477,14 +480,17 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			"GROUP BY UPPER(d.Serial)", nativeQuery = true)
 	List<Object[]> countReingresosBySeriales(@Param("seriales") List<String> seriales);
 
-	@Query(value = "SELECT Serial FROM Ingreso WHERE Serial IN (:seriales)", nativeQuery = true)
+	@Query(value = "SELECT Serial FROM Ingreso WITH(NOLOCK) WHERE Serial IN (:seriales)", nativeQuery = true)
 	List<String> findExistingSerials(@Param("seriales") List<String> seriales);
 
-	@Query(value = "SELECT Mac FROM Ingreso WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT Mac FROM Ingreso WITH(NOLOCK) WHERE Mac IN (:macs) AND Mac NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingMacs(@Param("macs") List<String> macs);
 
-	@Query(value = "SELECT Serial3 FROM Ingreso WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
+	@Query(value = "SELECT Serial3 FROM Ingreso WITH(NOLOCK) WHERE Serial3 IN (:serial3s) AND Serial3 NOT IN ('', '0')", nativeQuery = true)
 	List<String> findExistingSerial3s(@Param("serial3s") List<String> serial3s);
+
+	@Query(value = "SELECT SmartCard FROM Ingreso WHERE SmartCard IN (:smartCards) AND SmartCard NOT IN ('', '0')", nativeQuery = true)
+	List<String> findExistingSmartCards(@Param("smartCards") List<String> smartCards);
 
 	@Query(value = "SELECT f.fechaingreso, f.dias FROM pa_getdiasultimoingreso(CAST(:serial AS character varying)) f", nativeQuery = true)
 	List<Object[]> getDiasUltimoIngresoRaw(@Param("serial") String serial);
@@ -492,16 +498,7 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT f.descripcion FROM pa_validarreingresoscrap(CAST(:serial AS character varying)) f", nativeQuery = true)
 	String getUltimaTipologiaSerial(@Param("serial") String serial);
 
-	@Query(value = "SELECT UPPER(m.Serial) AS serial, m.Descripcion AS descripcion " +
-			"FROM Movimiento m " +
-			"INNER JOIN ( " +
-			"SELECT Serial, MAX(Id) AS MaxId " +
-			"FROM Movimiento " +
-			"WHERE UPPER(Serial) IN (:seriales) AND Descripcion LIKE '%Tipologia%' " +
-			"GROUP BY Serial " +
-			") latest ON m.Id = latest.MaxId " +
-			"UNION ALL " +
-			"SELECT UPPER(d.Serial) AS serial, 'Despacho con Tipologia: SCRAP' AS descripcion " +
+	@Query(value = "SELECT UPPER(d.Serial) AS serial, 'Despacho con Tipologia: SCRAP' AS descripcion " +
 			"FROM Despacho d " +
 			"INNER JOIN ( " +
 			"SELECT Serial, MAX(Id) AS MaxId " +

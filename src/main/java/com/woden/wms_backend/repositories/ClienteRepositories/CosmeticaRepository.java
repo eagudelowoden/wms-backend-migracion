@@ -20,9 +20,10 @@ public interface CosmeticaRepository extends BaseRepository<CosmeticaModel, Inte
   public List<Object[]> searchCosmeticaEntry(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
   @Transactional
-  @Query(value = "SELECT 1 FROM pa_insertcosmetica(CAST(:serial AS character varying), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone))", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertcosmetica(CAST(:serial AS character varying), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone), CAST(:usuarioAsignadoId AS integer))", nativeQuery = true)
   void insertCosmetica(
       @Param("serial") String serial,
       @Param("usuarioId") Integer usuarioId,
-      @Param("fecha") Date fecha);
+      @Param("fecha") Date fecha,
+      @Param("usuarioAsignadoId") Integer usuarioAsignadoId);
 }

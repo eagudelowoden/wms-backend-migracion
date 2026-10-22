@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.woden.wms_backend.dto.AuditoriaInSituRequest;
+import com.woden.wms_backend.dto.CalidadExtrasRequest;
+
 
 
 @RestController
@@ -131,6 +134,11 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
         }
     }
 
+    @PostMapping("/updateQualityExtras")
+    public ResponseEntity<Integer> updateQualityExtras(@RequestBody CalidadExtrasRequest request) {
+        return ResponseEntity.ok(calidadService.updateQualityExtras(request));
+    }
+
     @GetMapping("/validateQualityByPallet")
     public ResponseEntity<Integer> validateQualityByPallet(
             @RequestParam Integer palletId) {
@@ -140,6 +148,20 @@ public class CalidadController extends  BaseController<CalidadModel, Integer> {
         } catch (Exception e) {
             return ResponseEntity.ok(0); // si falla, deja pasar
         }
+    }
+
+    @PostMapping("/auditarInSitu")
+    public ResponseEntity<Map<String, Object>> auditarInSitu(@RequestBody AuditoriaInSituRequest request) {
+        return ResponseEntity.ok(calidadService.auditarInSitu(request));
+    }
+
+    @GetMapping("/bySerial")
+    public ResponseEntity<Map<String, Object>> getBySerial(@RequestParam String serial) {
+        Map<String, Object> row = calidadService.getAuditoriaBySerial(serial);
+        if (row == null) {
+            return ResponseEntity.ok(null);
+        }
+        return ResponseEntity.ok(row);
     }
 
 
