@@ -38,6 +38,7 @@ public class MenuModuloMapping {
         MODULO_TO_MENU.put(34, "PINN");
         MODULO_TO_MENU.put(35, "LLIM");
         MODULO_TO_MENU.put(36, "PSMART");
+        MODULO_TO_MENU.put(46, "PAUT");
         MODULO_TO_MENU.put(18, "ADTM");
         MODULO_TO_MENU.put(19, "ADMA");
         MODULO_TO_MENU.put(22, "ADCS");
