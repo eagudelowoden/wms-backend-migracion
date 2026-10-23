@@ -570,4 +570,16 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			"INNER JOIN Maestro m WITH(NOLOCK) ON m.Id = p.TipologiaId " +
 			"WHERE p.Numero IN (:numeros)", nativeQuery = true)
 	List<Object[]> findPalletTipologiasPorNumero(@Param("numeros") List<String> numeros);
+
+	@Query(value = "SELECT TOP 1 Id FROM dbo.Estado WHERE Nombre = :nombre AND Activo = 1 ORDER BY Id", nativeQuery = true)
+	Integer getIdEstadoByNombre(@Param("nombre") String nombre);
+
+	@Query(value = "SELECT TOP 1 Id, EstadoId FROM dbo.Ingreso WHERE Serial = :serial ORDER BY Id DESC", nativeQuery = true)
+	List<Object[]> findUltimoEstadoBySerial(@Param("serial") String serial);
+
+	@Query(value = "SELECT CASE WHEN OBJECT_ID('dbo.Depreciados', 'U') IS NULL THEN 0 ELSE 1 END", nativeQuery = true)
+	Integer existeTablaDepreciados();
+
+	@Query(value = "SELECT CASE WHEN EXISTS (SELECT 1 FROM dbo.Depreciados WHERE SerialNumber = :serial) THEN 1 ELSE 0 END", nativeQuery = true)
+	Integer existeDepreciado(@Param("serial") String serial);
 }

@@ -91,4 +91,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("serialAnterior") String serialAnterior,
       @Param("filas") Integer filas);
 
+  @Query(value = "SELECT COUNT(*) FROM dbo.Empaque WHERE Serial = :serial AND NivelId >= 62", nativeQuery = true)
+  Integer countReingresosNivel62(@Param("serial") String serial);
+
 }

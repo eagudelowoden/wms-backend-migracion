@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
 import com.woden.wms_backend.repositories.ClienteRepositories.DiagnosticoRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -36,12 +37,19 @@ public class DiagnosticoService {
 
   private static final Logger logger     = LoggerFactory.getLogger(DiagnosticoService.class);
   private static final int    CHUNK_SIZE = 50;
+  private static final String ESTADO_DIAGNOSTICO_TERMINADO = "DIAGNOSTICO-TERMINADO";
 
   @Autowired
   private DataSource dataSource;
 
   @Autowired
   private DiagnosticoRepository repository;
+
+  @Autowired
+  private IngresoRepository ingresoRepository;
+
+  @Autowired
+  private DepreciacionService depreciacionService;
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -160,7 +168,31 @@ public class DiagnosticoService {
   public void save(List<DiagnosticoRequest> items) {
     int total = items.size();
     int procesados = 0;
+    Map<String, Integer> transiciones = new HashMap<>();
+    Integer estadoTerminadoId = resolverEstadoTerminadoId();
     try {
+      if (estadoTerminadoId != null) {
+        for (DiagnosticoRequest item : items) {
+          if (item.getSerial() == null
+              || !estadoTerminadoId.equals(item.getEstadoId())) {
+            continue;
+          }
+
+          List<Object[]> previos = ingresoRepository.findUltimoEstadoBySerial(item.getSerial());
+          if (previos == null || previos.isEmpty()) {
+            continue;
+          }
+
+          Object[] previo = previos.get(0);
+          Integer estadoAnterior = previo[1] != null ? ((Number) previo[1]).intValue() : null;
+          if (estadoTerminadoId.equals(estadoAnterior)) {
+            continue;
+          }
+
+          transiciones.put(item.getSerial(), ((Number) previo[0]).intValue());
+        }
+      }
+
       for (int i = 0; i < total; i += CHUNK_SIZE) {
         List<DiagnosticoRequest> chunk = items.subList(i, Math.min(i + CHUNK_SIZE, total));
         String json = objectMapper.writeValueAsString(chunk);
@@ -176,8 +208,31 @@ public class DiagnosticoService {
           logger.info("[DIAGNOSTICO] TruckRollId actualizado: serial={} → {}", item.getSerial(), item.getTruckRollId());
         }
       }
+
+      if (!transiciones.isEmpty()) {
+        DepreciacionService.Modo modo = depreciacionService
+            .obtenerModoActivo(ClientDatabaseContext.getCurrentClientId());
+        if (modo != null) {
+          for (Map.Entry<String, Integer> transicion : transiciones.entrySet()) {
+            depreciacionService.evaluarTransicion(transicion.getValue(), transicion.getKey(), modo);
+          }
+        }
+      }
     } catch (Exception e) {
       throw new RuntimeException("Error al guardar diagnóstico: " + e.getMessage(), e);
+    }
+  }
+
+  private Integer resolverEstadoTerminadoId() {
+    try {
+      Integer id = ingresoRepository.getIdEstadoByNombre(ESTADO_DIAGNOSTICO_TERMINADO);
+      if (id == null) {
+        logger.warn("[DIAGNOSTICO] No se encontro Estado {}; se omite evaluacion de depreciacion", ESTADO_DIAGNOSTICO_TERMINADO);
+      }
+      return id;
+    } catch (Exception e) {
+      logger.error("[DIAGNOSTICO] No se pudo resolver Estado {}; se omite evaluacion de depreciacion", ESTADO_DIAGNOSTICO_TERMINADO, e);
+      return null;
     }
   }
 
