@@ -373,6 +373,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       seriales.put("serial3", toStr(result[4]));
       seriales.put("serial4", toStr(result[5]));
       seriales.put("codigo", toStr(result[6]));
+      seriales.put("codigoSap", toStr(result[6]));
       seriales.put("descripcion", toStr(result[7]));
       seriales.put("nivel", toStr(result[8]));
       seriales.put("lote", toStr(result[9]));
