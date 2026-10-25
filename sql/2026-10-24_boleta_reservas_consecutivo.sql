@@ -6,10 +6,11 @@
 USE WmsWdGeneral;
 SET NOCOUNT ON;
 
--- Interruptor por cliente (Clientes > Validaciones): documento consecutivo AAAA-NNN, se reinicia cada año en 001
+-- Interruptor por cliente (Clientes > Validaciones): boletas guardadas (Reservar / Despachar / lista de boletas /
+-- candado en los pallets) con documento consecutivo AAAA-NNN, se reinicia cada año en 001
 IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'BOLETA_CONSECUTIVO')
   INSERT INTO dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
-  VALUES ('BOLETA_CONSECUTIVO', 'Número de documento consecutivo AAAA-NNN en la boleta de despacho (se reinicia cada año en 001)', 1, GETDATE());
+  VALUES ('BOLETA_CONSECUTIVO', 'Boletas guardadas en Despacho (Reservar, Despachar y lista) con documento consecutivo AAAA-NNN que se reinicia cada año', 1, GETDATE());
 
 -- Último consecutivo usado por cliente y año
 IF OBJECT_ID('dbo.BoletaConsecutivo', 'U') IS NULL

@@ -82,6 +82,10 @@ public class BoletaReservaService {
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> reservar(BoletaMovimientoDTO r) {
     exigirTablas();
+    // boletas guardadas y documento consecutivo van juntos (interruptor BOLETA_CONSECUTIVO del cliente)
+    if (!usaConsecutivo()) {
+      throw new BusinessRuleException("El cliente no tiene activas las boletas guardadas (BOLETA_CONSECUTIVO).");
+    }
     int cliente = cliente();
     List<BoletaMovimientoDTO.ItemDTO> items = r.getEquipos() == null ? List.of() : r.getEquipos();
     List<Integer> ids = items.stream().map(BoletaMovimientoDTO.ItemDTO::getId).filter(Objects::nonNull).distinct()

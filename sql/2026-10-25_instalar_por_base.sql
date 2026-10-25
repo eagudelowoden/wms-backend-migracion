@@ -15,13 +15,17 @@
      - Menú: Administración > Notificaciones (ADNOT).
      - Columna CAJAS de Despacho > Proceso: si el pallet no tiene cajas de despacho cuenta las de empaque.
      - AuditoriaNivelEmpaque si la base tiene el trigger pero no la tabla.
-     - Interruptor BOLETA_CONSECUTIVO del cliente solo si @ActivarConsecutivo = 1.
+     - Interruptor BOLETA_CONSECUTIVO del cliente (boletas guardadas + consecutivo) si @ActivarConsecutivo = 1.
+     - Interruptor SONIDO_ALERTAS_INGRESO (catálogo, una vez) y para el cliente si @ActivarSonido = 1.
+   Los interruptores también se encienden o apagan desde Administración > Clientes > Validaciones; el usuario ve el
+   cambio al volver a iniciar sesión.
      - Avisa si falta la tipología NO CONFORMIDAD o la novedad de accesorios (Despachado de accesorios la necesita).
    ===================================================================================== */
 SET NOCOUNT ON;
 
 DECLARE @Db SYSNAME = 'WmsWdLegacyCostaRica';
-DECLARE @ActivarConsecutivo BIT = 0;     -- 1 = documento de la boleta consecutivo AAAA-NNN para este cliente
+DECLARE @ActivarConsecutivo BIT = 0;     -- 1 = boletas guardadas con documento consecutivo AAAA-NNN para este cliente
+DECLARE @ActivarSonido BIT = 0;          -- 1 = sonido en los avisos y errores de Ingreso para este cliente
 
 DECLARE @sql NVARCHAR(MAX), @n INT, @clienteId INT;
 
@@ -146,6 +150,20 @@ BEGIN
   ELSE
     INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoConsecutivo, 1, GETDATE());
   PRINT 'BOLETA_CONSECUTIVO activo para el cliente';
+END
+
+/* ── 6b. Interruptor SONIDO_ALERTAS_INGRESO ──────────────────────────────────────── */
+IF NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'SONIDO_ALERTAS_INGRESO')
+  INSERT INTO WmsWdGeneral.dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
+  VALUES ('SONIDO_ALERTAS_INGRESO', 'Sonido en los avisos y errores de Ingreso (se repite hasta cerrar el aviso)', 1, GETDATE());
+IF @ActivarSonido = 1 AND @clienteId IS NOT NULL
+BEGIN
+  DECLARE @tipoSonido INT = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'SONIDO_ALERTAS_INGRESO');
+  IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacion WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoSonido)
+    UPDATE WmsWdGeneral.dbo.ClienteValidacion SET Activo = 1 WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoSonido;
+  ELSE
+    INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoSonido, 1, GETDATE());
+  PRINT 'SONIDO_ALERTAS_INGRESO activo para el cliente';
 END
 
 /* ── 7. Avisos ───────────────────────────────────────────────────────────────────── */
