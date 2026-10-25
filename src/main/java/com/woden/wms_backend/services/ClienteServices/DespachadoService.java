@@ -32,13 +32,17 @@ import jakarta.persistence.Query;
 /**
  * Despacho > Despachado: devolucion de lo que el cliente rechaza (misma logica que ReverseCore > Novedades).
  *
- * Equipos: la ULTIMA vuelta del serial (su SerialId) vuelve de Despacho a Ingreso con su mismo Id, desempacada, sin
- * pallet, en estado NOVEDAD, tipologia NO CONFORMIDAD y observacion "RECHAZO CLIENTE <salida>": aparece en
- * Novedades > Proceso. Las vueltas anteriores no se tocan; un despacho duplicado de esa vuelta se borra con ella.
+ * El destino sale del Work flow (origen DESPACHADO, opciones Opc_Equipos / Opc_Accesorios de "Despachado"), asi se
+ * puede cambiar sin tocar codigo; hoy NOVEDAD y NOVEDAD-ACCESORIOS.
+ *
+ * Equipos (por serie, caja o pallet de despacho): la ULTIMA vuelta del serial (su SerialId) vuelve de Despacho a Ingreso
+ * con su mismo Id, desempacada, sin pallet, en el destino, tipologia NO CONFORMIDAD y observacion
+ * "RECHAZO CLIENTE <salida>" (en NOVEDAD aparece en Novedades > Proceso). Las vueltas anteriores no se tocan; un
+ * despacho duplicado de esa vuelta se borra con ella.
  *
  * Accesorios (por cantidad): las unidades mas recientes de esa salida vuelven de DespachoAccesorio a Accesorio con su
- * mismo Id, en un pallet nuevo por referencia (NO CONFORMIDAD, destino NOVEDAD-ACCESORIOS) que se envia desde
- * Novedades > Proceso (ACCESORIOS). Requiere la novedad de accesorios instalada en la base del cliente.
+ * mismo Id, en un pallet nuevo por referencia (NO CONFORMIDAD) con el destino elegido; en NOVEDAD-ACCESORIOS se envia
+ * desde Novedades > Proceso (ACCESORIOS). Requiere la novedad de accesorios instalada en la base del cliente.
  *
  * Todo en una transaccion con verificacion final; lo borrado queda respaldado en WmsWdGeneral (DespachoReversa*).
  */
@@ -49,7 +53,13 @@ public class DespachadoService {
   private static final String G = "WmsWdGeneral.dbo.";
   private static final String TIPOLOGIA = "NO CONFORMIDAD";
   private static final String OBSERVACION = "RECHAZO CLIENTE";
-  private static final int MAX_SERIES = 500;
+  private static final int MAX_SERIES = 3000;
+  private static final int BLOQUE = 900;
+  // destinos por Work flow: origen DESPACHADO, opciones de la pestana Despachado (catalogo Permiso)
+  public static final String WF_ORIGEN = "DESPACHADO";
+  public static final String WF_DESCRIPCION = "Despachado";
+  public static final String WF_EQUIPOS = "Opc_Equipos";
+  public static final String WF_ACCESORIOS = "Opc_Accesorios";
 
   @PersistenceContext
   private EntityManager em;
@@ -75,27 +85,31 @@ public class DespachadoService {
     if (lista.size() > MAX_SERIES) {
       throw new BusinessRuleException("Máximo " + MAX_SERIES + " series por vez.");
     }
-    String marcas = marcas(lista.size(), 1);
 
+    // por bloques: SQL Server admite ~2100 parametros por consulta y un pallet puede traer cientos de series
     Map<String, Object[]> desp = new HashMap<>();
-    for (Object[] r : filas("SELECT d.Id, d.SerialId, d.Serial, d.PedidoSap, CONVERT(varchar(16), d.Fecha, 120), p.Numero, "
-        + "cs.Descripcion, "
-        + "(SELECT COUNT(*) FROM Empaque e WITH (NOLOCK) WHERE e.SerialId = d.SerialId), "
-        + "(SELECT COUNT(*) FROM Despacho x WITH (NOLOCK) WHERE x.SerialId = d.SerialId), "
-        + "(SELECT COUNT(DISTINCT ISNULL(x.PedidoSap, '')) FROM Despacho x WITH (NOLOCK) WHERE x.SerialId = d.SerialId), "
-        + "(SELECT COUNT(*) FROM Despacho x WITH (NOLOCK) WHERE x.Serial = d.Serial AND x.SerialId <> d.SerialId) "
-        + "FROM Despacho d WITH (NOLOCK) "
-        + "INNER JOIN (SELECT Serial, MAX(Id) AS Id FROM Despacho WITH (NOLOCK) WHERE Serial IN (" + marcas + ") "
-        + "GROUP BY Serial) u ON u.Id = d.Id "
-        + "LEFT JOIN Pallet p WITH (NOLOCK) ON p.Id = d.PalletId "
-        + "LEFT JOIN CodigoSap cs WITH (NOLOCK) ON cs.Id = d.CodigoSapId", lista.toArray())) {
-      desp.put(texto(r[2]).toUpperCase(Locale.ROOT), r);
-    }
     Map<String, Object[]> ing = new HashMap<>();
-    for (Object[] r : filas("SELECT i.Serial, i.Id, e.Nombre, p.Numero FROM Ingreso i WITH (NOLOCK) "
-        + "LEFT JOIN Estado e ON e.Id = i.EstadoId LEFT JOIN Pallet p ON p.Id = i.PalletId "
-        + "WHERE i.Serial IN (" + marcas + ")", lista.toArray())) {
-      ing.put(texto(r[0]).toUpperCase(Locale.ROOT), r);
+    for (int i0 = 0; i0 < lista.size(); i0 += BLOQUE) {
+      List<String> bloque = lista.subList(i0, Math.min(lista.size(), i0 + BLOQUE));
+      String marcas = marcas(bloque.size(), 1);
+      for (Object[] r : filas("SELECT d.Id, d.SerialId, d.Serial, d.PedidoSap, CONVERT(varchar(16), d.Fecha, 120), p.Numero, "
+          + "cs.Descripcion, "
+          + "(SELECT COUNT(*) FROM Empaque e WITH (NOLOCK) WHERE e.SerialId = d.SerialId), "
+          + "(SELECT COUNT(*) FROM Despacho x WITH (NOLOCK) WHERE x.SerialId = d.SerialId), "
+          + "(SELECT COUNT(DISTINCT ISNULL(x.PedidoSap, '')) FROM Despacho x WITH (NOLOCK) WHERE x.SerialId = d.SerialId), "
+          + "(SELECT COUNT(*) FROM Despacho x WITH (NOLOCK) WHERE x.Serial = d.Serial AND x.SerialId <> d.SerialId) "
+          + "FROM Despacho d WITH (NOLOCK) "
+          + "INNER JOIN (SELECT Serial, MAX(Id) AS Id FROM Despacho WITH (NOLOCK) WHERE Serial IN (" + marcas + ") "
+          + "GROUP BY Serial) u ON u.Id = d.Id "
+          + "LEFT JOIN Pallet p WITH (NOLOCK) ON p.Id = d.PalletId "
+          + "LEFT JOIN CodigoSap cs WITH (NOLOCK) ON cs.Id = d.CodigoSapId", bloque.toArray())) {
+        desp.put(texto(r[2]).toUpperCase(Locale.ROOT), r);
+      }
+      for (Object[] r : filas("SELECT i.Serial, i.Id, e.Nombre, p.Numero FROM Ingreso i WITH (NOLOCK) "
+          + "LEFT JOIN Estado e ON e.Id = i.EstadoId LEFT JOIN Pallet p ON p.Id = i.PalletId "
+          + "WHERE i.Serial IN (" + marcas + ")", bloque.toArray())) {
+        ing.put(texto(r[0]).toUpperCase(Locale.ROOT), r);
+      }
     }
 
     List<Map<String, Object>> out = new ArrayList<>();
@@ -131,9 +145,71 @@ public class DespachadoService {
     return out;
   }
 
-  /** Regresa a Novedades la ultima vuelta de las series; si una falla o algo no cuadra no se regresa ninguna. */
-  public List<Map<String, Object>> regresar(List<String> series, String salida, Integer usuarioId, String usuarioNombre,
-      boolean simular) {
+  /**
+   * Captura como en Ingreso: una serie, un pallet de despacho (todas sus series de esa salida) o una caja de despacho
+   * (numero de caja dentro del pallet). Devuelve la previa de cada serie encontrada.
+   */
+  public List<Map<String, Object>> capturar(String salida, String tipo, String valor, String pallet) {
+    String sal = limpio(salida).toUpperCase(Locale.ROOT);
+    String v = limpio(valor).toUpperCase(Locale.ROOT);
+    if (sal.isEmpty()) {
+      throw new BusinessRuleException("Escriba la salida (PedidoSap).");
+    }
+    if (v.isEmpty()) {
+      return List.of();
+    }
+    String t = limpio(tipo).toUpperCase(Locale.ROOT);
+    List<String> series;
+    if ("PALLET".equals(t)) {
+      series = filas("SELECT DISTINCT d.Serial FROM Despacho d WITH (NOLOCK) JOIN Pallet p WITH (NOLOCK) ON p.Id = d.PalletId "
+          + "WHERE p.Numero = ?1 AND d.PedidoSap = ?2", v, sal).stream().map(r -> texto(r[0])).collect(Collectors.toList());
+      if (series.isEmpty()) {
+        throw new BusinessRuleException("El pallet " + v + " no tiene series despachadas en la salida " + sal + ".");
+      }
+    } else if ("CAJA".equals(t)) {
+      String pal = limpio(pallet).toUpperCase(Locale.ROOT);
+      if (pal.isEmpty()) {
+        throw new BusinessRuleException("Escriba el pallet de la caja.");
+      }
+      series = filas("SELECT DISTINCT d.Serial FROM Despacho d WITH (NOLOCK) JOIN Pallet p WITH (NOLOCK) ON p.Id = d.PalletId "
+          + "JOIN CajaDespacho cd WITH (NOLOCK) ON cd.Id = d.CajaDespachoId "
+          + "WHERE p.Numero = ?1 AND cd.Numero = ?2 AND d.PedidoSap = ?3", pal, v, sal)
+          .stream().map(r -> texto(r[0])).collect(Collectors.toList());
+      if (series.isEmpty()) {
+        throw new BusinessRuleException("La caja " + v + " del pallet " + pal + " no tiene series despachadas en la salida "
+            + sal + ".");
+      }
+    } else {
+      series = List.of(v);
+    }
+    return previa(series, sal);
+  }
+
+  /** Destinos del Work flow para Despachado (opcion Opc_Equipos u Opc_Accesorios). */
+  public List<String> destinos(String opcion) {
+    return filas("EXEC pa_GetNameWorflowDestiny ?1, ?2, ?3, ?4", opcion, WF_ORIGEN, WF_DESCRIPCION, 0).stream()
+        .map(r -> texto(r[0])).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+  }
+
+  /** El destino elegido debe estar en el Work flow; devuelve su EstadoId. */
+  private int destinoValido(String opcion, String destino) {
+    String d = limpio(destino);
+    if (d.isEmpty()) {
+      throw new BusinessRuleException("Seleccione el destino.");
+    }
+    List<String> permitidos = destinos(opcion);
+    if (permitidos.isEmpty()) {
+      throw new BusinessRuleException("No hay destinos configurados en Work flow para Despachado (" + opcion + ").");
+    }
+    if (permitidos.stream().noneMatch(p -> p.equalsIgnoreCase(d))) {
+      throw new BusinessRuleException("El destino " + d + " no está en el Work flow de Despachado.");
+    }
+    return estadoId(d);
+  }
+
+  /** Regresa la ultima vuelta de las series al destino del Work flow; si una falla o algo no cuadra no se regresa ninguna. */
+  public List<Map<String, Object>> regresar(List<String> series, String salida, String destino, Integer usuarioId,
+      String usuarioNombre, boolean simular) {
     exigirRespaldo();
     int usuario = usuarioId == null ? 0 : usuarioId;
     String db = baseActual();
@@ -141,7 +217,7 @@ public class DespachadoService {
     if (tip == null) {
       throw new BusinessRuleException("El WMS de este cliente no tiene la tipología " + TIPOLOGIA + ".");
     }
-    int estado = estadoId("NOVEDAD");
+    int estado = destinoValido(WF_EQUIPOS, destino);
     List<Map<String, Object>> filas = previa(series, salida);
     if (filas.isEmpty()) {
       throw new BusinessRuleException("Escriba al menos una serie.");
@@ -202,7 +278,7 @@ public class DespachadoService {
       if (simular) {
         status.setRollbackOnly();
       }
-      logger.info("[Despachado] {} series de la salida {} a Novedad ({}){}", filas.size(), salida, db,
+      logger.info("[Despachado] {} series de la salida {} a {} ({}){}", filas.size(), salida, destino, db,
           simular ? " (simulado, deshecho)" : "");
       return filas;
     });
@@ -273,15 +349,15 @@ public class DespachadoService {
     return out;
   }
 
-  /** Regresa la cantidad pedida de cada grupo a un pallet nuevo de novedad (uno por grupo). Todo o nada. */
-  public List<Map<String, Object>> accRegresar(String salida, List<Map<String, Object>> items, Integer usuarioId,
-      String usuarioNombre, String zonaHoraria, boolean simular) {
+  /** Regresa la cantidad pedida de cada grupo a un pallet nuevo (uno por grupo) con el destino del Work flow. Todo o nada. */
+  public List<Map<String, Object>> accRegresar(String salida, List<Map<String, Object>> items, String destino,
+      Integer usuarioId, String usuarioNombre, String zonaHoraria, boolean simular) {
     exigirRespaldo();
     String sal = limpio(salida).toUpperCase(Locale.ROOT);
     int usuario = usuarioId == null ? 0 : usuarioId;
     String db = baseActual();
     novedadAccesoriosLista();
-    int estado = estadoId("NOVEDAD-ACCESORIOS");
+    int estado = destinoValido(WF_ACCESORIOS, destino);
     int origen = estadoId("DESPACHADO");
     Integer tip = tipologiaId();
     if (tip == null) {
@@ -375,7 +451,7 @@ public class DespachadoService {
       if (simular) {
         status.setRollbackOnly();
       }
-      logger.info("[Despachado] accesorios de la salida {} a Novedad ({} grupos, {}){}", sal, out.size(), db,
+      logger.info("[Despachado] accesorios de la salida {} a {} ({} grupos, {}){}", sal, destino, out.size(), db,
           simular ? " (simulado, deshecho)" : "");
       return out;
     });
@@ -514,7 +590,7 @@ public class DespachadoService {
 
   private TransactionTemplate plantilla() {
     TransactionTemplate t = new TransactionTemplate(transactionManager);
-    t.setTimeout(120);
+    t.setTimeout(600); // un pallet completo puede traer cientos de series
     return t;
   }
 

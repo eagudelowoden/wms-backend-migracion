@@ -60,6 +60,7 @@ public class BoletaMovimientoService {
     contexto.put("usuario_nombre", request.getUsuarioNombre());
     contexto.put("equipos", mapearEquipos(request.getEquipos()));
     contexto.put("total_unidades", totalUnidades(request.getEquipos()));
+    contexto.put("total_pallets", request.getEquipos() == null ? 0 : request.getEquipos().size());
 
     // El logo del cliente (ClienteModel.bandera) es una ruta relativa que solo
     // existe en el servidor del frontend Angular — OpenHTMLtoPDF corre en el

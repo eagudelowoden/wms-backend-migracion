@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.services.ClienteServices.DespachadoService;
 
-/** Despacho > Despachado: equipos y accesorios que el cliente rechaza vuelven a Novedades. */
+/** Despacho > Despachado: equipos y accesorios que el cliente rechaza vuelven al destino del Work flow. */
 @RestController
 @RequestMapping("/client/despachado")
 public class DespachadoController {
@@ -22,21 +22,24 @@ public class DespachadoController {
   @Autowired
   private DespachadoService despachadoService;
 
-  public record EquiposRequest(String salida, List<String> series, Integer usuarioId, String usuarioNombre,
-      Boolean simular) {}
+  public record CapturaRequest(String salida, String tipo, String valor, String pallet) {}
 
-  public record AccesoriosRequest(String salida, List<Map<String, Object>> items, Integer usuarioId,
+  public record EquiposRequest(String salida, List<String> series, String destino, Integer usuarioId,
+      String usuarioNombre, Boolean simular) {}
+
+  public record AccesoriosRequest(String salida, List<Map<String, Object>> items, String destino, Integer usuarioId,
       String usuarioNombre, String zonaHoraria, Boolean simular) {}
 
-  @PostMapping("/equipos/previa")
-  public ResponseEntity<List<Map<String, Object>>> previa(@RequestBody EquiposRequest r) {
-    return ResponseEntity.ok(despachadoService.previa(r.series(), r.salida()));
+  /** Serie, caja (con su pallet) o pallet de despacho de la salida: previa de cada serie. */
+  @PostMapping("/equipos/capturar")
+  public ResponseEntity<List<Map<String, Object>>> capturar(@RequestBody CapturaRequest r) {
+    return ResponseEntity.ok(despachadoService.capturar(r.salida(), r.tipo(), r.valor(), r.pallet()));
   }
 
   @PostMapping("/equipos/regresar")
   public ResponseEntity<List<Map<String, Object>>> regresar(@RequestBody EquiposRequest r) {
-    return ResponseEntity.ok(despachadoService.regresar(r.series(), r.salida(), r.usuarioId(), r.usuarioNombre(),
-        Boolean.TRUE.equals(r.simular())));
+    return ResponseEntity.ok(despachadoService.regresar(r.series(), r.salida(), r.destino(), r.usuarioId(),
+        r.usuarioNombre(), Boolean.TRUE.equals(r.simular())));
   }
 
   @GetMapping("/accesorios/previa")
@@ -46,8 +49,15 @@ public class DespachadoController {
 
   @PostMapping("/accesorios/regresar")
   public ResponseEntity<List<Map<String, Object>>> accRegresar(@RequestBody AccesoriosRequest r) {
-    return ResponseEntity.ok(despachadoService.accRegresar(r.salida(), r.items(), r.usuarioId(), r.usuarioNombre(),
-        r.zonaHoraria(), Boolean.TRUE.equals(r.simular())));
+    return ResponseEntity.ok(despachadoService.accRegresar(r.salida(), r.items(), r.destino(), r.usuarioId(),
+        r.usuarioNombre(), r.zonaHoraria(), Boolean.TRUE.equals(r.simular())));
+  }
+
+  /** Destinos del Work flow: tipo = equipos | accesorios. */
+  @GetMapping("/destinos")
+  public ResponseEntity<List<String>> destinos(@RequestParam(defaultValue = "equipos") String tipo) {
+    return ResponseEntity.ok(despachadoService.destinos(
+        "accesorios".equalsIgnoreCase(tipo) ? DespachadoService.WF_ACCESORIOS : DespachadoService.WF_EQUIPOS));
   }
 
   @GetMapping("/historial")

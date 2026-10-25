@@ -2,8 +2,7 @@
    Administración > Notificaciones: reglas de correo por evento y cliente + bitácora de envíos.
    - Tablas en WmsWdGeneral (ClienteId NULL = todos los clientes)
    - Regla inicial: NOVEDAD_ERROR_SERIAL_MAC para todos los clientes -> nsandino@woden.com.co
-   - Opción de menú ADNOT "Notificaciones" bajo Administración en cada base cliente que tenga el menú ADM
-     (si el cliente usa Menú por perfiles, asignarla a los perfiles que correspondan)
+   - La opción de menú ADNOT "Notificaciones" va por base (2026-10-25_instalar_por_base.sql)
    El SMTP no va en la base: el backend lo lee de las variables de entorno
    SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_NAME (cuenta noreplyservices).
    Solo crea lo que falta; correrlo dos veces no hace nada.
@@ -45,30 +44,4 @@ IF NOT EXISTS (SELECT 1 FROM dbo.NotificacionCorreo WHERE Evento = 'NOVEDAD_ERRO
   INSERT INTO dbo.NotificacionCorreo (Evento, ClienteId, Para, Cc, Activo, Usuario, Fecha)
   VALUES ('NOVEDAD_ERROR_SERIAL_MAC', NULL, 'nsandino@woden.com.co', NULL, 1, 'script 2026-10-25', GETDATE());
 
--- Opción de menú en cada base cliente (dbo.Menu con el menú Administración 'ADM')
-DECLARE @db SYSNAME, @sql NVARCHAR(MAX);
-DECLARE c CURSOR LOCAL FAST_FORWARD FOR
-  SELECT name FROM sys.databases WHERE name LIKE 'WmsWd%' AND name <> 'WmsWdGeneral' AND state = 0 ORDER BY name;
-OPEN c;
-FETCH NEXT FROM c INTO @db;
-WHILE @@FETCH_STATUS = 0
-BEGIN
-  SET @sql = N'
-    IF OBJECT_ID(''' + QUOTENAME(@db) + N'.dbo.Menu'', ''U'') IS NOT NULL
-       AND EXISTS (SELECT 1 FROM ' + QUOTENAME(@db) + N'.dbo.Menu WHERE Id = ''ADM'')
-       AND NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@db) + N'.dbo.Menu WHERE Id = ''ADNOT'')
-    BEGIN
-      INSERT INTO ' + QUOTENAME(@db) + N'.dbo.Menu (Id, Descripcion, Tipo, Orden, Accion, Estado, Icono, Id_padre, View_name, Controller_name)
-      VALUES (''ADNOT'', ''Notificaciones'', ''item'', 20, ''ADMNOT'', ''activo'', '''', ''ADM'', '''', '''');
-      PRINT ''' + @db + N': menú Notificaciones agregado'';
-    END';
-  BEGIN TRY
-    EXEC sys.sp_executesql @sql;
-  END TRY
-  BEGIN CATCH
-    PRINT @db + ': ' + ERROR_MESSAGE();
-  END CATCH
-  FETCH NEXT FROM c INTO @db;
-END
-CLOSE c;
-DEALLOCATE c;
+-- La opción de menú ADNOT "Notificaciones" se agrega por base con 2026-10-25_instalar_por_base.sql
