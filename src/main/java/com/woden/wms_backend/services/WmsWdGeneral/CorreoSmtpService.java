@@ -24,7 +24,7 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 public class CorreoSmtpService {
 
-  /** id del logo del WMS incrustado en el correo: en la plantilla, src="cid:logo" */
+  /** id del logo Woden incrustado en el correo: en la plantilla, src="cid:logo" */
   public static final String LOGO = "logo";
 
   @Value("${SMTP_SERVER:}")
@@ -100,7 +100,7 @@ public class CorreoSmtpService {
     }
     h.setSubject(asunto);
     h.setText(html, true);
-    h.addInline(LOGO, new ClassPathResource("mail/logo-wms.png"), "image/png");
+    h.addInline(LOGO, new ClassPathResource("mail/logo-woden.png"), "image/png");
     if (adjuntos != null) {
       for (Map.Entry<String, byte[]> a : adjuntos.entrySet()) {
         h.addAttachment(a.getKey(), new ByteArrayResource(a.getValue()));

@@ -202,8 +202,11 @@ public class NotificacionCorreoService {
     ejemplo.put("ultimoDestinoOriginal", "NOVEDAD · 2026-10-24 09:15");
     ejemplo.put("primerDestinoNuevo", "LIMPIEZA");
     String asunto = "[PRUEBA] " + asuntoSerialMac(ejemplo);
-    String html = htmlSerialMac(asunto, ejemplo, 0);
-    byte[] xlsx = excelMovimientos(List.of());
+    String html = htmlSerialMac(asunto, ejemplo, 0, 0);
+    LinkedHashMap<String, List<Object[]>> hojas = new LinkedHashMap<>();
+    hojas.put("Anterior SERIAL-ORIGINAL", List.of());
+    hojas.put("Actual SERIAL-REGULARIZADO", List.of());
+    byte[] xlsx = excelMovimientos(hojas, 0);
     String error = null;
     try {
       correo.enviar(para, cc, asunto, html, Map.of("movimientos-ejemplo.xlsx", xlsx));
@@ -281,15 +284,22 @@ public class NotificacionCorreoService {
       datos.put("fechaCambio", texto(nuevo[3]));
       datos.put("usuario", nombreUsuario(usuarioId));
 
-      List<Object[]> movs = filas("SELECT CONVERT(varchar(19), m.Fecha, 120), m.SerialId, m.Serial, eo.Nombre, ed.Nombre, "
-          + "m.Descripcion, u.NombreUsuario FROM Movimiento m LEFT JOIN Estado eo ON eo.Id = m.OrigenId "
-          + "LEFT JOIN Estado ed ON ed.Id = m.DestinoId LEFT JOIN " + G + "Usuario u ON u.Id = m.UsuarioId "
-          + "WHERE m.SerialId = ?1 OR m.Serial IN (?2, ?3) ORDER BY m.Fecha, m.Id",
-          serialId, datos.get("serialOriginal"), datos.get("serialNuevo"));
+      // Excel: una hoja con los movimientos del serial anterior y otra con los del actual (todas sus vueltas)
+      String original = datos.get("serialOriginal");
+      String actual = datos.get("serialNuevo");
+      List<Object[]> movAnterior = movimientosDe(original);
+      List<Object[]> movActual = original.equalsIgnoreCase(actual) ? movAnterior : movimientosDe(actual);
+      LinkedHashMap<String, List<Object[]>> hojas = new LinkedHashMap<>();
+      if (original.equalsIgnoreCase(actual)) {
+        hojas.put("Serial " + actual, movActual);
+      } else {
+        hojas.put("Anterior " + original, movAnterior);
+        hojas.put("Actual " + actual, movActual);
+      }
 
       String asunto = asuntoSerialMac(datos);
-      String html = htmlSerialMac(asunto, datos, movs.size());
-      byte[] xlsx = excelMovimientos(movs);
+      String html = htmlSerialMac(asunto, datos, movAnterior.size(), movActual.size());
+      byte[] xlsx = excelMovimientos(hojas, serialId);
       String adjunto = "movimientos-" + datos.get("serialNuevo").replaceAll("[^A-Za-z0-9_-]", "") + ".xlsx";
       String referencia = datos.get("serialOriginal") + " -> " + datos.get("serialNuevo");
       String usuario = datos.get("usuario");
@@ -319,35 +329,49 @@ public class NotificacionCorreoService {
     }
   }
 
+  private List<Object[]> movimientosDe(String serial) {
+    return filas("SELECT CONVERT(varchar(19), m.Fecha, 120), m.SerialId, m.Serial, eo.Nombre, ed.Nombre, "
+        + "m.Descripcion, u.NombreUsuario FROM Movimiento m LEFT JOIN Estado eo ON eo.Id = m.OrigenId "
+        + "LEFT JOIN Estado ed ON ed.Id = m.DestinoId LEFT JOIN " + G + "Usuario u ON u.Id = m.UsuarioId "
+        + "WHERE m.Serial = ?1 ORDER BY m.Fecha, m.Id", serial);
+  }
+
   private String asuntoSerialMac(Map<String, String> d) {
     String cli = texto(ClientDatabaseContext.getCurrentClientName());
     return "WMS " + (cli.isEmpty() ? "" : cli + " ") + "· Novedad ERROR SERIAL-MAC: " + d.get("serialOriginal") + " → "
         + d.get("serialNuevo");
   }
 
-  private String htmlSerialMac(String asunto, Map<String, String> d, int movimientos) {
-    List<Map<String, Object>> filas = new ArrayList<>();
-    fila(filas, "Usuario", d.get("usuario"), false);
-    fila(filas, "Fecha de la novedad", d.get("fechaNovedad"), false);
-    fila(filas, "Fecha de ingreso del equipo", d.get("fechaIngreso"), false);
-    fila(filas, "Fecha del cambio", d.get("fechaCambio"), false);
-    fila(filas, "SerialId", d.get("serialId"), false);
-    fila(filas, "Serial original", d.get("serialOriginal"), false);
-    fila(filas, "MAC original", d.get("macOriginal"), false);
-    fila(filas, "Serial regularizado", d.get("serialNuevo"), true);
-    fila(filas, "MAC regularizada", d.get("macNuevo"), true);
-    fila(filas, "Código SAP / modelo", d.get("modelo"), false);
-    fila(filas, "Tipo de origen", d.get("tipoOrigen"), false);
-    fila(filas, "Origen", d.get("origen"), false);
-    fila(filas, "Prealerta", d.get("prealerta"), false);
-    fila(filas, "Último destino del serial original", d.get("ultimoDestinoOriginal"), false);
-    fila(filas, "Primer destino del serial regularizado", d.get("primerDestinoNuevo"), true);
+  private String htmlSerialMac(String asunto, Map<String, String> d, int movAnterior, int movActual) {
+    // tabla horizontal: una fila de titulos y una de datos (la MAC va bajo su serial)
+    List<String> columnas = List.of("Usuario", "Fecha novedad", "Fecha ingreso", "Fecha cambio", "SerialId",
+        "Serial original", "Serial regularizado", "Tipo origen", "Origen", "Prealerta",
+        "Último destino serial original", "Primer destino serial regularizado");
+    List<Map<String, Object>> celdas = new ArrayList<>();
+    celda(celdas, d.get("usuario"), null, false, false);
+    celda(celdas, minuto(d.get("fechaNovedad")), null, false, true);
+    celda(celdas, minuto(d.get("fechaIngreso")), null, false, true);
+    celda(celdas, minuto(d.get("fechaCambio")), null, false, true);
+    celda(celdas, d.get("serialId"), null, false, true);
+    celda(celdas, d.get("serialOriginal"), "MAC " + d.get("macOriginal"), false, true);
+    celda(celdas, d.get("serialNuevo"), "MAC " + d.get("macNuevo"), true, true);
+    celda(celdas, d.get("tipoOrigen"), null, false, false);
+    celda(celdas, d.get("origen"), null, false, false);
+    celda(celdas, d.get("prealerta"), null, false, false);
+    // "NOVEDAD · 2026-10-24 09:15": el destino arriba y su fecha debajo
+    String[] ultimo = texto(d.get("ultimoDestinoOriginal")).split(" · ", 2);
+    celda(celdas, ultimo[0], ultimo.length > 1 ? ultimo[1] : null, false, true);
+    celda(celdas, d.get("primerDestinoNuevo"), null, true, false);
     Map<String, Object> ctx = new LinkedHashMap<>();
     ctx.put("asunto", asunto);
     ctx.put("titulo", EVENTOS.get(EVENTO_SERIAL_MAC));
     ctx.put("cliente", texto(ClientDatabaseContext.getCurrentClientName()));
-    ctx.put("filas", filas);
-    ctx.put("movimientos", movimientos);
+    ctx.put("modelo", texto(d.get("modelo")));
+    ctx.put("columnas", columnas);
+    ctx.put("celdas", celdas);
+    ctx.put("movAnterior", movAnterior);
+    ctx.put("movActual", movActual);
+    ctx.put("mismoSerial", texto(d.get("serialOriginal")).equalsIgnoreCase(texto(d.get("serialNuevo"))));
     try {
       StringWriter w = new StringWriter();
       pebble.getTemplate("mail/novedad-serial-mac.html").evaluate(w, ctx);
@@ -357,44 +381,72 @@ public class NotificacionCorreoService {
     }
   }
 
-  private static void fila(List<Map<String, Object>> filas, String etiqueta, String valor, boolean resaltar) {
+  private static void celda(List<Map<String, Object>> celdas, String valor, String sub, boolean resaltar,
+      boolean nowrap) {
     Map<String, Object> m = new LinkedHashMap<>();
-    m.put("etiqueta", etiqueta);
     m.put("valor", valor == null || valor.isBlank() ? "—" : valor);
+    m.put("sub", sub == null || sub.isBlank() || sub.trim().equals("MAC") ? "" : sub);
     m.put("resaltar", resaltar);
-    filas.add(m);
+    m.put("nowrap", nowrap);
+    celdas.add(m);
   }
 
-  private byte[] excelMovimientos(List<Object[]> movs) {
+  /** "2026-10-24 09:15:00" -> "2026-10-24 09:15" */
+  private static String minuto(String fecha) {
+    return fecha == null ? "" : fecha.length() > 16 ? fecha.substring(0, 16) : fecha;
+  }
+
+  /** Una hoja por serial (anterior y actual); "Vuelta" marca si el movimiento es de este equipo (su SerialId) o de otra vuelta. */
+  private byte[] excelMovimientos(LinkedHashMap<String, List<Object[]>> hojas, int serialId) {
     try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-      Sheet sh = wb.createSheet("Movimientos");
       CellStyle cab = wb.createCellStyle();
       Font f = wb.createFont();
       f.setBold(true);
       f.setColor(IndexedColors.WHITE.getIndex());
       cab.setFont(f);
-      cab.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
+      // naranja Woden (#E47D06); las filas de este equipo en naranja claro
+      ((org.apache.poi.xssf.usermodel.XSSFCellStyle) cab).setFillForegroundColor(
+          new org.apache.poi.xssf.usermodel.XSSFColor(new byte[] { (byte) 0xE4, (byte) 0x7D, (byte) 0x06 }, null));
       cab.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-      String[] titulos = { "Fecha", "SerialId", "Serial", "Origen", "Destino", "Descripción", "Usuario" };
-      Row r0 = sh.createRow(0);
-      for (int i = 0; i < titulos.length; i++) {
-        r0.createCell(i).setCellValue(titulos[i]);
-        r0.getCell(i).setCellStyle(cab);
-      }
-      int n = 1;
-      for (Object[] m : movs) {
-        Row r = sh.createRow(n++);
-        r.createCell(0).setCellValue(texto(m[0]));
-        r.createCell(1).setCellValue(num(m[1]));
-        for (int i = 2; i < 7; i++) {
-          r.createCell(i).setCellValue(texto(m[i]));
+      CellStyle propio = wb.createCellStyle();
+      ((org.apache.poi.xssf.usermodel.XSSFCellStyle) propio).setFillForegroundColor(
+          new org.apache.poi.xssf.usermodel.XSSFColor(new byte[] { (byte) 0xFF, (byte) 0xF4, (byte) 0xE8 }, null));
+      propio.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+      String[] titulos = { "Fecha", "SerialId", "Vuelta", "Serial", "Origen", "Destino", "Descripción", "Usuario" };
+      int[] anchos = { 20, 10, 14, 22, 22, 22, 70, 18 };
+      for (Map.Entry<String, List<Object[]>> hoja : hojas.entrySet()) {
+        // Excel no admite [ ] : * ? / \ en el nombre de la hoja
+        String nombre = hoja.getKey().replaceAll("[\\[\\]:*?/\\\\]", "");
+        Sheet sh = wb.createSheet(nombre.length() > 31 ? nombre.substring(0, 31) : nombre);
+        Row r0 = sh.createRow(0);
+        for (int i = 0; i < titulos.length; i++) {
+          r0.createCell(i).setCellValue(titulos[i]);
+          r0.getCell(i).setCellStyle(cab);
         }
-      }
-      sh.createFreezePane(0, 1);
-      sh.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, Math.max(0, n - 1), 0, titulos.length - 1));
-      int[] anchos = { 20, 10, 22, 22, 22, 70, 18 };
-      for (int i = 0; i < anchos.length; i++) {
-        sh.setColumnWidth(i, anchos[i] * 256);
+        int n = 1;
+        for (Object[] m : hoja.getValue()) {
+          Row r = sh.createRow(n++);
+          boolean esteEquipo = num(m[1]) == serialId;
+          r.createCell(0).setCellValue(texto(m[0]));
+          r.createCell(1).setCellValue(num(m[1]));
+          r.createCell(2).setCellValue(esteEquipo ? "Este equipo" : "Otra vuelta");
+          for (int i = 2; i < 7; i++) {
+            r.createCell(i + 1).setCellValue(texto(m[i]));
+          }
+          if (esteEquipo) {
+            for (int i = 0; i < titulos.length; i++) {
+              r.getCell(i).setCellStyle(propio);
+            }
+          }
+        }
+        if (n == 1) {
+          sh.createRow(1).createCell(0).setCellValue("Sin movimientos");
+        }
+        sh.createFreezePane(0, 1);
+        sh.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(0, Math.max(0, n - 1), 0, titulos.length - 1));
+        for (int i = 0; i < anchos.length; i++) {
+          sh.setColumnWidth(i, anchos[i] * 256);
+        }
       }
       wb.write(out);
       return out.toByteArray();
