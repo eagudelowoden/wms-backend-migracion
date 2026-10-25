@@ -9,7 +9,7 @@
        el número de página. Texto pizarra, acento naranja Woden y líneas finas. */
     @page {
       size: A4;
-      margin: 52mm 13mm 18mm 13mm;
+      margin: 60mm 13mm 18mm 13mm;
       @top-center { content: element(encabezado); }
       @bottom-center { content: element(pie); }
     }
@@ -39,7 +39,9 @@
     .ctrl table td.val { font-weight: bold; text-align: right; }
 
     .titulo {
-      margin-top: 8px;
+      margin-top: 16px;
+      padding-top: 10px;
+      border-top: 0.6px solid #dfe3e8;
       text-align: center;
       font-size: 13px;
       font-weight: bold;
@@ -84,16 +86,22 @@
     .items td.sap, .items td.qty { font-weight: bold; }
     .items td.obs { color: #3d4652; white-space: normal; }
 
-    .totales { margin-top: 6px; }
-    .totales td { padding: 5px 8px; font-size: 9.5px; }
-    .totales .relleno { width: 40%; }
-    .totales .etq { text-align: right; color: #5b6573; font-weight: bold; text-transform: uppercase; font-size: 8.5px;
-      border-top: 1.5px solid #1b232d; white-space: nowrap; }
-    .totales .val { text-align: right; font-weight: bold; font-size: 12px; width: 14%; border-top: 1.5px solid #1b232d; }
+    /* ── Resumen: pallets y total de unidades en tarjetas ── */
+    .resumen { margin-top: 10px; page-break-inside: avoid; }
+    .resumen td { vertical-align: top; }
+    .resumen .relleno { width: 50%; }
+    .resumen .hueco { width: 2%; }
+    .resumen .kpi { width: 24%; border: 0.6px solid #c4cad3; background: #f5f6f8; padding: 6px 10px; }
+    .resumen .kpi.total { background: #1b232d; border-color: #1b232d; border-left: 4px solid #E47D06; }
+    .resumen .kpi .etq { font-size: 7.5px; font-weight: bold; letter-spacing: 0.6px; text-transform: uppercase; color: #5b6573; }
+    .resumen .kpi .val { font-size: 17px; font-weight: bold; text-align: right; color: #1b232d; margin-top: 2px; }
+    .resumen .kpi.total .etq { color: #c7ccd3; }
+    .resumen .kpi.total .val { color: #ffffff; }
 
-    .obs-gen { margin-top: 10px; page-break-inside: avoid; }
-    .obs-gen .etq { font-weight: bold; text-transform: uppercase; font-size: 8.5px; color: #5b6573; margin-bottom: 3px; }
-    .obs-gen .caja { border: 0.6px solid #c4cad3; border-left: 3px solid #E47D06; min-height: 24px; padding: 6px 8px;
+    .obs-gen { margin-top: 14px; page-break-inside: avoid; }
+    .obs-gen .etq { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: #5b6573;
+      margin-bottom: 3px; }
+    .obs-gen .caja { border: 0.6px solid #c4cad3; border-left: 3px solid #E47D06; min-height: 46px; padding: 6px 8px;
       white-space: pre-wrap; }
 
     /* ── Firmas ── */
@@ -127,7 +135,8 @@
           <div class="nombre">{{ empresa_nombre }}</div>
           {% if empresa_ruc %}<div>RUC {{ empresa_ruc }}</div>{% endif %}
           {% if empresa_telefono %}<div>Tel. {{ empresa_telefono }}</div>{% endif %}
-          {% if empresa_email or empresa_web %}<div>{{ empresa_email }}{% if empresa_email and empresa_web %} · {% endif %}{{ empresa_web }}</div>{% endif %}
+          {% if empresa_email %}<div>{{ empresa_email }}</div>{% endif %}
+          {% if empresa_web %}<div>{{ empresa_web }}</div>{% endif %}
         </td>
         <td class="ctrl">
           <table>
@@ -195,22 +204,26 @@
     </tbody>
   </table>
 
-  <table class="totales">
+  <table class="resumen">
     <tr>
       <td class="relleno"></td>
-      <td class="etq">Pallets</td>
-      <td class="val">{{ total_pallets }}</td>
-      <td class="etq">Total unidades</td>
-      <td class="val">{{ total_unidades }}</td>
+      <td class="kpi">
+        <div class="etq">Pallets</div>
+        <div class="val">{{ total_pallets | numberformat("#,##0") }}</div>
+      </td>
+      <td class="hueco"></td>
+      <td class="kpi total">
+        <div class="etq">Total unidades</div>
+        <div class="val">{{ total_unidades | numberformat("#,##0") }}</div>
+      </td>
     </tr>
   </table>
 
-  {% if observaciones_generales %}
+  <!-- siempre visible: si no se escribio nada queda el espacio para anotar a mano -->
   <div class="obs-gen">
     <div class="etq">Observaciones</div>
     <div class="caja">{{ observaciones_generales }}</div>
   </div>
-  {% endif %}
 
   <table class="firmas">
     <tr>
