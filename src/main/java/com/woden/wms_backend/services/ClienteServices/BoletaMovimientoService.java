@@ -1,6 +1,7 @@
 package com.woden.wms_backend.services.ClienteServices;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.Base64;
@@ -27,9 +28,9 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
  * (/reports/boleta-movimiento.html, sintaxis Jinja2/Twig) y OpenHTMLtoPDF
  * convierte el HTML final a PDF. No toca ni depende de JasperReportService.
  *
- * Por ahora solo se completan los datos del pallet — datos de empresa y los
- * campos de metadata (nota de remisión, áreas, observaciones) quedan en blanco,
- * pendiente de definir su origen.
+ * Formato LS-ADM-FO-16 (el Excel de bodegas Woden): el encabezado con los datos
+ * de la boleta y los titulos de la tabla se repiten en cada hoja, y la pagina
+ * sale como "X de Y" desde el propio PDF.
  */
 @Service
 public class BoletaMovimientoService {
@@ -40,6 +41,12 @@ public class BoletaMovimientoService {
 
   // Cacheado en memoria: se lee y codifica una sola vez, no en cada boleta.
   private String logoWodenBase64;
+
+  // Firma en cursiva: Brush Script MT si el servidor la tiene (la misma de las hojas de vida); si no, Great
+  // Vibes (licencia OFL) empaquetada en el backend. OpenHTMLtoPDF no usa las fuentes del sistema por si solo.
+  private static final String[] FIRMA_SISTEMA = {
+      "C:/Windows/Fonts/BRUSHSCI.TTF", "C:/Windows/Fonts/brushsci.ttf" };
+  private static final String FIRMA_RECURSO = "/reports/fonts/GreatVibes-Regular.ttf";
 
   public byte[] generarBoleta(BoletaMovimientoDTO request) throws Exception {
     PebbleTemplate template = pebbleEngine.getTemplate("reports/boleta-movimiento.html");
@@ -53,7 +60,6 @@ public class BoletaMovimientoService {
     contexto.put("usuario_nombre", request.getUsuarioNombre());
     contexto.put("equipos", mapearEquipos(request.getEquipos()));
     contexto.put("total_unidades", totalUnidades(request.getEquipos()));
-    contexto.put("doc_pagina", "1");
 
     // El logo del cliente (ClienteModel.bandera) es una ruta relativa que solo
     // existe en el servidor del frontend Angular — OpenHTMLtoPDF corre en el
@@ -83,10 +89,26 @@ public class BoletaMovimientoService {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       PdfRendererBuilder builder = new PdfRendererBuilder();
       builder.useFastMode();
+      registrarFuenteFirma(builder);
       builder.withW3cDocument(w3cDoc, "");
       builder.toStream(baos);
       builder.run();
       return baos.toByteArray();
+    }
+  }
+
+  private void registrarFuenteFirma(PdfRendererBuilder builder) {
+    for (String ruta : FIRMA_SISTEMA) {
+      File archivo = new File(ruta);
+      if (archivo.isFile()) {
+        builder.useFont(archivo, "Firma");
+        return;
+      }
+    }
+    if (getClass().getResource(FIRMA_RECURSO) != null) {
+      builder.useFont(() -> getClass().getResourceAsStream(FIRMA_RECURSO), "Firma");
+    } else {
+      logger.warn("[BoletaMovimiento] Sin fuente de firma: {} no esta en el classpath", FIRMA_RECURSO);
     }
   }
 
