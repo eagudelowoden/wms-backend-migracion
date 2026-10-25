@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.controllers.BaseController;
 import com.woden.wms_backend.models.Entity.AccesorioModel;
 import com.woden.wms_backend.models.Entity.DespachoModel;
+import com.woden.wms_backend.services.ClienteServices.BoletaReservaService;
 import com.woden.wms_backend.services.ClienteServices.DespachoService;
 
 @RestController
@@ -27,6 +28,9 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
 
   @Autowired
   private DespachoService despachoService;
+  // pallets en una boleta RESERVADA no se despachan sueltos
+  @Autowired
+  private BoletaReservaService boletaReservaService;
 
   @PostMapping("/insertDispatch")
   public ResponseEntity<Integer> insertDispatch(@RequestBody List<DespachoModel> despachos,
@@ -34,6 +38,14 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
       @RequestParam Integer usuarioId,
       @RequestParam String pedidoSap) {
     int resultadoGlobal = 1;
+
+    java.util.Set<Integer> pallets = new java.util.HashSet<>();
+    for (DespachoModel despacho : despachos) {
+      pallets.add(despacho.getPalletId());
+      pallets.add(despacho.getPalletIdIngreso());
+    }
+    pallets.remove(0);
+    boletaReservaService.validarPalletsLibres(pallets);
 
     try {
       for (DespachoModel despacho : despachos) {
@@ -106,6 +118,9 @@ public class DespachoController extends BaseController<DespachoModel, Integer> {
           @RequestParam String pedidoSap) {
 
     int resultadoGlobal = 1;
+
+    boletaReservaService.validarPalletsLibres(
+        accesorios.stream().map(AccesorioModel::getPalletId).collect(java.util.stream.Collectors.toSet()));
 
     try {
       Integer result = despachoService.insertDispatchAccesory(

@@ -19,6 +19,9 @@ public class BoletaMovimientoDTO {
   private String web;
   private String logoUrl;
   private List<ItemDTO> equipos;
+  // al reservar: quien la guarda y su zona horaria (año del consecutivo)
+  private Integer usuarioId;
+  private String zonaHoraria;
 
   @Data
   public static class ItemDTO {
