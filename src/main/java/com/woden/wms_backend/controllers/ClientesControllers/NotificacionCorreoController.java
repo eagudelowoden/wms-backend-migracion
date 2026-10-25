@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,6 +56,23 @@ public class NotificacionCorreoController {
   public ResponseEntity<Map<String, Object>> probar(@PathVariable Integer id,
       @RequestParam(defaultValue = "") String usuario) {
     return ResponseEntity.ok(notificacionCorreoService.probar(id, usuario));
+  }
+
+  /** Sonidos de los avisos de Ingreso del cliente (y si el interruptor esta encendido). */
+  @GetMapping("/sonidos")
+  public ResponseEntity<Map<String, Object>> sonidos() {
+    return ResponseEntity.ok(notificacionCorreoService.sonidos());
+  }
+
+  @PutMapping("/sonidos")
+  public ResponseEntity<Map<String, Object>> guardarSonidos(@RequestBody Map<String, Object> config,
+      @RequestParam(defaultValue = "") String usuario) {
+    return ResponseEntity.ok(notificacionCorreoService.guardarSonidos(config, usuario));
+  }
+
+  @PutMapping("/sonidos/activo")
+  public ResponseEntity<Map<String, Object>> activarSonidos(@RequestParam boolean activo) {
+    return ResponseEntity.ok(notificacionCorreoService.activarSonidos(activo));
   }
 
   @GetMapping("/envios")

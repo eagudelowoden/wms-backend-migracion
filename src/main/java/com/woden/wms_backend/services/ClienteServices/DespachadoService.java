@@ -252,16 +252,11 @@ public class DespachadoService {
             + "FROM Despacho d LEFT JOIN Pallet p ON p.Id = d.PalletId WHERE d.Id = ?5",
             cliente(), db, serial, serialId, despachoId, obs, usuario, corto(usuarioNombre, 150));
 
-        // vuelve a Ingreso con su mismo Id (Empaque, Reparacion y Diagnostico siguen enlazados)
-        actualizar("SET IDENTITY_INSERT Ingreso ON");
-        try {
-          int n = actualizar(insertIngreso, estado, tip, TIPOLOGIA, obs, usuario, despachoId);
-          if (n != 1) {
-            throw new BusinessRuleException(serial + ": no se pudo regresar a Ingreso. No se regresó ninguna serie.");
-          }
-        } finally {
-          actualizar("SET IDENTITY_INSERT Ingreso OFF");
-        }
+        // vuelve a Ingreso con su mismo Id (Empaque, Reparacion y Diagnostico siguen enlazados).
+        // SET IDENTITY_INSERT solo dura en el mismo lote: el driver ejecuta cada sentencia con parametros en su propio
+        // sp_prepexec, asi que va junto con el INSERT (la verificacion de abajo confirma que quedo en Ingreso)
+        actualizar("SET IDENTITY_INSERT Ingreso ON; " + insertIngreso + "; SET IDENTITY_INSERT Ingreso OFF;",
+            estado, tip, TIPOLOGIA, obs, usuario, despachoId);
         actualizar("DELETE FROM Empaque WHERE SerialId = ?1", serialId);
         // solo esta vuelta (con su despacho duplicado si lo hay); las anteriores tienen otro SerialId
         actualizar("DELETE FROM Despacho WHERE SerialId = ?1 AND Serial = ?2", serialId, serial);
@@ -427,12 +422,9 @@ public class DespachadoService {
             texto(g.get("estadoLimpieza")), n, "[" + lista + "]", obs, numero, usuario, corto(usuarioNombre, 150));
 
         // vuelven con su mismo Id (el historial de MovimientoAccesorio sigue enlazado) al pallet de novedad
-        actualizar("SET IDENTITY_INSERT Accesorio ON");
-        try {
-          actualizar(insertAccesorio.replace("{IDS}", lista), palletId, estado, obs, usuario, TIPOLOGIA, sal);
-        } finally {
-          actualizar("SET IDENTITY_INSERT Accesorio OFF");
-        }
+        // IDENTITY_INSERT en el mismo lote que el INSERT (ver equipos)
+        actualizar("SET IDENTITY_INSERT Accesorio ON; " + insertAccesorio.replace("{IDS}", lista)
+            + "; SET IDENTITY_INSERT Accesorio OFF;", palletId, estado, obs, usuario, TIPOLOGIA, sal);
         // todas las copias de esas unidades en la salida (despacho doble o triple)
         actualizar("DELETE FROM DespachoAccesorio WHERE PedidoSap = ?1 AND AccesoryId IN (" + lista + ")", sal);
 

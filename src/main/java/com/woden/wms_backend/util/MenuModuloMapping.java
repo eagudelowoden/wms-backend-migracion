@@ -45,6 +45,7 @@ public class MenuModuloMapping {
         MODULO_TO_MENU.put(25, "ADPER");
         MODULO_TO_MENU.put(26, "ADUS");
         MODULO_TO_MENU.put(43, "ADDEV");
+        MODULO_TO_MENU.put(44, "ADNOT"); // Notificaciones (correo y sonidos)
 
         ALL_MENU_IDS.addAll(MODULO_TO_MENU.values());
         ALL_MENU_IDS.add("ADMXP");

@@ -12,7 +12,8 @@
        a los demás perfiles se les da desde Administración > Perfiles.
      - Work flow de Despachado: origen DESPACHADO -> NOVEDAD (equipos) y NOVEDAD-ACCESORIOS (accesorios).
        Se cambia cuando se quiera desde Administración > Work flow.
-     - Menú: Administración > Notificaciones (ADNOT).
+     - Menú: Administración > Notificaciones (ADNOT) y el módulo 44 a los perfiles ADMINISTRADOR del cliente.
+     - Tipo de novedad de accesorios NO CONFORMIDAD (si la base tiene la novedad de accesorios).
      - Columna CAJAS de Despacho > Proceso: si el pallet no tiene cajas de despacho cuenta las de empaque.
      - AuditoriaNivelEmpaque si la base tiene el trigger pero no la tabla.
      - Interruptor BOLETA_CONSECUTIVO del cliente (boletas guardadas + consecutivo) si @ActivarConsecutivo = 1.
@@ -98,6 +99,30 @@ BEGIN
   INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.Menu (Id, Descripcion, Tipo, Orden, Accion, Estado, Icono, Id_padre, View_name, Controller_name)
   VALUES (''ADNOT'', ''Notificaciones'', ''item'', 20, ''ADMNOT'', ''activo'', '''', ''ADM'', '''', '''');
   PRINT ''Menú Notificaciones agregado'';
+END';
+EXEC sys.sp_executesql @sql;
+
+-- módulo Notificaciones (44) a los perfiles ADMINISTRADOR del cliente (el resto se asigna en Perfiles)
+IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Modulo WHERE Id = 44 AND Nombre = 'Notificaciones')
+BEGIN
+  INSERT INTO WmsWdGeneral.dbo.PerfilModulo (PerfilId, ModuloId, Orden)
+  SELECT pf.Id, 44, 0
+    FROM WmsWdGeneral.dbo.Perfil pf
+   WHERE pf.ClienteId = @clienteId AND pf.Nombre LIKE '%ADMINISTRADOR%'
+     AND NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.PerfilModulo x WHERE x.PerfilId = pf.Id AND x.ModuloId = 44);
+  PRINT CONCAT('Módulo Notificaciones asignado a perfiles ADMINISTRADOR: ', @@ROWCOUNT);
+END
+ELSE
+  PRINT 'AVISO: falta el módulo 44 Notificaciones (correr 2026-10-25_notificaciones_correo.sql)';
+
+/* ── 3b. Tipo de novedad de accesorios NO CONFORMIDAD (Despachado de accesorios) ──── */
+SET @sql = N'
+DECLARE @tm INT = (SELECT TOP 1 Id FROM ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro WHERE Nombre = ''Tipo Novedad Accesorios'');
+IF @tm IS NOT NULL AND NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Maestro WHERE TipoMaestroId = @tm AND Codigo = ''NO CONFORMIDAD'')
+BEGIN
+  INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.Maestro (Codigo, Descripcion, TipoMaestroId, Activo, Detalle, adicional)
+  VALUES (''NO CONFORMIDAD'', ''NO CONFORMIDAD'', @tm, 1, '''', 0);
+  PRINT ''Tipo de novedad de accesorios NO CONFORMIDAD agregado'';
 END';
 EXEC sys.sp_executesql @sql;
 

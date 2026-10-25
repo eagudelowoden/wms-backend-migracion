@@ -9,7 +9,7 @@
        el número de página. Texto pizarra, acento naranja Woden y líneas finas. */
     @page {
       size: A4;
-      margin: 60mm 13mm 18mm 13mm;
+      margin: 65mm 13mm 18mm 13mm;
       @top-center { content: element(encabezado); }
       @bottom-center { content: element(pie); }
     }
@@ -39,8 +39,8 @@
     .ctrl table td.val { font-weight: bold; text-align: right; }
 
     .titulo {
-      margin-top: 16px;
-      padding-top: 10px;
+      margin-top: 24px;
+      padding-top: 16px;
       border-top: 0.6px solid #dfe3e8;
       text-align: center;
       font-size: 13px;
@@ -86,17 +86,13 @@
     .items td.sap, .items td.qty { font-weight: bold; }
     .items td.obs { color: #3d4652; white-space: normal; }
 
-    /* ── Resumen: pallets y total de unidades en tarjetas ── */
-    .resumen { margin-top: 10px; page-break-inside: avoid; }
-    .resumen td { vertical-align: top; }
-    .resumen .relleno { width: 50%; }
-    .resumen .hueco { width: 2%; }
-    .resumen .kpi { width: 24%; border: 0.6px solid #c4cad3; background: #f5f6f8; padding: 6px 10px; }
-    .resumen .kpi.total { background: #1b232d; border-color: #1b232d; border-left: 4px solid #E47D06; }
-    .resumen .kpi .etq { font-size: 7.5px; font-weight: bold; letter-spacing: 0.6px; text-transform: uppercase; color: #5b6573; }
-    .resumen .kpi .val { font-size: 17px; font-weight: bold; text-align: right; color: #1b232d; margin-top: 2px; }
-    .resumen .kpi.total .etq { color: #c7ccd3; }
-    .resumen .kpi.total .val { color: #ffffff; }
+    /* ── Total de unidades: misma grilla que el detalle, el valor queda bajo Cantidad ── */
+    .totales { page-break-inside: avoid; }
+    .totales td { border-top: 1.5px solid #1b232d; padding: 6px 6px; }
+    .totales .etq { width: 70%; text-align: right; color: #5b6573; font-weight: bold; text-transform: uppercase;
+      font-size: 8.5px; letter-spacing: 0.6px; }
+    .totales .val { width: 10%; text-align: right; font-weight: bold; font-size: 12px; color: #1b232d; }
+    .totales .resto { width: 20%; }
 
     .obs-gen { margin-top: 14px; page-break-inside: avoid; }
     .obs-gen .etq { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: #5b6573;
@@ -204,18 +200,11 @@
     </tbody>
   </table>
 
-  <table class="resumen">
+  <table class="totales">
     <tr>
-      <td class="relleno"></td>
-      <td class="kpi">
-        <div class="etq">Pallets</div>
-        <div class="val">{{ total_pallets | numberformat("#,##0") }}</div>
-      </td>
-      <td class="hueco"></td>
-      <td class="kpi total">
-        <div class="etq">Total unidades</div>
-        <div class="val">{{ total_unidades | numberformat("#,##0") }}</div>
-      </td>
+      <td class="etq">Total unidades</td>
+      <td class="val">{{ total_unidades | numberformat("#,##0") }}</td>
+      <td class="resto"></td>
     </tr>
   </table>
 

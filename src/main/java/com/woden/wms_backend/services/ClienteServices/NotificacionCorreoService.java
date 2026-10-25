@@ -220,6 +220,91 @@ public class NotificacionCorreoService {
     return Map.of("ok", true, "destinatarios", String.join("; ", para));
   }
 
+  // ── sonidos de Ingreso por cliente ────────────────────────────────────────
+
+  public static final String SONIDO_ALERTAS = "SONIDO_ALERTAS_INGRESO";
+
+  /** Configuracion de sonidos del cliente (por defecto si no hay fila) y si el interruptor esta encendido. */
+  public Map<String, Object> sonidos() {
+    Map<String, Object> m = new LinkedHashMap<>();
+    m.put("activo", interruptorSonido());
+    m.put("error", "pi-po");
+    m.put("duplicado", "pip-pip");
+    m.put("fallo", "pum-pom");
+    m.put("ok", "tin");
+    m.put("repetir", true);
+    if (tablaSonidos()) {
+      List<Object[]> r = filas("SELECT SonidoError, SonidoDuplicado, SonidoFallo, SonidoOk, Repetir FROM " + G
+          + "NotificacionSonido WHERE ClienteId = ?1", cliente());
+      if (!r.isEmpty()) {
+        m.put("error", texto(r.get(0)[0]));
+        m.put("duplicado", texto(r.get(0)[1]));
+        m.put("fallo", texto(r.get(0)[2]));
+        m.put("ok", texto(r.get(0)[3]));
+        m.put("repetir", bool(r.get(0)[4]));
+      }
+    }
+    return m;
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public Map<String, Object> guardarSonidos(Map<String, Object> d, String usuario) {
+    if (!tablaSonidos()) {
+      throw new BusinessRuleException("Falta instalar la configuración de sonidos (script 2026-10-25_notificaciones_correo.sql).");
+    }
+    Map<String, Object> actual = sonidos();
+    String error = sonido(d.get("error"), actual.get("error"));
+    String duplicado = sonido(d.get("duplicado"), actual.get("duplicado"));
+    String fallo = sonido(d.get("fallo"), actual.get("fallo"));
+    String ok = sonido(d.get("ok"), actual.get("ok"));
+    boolean repetir = d.containsKey("repetir") ? Boolean.TRUE.equals(d.get("repetir")) : Boolean.TRUE.equals(actual.get("repetir"));
+    actualizar("MERGE " + G + "NotificacionSonido AS t USING (SELECT ?1 AS ClienteId) AS s ON t.ClienteId = s.ClienteId "
+        + "WHEN MATCHED THEN UPDATE SET SonidoError = ?2, SonidoDuplicado = ?3, SonidoFallo = ?4, SonidoOk = ?5, "
+        + "Repetir = ?6, Usuario = ?7, Fecha = GETDATE() "
+        + "WHEN NOT MATCHED THEN INSERT (ClienteId, SonidoError, SonidoDuplicado, SonidoFallo, SonidoOk, Repetir, Usuario, Fecha) "
+        + "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, GETDATE());",
+        cliente(), error, duplicado, fallo, ok, repetir, corto(usuario, 150));
+    return sonidos();
+  }
+
+  /** Enciende o apaga el interruptor SONIDO_ALERTAS_INGRESO del cliente. */
+  @Transactional(rollbackFor = Exception.class)
+  public Map<String, Object> activarSonidos(boolean activo) {
+    Integer tipo = entero("SELECT Id FROM " + G + "ClienteValidacionTipo WHERE Codigo = ?1", SONIDO_ALERTAS);
+    if (tipo == null) {
+      throw new BusinessRuleException("Falta el interruptor " + SONIDO_ALERTAS + " (script 2026-10-25_instalar_por_base.sql).");
+    }
+    int n = actualizar("UPDATE " + G + "ClienteValidacion SET Activo = ?3 WHERE ClienteId = ?1 AND ValidacionTipoId = ?2",
+        cliente(), tipo, activo);
+    if (n == 0) {
+      actualizar("INSERT INTO " + G + "ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (?1, ?2, ?3, GETDATE())",
+          cliente(), tipo, activo);
+    }
+    return sonidos();
+  }
+
+  private boolean interruptorSonido() {
+    Integer n = entero("SELECT COUNT(*) FROM " + G + "ClienteValidacion cv JOIN " + G + "ClienteValidacionTipo t "
+        + "ON t.Id = cv.ValidacionTipoId WHERE cv.ClienteId = ?1 AND t.Codigo = ?2 AND cv.Activo = 1", cliente(), SONIDO_ALERTAS);
+    return n != null && n > 0;
+  }
+
+  private boolean tablaSonidos() {
+    Integer n = entero("SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.NotificacionSonido', 'U') IS NULL THEN 0 ELSE 1 END");
+    return n != null && n == 1;
+  }
+
+  private static String sonido(Object nuevo, Object actual) {
+    String v = texto(nuevo);
+    if (v.isEmpty()) {
+      return texto(actual);
+    }
+    if (!v.matches("[a-z0-9-]{1,30}")) {
+      throw new BusinessRuleException("Sonido no válido: " + v);
+    }
+    return v;
+  }
+
   // ── evento: novedad ERROR SERIAL-MAC ──────────────────────────────────────
 
   /** Foto del equipo ANTES de cambiarle el serial (null si no se pudo tomar: la novedad sigue igual). */
@@ -551,6 +636,11 @@ public class NotificacionCorreoService {
       out.add(f instanceof Object[] arr ? arr : new Object[] { f });
     }
     return out;
+  }
+
+  private Integer entero(String sql, Object... params) {
+    List<?> rs = consulta(sql, params).getResultList();
+    return rs.isEmpty() || rs.get(0) == null ? null : num(rs.get(0));
   }
 
   private static String causa(Throwable e) {
