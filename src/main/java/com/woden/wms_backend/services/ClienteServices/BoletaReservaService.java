@@ -68,6 +68,49 @@ public class BoletaReservaService {
     return out;
   }
 
+  /** Último documento del año (Administración > Documentos > Boleta de entrega): AAAA-NNN y el siguiente. */
+  public Map<String, Object> consecutivo(String zonaHoraria) {
+    exigirTablas();
+    int anio = anio(zonaHoraria);
+    Integer ultimo = entero("SELECT Ultimo FROM " + G + "BoletaConsecutivo WHERE ClienteId = ?1 AND Anio = ?2",
+        cliente(), anio);
+    Integer usado = entero("SELECT MAX(Consecutivo) FROM " + G + "BoletaMovimiento WHERE ClienteId = ?1 AND Anio = ?2",
+        cliente(), anio);
+    int u = ultimo == null ? 0 : ultimo;
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("activo", usaConsecutivo());
+    out.put("anio", anio);
+    out.put("ultimo", u);
+    out.put("ultimoDocumento", u == 0 ? "" : formato(anio, u));
+    out.put("siguiente", formato(anio, u + 1));
+    out.put("minimo", usado == null ? 0 : usado);
+    return out;
+  }
+
+  /**
+   * Fija el último consecutivo del año (cuando la numeración ya venía de antes): el siguiente documento será
+   * ultimo + 1. No puede quedar por debajo de una boleta ya guardada (se repetiría el documento).
+   */
+  @Transactional(rollbackFor = Exception.class)
+  public Map<String, Object> fijarConsecutivo(int ultimo, String zonaHoraria) {
+    exigirTablas();
+    if (ultimo < 0 || ultimo > 999999) {
+      throw new BusinessRuleException("El consecutivo debe estar entre 0 y 999999.");
+    }
+    int anio = anio(zonaHoraria);
+    Integer usado = entero("SELECT MAX(Consecutivo) FROM " + G + "BoletaMovimiento WHERE ClienteId = ?1 AND Anio = ?2",
+        cliente(), anio);
+    if (usado != null && ultimo < usado) {
+      throw new BusinessRuleException("Ya existe la boleta " + formato(anio, usado) + ": el último consecutivo no puede "
+          + "ser menor.");
+    }
+    actualizar("MERGE " + G + "BoletaConsecutivo WITH (HOLDLOCK) AS t "
+        + "USING (SELECT ?1 AS ClienteId, ?2 AS Anio) AS s ON t.ClienteId = s.ClienteId AND t.Anio = s.Anio "
+        + "WHEN MATCHED THEN UPDATE SET Ultimo = ?3 "
+        + "WHEN NOT MATCHED THEN INSERT (ClienteId, Anio, Ultimo) VALUES (s.ClienteId, s.Anio, ?3);", cliente(), anio, ultimo);
+    return consecutivo(zonaHoraria);
+  }
+
   private int tomarConsecutivo(int cliente, int anio) {
     Object r = consulta("MERGE " + G + "BoletaConsecutivo WITH (HOLDLOCK) AS t "
         + "USING (SELECT ?1 AS ClienteId, ?2 AS Anio) AS s ON t.ClienteId = s.ClienteId AND t.Anio = s.Anio "

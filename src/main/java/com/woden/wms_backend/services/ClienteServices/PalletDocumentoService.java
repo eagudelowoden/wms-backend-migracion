@@ -1,0 +1,200 @@
+package com.woden.wms_backend.services.ClienteServices;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
+import org.jsoup.nodes.Document;
+import org.krysalis.barcode4j.impl.code128.Code128Bean;
+import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.woden.wms_backend.dto.clientDTO.PalletReportDTO;
+import com.woden.wms_backend.util.PlantillaTexto;
+
+import io.pebbletemplates.pebble.PebbleEngine;
+
+/**
+ * Boleta del pallet que viaja entre módulos con la plantilla del cliente (Administración > Documentos > Boleta de
+ * pallet). Solo se usa si el cliente activó el editor (usarEditor); si no, JasperReportService genera el Pallet.jasper
+ * de siempre. Mismo diseño de fábrica: hoja carta, logo | título | icono y una fila por dato con el código de barras.
+ */
+@Service
+public class PalletDocumentoService {
+
+  private static final Logger logger = LoggerFactory.getLogger(PalletDocumentoService.class);
+  /** alto útil para las filas (Jasper: de y=90 a y=740) */
+  private static final double ALTO_FILAS = 650;
+  /** ancho útil de la hoja en pt (612 - 2 x 5) */
+  private static final double ANCHO = 602;
+
+  private final PebbleEngine pebble = new PebbleEngine.Builder().build();
+  private String logoBase64;
+  private String iconoBase64;
+
+  @Autowired(required = false)
+  private DocumentoPlantillaService plantillas;
+
+  /** El cliente imprime la boleta de pallet con su plantilla (si falla la lectura, sigue el Jasper). */
+  public boolean usaEditor() {
+    try {
+      return plantillas != null
+          && Boolean.TRUE.equals(plantillas.config(DocumentoPlantillaService.PALLET).get("usarEditor"));
+    } catch (Exception e) {
+      logger.warn("[Pallet] no se pudo leer la plantilla, se usa el Jasper: {}", e.getMessage());
+      return false;
+    }
+  }
+
+  public byte[] generar(PalletReportDTO dto) throws Exception {
+    return generar(dto, plantillas.config(DocumentoPlantillaService.PALLET));
+  }
+
+  public byte[] generar(PalletReportDTO dto, Map<String, Object> cfg) throws Exception {
+    Map<String, String> vars = new HashMap<>();
+    vars.put("cliente", nulo(dto.getCliente()));
+    vars.put("pallet", nulo(dto.getPallet()));
+    vars.put("posicion", nulo(dto.getPosicion()));
+    vars.put("fecha", nulo(dto.getFecha()));
+    vars.put("origen", nulo(dto.getOrigen()));
+    vars.put("destino", nulo(dto.getDestino()));
+    vars.put("tipologia", nulo(dto.getTipologia()));
+    vars.put("codigo_sap", nulo(dto.getCodigoSap()));
+    vars.put("modelo", nulo(dto.getModelo()));
+    vars.put("usuario", nulo(dto.getUsuario()));
+    vars.put("cantidad", dto.getCantidad() == null ? "" : String.valueOf(dto.getCantidad()));
+
+    Map<String, Object> ctx = new HashMap<>();
+    ctx.put("pallet", PlantillaTexto.escapar(nulo(dto.getPallet())));
+    Map<String, Object> col = mapa(cfg.get("colores"));
+    Map<String, String> c = new HashMap<>();
+    c.put("logoFondo", PlantillaTexto.color(col.get("logoFondo"), "#354A5F"));
+    c.put("bordes", PlantillaTexto.color(col.get("bordes"), "#000000"));
+    c.put("titulo", PlantillaTexto.color(col.get("titulo"), "#000000"));
+    c.put("etiquetas", PlantillaTexto.color(col.get("etiquetas"), "#000000"));
+    c.put("fondoEtiquetas", PlantillaTexto.color(col.get("fondoEtiquetas"), "#ffffff"));
+    c.put("texto", PlantillaTexto.color(col.get("texto"), "#000000"));
+    ctx.put("c", c);
+
+    String logo = texto(cfg.get("logo"));
+    String icono = texto(cfg.get("icono"));
+    ctx.put("logo", logo.startsWith("data:image/") ? logo : recurso("/reports/Logo.png", true));
+    ctx.put("icono", icono.startsWith("data:image/") ? icono : recurso("/reports/Icono.png", false));
+    ctx.put("titulo", PlantillaTexto.html(texto(cfg.get("titulo")), vars));
+    ctx.put("tamano_titulo", PlantillaTexto.numero(cfg.get("tamanoTitulo"), 18, 8, 40));
+    double anchoEtq = PlantillaTexto.numero(cfg.get("anchoEtiqueta"), 41.5, 15, 70);
+    ctx.put("ancho_etiqueta", anchoEtq);
+    ctx.put("pie", PlantillaTexto.html(texto(cfg.get("pie")), vars));
+
+    // filas: si suman más alto que la hoja se reducen en proporción (nunca pasa a una segunda hoja)
+    List<?> filasCfg = cfg.get("filas") instanceof List<?> l ? l : List.of();
+    double suma = 0;
+    for (Object o : filasCfg) {
+      suma += PlantillaTexto.numero(mapa(o).get("alto"), 40, 15, 300);
+    }
+    double escala = suma > ALTO_FILAS ? ALTO_FILAS / suma : 1;
+    double anchoEtqPt = ANCHO * anchoEtq / 100 - 6;
+    double anchoValPt = ANCHO - ANCHO * anchoEtq / 100 - 6;
+    List<Map<String, Object>> filas = new ArrayList<>();
+    for (Object o : filasCfg) {
+      Map<String, Object> f = mapa(o);
+      double alto = Math.floor(PlantillaTexto.numero(f.get("alto"), 40, 15, 300) * escala);
+      String etiqueta = PlantillaTexto.texto(texto(f.get("etiqueta")), vars);
+      String valor = PlantillaTexto.texto(texto(f.get("valor")), vars);
+      Map<String, Object> fila = new HashMap<>();
+      fila.put("alto", alto);
+      fila.put("etiqueta", PlantillaTexto.escapar(etiqueta));
+      fila.put("valor", PlantillaTexto.escapar(valor));
+      fila.put("tamanoEtiqueta", ajustar(etiqueta, PlantillaTexto.numero(f.get("tamanoEtiqueta"), 30, 6, 60), anchoEtqPt, alto));
+      fila.put("tamano", ajustar(valor, PlantillaTexto.numero(f.get("tamano"), 30, 6, 60), anchoValPt, alto));
+      if ("barras".equals(texto(f.get("tipo"))) && !valor.isBlank()) {
+        fila.put("barras", barras(valor));
+        // proporción del código del Jasper (281 x 129 en una fila de 140)
+        double altoBarras = Math.max(10, alto - 11);
+        fila.put("altoBarras", altoBarras);
+        fila.put("anchoBarras", Math.min(anchoValPt, altoBarras * 281 / 129));
+      }
+      filas.add(fila);
+    }
+    ctx.put("filas", filas);
+
+    StringWriter w = new StringWriter();
+    pebble.getTemplate("reports/pallet.html").evaluate(w, ctx);
+    Document doc = Jsoup.parse(w.toString());
+    doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      PdfRendererBuilder b = new PdfRendererBuilder();
+      b.useFastMode();
+      b.withW3cDocument(new W3CDom().fromJsoup(doc), "");
+      b.toStream(out);
+      b.run();
+      return out.toByteArray();
+    }
+  }
+
+  /** Tamaño de letra que cabe en el ancho de la celda (en una línea, como el Jasper) y en su alto. */
+  private static double ajustar(String texto, double tamano, double anchoPt, double altoPt) {
+    double t = Math.min(tamano, altoPt * 0.8);
+    int largo = Math.max(1, texto.length());
+    double cabe = anchoPt / (largo * 0.56);
+    return Math.max(6, Math.floor(Math.min(t, cabe) * 10) / 10);
+  }
+
+  private static String barras(String codigo) throws Exception {
+    Code128Bean bean = new Code128Bean();
+    bean.setModuleWidth(0.3);
+    bean.setBarHeight(15);
+    bean.doQuietZone(true);
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      BitmapCanvasProvider canvas = new BitmapCanvasProvider(out, "image/png", 300, BufferedImage.TYPE_BYTE_BINARY,
+          false, 0);
+      bean.generateBarcode(canvas, codigo);
+      canvas.finish();
+      return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
+    }
+  }
+
+  private String recurso(String ruta, boolean esLogo) {
+    String cache = esLogo ? logoBase64 : iconoBase64;
+    if (cache != null) {
+      return cache;
+    }
+    try (InputStream in = getClass().getResourceAsStream(ruta)) {
+      String v = in == null ? "" : "data:image/png;base64," + Base64.getEncoder().encodeToString(in.readAllBytes());
+      if (esLogo) {
+        logoBase64 = v;
+      } else {
+        iconoBase64 = v;
+      }
+      return v;
+    } catch (Exception e) {
+      return "";
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> mapa(Object o) {
+    return o instanceof Map<?, ?> m ? (Map<String, Object>) m : new LinkedHashMap<>();
+  }
+
+  private static String texto(Object o) {
+    return o == null ? "" : String.valueOf(o);
+  }
+
+  private static String nulo(String s) {
+    return s == null ? "" : s;
+  }
+}

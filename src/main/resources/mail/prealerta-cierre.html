@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>{{ asunto | raw }}</title></head>
+<body style="margin:0;padding:0;background:{{ c.fondo }};font-family:Arial,Helvetica,sans-serif">
+<!-- Cierre de prealerta (PrealertaCierreService). Mismo diseño del correo de Prealertas_APP; textos y colores salen de
+     Administración > Documentos > Correo de prealerta. Los textos llegan escapados (| raw). -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:{{ c.fondo }};padding:30px 0">
+<tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:720px;background:#ffffff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
+  <tr><td bgcolor="{{ c.encabezado }}" style="background:{{ c.encabezado }};background:linear-gradient(135deg,{{ c.encabezado }},{{ c.encabezadoFin }});padding:20px 40px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="vertical-align:middle"><span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:1px">{{ titulo | raw }}</span><br>
+      <span style="font-size:12px;color:#ffffff;opacity:0.85">{{ subtitulo | raw }}</span></td>
+      <td style="text-align:right;vertical-align:middle">
+        {% if usar_logo %}<img src="cid:logo" alt="Woden" height="34" style="display:inline-block;border:0;height:34px">
+        {% else %}<span style="font-size:22px;font-weight:800;color:#ffffff">{{ marca | raw }}</span>{% endif %}
+      </td>
+    </tr></table>
+  </td></tr>
+
+  <tr><td style="padding:24px 40px 8px;border-bottom:1px solid #e0e0e0">
+    <h2 style="margin:0;font-size:18px;color:{{ c.acento }};font-weight:700">Prealerta: {{ prealerta | raw }}</h2>
+    {% if intro %}<p style="margin:8px 0 0;font-size:13px;color:#374151;line-height:1.5">{{ intro | raw }}</p>{% endif %}
+  </td></tr>
+
+  <tr><td style="padding:20px 40px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid {{ c.bordeSuave }};border-radius:8px;overflow:hidden">
+      {% for par in info %}
+      <tr>
+        {% for d in par %}
+        <td {% if d.completa %}colspan="2" {% endif %}style="padding:10px 16px;{% if d.suave %}background:{{ c.suave }};{% endif %}border-bottom:1px solid {{ c.bordeSuave }};width:50%">
+          <span style="font-size:10px;text-transform:uppercase;color:#9ca3af;letter-spacing:1px;font-weight:600">{{ d.etiqueta | raw }}</span><br>
+          <span style="font-size:14px;font-weight:700;color:{{ c.texto }}">{{ d.valor | raw }}</span>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+  </td></tr>
+
+  {% if resultado is not empty %}
+  <tr><td style="padding:0 40px 20px">
+    <p style="font-size:13px;font-weight:600;color:#374151;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.5px">Resultado</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden">
+      <tr bgcolor="{{ c.encabezado }}" style="background:{{ c.encabezado }}">
+        {% for k in resultado %}
+        <th style="padding:9px 8px;font-size:10px;color:#ffffff;text-transform:uppercase;letter-spacing:1px;text-align:center;font-weight:600">{{ k.etiqueta }}</th>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for k in resultado %}
+        <td style="padding:12px 8px;text-align:center;font-size:20px;font-weight:800;color:{{ k.color }}">{{ k.valor }}</td>
+        {% endfor %}
+      </tr>
+    </table>
+  </td></tr>
+  {% endif %}
+
+  {% for s in secciones %}
+  <tr><td style="padding:0 40px 20px">
+    <p style="font-size:13px;font-weight:600;color:#374151;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.5px">{{ s.titulo }} <span style="color:{{ c.acento }}">({{ s.total }})</span></p>
+    {% if s.total == 0 %}
+    <p style="margin:0;font-size:13px;color:#6b7280">{{ s.vacio }}</p>
+    {% else %}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden">
+      <tr bgcolor="{{ c.encabezado }}" style="background:{{ c.encabezado }}">
+        <th style="padding:8px 10px;font-size:10px;color:#ffffff;text-transform:uppercase;letter-spacing:1px;text-align:center;font-weight:600">No</th>
+        {% for col in s.columnas %}
+        <th style="padding:8px 10px;font-size:10px;color:#ffffff;text-transform:uppercase;letter-spacing:1px;text-align:left;font-weight:600;white-space:nowrap">{{ col }}</th>
+        {% endfor %}
+      </tr>
+      {% for fila in s.filas %}
+      <tr>
+        <td style="border-bottom:1px solid #e0e0e0;padding:7px 10px;text-align:center;font-size:12px;color:#6b7280">{{ loop.index + 1 }}</td>
+        {% for v in fila %}
+        <td style="border-bottom:1px solid #e0e0e0;padding:7px 10px;font-size:12px;color:{{ c.texto }}{% if loop.first %};font-family:Consolas,monospace;font-weight:600;white-space:nowrap{% endif %}{% if loop.last %};white-space:nowrap{% endif %}">{{ v }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      {% if s.restantes > 0 %}
+      <tr bgcolor="{{ c.suave }}" style="background:{{ c.suave }}">
+        <td colspan="{{ s.colspan }}" style="padding:9px 12px;font-size:12px;color:#374151;text-align:center">… y {{ s.restantes }} más en el Excel adjunto</td>
+      </tr>
+      {% endif %}
+    </table>
+    {% endif %}
+  </td></tr>
+  {% endfor %}
+
+  <tr><td style="padding:20px 40px;border-top:1px solid #e0e0e0;text-align:center;background:#fafafa">
+    {% for linea in pie %}
+    <p style="margin:{% if loop.first %}0 0 4px{% else %}2px 0 0{% endif %};font-size:{% if loop.first %}13px{% else %}12px{% endif %};{% if loop.first %}font-weight:700;color:#333{% else %}color:#888{% endif %}">{{ linea | raw }}</p>
+    {% endfor %}
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>

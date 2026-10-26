@@ -1,0 +1,30 @@
+{
+  "usarEditor": false,
+  "colores": {
+    "logoFondo": "#354A5F",
+    "bordes": "#000000",
+    "titulo": "#000000",
+    "etiquetas": "#000000",
+    "fondoEtiquetas": "#ffffff",
+    "texto": "#000000"
+  },
+  "logo": "",
+  "icono": "",
+  "titulo": "FORMATO ALMACENAMIENTO PALLET",
+  "tamanoTitulo": 18,
+  "anchoEtiqueta": 41.5,
+  "filas": [
+    { "etiqueta": "CLIENTE", "valor": "{cliente}", "alto": 70, "tamano": 34, "tamanoEtiqueta": 38, "tipo": "texto" },
+    { "etiqueta": "Posicion", "valor": "{posicion}", "alto": 40, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Fecha Creacion", "valor": "{fecha}", "alto": 40, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "No. Pallet", "valor": "{pallet}", "alto": 140, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "barras" },
+    { "etiqueta": "Origen", "valor": "{origen}", "alto": 80, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Destino", "valor": "{destino}", "alto": 82, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Tipologia", "valor": "{tipologia}", "alto": 40, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Codigo SAP", "valor": "{codigo_sap}", "alto": 40, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Modelo", "valor": "{modelo}", "alto": 40, "tamano": 24, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Usuario Creacion", "valor": "{usuario}", "alto": 40, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" },
+    { "etiqueta": "Cantidad", "valor": "{cantidad}", "alto": 40, "tamano": 30, "tamanoEtiqueta": 30, "tipo": "texto" }
+  ],
+  "pie": "Este documento es de uso exclusivo de Woden Colombia S.A.S, queda estrictamente prohibida su reproduccion total o parcial sin previa autorizacion."
+}

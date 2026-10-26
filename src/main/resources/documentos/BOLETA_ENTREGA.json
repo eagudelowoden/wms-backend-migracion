@@ -1,0 +1,61 @@
+{
+  "colores": {
+    "texto": "#1b232d",
+    "acento": "#E47D06",
+    "cabecera": "#1b232d",
+    "cabeceraTexto": "#ffffff",
+    "etiquetas": "#5b6573",
+    "fondoEtiquetas": "#f5f6f8",
+    "bordes": "#c4cad3",
+    "documento": "#b35f00",
+    "cebra": "#f7f8fa"
+  },
+  "logo": "",
+  "logoAlto": 50,
+  "empresa": {
+    "mostrar": true,
+    "lineas": [
+      "{empresa_nombre}",
+      "RUC {empresa_ruc}",
+      "Tel. {empresa_telefono}",
+      "{empresa_email}",
+      "{empresa_web}"
+    ]
+  },
+  "control": {
+    "mostrar": true,
+    "filas": [
+      { "etiqueta": "Código", "valor": "LS-ADM-FO-16" },
+      { "etiqueta": "Versión", "valor": "04" },
+      { "etiqueta": "Fecha emisión", "valor": "25/08/2018" },
+      { "etiqueta": "Página", "valor": "{pagina} de {paginas}" }
+    ]
+  },
+  "titulo": "Formato control movimiento mercancías",
+  "subtitulo": "Bodegas Woden",
+  "campos": [
+    { "etiqueta": "Fecha entrega", "valor": "{fecha_entrega}", "resaltar": false },
+    { "etiqueta": "Nota de remisión", "valor": "{documento}", "resaltar": true },
+    { "etiqueta": "Área origen", "valor": "{origen}", "resaltar": false },
+    { "etiqueta": "Área destino", "valor": "{destino}", "resaltar": false }
+  ],
+  "columnas": [
+    { "titulo": "#", "valor": "{n}", "ancho": 5, "alinear": "center", "estilo": "tenue", "total": false },
+    { "titulo": "No pallet", "valor": "{no_pallet}", "ancho": 17, "alinear": "left", "estilo": "mono", "total": false },
+    { "titulo": "Cod. SAP", "valor": "{codigo_sap}", "ancho": 14, "alinear": "left", "estilo": "negrita", "total": false },
+    { "titulo": "Descripción material", "valor": "{descripcion}", "ancho": 34, "alinear": "left", "estilo": "normal", "total": false },
+    { "titulo": "Cantidad", "valor": "{cantidad}", "ancho": 10, "alinear": "right", "estilo": "negrita", "total": true },
+    { "titulo": "Observaciones", "valor": "{tipologia}", "ancho": 20, "alinear": "left", "estilo": "normal", "total": false }
+  ],
+  "total": { "mostrar": true, "etiqueta": "Total unidades" },
+  "observaciones": { "mostrar": true, "etiqueta": "Observaciones" },
+  "firmas": [
+    { "titulo": "Entregado por", "firma": "{usuario}", "nombre": "{usuario}" },
+    { "titulo": "Recibido por", "firma": "", "nombre": "Nombre: ______________________________" }
+  ],
+  "pie": {
+    "izquierda": "© {empresa_nombre}. Todos los derechos reservados.",
+    "derecha": "LS-ADM-FO-16 · Página {pagina} de {paginas}"
+  },
+  "pagina": { "margenSuperior": 10, "centrar": true }
+}

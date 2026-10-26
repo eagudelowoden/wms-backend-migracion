@@ -52,9 +52,13 @@ public class NotificacionCorreoService {
   private static final Logger logger = LoggerFactory.getLogger(NotificacionCorreoService.class);
   private static final String G = "WmsWdGeneral.dbo.";
   public static final String EVENTO_SERIAL_MAC = "NOVEDAD_ERROR_SERIAL_MAC";
+  public static final String EVENTO_PREALERTA_AUTO = "PREALERTA_CERRADA_AUTO";
+  public static final String EVENTO_PREALERTA_MANUAL = "PREALERTA_CERRADA_MANUAL";
   private static final Map<String, String> EVENTOS = new LinkedHashMap<>();
   static {
     EVENTOS.put(EVENTO_SERIAL_MAC, "Novedad ERROR SERIAL-MAC regularizada");
+    EVENTOS.put(EVENTO_PREALERTA_AUTO, "Prealerta cerrada automáticamente (100 %)");
+    EVENTOS.put(EVENTO_PREALERTA_MANUAL, "Prealerta cerrada manualmente");
   }
   private static final Pattern CORREO = Pattern.compile("^[^@\\s;,]+@[^@\\s;,]+\\.[^@\\s;,]+$");
   private static final ExecutorService ENVIOS = Executors.newSingleThreadExecutor(r -> {
@@ -74,6 +78,11 @@ public class NotificacionCorreoService {
   @Autowired
   private CorreoSmtpService correo;
 
+  // correo de prueba de los eventos de prealerta (PrealertaCierreService usa este servicio para enviar)
+  @Autowired
+  @org.springframework.context.annotation.Lazy
+  private PrealertaCierreService prealertas;
+
   // ── administracion de reglas ──────────────────────────────────────────────
 
   public List<Map<String, String>> eventos() {
@@ -86,6 +95,7 @@ public class NotificacionCorreoService {
     m.put("instalado", tablas());
     m.put("smtp", correo.configurado());
     m.put("cuenta", correo.configurado() ? correo.cuenta() : "");
+    m.put("faltan", correo.faltantes());
     return m;
   }
 
@@ -185,6 +195,23 @@ public class NotificacionCorreoService {
     }
     List<String> para = correos(texto(r.get(0)[1]));
     List<String> cc = correos(texto(r.get(0)[2]));
+    String evento = texto(r.get(0)[0]);
+    if (EVENTO_PREALERTA_AUTO.equals(evento) || EVENTO_PREALERTA_MANUAL.equals(evento)) {
+      PrealertaCierreService.Correo m = prealertas.ejemplo(EVENTO_PREALERTA_MANUAL.equals(evento), usuario);
+      String asuntoPrueba = "[PRUEBA] " + m.asunto();
+      String errorPrueba = null;
+      try {
+        correo.enviar(para, cc, asuntoPrueba, m.html(), m.adjuntos());
+      } catch (Exception e) {
+        errorPrueba = causa(e);
+      }
+      registrar(evento + "_PRUEBA", cliente(), "regla " + id, para, cc, asuntoPrueba, errorPrueba == null, errorPrueba,
+          usuario);
+      if (errorPrueba != null) {
+        throw new BusinessRuleException("No se pudo enviar el correo de prueba: " + errorPrueba);
+      }
+      return Map.of("ok", true, "destinatarios", String.join("; ", para));
+    }
     Map<String, String> ejemplo = new LinkedHashMap<>();
     ejemplo.put("usuario", usuario);
     ejemplo.put("fechaNovedad", "2026-10-24 09:15:00");
@@ -218,6 +245,54 @@ public class NotificacionCorreoService {
       throw new BusinessRuleException("No se pudo enviar el correo de prueba: " + error);
     }
     return Map.of("ok", true, "destinatarios", String.join("; ", para));
+  }
+
+  // ── envio generico de un evento (prealertas) ─────────────────────────────
+
+  /** Hay al menos una regla activa del evento para el cliente de la sesion (para no armar correos que nadie recibe). */
+  public boolean hayDestinatarios(String evento) {
+    try {
+      return tablas() && !destinatarios(evento, cliente()).para.isEmpty();
+    } catch (Exception e) {
+      logger.warn("[Notificacion] {}: no se pudieron leer los destinatarios: {}", evento, causa(e));
+      return false;
+    }
+  }
+
+  /** Envia en segundo plano a los destinatarios del evento y lo deja en la bitacora (nunca lanza error). */
+  public void enviarEvento(String evento, String referencia, String asunto, String html, Map<String, byte[]> adjuntos,
+      String usuario) {
+    try {
+      if (!tablas()) {
+        return;
+      }
+      int cli = cliente();
+      Destinos dest = destinatarios(evento, cli);
+      if (dest.para.isEmpty()) {
+        return;
+      }
+      String nombre = ClientDatabaseContext.getCurrentClientName();
+      String db = ClientDatabaseContext.getCurrentClientDb();
+      ENVIOS.submit(() -> {
+        try {
+          ClientDatabaseContext.setCurrentClient(nombre, db, cli);
+          String error = null;
+          try {
+            correo.enviar(dest.para, dest.cc, asunto, html, adjuntos);
+          } catch (Exception e) {
+            error = causa(e);
+            logger.warn("[Notificacion] {} {} no se envio: {}", evento, referencia, error);
+          }
+          registrar(evento, cli, referencia, dest.para, dest.cc, asunto, error == null, error, usuario);
+        } catch (Exception e) {
+          logger.warn("[Notificacion] {} {} no se registro: {}", evento, referencia, causa(e));
+        } finally {
+          ClientDatabaseContext.clear();
+        }
+      });
+    } catch (Exception e) {
+      logger.warn("[Notificacion] {} {}: {}", evento, referencia, causa(e));
+    }
   }
 
   // ── sonidos de Ingreso por cliente ────────────────────────────────────────

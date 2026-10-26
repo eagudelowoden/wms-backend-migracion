@@ -2,27 +2,28 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Control movimiento – {{ pedido_sap }}</title>
+  <title>Control movimiento – {{ documento }}</title>
   <style>
-    /* Formato LS-ADM-FO-16 con el diseño del WMS: logo y datos de la empresa, control del documento y datos de la
-       boleta repetidos en cada hoja (elemento "running"), detalle con títulos repetidos (-fs-table-paginate) y pie con
-       el número de página. Texto pizarra, acento naranja Woden y líneas finas. */
+    /* Boleta de entrega armada con la plantilla del cliente (Administración > Documentos; sin plantilla = formato
+       LS-ADM-FO-16 de fábrica). Logo y datos de la empresa, control del documento y datos de la boleta se repiten en
+       cada hoja (elemento "running"), el detalle repite sus títulos (-fs-table-paginate) y el pie lleva la página.
+       Los textos llegan ya escapados desde BoletaMovimientoService (por eso | raw). */
     @page {
       size: A4;
-      margin: 65mm 13mm 18mm 13mm;
-      @top-center { content: element(encabezado); }
+      margin: {{ margen_superior }}mm 13mm 18mm 13mm;
+      @top-center { content: element(encabezado); vertical-align: bottom; }
       @bottom-center { content: element(pie); }
     }
 
     body {
       font-family: "Helvetica", Arial, sans-serif;
       font-size: 10px;
-      color: #1b232d;
+      color: {{ c.texto }};
     }
 
     table { border-collapse: collapse; width: 100%; }
 
-    .encabezado { position: running(encabezado); width: 100%; }
+    .encabezado { position: running(encabezado); width: 100%; padding-bottom: 3mm; }
     .pie { position: running(pie); width: 100%; }
     .num-pagina::after { content: counter(page); }
     .num-paginas::after { content: counter(pages); }
@@ -30,12 +31,12 @@
     /* ── Logo + empresa + control del documento ── */
     .cab td { vertical-align: middle; }
     .cab .logo { width: 24%; }
-    .cab .logo img { height: 50px; }
-    .cab .empresa { width: 46%; padding-left: 8px; font-size: 8.5px; line-height: 1.45; color: #5b6573; }
-    .cab .empresa .nombre { font-size: 10.5px; font-weight: bold; color: #1b232d; }
+    .cab .logo img { height: {{ logo_alto }}px; }
+    .cab .empresa { padding-left: 8px; font-size: 8.5px; line-height: 1.45; color: {{ c.etiquetas }}; }
+    .cab .empresa .nombre { font-size: 10.5px; font-weight: bold; color: {{ c.texto }}; }
     .ctrl { width: 30%; }
-    .ctrl table td { border: 0.6px solid #c4cad3; padding: 2.5px 6px; font-size: 8.5px; }
-    .ctrl table td.etq { color: #5b6573; width: 46%; background: #f5f6f8; }
+    .ctrl table td { border: 0.6px solid {{ c.bordes }}; padding: 2.5px 6px; font-size: 8.5px; }
+    .ctrl table td.etq { color: {{ c.etiquetas }}; width: 46%; background: {{ c.fondoEtiquetas }}; }
     .ctrl table td.val { font-weight: bold; text-align: right; }
 
     .titulo {
@@ -47,63 +48,54 @@
       font-weight: bold;
       letter-spacing: 0.6px;
       text-transform: uppercase;
-      color: #1b232d;
+      color: {{ c.texto }};
     }
-    .subtitulo { text-align: center; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: #5b6573; }
-    .acento { border-top: 2px solid #E47D06; margin: 6px 0 7px; }
+    .subtitulo { text-align: center; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: {{ c.etiquetas }}; }
+    .acento { border-top: 2px solid {{ c.acento }}; margin: 6px 0 7px; }
 
     /* ── Datos de la boleta ── */
-    .meta td { border: 0.6px solid #c4cad3; padding: 4px 8px; }
-    .meta td.etq { width: 17%; background: #f5f6f8; color: #5b6573; font-size: 8.5px; font-weight: bold; text-transform: uppercase; }
+    .meta td { border: 0.6px solid {{ c.bordes }}; padding: 4px 8px; }
+    .meta td.etq { width: 17%; background: {{ c.fondoEtiquetas }}; color: {{ c.etiquetas }}; font-size: 8.5px; font-weight: bold; text-transform: uppercase; }
     .meta td.val { width: 33%; font-size: 10.5px; font-weight: bold; }
-    .meta td.val.doc { color: #b35f00; }
+    .meta td.val.doc { color: {{ c.documento }}; }
 
     /* ── Detalle ── */
     .items { -fs-table-paginate: paginate; }
     .items thead { display: table-header-group; }
     .items tr { page-break-inside: avoid; }
     .items th {
-      background: #1b232d;
-      color: #ffffff;
+      background: {{ c.cabecera }};
+      color: {{ c.cabeceraTexto }};
       font-size: 8.5px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 0.4px;
       padding: 5px 6px;
-      border: 0.6px solid #1b232d;
-      text-align: left;
+      border: 0.6px solid {{ c.cabecera }};
     }
-    .items td { border-bottom: 0.6px solid #dfe3e8; padding: 4px 6px; font-size: 9.5px; }
-    .items tbody tr:nth-child(even) td { background: #f7f8fa; }
-    .items .n { width: 5%; text-align: center; }
-    .items .pallet { width: 17%; }
-    .items .sap { width: 14%; }
-    .items .desc { width: 34%; }
-    .items .qty { width: 10%; text-align: right; }
-    .items .obs { width: 20%; white-space: nowrap; }
-    .items td.n { color: #8a93a0; }
-    .items td.pallet { font-family: "Courier New", monospace; font-weight: bold; }
-    .items td.sap, .items td.qty { font-weight: bold; }
-    .items td.obs { color: #3d4652; white-space: normal; }
+    .items td { border-bottom: 0.6px solid #dfe3e8; padding: 4px 6px; font-size: 9.5px; color: {{ c.texto }}; }
+    .items tbody tr:nth-child(even) td { background: {{ c.cebra }}; }
+    .items .tenue { color: #8a93a0; }
+    .items .mono { font-family: "Courier New", monospace; font-weight: bold; }
+    .items .negrita { font-weight: bold; }
 
-    /* ── Total de unidades: misma grilla que el detalle, el valor queda bajo Cantidad ── */
+    /* ── Total: misma grilla que el detalle, el valor queda bajo su columna ── */
     .totales { page-break-inside: avoid; }
-    .totales td { border-top: 1.5px solid #1b232d; padding: 6px 6px; }
-    .totales .etq { width: 70%; text-align: right; color: #5b6573; font-weight: bold; text-transform: uppercase;
+    .totales td { border-top: 1.5px solid {{ c.texto }}; padding: 6px 6px; }
+    .totales .etq { text-align: right; color: {{ c.etiquetas }}; font-weight: bold; text-transform: uppercase;
       font-size: 8.5px; letter-spacing: 0.6px; }
-    .totales .val { width: 10%; text-align: right; font-weight: bold; font-size: 12px; color: #1b232d; }
-    .totales .resto { width: 20%; }
+    .totales .val { font-weight: bold; font-size: 12px; color: {{ c.texto }}; }
 
     .obs-gen { margin-top: 14px; page-break-inside: avoid; }
-    .obs-gen .etq { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: #5b6573;
+    .obs-gen .etq { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: {{ c.etiquetas }};
       margin-bottom: 3px; }
-    .obs-gen .caja { border: 0.6px solid #c4cad3; border-left: 3px solid #E47D06; min-height: 46px; padding: 6px 8px;
+    .obs-gen .caja { border: 0.6px solid {{ c.bordes }}; border-left: 3px solid {{ c.acento }}; min-height: 46px; padding: 6px 8px;
       white-space: pre-wrap; }
 
     /* ── Firmas ── */
     .firmas { margin-top: 18px; page-break-inside: avoid; }
-    .firmas td { width: 50%; text-align: center; vertical-align: bottom; padding: 0 18px; }
-    .firmas .tit { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: #5b6573; }
+    .firmas td { text-align: center; vertical-align: bottom; padding: 0 18px; }
+    .firmas .tit { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: {{ c.etiquetas }}; }
     .firma-cursiva {
       /* "Firma" se registra en BoletaMovimientoService: Brush Script MT del servidor si existe, si no Great Vibes */
       font-family: "Firma", "Brush Script MT", cursive;
@@ -111,10 +103,10 @@
       line-height: 1.1;
       min-height: 26px;
       margin-top: 6px;
-      color: #1b232d;
+      color: {{ c.texto }};
     }
-    .linea { border-top: 0.8px solid #1b232d; margin: 2px 10% 3px; }
-    .firmas .etq { font-size: 8.5px; color: #5b6573; }
+    .linea { border-top: 0.8px solid {{ c.texto }}; margin: 2px 10% 3px; }
+    .firmas .etq { font-size: 8.5px; color: {{ c.etiquetas }}; }
     .firmas .nombre { font-size: 9.5px; margin-top: 3px; }
 
     .pie table td { font-size: 7.5px; color: #8a93a0; padding-top: 4px; border-top: 0.6px solid #dfe3e8; }
@@ -126,50 +118,49 @@
   <div class="encabezado">
     <table class="cab">
       <tr>
-        <td class="logo">{% if logo_url %}<img src="{{ logo_url }}" alt="Woden">{% endif %}</td>
+        <td class="logo">{% if logo_url %}<img src="{{ logo_url }}" alt="Logo">{% endif %}</td>
         <td class="empresa">
-          <div class="nombre">{{ empresa_nombre }}</div>
-          {% if empresa_ruc %}<div>RUC {{ empresa_ruc }}</div>{% endif %}
-          {% if empresa_telefono %}<div>Tel. {{ empresa_telefono }}</div>{% endif %}
-          {% if empresa_email %}<div>{{ empresa_email }}</div>{% endif %}
-          {% if empresa_web %}<div>{{ empresa_web }}</div>{% endif %}
+          {% if mostrar_empresa %}
+          {% for linea in empresa_lineas %}
+          <div{% if loop.first %} class="nombre"{% endif %}>{{ linea | raw }}</div>
+          {% endfor %}
+          {% endif %}
         </td>
+        {% if mostrar_control %}
         <td class="ctrl">
           <table>
-            <tr><td class="etq">Código</td><td class="val">LS-ADM-FO-16</td></tr>
-            <tr><td class="etq">Versión</td><td class="val">04</td></tr>
-            <tr><td class="etq">Fecha emisión</td><td class="val">25/08/2018</td></tr>
-            <tr><td class="etq">Página</td><td class="val"><span class="num-pagina"></span> de <span class="num-paginas"></span></td></tr>
+            {% for f in control_filas %}
+            <tr><td class="etq">{{ f.etiqueta | raw }}</td><td class="val">{{ f.valor | raw }}</td></tr>
+            {% endfor %}
           </table>
         </td>
+        {% endif %}
       </tr>
     </table>
 
-    <div class="titulo">Formato control movimiento mercancías</div>
-    <div class="subtitulo">Bodegas Woden</div>
+    {% if titulo %}<div class="titulo">{{ titulo | raw }}</div>{% endif %}
+    {% if subtitulo %}<div class="subtitulo">{{ subtitulo | raw }}</div>{% endif %}
     <div class="acento"></div>
 
+    {% if campos_filas is not empty %}
     <table class="meta">
+      {% for fila in campos_filas %}
       <tr>
-        <td class="etq">Fecha entrega</td>
-        <td class="val">{{ fecha_entrega }}</td>
-        <td class="etq">Nota de remisión</td>
-        <td class="val doc">{{ pedido_sap }}</td>
+        {% for campo in fila %}
+        <td class="etq">{{ campo.etiqueta | raw }}</td>
+        <td class="val{% if campo.resaltar %} doc{% endif %}"{% if campo.ancho %} colspan="3"{% endif %}>{{ campo.valor | raw }}</td>
+        {% endfor %}
       </tr>
-      <tr>
-        <td class="etq">Área origen</td>
-        <td class="val">{{ origen }}</td>
-        <td class="etq">Área destino</td>
-        <td class="val">{{ destino }}</td>
-      </tr>
+      {% endfor %}
     </table>
+    {% endif %}
   </div>
 
   <div class="pie">
     <table>
       <tr>
-        <td style="text-align:left">© {{ empresa_nombre }}. Todos los derechos reservados.</td>
-        <td style="text-align:right">LS-ADM-FO-16 · Página <span class="num-pagina"></span> de <span class="num-paginas"></span></td>
+        <td style="text-align:left">{{ pie_izquierda | raw }}</td>
+        <td style="text-align:right">{{ pie_derecha | raw }}</td>
       </tr>
     </table>
   </div>
@@ -178,60 +169,55 @@
   <table class="items">
     <thead>
       <tr>
-        <th class="n">#</th>
-        <th class="pallet">No pallet</th>
-        <th class="sap">Cod. SAP</th>
-        <th class="desc">Descripción material</th>
-        <th class="qty">Cantidad</th>
-        <th class="obs">Observaciones</th>
+        {% for col in columnas %}
+        <th style="width:{{ col.ancho }}%;text-align:{{ col.alinear }}">{{ col.titulo | raw }}</th>
+        {% endfor %}
       </tr>
     </thead>
     <tbody>
-      {% for item in equipos %}
+      {% for fila in filas %}
       <tr>
-        <td class="n">{{ loop.index + 1 }}</td>
-        <td class="pallet">{{ item.no_pallet }}</td>
-        <td class="sap">{{ item.codigo_sap }}</td>
-        <td class="desc">{{ item.descripcion }}</td>
-        <td class="qty">{{ item.cantidad }}</td>
-        <td class="obs">{{ item.tipologia }}</td>
+        {% for celda in fila %}
+        <td class="{{ celda.estilo }}" style="text-align:{{ celda.alinear }}">{{ celda.valor | raw }}</td>
+        {% endfor %}
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
+  {% if total.mostrar %}
   <table class="totales">
     <tr>
-      <td class="etq">Total unidades</td>
-      <td class="val">{{ total_unidades | numberformat("#,##0") }}</td>
-      <td class="resto"></td>
+      <td class="etq" style="width:{{ total.antes }}%">{{ total.etiqueta | raw }}</td>
+      <td class="val" style="width:{{ total.ancho }}%;text-align:{{ total.alinear }}">{{ total.valor }}</td>
+      {% if total.despues > 0 %}<td style="width:{{ total.despues }}%"></td>{% endif %}
     </tr>
   </table>
+  {% endif %}
 
+  {% if observaciones.mostrar %}
   <!-- siempre visible: si no se escribio nada queda el espacio para anotar a mano -->
   <div class="obs-gen">
-    <div class="etq">Observaciones</div>
-    <div class="caja">{{ observaciones_generales }}</div>
+    <div class="etq">{{ observaciones.etiqueta | raw }}</div>
+    <div class="caja">{{ observaciones.texto }}</div>
   </div>
+  {% endif %}
 
+  {% if firmas is not empty %}
   <table class="firmas">
     <tr>
-      <td>
-        <div class="tit">Entregado por</div>
-        <div class="firma-cursiva">{{ usuario_nombre | lower | title }}</div>
+      {% for f in firmas %}
+      <td style="width:{{ ancho_firma }}%">
+        <div class="tit">{{ f.titulo | raw }}</div>
+        <div class="firma-cursiva">{% if f.firma %}{{ f.firma | raw }}{% else %}&nbsp;{% endif %}</div>
         <div class="linea"></div>
         <div class="etq">Firma</div>
-        <div class="nombre">{{ usuario_nombre }}</div>
+        <div class="nombre">{{ f.nombre | raw }}</div>
       </td>
-      <td>
-        <div class="tit">Recibido por</div>
-        <div class="firma-cursiva">&nbsp;</div>
-        <div class="linea"></div>
-        <div class="etq">Firma</div>
-        <div class="nombre">Nombre: ______________________________</div>
-      </td>
+      {% endfor %}
     </tr>
   </table>
+  {% endif %}
 
 </body>
 </html>

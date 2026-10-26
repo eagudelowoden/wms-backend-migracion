@@ -1,9 +1,10 @@
 /* =====================================================================================
    Instalación por base cliente de los ajustes WMS (rama Bernabe-ajustes).
-   Correr DESPUÉS de los tres scripts generales (WmsWdGeneral):
+   Correr DESPUÉS de los scripts generales (WmsWdGeneral):
      1) 2026-10-24_boleta_reservas_consecutivo.sql
      2) 2026-10-25_despachado_reversa.sql
      3) 2026-10-25_notificaciones_correo.sql
+     4) 2026-10-26_documentos_prealertas.sql
    y luego este, una vez por cada base, cambiando @Db (empezar con Legacy).
 
    Hace en la base indicada (solo lo que falta; correrlo dos veces no hace nada):
@@ -13,11 +14,14 @@
      - Work flow de Despachado: origen DESPACHADO -> NOVEDAD (equipos) y NOVEDAD-ACCESORIOS (accesorios).
        Se cambia cuando se quiera desde Administración > Work flow.
      - Menú: Administración > Notificaciones (ADNOT) y el módulo 44 a los perfiles ADMINISTRADOR del cliente.
+     - Menú: Administración > Documentos (ADDOC) y el módulo 47 a los perfiles ADMINISTRADOR del cliente.
      - Tipo de novedad de accesorios NO CONFORMIDAD (si la base tiene la novedad de accesorios).
      - Columna CAJAS de Despacho > Proceso: si el pallet no tiene cajas de despacho cuenta las de empaque.
      - AuditoriaNivelEmpaque si la base tiene el trigger pero no la tabla.
      - Interruptor BOLETA_CONSECUTIVO del cliente (boletas guardadas + consecutivo) si @ActivarConsecutivo = 1.
      - Interruptor SONIDO_ALERTAS_INGRESO (catálogo, una vez) y para el cliente si @ActivarSonido = 1.
+     - Interruptores PREALERTA_CIERRE_MANUAL / PREALERTA_SOBRANTES para el cliente si @ActivarCierreManual /
+       @ActivarSobrantes = 1.
    Los interruptores también se encienden o apagan desde Administración > Clientes > Validaciones; el usuario ve el
    cambio al volver a iniciar sesión.
      - Avisa si falta la tipología NO CONFORMIDAD o la novedad de accesorios (Despachado de accesorios la necesita).
@@ -26,7 +30,9 @@ SET NOCOUNT ON;
 
 DECLARE @Db SYSNAME = 'WmsWdLegacyCostaRica';
 DECLARE @ActivarConsecutivo BIT = 0;     -- 1 = boletas guardadas con documento consecutivo AAAA-NNN para este cliente
-DECLARE @ActivarSonido BIT = 0;          -- 1 = sonido en los avisos y errores de Ingreso para este cliente
+DECLARE @ActivarSonido BIT = 0;          -- 1 = sonido en los avisos y errores del WMS para este cliente
+DECLARE @ActivarCierreManual BIT = 0;    -- 1 = botón Cerrar prealerta en Ingreso
+DECLARE @ActivarSobrantes BIT = 0;       -- 1 = campo Sobrante de en Ingreso
 
 DECLARE @sql NVARCHAR(MAX), @n INT, @clienteId INT;
 
@@ -115,6 +121,30 @@ END
 ELSE
   PRINT 'AVISO: falta el módulo 44 Notificaciones (correr 2026-10-25_notificaciones_correo.sql)';
 
+/* ── 3a. Menú Administración > Documentos ────────────────────────────────────────── */
+SET @sql = N'
+IF OBJECT_ID(''' + QUOTENAME(@Db) + N'.dbo.Menu'', ''U'') IS NOT NULL
+   AND EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Menu WHERE Id = ''ADM'')
+   AND NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Menu WHERE Id = ''ADDOC'')
+BEGIN
+  INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.Menu (Id, Descripcion, Tipo, Orden, Accion, Estado, Icono, Id_padre, View_name, Controller_name)
+  VALUES (''ADDOC'', ''Documentos'', ''item'', 21, ''ADMDOC'', ''activo'', '''', ''ADM'', '''', '''');
+  PRINT ''Menú Documentos agregado'';
+END';
+EXEC sys.sp_executesql @sql;
+
+IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Modulo WHERE Id = 47 AND Nombre = 'Documentos')
+BEGIN
+  INSERT INTO WmsWdGeneral.dbo.PerfilModulo (PerfilId, ModuloId, Orden)
+  SELECT pf.Id, 47, 0
+    FROM WmsWdGeneral.dbo.Perfil pf
+   WHERE pf.ClienteId = @clienteId AND pf.Nombre LIKE '%ADMINISTRADOR%'
+     AND NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.PerfilModulo x WHERE x.PerfilId = pf.Id AND x.ModuloId = 47);
+  PRINT CONCAT('Módulo Documentos asignado a perfiles ADMINISTRADOR: ', @@ROWCOUNT);
+END
+ELSE
+  PRINT 'AVISO: falta el módulo 47 Documentos (correr 2026-10-26_documentos_prealertas.sql)';
+
 /* ── 3b. Tipo de novedad de accesorios NO CONFORMIDAD (Despachado de accesorios) ──── */
 SET @sql = N'
 DECLARE @tm INT = (SELECT TOP 1 Id FROM ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro WHERE Nombre = ''Tipo Novedad Accesorios'');
@@ -180,7 +210,7 @@ END
 /* ── 6b. Interruptor SONIDO_ALERTAS_INGRESO ──────────────────────────────────────── */
 IF NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'SONIDO_ALERTAS_INGRESO')
   INSERT INTO WmsWdGeneral.dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
-  VALUES ('SONIDO_ALERTAS_INGRESO', 'Sonido en los avisos y errores de Ingreso (se repite hasta cerrar el aviso)', 1, GETDATE());
+  VALUES ('SONIDO_ALERTAS_INGRESO', 'Sonido en los avisos y errores del WMS en todos los módulos (se configura en Administración > Notificaciones)', 1, GETDATE());
 IF @ActivarSonido = 1 AND @clienteId IS NOT NULL
 BEGIN
   DECLARE @tipoSonido INT = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'SONIDO_ALERTAS_INGRESO');
@@ -190,6 +220,31 @@ BEGIN
     INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoSonido, 1, GETDATE());
   PRINT 'SONIDO_ALERTAS_INGRESO activo para el cliente';
 END
+
+/* ── 6c. Interruptores de prealertas (opcionales) ────────────────────────────────── */
+DECLARE @codigo VARCHAR(60), @tipoVal INT;
+DECLARE interruptores CURSOR LOCAL FAST_FORWARD FOR
+  SELECT c FROM (VALUES ('PREALERTA_CIERRE_MANUAL', @ActivarCierreManual), ('PREALERTA_SOBRANTES', @ActivarSobrantes)) v(c, a)
+   WHERE a = 1;
+OPEN interruptores;
+FETCH NEXT FROM interruptores INTO @codigo;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+  SET @tipoVal = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = @codigo);
+  IF @tipoVal IS NULL OR @clienteId IS NULL
+    PRINT CONCAT(@codigo, ': falta correr 2026-10-26_documentos_prealertas.sql o no se encontró el cliente');
+  ELSE
+  BEGIN
+    IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacion WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal)
+      UPDATE WmsWdGeneral.dbo.ClienteValidacion SET Activo = 1 WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal;
+    ELSE
+      INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoVal, 1, GETDATE());
+    PRINT CONCAT(@codigo, ' activo para el cliente');
+  END
+  FETCH NEXT FROM interruptores INTO @codigo;
+END
+CLOSE interruptores;
+DEALLOCATE interruptores;
 
 /* ── 7. Avisos ───────────────────────────────────────────────────────────────────── */
 SET @sql = N'SELECT @n = COUNT(*) FROM ' + QUOTENAME(@Db) + N'.dbo.Maestro m JOIN ' + QUOTENAME(@Db)

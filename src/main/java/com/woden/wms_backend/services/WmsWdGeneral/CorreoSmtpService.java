@@ -52,6 +52,21 @@ public class CorreoSmtpService {
     return usuario;
   }
 
+  /** Variables de entorno que faltan para poder enviar (solo los nombres, nunca los valores). */
+  public List<String> faltantes() {
+    List<String> out = new java.util.ArrayList<>();
+    if (servidor.isBlank()) {
+      out.add("SMTP_SERVER");
+    }
+    if (usuario.isBlank()) {
+      out.add("SMTP_USER");
+    }
+    if (clave.isBlank()) {
+      out.add("SMTP_PASSWORD");
+    }
+    return out;
+  }
+
   private JavaMailSenderImpl sender() {
     if (sender == null) {
       synchronized (this) {

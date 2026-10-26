@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.dto.clientDTO.PalletReportDTO;
 import com.woden.wms_backend.services.ClienteServices.JasperReportService;
+import com.woden.wms_backend.services.ClienteServices.PalletDocumentoService;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -34,10 +35,24 @@ public class JasperReportController {
 
   private static final Logger logger = LoggerFactory.getLogger(JasperReportController.class);
 
+  @Autowired
+  private PalletDocumentoService palletDocumentoService;
+
   @PostMapping("/reporte")
   public ResponseEntity<byte[]> generarReportePallet(@RequestBody PalletReportDTO request) throws IOException, JRException {
     try {
-      byte[] report = jasperReportService.generarReporte("Pallet", request);
+      // con la plantilla del cliente (Administración > Documentos) si la activó; si falla o no, el Jasper de siempre
+      byte[] report = null;
+      if (palletDocumentoService.usaEditor()) {
+        try {
+          report = palletDocumentoService.generar(request);
+        } catch (Exception e) {
+          logger.warn("Boleta de pallet con plantilla fallo, se usa el Jasper: {}", e.getMessage());
+        }
+      }
+      if (report == null) {
+        report = jasperReportService.generarReporte("Pallet", request);
+      }
       HttpHeaders headers = new HttpHeaders();
       String fileName = request.getPallet() + ".pdf";
       headers.setContentType(MediaType.APPLICATION_PDF);
