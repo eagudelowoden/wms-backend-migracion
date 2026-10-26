@@ -92,9 +92,18 @@ public class CorreoSmtpService {
     return sender;
   }
 
-  /** Envia el correo HTML con el logo incrustado y los adjuntos (nombre -> contenido). */
+  /** Envia el correo HTML con el logo Woden incrustado y los adjuntos (nombre -> contenido). */
   public void enviar(List<String> para, List<String> cc, String asunto, String html, Map<String, byte[]> adjuntos)
       throws MessagingException {
+    enviar(para, cc, asunto, html, adjuntos, null);
+  }
+
+  /**
+   * Igual, con el logo de la plantilla del cliente (Administración > Documentos) como "cid:logo":
+   * logo = data:image/png;base64,... o data:image/jpeg;base64,...; vacío o no válido = logo Woden.
+   */
+  public void enviar(List<String> para, List<String> cc, String asunto, String html, Map<String, byte[]> adjuntos,
+      String logo) throws MessagingException {
     if (!configurado()) {
       throw new IllegalStateException("Falta configurar SMTP_SERVER / SMTP_USER / SMTP_PASSWORD en el servidor");
     }
@@ -115,7 +124,13 @@ public class CorreoSmtpService {
     }
     h.setSubject(asunto);
     h.setText(html, true);
-    h.addInline(LOGO, new ClassPathResource("mail/logo-woden.png"), "image/png");
+    java.util.regex.Matcher propio = logo == null ? null
+        : java.util.regex.Pattern.compile("^data:(image/(?:png|jpeg));base64,(.+)$").matcher(logo);
+    if (propio != null && propio.matches()) {
+      h.addInline(LOGO, new ByteArrayResource(java.util.Base64.getDecoder().decode(propio.group(2))), propio.group(1));
+    } else {
+      h.addInline(LOGO, new ClassPathResource("mail/logo-woden.png"), "image/png");
+    }
     if (adjuntos != null) {
       for (Map.Entry<String, byte[]> a : adjuntos.entrySet()) {
         h.addAttachment(a.getKey(), new ByteArrayResource(a.getValue()));

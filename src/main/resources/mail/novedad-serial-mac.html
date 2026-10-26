@@ -3,56 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ asunto }}</title>
+<title>{{ asunto | raw }}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#1b232d">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6">
+<!-- Novedad ERROR SERIAL-MAC (NotificacionCorreoService). Textos, columnas y colores salen de Administración >
+     Documentos > Correo ERROR SERIAL-MAC; llegan escapados (| raw). -->
+<body style="margin:0;padding:0;background-color:{{ c.fondo }};font-family:Arial,Helvetica,sans-serif;color:{{ c.texto }}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:{{ c.fondo }}">
 <tr><td align="center" style="padding:24px 12px">
-  <table role="presentation" width="1180" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:1180px;background-color:#ffffff;border-radius:8px;overflow:hidden">
-    <!-- encabezado Woden -->
+  <table role="presentation" width="{{ ancho }}" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:{{ ancho }}px;background-color:#ffffff;border-radius:8px;overflow:hidden">
+    <!-- encabezado -->
     <tr>
       <td bgcolor="#ffffff" align="left" style="background-color:#ffffff;padding:16px 28px;text-align:left">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td align="left"><img src="cid:logo" alt="Woden" width="130" style="display:block;width:130px;height:auto;border:0"></td>
-            <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;letter-spacing:3px;color:#E47D06">WMS</td>
+            <td align="left">{% if usar_logo %}<img src="cid:logo" alt="Logo" width="130" style="display:block;width:130px;height:auto;border:0">{% endif %}</td>
+            <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;letter-spacing:3px;color:{{ c.acento }}">{{ marca | raw }}</td>
           </tr>
         </table>
       </td>
     </tr>
-    <tr><td bgcolor="#E47D06" height="5" style="background-color:#E47D06;height:5px;line-height:5px;font-size:0">&nbsp;</td></tr>
+    <tr><td bgcolor="{{ c.acento }}" height="5" style="background-color:{{ c.acento }};height:5px;line-height:5px;font-size:0">&nbsp;</td></tr>
     <!-- titulo -->
     <tr>
       <td align="left" style="padding:22px 28px 6px;font-family:Arial,Helvetica,sans-serif;text-align:left">
-        <h1 style="margin:0 0 4px;font-size:20px;line-height:1.3;color:#1b232d">{{ titulo }}</h1>
-        <p style="margin:0;font-size:13px;color:#E47D06;font-weight:bold">{{ cliente }}</p>
+        <h1 style="margin:0 0 4px;font-size:20px;line-height:1.3;color:{{ c.texto }}">{{ titulo | raw }}</h1>
+        {% if subtitulo %}<p style="margin:0;font-size:13px;color:{{ c.acento }};font-weight:bold">{{ subtitulo | raw }}</p>{% endif %}
       </td>
     </tr>
     <tr>
       <td align="left" style="padding:10px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;text-align:left">
-        <p style="margin:0 0 14px">Estimado usuario, le informamos que se regularizó el serial de un equipo por la novedad <b>ERROR SERIAL-MAC</b>{% if modelo %} (equipo <b>{{ modelo }}</b>){% endif %} con los siguientes detalles:</p>
+        {% if intro %}<p style="margin:0 0 14px">{{ intro | raw }}</p>{% endif %}
+        {% if vertical %}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:13px;max-width:720px">
+          {% for c2 in celdas %}
+          <tr>
+            <th align="left" valign="top" bgcolor="{{ c.acento }}" style="text-align:left;padding:7px 10px;border:1px solid {{ c.bordeAcento }};background-color:{{ c.acento }};color:#ffffff;font-weight:bold;font-size:12px;width:38%">{{ c2.titulo | raw }}</th>
+            <td align="left" valign="top" style="text-align:left;padding:7px 10px;border:1px solid #e5e7eb;color:{{ c.texto }};line-height:1.35{% if c2.resaltar %};background-color:{{ c.resaltado }};font-weight:bold;color:{{ c.resaltadoTexto }}{% endif %}">{{ c2.valor | raw }}{% if c2.sub %}<br><span style="font-size:11px;font-weight:normal;color:{{ c.tenue }}">{{ c2.sub | raw }}</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% else %}
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:12px">
           <tr>
-            {% for c in columnas %}
-            <th align="left" valign="bottom" bgcolor="#E47D06" style="text-align:left;padding:8px 8px;border:1px solid #d96f00;background-color:#E47D06;color:#ffffff;font-weight:bold;font-size:11px;line-height:1.25">{{ c }}</th>
+            {% for c2 in celdas %}
+            <th align="left" valign="bottom" bgcolor="{{ c.acento }}" style="text-align:left;padding:8px 8px;border:1px solid {{ c.bordeAcento }};background-color:{{ c.acento }};color:#ffffff;font-weight:bold;font-size:11px;line-height:1.25">{{ c2.titulo | raw }}</th>
             {% endfor %}
           </tr>
           <tr>
-            {% for v in celdas %}
-            <td align="left" valign="top" style="text-align:left;padding:8px 8px;border:1px solid #e5e7eb;color:#1b232d;line-height:1.35{% if v.nowrap %};white-space:nowrap{% endif %}{% if v.resaltar %};background-color:#fff4e8;font-weight:bold;color:#b45f00{% endif %}">{{ v.valor }}{% if v.sub %}<br><span style="font-size:11px;font-weight:normal;color:#6b7280">{{ v.sub }}</span>{% endif %}</td>
+            {% for c2 in celdas %}
+            <td align="left" valign="top" style="text-align:left;padding:8px 8px;border:1px solid #e5e7eb;color:{{ c.texto }};line-height:1.35{% if c2.nowrap %};white-space:nowrap{% endif %}{% if c2.resaltar %};background-color:{{ c.resaltado }};font-weight:bold;color:{{ c.resaltadoTexto }}{% endif %}">{{ c2.valor | raw }}{% if c2.sub %}<br><span style="font-size:11px;font-weight:normal;color:{{ c.tenue }}">{{ c2.sub | raw }}</span>{% endif %}</td>
             {% endfor %}
           </tr>
         </table>
-        <p style="margin:16px 0 0">{% if mismoSerial %}Se adjunta el Excel con los movimientos del serial ({{ movActual }} registros).{% else %}Se adjunta el Excel con los movimientos del serial anterior ({{ movAnterior }} registros) y del serial actual ({{ movActual }} registros), al momento del cambio.{% endif %}</p>
-        <p style="margin:18px 0 0">Saludos cordiales,<br>El equipo de soporte WMS</p>
+        {% endif %}
+        {% if movimientos %}<p style="margin:16px 0 0">{{ movimientos | raw }}</p>{% endif %}
+        {% if despedida is not empty %}
+        <p style="margin:18px 0 0">{% for l in despedida %}{{ l | raw }}{% if not loop.last %}<br>{% endif %}{% endfor %}</p>
+        {% endif %}
       </td>
     </tr>
     <!-- pie -->
+    {% if pie %}
     <tr>
-      <td align="left" bgcolor="#1b232d" style="text-align:left;padding:14px 28px;background-color:#1b232d;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#c7ccd3">
-        Este correo electrónico fue generado automáticamente. Por favor, no responda a este mensaje.
+      <td align="left" bgcolor="{{ c.pieFondo }}" style="text-align:left;padding:14px 28px;background-color:{{ c.pieFondo }};font-family:Arial,Helvetica,sans-serif;font-size:11px;color:{{ c.pieTexto }}">
+        {{ pie | raw }}
       </td>
     </tr>
+    {% endif %}
   </table>
 </td></tr>
 </table>

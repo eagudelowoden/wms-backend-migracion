@@ -25,6 +25,7 @@ import jakarta.persistence.Query;
  *   BOLETA_ENTREGA    boleta de control de movimiento (Despacho)
  *   PALLET            boleta del pallet que viaja entre módulos (si no se activa el editor sigue el formato Jasper)
  *   CORREO_PREALERTA  correo al cerrar una prealerta (automática o manual)
+ *   CORREO_SERIAL_MAC correo de la novedad ERROR SERIAL-MAC regularizada (Notificaciones)
  * Sin fila guardada el documento sale igual que siempre (resources/documentos/TIPO.json). Tabla en WmsWdGeneral
  * (sql/2026-10-26_documentos_prealertas.sql).
  */
@@ -36,6 +37,7 @@ public class DocumentoPlantillaService {
   public static final String BOLETA = "BOLETA_ENTREGA";
   public static final String PALLET = "PALLET";
   public static final String CORREO_PREALERTA = "CORREO_PREALERTA";
+  public static final String CORREO_SERIAL_MAC = "CORREO_SERIAL_MAC";
   private static final Map<String, String> TIPOS = new LinkedHashMap<>();
   private static final Map<String, List<Map<String, String>>> VARIABLES = new LinkedHashMap<>();
   /** imagen en base64 (logo, icono): ~450 KB */
@@ -46,6 +48,7 @@ public class DocumentoPlantillaService {
     TIPOS.put(BOLETA, "Boleta de entrega");
     TIPOS.put(PALLET, "Boleta de pallet");
     TIPOS.put(CORREO_PREALERTA, "Correo de prealerta");
+    TIPOS.put(CORREO_SERIAL_MAC, "Correo ERROR SERIAL-MAC");
 
     VARIABLES.put(BOLETA, vars(
         "documento", "Documento / nota de remisión", "fecha_entrega", "Fecha de entrega", "origen", "Área origen",
@@ -68,6 +71,14 @@ public class DocumentoPlantillaService {
         "modo", "automáticamente / manualmente", "tipo_cierre", "Automático / Manual", "esperados", "Esperados",
         "recibidos", "Recibidos", "faltantes", "Faltantes", "sobrantes", "Sobrantes", "novedades", "Con novedad",
         "porcentaje", "% recibido", "observacion", "Observación del cierre"));
+    VARIABLES.put(CORREO_SERIAL_MAC, vars(
+        "cliente", "Cliente", "usuario", "Quien regularizó", "fecha_novedad", "Fecha novedad",
+        "fecha_ingreso", "Fecha ingreso", "fecha_cambio", "Fecha cambio", "serial_id", "SerialId",
+        "serial_original", "Serial original", "mac_original", "MAC original", "serial_nuevo", "Serial regularizado",
+        "mac_nuevo", "MAC regularizada", "modelo", "Equipo", "tipo_origen", "Tipo origen", "origen", "Origen",
+        "prealerta", "Prealerta", "ultimo_destino", "Último destino del original",
+        "ultimo_destino_fecha", "Fecha del último destino", "primer_destino", "Primer destino del regularizado",
+        "movimientos", "Movimientos del SerialId (Excel)"));
   }
 
   private final ObjectMapper json = new ObjectMapper();

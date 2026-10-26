@@ -12,6 +12,7 @@
   "subtitulo": "Woden Group — Control de Movimiento de Equipos",
   "marca": "WODEN",
   "usarLogo": false,
+  "logo": "",
   "asunto": "WMS {cliente} · Prealerta {prealerta} cerrada {modo} · {porcentaje}% recibido",
   "introAuto": "La prealerta {prealerta} se cerró automáticamente al completar el 100 % de los ingresos.",
   "introManual": "La prealerta {prealerta} fue cerrada manualmente por {usuario} con {recibidos} de {esperados} equipos recibidos.",

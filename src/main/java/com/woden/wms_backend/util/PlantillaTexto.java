@@ -12,6 +12,7 @@ public final class PlantillaTexto {
 
   private static final Pattern VARIABLE = Pattern.compile("\\{([a-z_]+)\\}");
   private static final Pattern COLOR = Pattern.compile("^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$");
+  private static final Pattern OPCIONAL = Pattern.compile("\\[([^\\[\\]]*)\\]");
 
   private PlantillaTexto() {
   }
@@ -54,6 +55,28 @@ public final class PlantillaTexto {
       desde = m.end();
     }
     sb.append(escapar(plantilla.substring(desde)));
+    return sb.toString();
+  }
+
+  /**
+   * Texto de correo: como html() y además **negrita** y partes opcionales entre corchetes, que desaparecen si sus
+   * variables salen vacías: "novedad **ERROR SERIAL-MAC**[ (equipo **{modelo}**)]".
+   */
+  public static String htmlRico(String plantilla, Map<String, String> vars) {
+    return html(opcionales(plantilla, vars), vars).replaceAll("\\*\\*(.+?)\\*\\*", "<b>$1</b>");
+  }
+
+  public static String opcionales(String plantilla, Map<String, String> vars) {
+    if (plantilla == null || plantilla.isEmpty()) {
+      return "";
+    }
+    Matcher m = OPCIONAL.matcher(plantilla);
+    StringBuilder sb = new StringBuilder();
+    while (m.find()) {
+      String dentro = m.group(1);
+      m.appendReplacement(sb, Matcher.quoteReplacement(vacia(dentro, vars) ? "" : dentro));
+    }
+    m.appendTail(sb);
     return sb.toString();
   }
 

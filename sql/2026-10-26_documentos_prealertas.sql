@@ -8,6 +8,7 @@
        PREALERTA_SOBRANTES      campo "Sobrante de" en Ingreso (sin prealerta) para marcar equipos sobrantes
    - Módulo 47 "Documentos" (Administración); el menú ADDOC va por base (2026-10-25_instalar_por_base.sql)
    - SONIDO_ALERTAS_INGRESO ahora suena en todos los módulos: se actualiza su descripción
+   - NotificacionSonido: columnas Volumen, Pulso y Pausa (Administración > Notificaciones > Sonidos)
    Los destinatarios de los correos de prealerta se configuran en Administración > Notificaciones (no se crea
    ninguna regla: hasta que se configure no se envía nada).
    Solo crea lo que falta; correrlo dos veces no hace nada.
@@ -54,6 +55,10 @@ IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'PREALERTA
 IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'PREALERTA_SOBRANTES')
   INSERT INTO dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
   VALUES ('PREALERTA_SOBRANTES', 'Ingreso sin prealerta: campo Sobrante de para marcar equipos que llegaron con una prealerta sin estar en ella', 1, GETDATE());
+
+-- Sonidos: volumen (10-100 %), duración de cada pitido y pausa entre pitidos (ms) por cliente
+IF OBJECT_ID('dbo.NotificacionSonido', 'U') IS NOT NULL AND COL_LENGTH('dbo.NotificacionSonido', 'Volumen') IS NULL
+  ALTER TABLE dbo.NotificacionSonido ADD Volumen INT NULL, Pulso INT NULL, Pausa INT NULL;
 
 UPDATE dbo.ClienteValidacionTipo
    SET Descripcion = 'Sonido en los avisos y errores del WMS en todos los módulos (se configura en Administración > Notificaciones)'

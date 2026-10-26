@@ -63,7 +63,8 @@ public class PrealertaCierreService {
   /** filas de cada listado que devuelve el resumen para el aviso de Ingreso */
   private static final int FILAS_RESUMEN = 200;
 
-  public record Correo(String asunto, String html, Map<String, byte[]> adjuntos) {}
+  /** logo = el de la plantilla (data URI) o vacío para el de Woden */
+  public record Correo(String asunto, String html, Map<String, byte[]> adjuntos, String logo) {}
 
   /** una fila de los listados: serial, código SAP, descripción, detalle, fecha */
   private record Linea(String serial, String codigoSap, String descripcion, String detalle, String fecha) {}
@@ -240,7 +241,7 @@ public class PrealertaCierreService {
       }
       String cerrada = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
       Correo c = correo(r, manual, usuario, observacion, cerrada, plantillas.config(DocumentoPlantillaService.CORREO_PREALERTA));
-      notificaciones.enviarEvento(evento, corto(r.nombre, 100), c.asunto(), c.html(), c.adjuntos(), usuario);
+      notificaciones.enviarEvento(evento, corto(r.nombre, 100), c.asunto(), c.html(), c.adjuntos(), usuario, c.logo());
     } catch (Exception e) {
       logger.warn("[Prealerta] {} no se pudo armar el correo: {}", r.nombre, e.getMessage());
     }
@@ -501,18 +502,18 @@ public class PrealertaCierreService {
       String nombre = r.nombre.replaceAll("[^A-Za-z0-9_-]", "");
       adjuntos.put("prealerta-" + (nombre.isEmpty() ? r.id : nombre) + ".xlsx", excel(r, manual, usuario, cerrada, observacion));
     }
-    return new Correo(asunto, html, adjuntos);
+    return new Correo(asunto, html, adjuntos, texto(cfg.get("logo")));
   }
 
   /** HTML del correo con datos de ejemplo y una plantilla dada (vista previa del editor; el logo va embebido). */
   public String vistaPrevia(Map<String, Object> cfg, boolean manual, String usuario) {
-    String logo = "";
-    try (java.io.InputStream in = getClass().getResourceAsStream("/mail/logo-woden.png")) {
-      if (in != null) {
-        logo = "data:image/png;base64," + java.util.Base64.getEncoder().encodeToString(in.readAllBytes());
+    String logo = texto(cfg.get("logo"));
+    if (!logo.startsWith("data:image/")) {
+      try (java.io.InputStream in = getClass().getResourceAsStream("/mail/logo-woden.png")) {
+        logo = in == null ? "" : "data:image/png;base64," + java.util.Base64.getEncoder().encodeToString(in.readAllBytes());
+      } catch (Exception e) {
+        logo = "";
       }
-    } catch (Exception e) {
-      // sin logo en la vista previa
     }
     return ejemplo(manual, usuario, cfg).html().replace("cid:logo", logo);
   }

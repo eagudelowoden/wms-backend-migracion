@@ -24,6 +24,7 @@ import com.woden.wms_backend.dto.clientDTO.PalletReportDTO;
 import com.woden.wms_backend.services.ClienteServices.BoletaMovimientoService;
 import com.woden.wms_backend.services.ClienteServices.BoletaReservaService;
 import com.woden.wms_backend.services.ClienteServices.DocumentoPlantillaService;
+import com.woden.wms_backend.services.ClienteServices.NotificacionCorreoService;
 import com.woden.wms_backend.services.ClienteServices.PalletDocumentoService;
 import com.woden.wms_backend.services.ClienteServices.PrealertaCierreService;
 
@@ -46,6 +47,9 @@ public class DocumentoController {
 
   @Autowired
   private BoletaReservaService boletaReservaService;
+
+  @Autowired
+  private NotificacionCorreoService notificacionCorreoService;
 
   @GetMapping("/tipos")
   public ResponseEntity<List<Map<String, String>>> tipos() {
@@ -97,6 +101,11 @@ public class DocumentoController {
       }
       case DocumentoPlantillaService.PALLET -> {
         return pdf(palletDocumentoService.generar(palletEjemplo(usuario), config));
+      }
+      case DocumentoPlantillaService.CORREO_SERIAL_MAC -> {
+        String html = notificacionCorreoService.vistaPreviaSerialMac(config, usuario);
+        return ResponseEntity.ok().contentType(new MediaType("text", "html", StandardCharsets.UTF_8))
+            .body(html.getBytes(StandardCharsets.UTF_8));
       }
       default -> {
         String html = prealertaCierreService.vistaPrevia(config, Boolean.TRUE.equals(body.get("manual")), usuario);
