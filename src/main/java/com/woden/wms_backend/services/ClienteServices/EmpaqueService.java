@@ -27,6 +27,9 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
     @Autowired
     private IngresoRepository ingresoRepository; // <--- 3. INYECCIÓN DEL REPOSITORIO DE INGRESO
 
+    @Autowired
+    private EmpaqueCodigoPalletService empaqueCodigoPallet;
+
     public EmpaqueService(EmpaqueRepository repository) {
         // Puedes dejar esto o quitarlo si usas @Autowired en los campos
     }
@@ -65,7 +68,8 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         //   - UPDATE Ingreso del serial (estadoSerialId + asignación de SmartCard)
         //   - UPDATE Ingreso de la SmartCard (si @SmartCardCode viene informado)
         Integer filasAfectadas = empaqueRepository.executeInsertPacking(
-                dto.getSerialId(), dto.getSerial(), dto.getMac(), dto.getCodigoSapId(),
+                dto.getSerialId(), dto.getSerial(), dto.getMac(),
+                empaqueCodigoPallet.codigoSap(dto.getCodigoSapId(), dto.getPalletId()), // EMPAQUE_CODIGOSAP_PALLET
                 dto.getPalletId(), dto.getCajaEmpaqueId(),
                 dto.getEstadoSerialId(),
                 dto.getNivelId(), dto.getUsuarioId(), java.time.LocalDateTime.now(),
@@ -86,7 +90,9 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
                               Integer usuarioId, LocalDateTime fecha, Integer loteId, Integer smartCardId, String smartCard) {
         try {
             Integer loteIdParam = (loteId != 0) ? loteId : null;
-            empaqueRepository.createInsert(serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId, nivelId,
+            empaqueRepository.createInsert(serialId, serial, mac,
+                    empaqueCodigoPallet.codigoSap(codigoSapId, palletId), // EMPAQUE_CODIGOSAP_PALLET
+                    palletId, cajaEmpaqueId, nivelId,
                     usuarioId, fecha, loteIdParam, smartCardId, smartCard);
         } catch (Exception e) {
             logger.error("Error al insertar empaque: {}", e.getMessage(), e);
@@ -111,7 +117,9 @@ public class EmpaqueService extends BaseService<EmpaqueModel, Integer> {
         try {
             // La Native Query devolverá el valor de @FilasOut a través del SELECT final
             Integer filasAfectadas = empaqueRepository.executeInsertPacking(
-                    serialId, serial, mac, codigoSapId, palletId, cajaEmpaqueId,
+                    serialId, serial, mac,
+                    empaqueCodigoPallet.codigoSap(codigoSapId, palletId), // EMPAQUE_CODIGOSAP_PALLET
+                    palletId, cajaEmpaqueId,
                     estadoId,
                     nivelId, usuarioId, fecha, loteParam, scIdParam, scParam,
                     null, null   // sin SmartCard en este flujo

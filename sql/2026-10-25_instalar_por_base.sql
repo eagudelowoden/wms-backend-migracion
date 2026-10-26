@@ -22,6 +22,8 @@
      - Interruptor SONIDO_ALERTAS_INGRESO (catálogo, una vez) y para el cliente si @ActivarSonido = 1.
      - Interruptores PREALERTA_CIERRE_MANUAL / PREALERTA_SOBRANTES para el cliente si @ActivarCierreManual /
        @ActivarSobrantes = 1.
+     - INSERT_AUTOMATICO_SMARTCARD (con @SmartcardCodigoSap / @SmartcardDestino, se valida que existan en la base) y
+       EMPAQUE_CODIGOSAP_PALLET si @ActivarSmartcardAutomatica / @ActivarEmpaqueCodigoPallet = 1.
    Los interruptores también se encienden o apagan desde Administración > Clientes > Validaciones; el usuario ve el
    cambio al volver a iniciar sesión.
      - Avisa si falta la tipología NO CONFORMIDAD o la novedad de accesorios (Despachado de accesorios la necesita).
@@ -33,6 +35,10 @@ DECLARE @ActivarConsecutivo BIT = 0;     -- 1 = boletas guardadas con documento 
 DECLARE @ActivarSonido BIT = 0;          -- 1 = sonido en los avisos y errores del WMS para este cliente
 DECLARE @ActivarCierreManual BIT = 0;    -- 1 = botón Cerrar prealerta en Ingreso
 DECLARE @ActivarSobrantes BIT = 0;       -- 1 = campo Sobrante de en Ingreso
+DECLARE @ActivarSmartcardAutomatica BIT = 0;          -- 1 = el Serial3 (smartcard) se crea también en Ingreso
+DECLARE @SmartcardCodigoSap VARCHAR(50) = 'CARD0001'; -- código SAP de la smartcard en esta base
+DECLARE @SmartcardDestino VARCHAR(50) = 'SMARTCARD';  -- estado (destino) con el que queda la smartcard
+DECLARE @ActivarEmpaqueCodigoPallet BIT = 0;          -- 1 = el empaque toma el código SAP del pallet
 
 DECLARE @sql NVARCHAR(MAX), @n INT, @clienteId INT;
 
@@ -245,6 +251,48 @@ BEGIN
 END
 CLOSE interruptores;
 DEALLOCATE interruptores;
+
+/* ── 6d. Smartcard automática y empaque con el código SAP del pallet (opcionales) ── */
+IF @ActivarSmartcardAutomatica = 1 AND @clienteId IS NOT NULL
+BEGIN
+  DECLARE @csId INT, @estId INT;
+  SET @sql = N'SELECT @csId = (SELECT TOP 1 Id FROM ' + QUOTENAME(@Db) + N'.dbo.CodigoSap WHERE Codigo = @cod),
+                      @estId = (SELECT TOP 1 Id FROM ' + QUOTENAME(@Db) + N'.dbo.Estado WHERE Nombre = @des)';
+  EXEC sys.sp_executesql @sql, N'@cod VARCHAR(50), @des VARCHAR(50), @csId INT OUTPUT, @estId INT OUTPUT',
+       @SmartcardCodigoSap, @SmartcardDestino, @csId OUTPUT, @estId OUTPUT;
+  IF @csId IS NULL OR @estId IS NULL
+    PRINT CONCAT('SMARTCARD: no se activó: en ', @Db, ' no existe el código SAP ', @SmartcardCodigoSap,
+                 ' o el estado ', @SmartcardDestino);
+  ELSE IF OBJECT_ID('WmsWdGeneral.dbo.SmartcardAutomatica', 'U') IS NULL
+    PRINT 'SMARTCARD: falta correr 2026-10-26_documentos_prealertas.sql';
+  ELSE
+  BEGIN
+    MERGE WmsWdGeneral.dbo.SmartcardAutomatica AS t USING (SELECT @clienteId AS ClienteId) AS s ON t.ClienteId = s.ClienteId
+    WHEN MATCHED THEN UPDATE SET CodigoSap = @SmartcardCodigoSap, Destino = @SmartcardDestino, Usuario = 'script por base', Fecha = GETDATE()
+    WHEN NOT MATCHED THEN INSERT (ClienteId, CodigoSap, Destino, Usuario, Fecha) VALUES (@clienteId, @SmartcardCodigoSap, @SmartcardDestino, 'script por base', GETDATE());
+    SET @tipoVal = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'INSERT_AUTOMATICO_SMARTCARD');
+    IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacion WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal)
+      UPDATE WmsWdGeneral.dbo.ClienteValidacion SET Activo = 1 WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal;
+    ELSE
+      INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoVal, 1, GETDATE());
+    PRINT CONCAT('INSERT_AUTOMATICO_SMARTCARD activo: ', @SmartcardCodigoSap, ' (Id ', @csId, ') -> ', @SmartcardDestino, ' (Id ', @estId, ')');
+  END
+END
+
+IF @ActivarEmpaqueCodigoPallet = 1 AND @clienteId IS NOT NULL
+BEGIN
+  SET @tipoVal = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'EMPAQUE_CODIGOSAP_PALLET');
+  IF @tipoVal IS NULL
+    PRINT 'EMPAQUE_CODIGOSAP_PALLET: falta correr 2026-10-26_documentos_prealertas.sql';
+  ELSE
+  BEGIN
+    IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacion WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal)
+      UPDATE WmsWdGeneral.dbo.ClienteValidacion SET Activo = 1 WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal;
+    ELSE
+      INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoVal, 1, GETDATE());
+    PRINT 'EMPAQUE_CODIGOSAP_PALLET activo para el cliente';
+  END
+END
 
 /* ── 7. Avisos ───────────────────────────────────────────────────────────────────── */
 SET @sql = N'SELECT @n = COUNT(*) FROM ' + QUOTENAME(@Db) + N'.dbo.Maestro m JOIN ' + QUOTENAME(@Db)

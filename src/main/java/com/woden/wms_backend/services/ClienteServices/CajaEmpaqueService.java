@@ -40,6 +40,9 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
   @Autowired
   private EmpaqueRepository empaqueRepository;
 
+  @Autowired
+  private EmpaqueCodigoPalletService empaqueCodigoPallet;
+
   /** Estado con el que queda una caja al ser rechazada en Calidad. */
   private static final int ESTADO_CAJA_RECHAZADA = 38;
 
@@ -274,7 +277,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
           empaque.getSerialId(),
           empaque.getSerial(),
           empaque.getMac(),
-          empaque.getCodigoSapId(),
+          empaqueCodigoPallet.codigoSap(empaque.getCodigoSapId(), empaque.getPalletId()), // EMPAQUE_CODIGOSAP_PALLET
           empaque.getPalletId(),
           empaque.getCajaEmpaqueId(),
           empaque.getNivelId(),

@@ -74,6 +74,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private TruckrollService truckrollService;
 
   @Autowired
+  private SmartcardAutomaticaService smartcardAutomaticaService;
+
+  @Autowired
   private DataSource dataSource;
 
   @Autowired
@@ -149,6 +152,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         Integer clientId = ClientDatabaseContext.getCurrentClientId();
         truckrollService.clasificarAsync(ingreso.getSerial(), ingreso.getMac(),
             ingreso.getTipoOrigenId(), clientDb, clientName, clientId);
+        // interruptor INSERT_AUTOMATICO_SMARTCARD: la smartcard del Serial3 también queda en Ingreso
+        smartcardAutomaticaService.crearSiAplica(ingreso.getSerial(), ingreso.getSerial3());
         return null;
       }
 
@@ -208,6 +213,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   @Transactional
   public void deleteEntries(List<String> seriales) {
     seriales.forEach(truckrollService::limpiarPorEliminacion);
+    // interruptor INSERT_AUTOMATICO_SMARTCARD: smartcards de estos equipos (vacío si está apagado)
+    List<String> tarjetas = smartcardAutomaticaService.tarjetasDe(seriales);
 
     try {
       String serialesJson = objectMapper.writeValueAsString(seriales);
@@ -216,6 +223,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       throw new RuntimeException("Error serializando seriales para eliminar", e);
     }
 
+    // misma transacción: se borran las que nadie más usa y siguen como se crearon
+    smartcardAutomaticaService.borrarSinUso(tarjetas);
   }
 
   // ── Búsqueda / mapeo ─────────────────────────────────────────────────────────
@@ -1325,6 +1334,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       String json = buildJsonFromResolved(permitidos);
       int insertados = ejecutarBulkInsert(json);
       response.setInsertados(insertados);
+      // interruptor INSERT_AUTOMATICO_SMARTCARD
+      smartcardAutomaticaService.crearSiAplica(permitidos.stream()
+          .map(r -> new String[] { r.getSerial(), r.getSerial3() }).collect(Collectors.toList()));
     } catch (Exception e) {
       logger.error("[massUploadConfirm] Error en inserción masiva: {}", e.getMessage(), e);
       for (MassUploadRowResolvedDTO s : permitidos) {
