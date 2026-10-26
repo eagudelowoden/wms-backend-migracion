@@ -318,14 +318,16 @@ public class DespachadoService {
     }
     // las unidades se cuentan por AccesoryId: hay salidas con el mismo accesorio registrado 2 o 3 veces
     List<Map<String, Object>> out = new ArrayList<>();
+    // tipoCodigo: Novedades de accesorios (pa_SearchNoveltyAccesoryPallet) solo muestra pallets de codigo tipo ACCESORIOS
     for (Object[] r : filas("SELECT d.CodigoSapId, cs.Codigo, cs.Descripcion, ISNULL(d.TipoAccesorio, ''), "
         + "ISNULL(d.EstadoLimpiezaId, 0), ISNULL(m.Codigo, ''), COUNT(DISTINCT d.AccesoryId), COUNT(*), "
-        + "CONVERT(varchar(16), MAX(d.Fecha), 120) "
+        + "CONVERT(varchar(16), MAX(d.Fecha), 120), ISNULL(mt.Codigo, '') "
         + "FROM DespachoAccesorio d WITH (NOLOCK) LEFT JOIN CodigoSap cs WITH (NOLOCK) ON cs.Id = d.CodigoSapId "
         + "LEFT JOIN Maestro m WITH (NOLOCK) ON m.Id = d.EstadoLimpiezaId "
+        + "LEFT JOIN Maestro mt WITH (NOLOCK) ON mt.Id = cs.TipoId "
         + "WHERE d.PedidoSap = ?1 AND NOT EXISTS (SELECT 1 FROM Accesorio a WITH (NOLOCK) WHERE a.Id = d.AccesoryId) "
         + "GROUP BY d.CodigoSapId, cs.Codigo, cs.Descripcion, ISNULL(d.TipoAccesorio, ''), ISNULL(d.EstadoLimpiezaId, 0), "
-        + "ISNULL(m.Codigo, '') ORDER BY cs.Codigo, 4, 6", sal)) {
+        + "ISNULL(m.Codigo, ''), ISNULL(mt.Codigo, '') ORDER BY cs.Codigo, 4, 6", sal)) {
       Map<String, Object> m = new LinkedHashMap<>();
       m.put("codigoSapId", num(r[0]));
       m.put("codigoSap", r[1]);
@@ -336,6 +338,8 @@ public class DespachadoService {
       m.put("unidades", num(r[6]));
       m.put("registros", num(r[7]));
       m.put("fecha", r[8]);
+      m.put("tipoCodigo", texto(r[9]));
+      m.put("esAccesorio", "ACCESORIOS".equalsIgnoreCase(texto(r[9])));
       out.add(m);
     }
     if (out.isEmpty()) {
@@ -376,6 +380,12 @@ public class DespachadoService {
       }
       if (n > num(g.get("unidades"))) {
         throw new BusinessRuleException(g.get("codigoSap") + ": solo hay " + num(g.get("unidades")) + " despachados en esta salida.");
+      }
+      if (!Boolean.TRUE.equals(g.get("esAccesorio"))) {
+        String tipoCodigo = texto(g.get("tipoCodigo"));
+        throw new BusinessRuleException(g.get("codigoSap") + " es un código de tipo " + (tipoCodigo.isEmpty() ? "sin tipo" : tipoCodigo)
+            + ", no ACCESORIOS: en Novedades de accesorios no aparecería. Corrija el código SAP de esos accesorios antes "
+            + "de regresarlos. No se regresó nada.");
       }
       pedir.add(g);
       cantidades.add(n);
