@@ -75,6 +75,8 @@ public class AutogestionService {
     map.put("modulo", r[11]);
     map.put("seccion", r[12]);
     map.put("esProduccion", r[13] != null && ((Number) r[13]).intValue() == 1);
+    map.put("esScrap", r[14] != null && ((Number) r[14]).intValue() == 1);
+    map.put("empacado", r[15] != null && ((Number) r[15]).intValue() > 0);
     return map;
   }
 
@@ -96,6 +98,8 @@ public class AutogestionService {
     map.put("esProduccion", r[8] != null && ((Number) r[8]).intValue() == 1);
     map.put("totalSeriales", r[9]);
     map.put("totalCajas", r[10]);
+    map.put("serialesScrap", r[11]);
+    map.put("serialesEmpacados", r[12]);
     List<Map<String, Object>> cajas = new ArrayList<>();
     for (Object[] c : repository.palletCajas(((Number) r[0]).intValue())) {
       Map<String, Object> caja = new LinkedHashMap<>();

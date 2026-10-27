@@ -62,6 +62,33 @@ BEGIN
 END
 GO
 
+-- Serial con estado final SCRAP en Reparacion (Maestro.Codigo/Descripcion empieza por SCRAP)
+CREATE OR ALTER FUNCTION dbo.fn_AutogestionEsScrap (@SerialId INT)
+RETURNS INT
+AS
+BEGIN
+    RETURN CASE WHEN EXISTS (
+        SELECT 1
+        FROM Reparacion r
+        INNER JOIN Maestro m ON m.Id = r.estadoFinalId
+        WHERE r.serialId = @SerialId
+          AND (m.Codigo LIKE 'SCRAP%' OR m.Descripcion LIKE 'SCRAP%')
+    ) THEN 1 ELSE 0 END;
+END
+GO
+
+-- Descripcion del Movimiento: "AUTOGESTION Envío a X, Desde: Y"
+CREATE OR ALTER FUNCTION dbo.fn_AutogestionDescripcion (@OrigenId INT, @DestinoId INT)
+RETURNS VARCHAR(200)
+AS
+BEGIN
+    RETURN 'AUTOGESTION Env' + NCHAR(237) + 'o a '
+         + ISNULL((SELECT nombre FROM WmsWdGeneral.dbo.Estado WHERE id = @DestinoId), '?')
+         + ', Desde: '
+         + ISNULL((SELECT nombre FROM WmsWdGeneral.dbo.Estado WHERE id = @OrigenId), '?');
+END
+GO
+
 -- 2b) Estados destino permitidos por ambito ----------------------------------
 --     SERIAL: a donde se puede mover un serial
 --     PALLET: a donde se puede mover un pallet (estados P-* y *-ENTREGA)
@@ -118,7 +145,9 @@ BEGIN
            i.palletId, p.numero AS pallet,
            i.cajaEmpaqueId, ce.numero AS cajaEmpaque,
            m.nombre AS modulo, s.nombre AS seccion,
-           dbo.fn_AutogestionEsProduccion(i.estadoId) AS esProduccion
+           dbo.fn_AutogestionEsProduccion(i.estadoId) AS esProduccion,
+           dbo.fn_AutogestionEsScrap(i.Id) AS esScrap,
+           ISNULL(i.palletIdEmpaque, 0) AS palletIdEmpaque
     FROM Ingreso i
     LEFT JOIN CodigoSap cs ON cs.id = i.codigoSapId
     LEFT JOIN WmsWdGeneral.dbo.Estado es ON es.id = i.estadoId
@@ -149,8 +178,9 @@ BEGIN
     IF LEN(LTRIM(RTRIM(ISNULL(@Justificacion, '')))) < 10
         THROW 50010, 'La justificacion es obligatoria (minimo 10 caracteres).', 1;
 
-    DECLARE @Id INT, @EstadoOrigen INT, @PalletOrigen INT, @CajaOrigen INT;
-    SELECT @Id = Id, @EstadoOrigen = estadoId, @PalletOrigen = palletId, @CajaOrigen = cajaEmpaqueId
+    DECLARE @Id INT, @EstadoOrigen INT, @PalletOrigen INT, @CajaOrigen INT, @PalletEmpaque INT;
+    SELECT @Id = Id, @EstadoOrigen = estadoId, @PalletOrigen = palletId, @CajaOrigen = cajaEmpaqueId,
+           @PalletEmpaque = palletIdEmpaque
     FROM Ingreso WHERE Serial = @Serial;
 
     IF @Id IS NULL
@@ -158,6 +188,13 @@ BEGIN
 
     IF dbo.fn_AutogestionEsProduccion(@EstadoOrigen) = 0
         THROW 50020, 'El serial esta en un modulo de Logistica (o fuera de Produccion): solo se puede consultar.', 1;
+
+    IF dbo.fn_AutogestionEsScrap(@Id) = 1
+        THROW 50040, 'No se puede realizar el movimiento: el serial tiene estado final SCRAP en Reparacion.', 1;
+
+    -- Serial ya empacado en un pallet de empaque: solo se puede sacar de la caja (accion CAJA)
+    IF ISNULL(@PalletEmpaque, 0) > 0 AND @Accion <> 'CAJA'
+        THROW 50041, 'No se puede mover: el serial esta empacado (tiene pallet de empaque).', 1;
 
     DECLARE @NuevoEstado INT = @EstadoOrigen,
             @NuevoPallet INT = @PalletOrigen,
@@ -215,7 +252,7 @@ BEGIN
 
     IF ISNULL(@NuevoEstado, 0) <> ISNULL(@EstadoOrigen, 0)
         INSERT INTO Movimiento (SerialId, Serial, OrigenId, DestinoId, Descripcion, UsuarioId, Fecha)
-        VALUES (@Id, @Serial, @EstadoOrigen, @NuevoEstado, 'AUTOGESTION', @UsuarioId, GETDATE());
+        VALUES (@Id, @Serial, @EstadoOrigen, @NuevoEstado, dbo.fn_AutogestionDescripcion(@EstadoOrigen, @NuevoEstado), @UsuarioId, GETDATE());
 
     INSERT INTO AutogestionLog (UsuarioId, Accion, SerialId, Serial, EstadoOrigenId, EstadoDestinoId,
                                 PalletOrigenId, PalletDestinoId, CajaOrigenId, CajaDestinoId, Cantidad, Justificacion)
@@ -238,7 +275,9 @@ BEGIN
            m.nombre AS modulo, s.nombre AS seccion,
            dbo.fn_AutogestionEsProduccion(p.destinoId) AS esProduccion,
            (SELECT COUNT(*) FROM Ingreso i WHERE i.palletId = p.id) AS totalSeriales,
-           (SELECT COUNT(*) FROM CajaEmpaque ce WHERE ce.palletId = p.id AND ce.activo = 1) AS totalCajas
+           (SELECT COUNT(*) FROM CajaEmpaque ce WHERE ce.palletId = p.id AND ce.activo = 1) AS totalCajas,
+           (SELECT COUNT(*) FROM Ingreso i WHERE i.palletId = p.id AND dbo.fn_AutogestionEsScrap(i.Id) = 1) AS serialesScrap,
+           (SELECT COUNT(*) FROM Ingreso i WHERE i.palletId = p.id AND ISNULL(i.palletIdEmpaque, 0) > 0) AS serialesEmpacados
     FROM Pallet p
     LEFT JOIN CodigoSap cs ON cs.id = p.codigoSapId
     LEFT JOIN WmsWdGeneral.dbo.Estado es ON es.id = p.destinoId
@@ -293,6 +332,16 @@ BEGIN
     IF dbo.fn_AutogestionEsProduccion(@EstadoActual) = 0
         THROW 50020, 'El pallet esta en un modulo de Logistica (o fuera de Produccion): solo se puede consultar.', 1;
 
+    -- Pallet con algun serial en SCRAP (Reparacion): ningun movimiento
+    IF EXISTS (SELECT 1 FROM Ingreso i WHERE i.palletId = @PalletId AND dbo.fn_AutogestionEsScrap(i.Id) = 1)
+        THROW 50040, 'No se puede realizar el movimiento: el pallet tiene seriales con estado final SCRAP en Reparacion.', 1;
+
+    -- Pallet en Empaque o con seriales empacados: ninguna accion (mover, sacar seriales, pasar a pallet, eliminar caja)
+    IF (
+           EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Estado e WHERE e.id = @EstadoActual AND e.nombre LIKE '%EMPAQUE%')
+        OR EXISTS (SELECT 1 FROM Ingreso i WHERE i.palletId = @PalletId AND ISNULL(i.palletIdEmpaque, 0) > 0))
+        THROW 50041, 'No se puede mover: el pallet esta en Empaque o tiene seriales empacados.', 1;
+
     DECLARE @Cantidad INT = 0, @CajaId INT = NULL, @PalletDestinoId INT = NULL, @NuevoEstado INT = @EstadoActual;
     DECLARE @EstadoSacado INT = (SELECT TOP 1 id FROM WmsWdGeneral.dbo.Estado WHERE nombre = 'P-EMPAQUE');
 
@@ -332,7 +381,7 @@ BEGIN
     IF @Accion = 'MOVER'
     BEGIN
         INSERT INTO Movimiento (SerialId, Serial, OrigenId, DestinoId, Descripcion, UsuarioId, Fecha)
-        SELECT i.Id, i.Serial, i.estadoId, @NuevoEstado, 'AUTOGESTION', @UsuarioId, GETDATE()
+        SELECT i.Id, i.Serial, i.estadoId, @NuevoEstado, dbo.fn_AutogestionDescripcion(i.estadoId, @NuevoEstado), @UsuarioId, GETDATE()
         FROM Ingreso i
         WHERE i.palletId = @PalletId AND ISNULL(i.estadoId, 0) <> @NuevoEstado;
 
@@ -360,7 +409,7 @@ BEGIN
         BEGIN
             -- "Sacar": palletId = 0, cajaEmpaqueId = 0 y vuelven a P-EMPAQUE
             INSERT INTO Movimiento (SerialId, Serial, OrigenId, DestinoId, Descripcion, UsuarioId, Fecha)
-            SELECT i.Id, i.Serial, i.estadoId, @EstadoSacado, 'AUTOGESTION', @UsuarioId, GETDATE()
+            SELECT i.Id, i.Serial, i.estadoId, @EstadoSacado, dbo.fn_AutogestionDescripcion(i.estadoId, @EstadoSacado), @UsuarioId, GETDATE()
             FROM Ingreso i
             WHERE i.Id IN (SELECT SerialId FROM @Seriales) AND ISNULL(i.estadoId, 0) <> @EstadoSacado;
 
