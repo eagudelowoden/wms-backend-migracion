@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
+import com.woden.wms_backend.services.ClienteServices.DepreciacionService;
 import com.woden.wms_backend.services.ClienteServices.DiagnosticoService;
 
 @RestController
@@ -32,6 +33,9 @@ public class DiagnosticoController {
 
   @Autowired
   private DiagnosticoService service;
+
+  @Autowired
+  private DepreciacionService depreciacionService;
 
   @GetMapping("/updateCodigoSapDiagnostico")
   public Integer updateSapCode(@RequestParam String serial) {
@@ -121,6 +125,11 @@ public class DiagnosticoController {
   @GetMapping("/getDiagnosticVariables")
   public ResponseEntity<List<Map<String, Object>>> getDiagnosticVariables(@RequestParam String serial) {
     return ResponseEntity.ok(service.getDiagnosticVariables(serial));
+  }
+
+  @GetMapping("/consultarDepreciacion")
+  public ResponseEntity<Map<String, Object>> consultarDepreciacion(@RequestParam String serial) {
+    return ResponseEntity.ok(depreciacionService.consultarEstadoDepreciacion(serial));
   }
 
   @PostMapping("/uploadHojaVida")

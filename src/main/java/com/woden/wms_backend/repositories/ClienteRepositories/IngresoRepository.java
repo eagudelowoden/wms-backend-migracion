@@ -583,6 +583,6 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT CASE WHEN OBJECT_ID('dbo.Depreciados', 'U') IS NULL THEN 0 ELSE 1 END", nativeQuery = true)
 	Integer existeTablaDepreciados();
 
-	@Query(value = "SELECT CASE WHEN EXISTS (SELECT 1 FROM dbo.Depreciados WHERE SerialNumber = :serial) THEN 1 ELSE 0 END", nativeQuery = true)
+	@Query(value = "SELECT CASE WHEN EXISTS (SELECT 1 FROM dbo.Depreciados WHERE LTRIM(RTRIM(SerialNumber)) = LTRIM(RTRIM(:serial))) THEN 1 ELSE 0 END", nativeQuery = true)
 	Integer existeDepreciado(@Param("serial") String serial);
 }

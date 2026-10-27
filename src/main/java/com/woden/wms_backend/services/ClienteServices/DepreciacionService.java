@@ -92,6 +92,9 @@ public class DepreciacionService {
         Integer reingresos = empaqueRepository.countReingresosNivel62(serial);
         int totalReingresos = reingresos != null ? reingresos : 0;
 
+        logger.warn("[DEPRECIACION-EVAL] clienteId={} serial='{}' modo={} enDepreciados={} reingresos={}",
+                ClientDatabaseContext.getCurrentClientId(), serial, modo, enDepreciados, totalReingresos);
+
         boolean cumple = modo == Modo.AMBAS
                 ? enDepreciados && totalReingresos >= REINGRESOS_MINIMOS
                 : enDepreciados || totalReingresos >= REINGRESOS_MINIMOS;
@@ -161,8 +164,8 @@ public class DepreciacionService {
                 : enDepreciados || totalReingresos >= REINGRESOS_MINIMOS;
 
         result.put("seraDepreciado", seraDepreciado);
-        logger.debug("[DEPRECIACION-CONSULTA] Serial {} modo={} seraDepreciado={} enDepreciados={} reingresos={}",
-                serial, modo, seraDepreciado, enDepreciados, totalReingresos);
+        logger.warn("[DEPRECIACION-CONSULTA] clienteId={} serial='{}' modo={} seraDepreciado={} enDepreciados={} reingresos={}",
+                clienteId, serial, modo, seraDepreciado, enDepreciados, totalReingresos);
         return result;
     }
 }

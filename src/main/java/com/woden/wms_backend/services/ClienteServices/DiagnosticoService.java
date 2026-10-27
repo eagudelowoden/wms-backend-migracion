@@ -159,6 +159,16 @@ public class DiagnosticoService {
       map.put("fecha", row[12] != null ? row[12].toString() : "");
       // El SP devuelve: ..., Fecha(12), TruckRollId(13), rn(14). Con el SP viejo (14 cols) la posición 13 es rn — no mapear.
       map.put("truckRollId", row.length > 13 && row[13] != null ? Integer.parseInt(row[13].toString()) : null);
+      String serialVal = row[2] != null ? row[2].toString() : null;
+      boolean seraDepreciado = false;
+      if (serialVal != null) {
+        try {
+          Map<String, Object> dep = depreciacionService.consultarEstadoDepreciacion(serialVal);
+          seraDepreciado = Boolean.TRUE.equals(dep.get("seraDepreciado"));
+        } catch (Exception ignored) {
+        }
+      }
+      map.put("seraDepreciado", seraDepreciado);
       formattedResults.add(map);
     }
     return formattedResults;
