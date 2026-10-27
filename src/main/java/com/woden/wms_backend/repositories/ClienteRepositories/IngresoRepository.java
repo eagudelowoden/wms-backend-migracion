@@ -360,8 +360,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "EXEC pa_SearchQualityEntry", nativeQuery = true)
 	List<Object[]> searchQualityEntry();
 
-	@Query(value = "EXEC pa_SearchAuditoriaInSituEntry", nativeQuery = true)
-	List<Object[]> searchAuditoriaInSituEntry();
+	@Query(value = "EXEC pa_SearchQualityEntryExtras :extras", nativeQuery = true)
+	List<Object[]> searchQualityEntryExtras(@Param("extras") Integer extras);
+
+	@Query(value = "EXEC pa_SearchAuditoriaInSituEntry :extras", nativeQuery = true)
+	List<Object[]> searchAuditoriaInSituEntry(@Param("extras") Integer extras);
 
 	@Modifying
 	@Transactional
