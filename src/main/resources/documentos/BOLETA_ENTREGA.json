@@ -34,10 +34,10 @@
   "titulo": "Formato control movimiento mercancías",
   "subtitulo": "Bodegas Woden",
   "campos": [
-    { "etiqueta": "Fecha entrega", "valor": "{fecha_entrega}", "resaltar": false },
-    { "etiqueta": "Nota de remisión", "valor": "{documento}", "resaltar": true },
-    { "etiqueta": "Área origen", "valor": "{origen}", "resaltar": false },
-    { "etiqueta": "Área destino", "valor": "{destino}", "resaltar": false }
+    { "etiqueta": "Fecha entrega", "valor": "{fecha_entrega}", "resaltar": false, "tipo": "texto" },
+    { "etiqueta": "Nota de remisión", "valor": "{documento}", "resaltar": true, "tipo": "texto" },
+    { "etiqueta": "Área origen", "valor": "{origen}", "resaltar": false, "tipo": "texto" },
+    { "etiqueta": "Área destino", "valor": "{destino}", "resaltar": false, "tipo": "texto" }
   ],
   "columnas": [
     { "titulo": "#", "valor": "{n}", "ancho": 5, "alinear": "center", "estilo": "tenue", "total": false },
@@ -57,5 +57,6 @@
     "izquierda": "© {empresa_nombre}. Todos los derechos reservados.",
     "derecha": "LS-ADM-FO-16 · Página {pagina} de {paginas}"
   },
-  "pagina": { "margenSuperior": 10, "centrar": true }
+  "pagina": { "margenSuperior": 10, "centrar": true },
+  "espacios": { "sobreTitulo": 10.5, "bajoTitulo": 2, "firmaNombre": 0.8 }
 }

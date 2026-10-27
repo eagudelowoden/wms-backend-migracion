@@ -15,4 +15,7 @@ public class PalletReportDTO {
   private String usuario;
   private Integer cantidad;
   private String posicion;
+  // opcionales (boleta editable): si no llegan se buscan por el número del pallet
+  private String nombreUsuario;
+  private String lote;
 }

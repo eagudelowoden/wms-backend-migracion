@@ -133,12 +133,18 @@ public class PrealertaCierreService {
     return out;
   }
 
-  /** Prealertas que se pueden elegir como origen de un sobrante (abiertas o cerradas hace poco). */
+  /**
+   * Prealertas que se pueden elegir como origen de un sobrante: las mismas del selector de prealerta de Ingreso
+   * (RECOGIDO si el cliente trabaja con recogida, si no CARGADO).
+   */
   public List<Map<String, Object>> paraSobrante() {
     List<Map<String, Object>> out = new ArrayList<>();
+    Integer cliente = ClientDatabaseContext.getCurrentClientId();
+    List<Object[]> recogida = filas("SELECT CASE WHEN ISNULL(recogidaON, 0) = 1 THEN 'RECOGIDO' ELSE 'CARGADO' END "
+        + "FROM WmsWdGeneral.dbo.Cliente WHERE Id = ?1", cliente == null ? 0 : cliente);
+    String estado = recogida.isEmpty() ? "CARGADO" : texto(recogida.get(0)[0]);
     for (Object[] f : filas("SELECT TOP 300 p.Id, p.Nombre, ISNULL(p.Guia, ''), ISNULL(p.Estado, ''), "
-        + "CONVERT(varchar(10), p.Fecha, 23) FROM Prealerta p WHERE p.Estado IN ('CARGADO', 'RECOGIDO') "
-        + "OR (p.Estado = 'COMPLETADA' AND p.Fecha >= DATEADD(day, -60, GETDATE())) ORDER BY p.Id DESC")) {
+        + "CONVERT(varchar(10), p.Fecha, 23) FROM Prealerta p WHERE p.Estado = ?1 ORDER BY p.Id DESC", estado)) {
       Map<String, Object> m = new LinkedHashMap<>();
       m.put("id", num(f[0]));
       m.put("nombre", texto(f[1]));

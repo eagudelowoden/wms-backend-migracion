@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.BoletaMovimientoDTO;
+import com.woden.wms_backend.util.CodigoImagen;
 import com.woden.wms_backend.util.PlantillaTexto;
 
 import io.pebbletemplates.pebble.PebbleEngine;
@@ -57,6 +59,14 @@ public class BoletaMovimientoService {
   private static final double ANCHO_UTIL_MM = 210 - 26;
   /** centrado de una boleta de una sola hoja: nunca más de esto hacia abajo */
   private static final double MAX_CENTRADO_MM = 45;
+  /** espacios de fábrica (mm): sobre el título, bajo el título y entre la firma y el nombre */
+  private static final double SOBRE_TITULO_MM = 10.5;
+  private static final double BAJO_TITULO_MM = 2;
+  private static final double FIRMA_NOMBRE_MM = 0.8;
+  /** QR y código de barras dentro de la boleta (alto en mm); fila de campos sin imagen */
+  private static final double QR_MM = 14;
+  private static final double BARRAS_MM = 9;
+  private static final double FILA_CAMPOS_MM = 6.4;
 
   private final PebbleEngine pebbleEngine = new PebbleEngine.Builder().build();
 
@@ -114,6 +124,23 @@ public class BoletaMovimientoService {
   private Map<String, Object> contexto(BoletaMovimientoDTO request, Map<String, Object> cfg) {
     List<BoletaMovimientoDTO.ItemDTO> equipos = request.getEquipos() == null ? List.of() : request.getEquipos();
     int totalUnidades = totalUnidades(equipos);
+    String todo = String.valueOf(cfg);
+
+    // posición, lote, fecha y cajas de cada pallet (los de la base o, en la vista previa, los del ejemplo)
+    Map<Integer, String[]> extra = datosPallets(equipos, todo);
+    List<String[]> porItem = new ArrayList<>();
+    LinkedHashSet<String> lotes = new LinkedHashSet<>();
+    int totalCajas = 0;
+    for (BoletaMovimientoDTO.ItemDTO item : equipos) {
+      String[] ex = item.getId() == null ? null : extra.get(item.getId());
+      String lote = ex != null ? ex[1] : nulo(item.getLote());
+      String cajas = ex != null ? ex[3] : (item.getCajas() == null ? "" : String.valueOf(item.getCajas()));
+      porItem.add(new String[] { ex == null ? "" : ex[0], lote, ex == null ? "" : ex[2], cajas });
+      if (!lote.isBlank()) {
+        lotes.add(lote);
+      }
+      totalCajas += cajas.matches("\\d+") ? Integer.parseInt(cajas) : 0;
+    }
 
     Map<String, String> vars = new HashMap<>();
     vars.put("documento", nulo(request.getPedidoSap()));
@@ -131,6 +158,9 @@ public class BoletaMovimientoService {
     vars.put("total_unidades", miles(totalUnidades));
     vars.put("total_pallets", String.valueOf(equipos.size()));
     vars.put("fecha_impresion", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+    vars.put("lotes", String.join(", ", lotes));
+    vars.put("total_cajas", miles(totalCajas));
+    vars.put("responsable_op", todo.contains("{responsable_op}") ? responsableOp() : "");
 
     Map<String, Object> ctx = new HashMap<>();
     ctx.put("documento", PlantillaTexto.escapar(nulo(request.getPedidoSap())));
@@ -184,7 +214,8 @@ public class BoletaMovimientoService {
       Map<String, Object> f = mapa(o);
       Map<String, Object> campo = new HashMap<>();
       campo.put("etiqueta", PlantillaTexto.html(texto(f.get("etiqueta")), vars));
-      campo.put("valor", PlantillaTexto.html(texto(f.get("valor")), vars));
+      campo.put("valor", texto(f.get("valor")));
+      campo.put("tipo", tipoCodigo(f.get("tipo")));
       campo.put("resaltar", Boolean.TRUE.equals(f.get("resaltar")));
       campo.put("ancho", false);
       campos.add(campo);
@@ -197,6 +228,24 @@ public class BoletaMovimientoService {
         campos.get(i).put("ancho", true);
         camposFilas.add(List.of(campos.get(i)));
       }
+    }
+    // valor de cada campo: texto o, si es QR / código de barras, la imagen (una fila con imagen hace más alto el
+    // encabezado que se repite en cada hoja)
+    double extraCampos = 0;
+    for (List<Map<String, Object>> fila : camposFilas) {
+      double altoImagen = 0;
+      for (Map<String, Object> campo : fila) {
+        double anchoMm = ANCHO_UTIL_MM * (Boolean.TRUE.equals(campo.get("ancho")) ? 0.83 : 0.33) - 5;
+        String valor = (String) campo.get("valor");
+        String tipo = (String) campo.get("tipo");
+        String plano = PlantillaTexto.texto(valor, vars).trim();
+        String img = tipo.isEmpty() || plano.isEmpty() ? null : imagen(tipo, plano, anchoMm);
+        campo.put("valor", img != null ? img : PlantillaTexto.html(valor, vars));
+        if (img != null) {
+          altoImagen = Math.max(altoImagen, altoImagen(tipo, anchoMm));
+        }
+      }
+      extraCampos += altoImagen > 0 ? Math.max(0, altoImagen + 2.2 - FILA_CAMPOS_MM) : 0;
     }
     ctx.put("campos_filas", camposFilas);
 
@@ -216,12 +265,18 @@ public class BoletaMovimientoService {
       suma += ancho;
       columnas.add(columna);
     }
+    double altoImagenFila = 0;
     for (Map<String, Object> columna : columnas) {
       columna.put("ancho", redondo((double) columna.get("anchoBruto") * 100 / (suma <= 0 ? 1 : suma)));
+      double anchoMm = (double) columna.get("ancho") * ANCHO_UTIL_MM / 100 - 3.2;
+      columna.put("anchoMm", anchoMm);
+      String estilo = (String) columna.get("estilo");
+      if (estilo.equals("qr") || estilo.equals("barras")) {
+        altoImagenFila = Math.max(altoImagenFila, altoImagen(estilo, anchoMm));
+      }
     }
     ctx.put("columnas", columnas);
 
-    Map<Integer, String[]> extra = datosPallets(equipos, columnas);
     List<List<Map<String, String>>> filas = new ArrayList<>();
     int n = 0;
     for (BoletaMovimientoDTO.ItemDTO item : equipos) {
@@ -233,14 +288,22 @@ public class BoletaMovimientoService {
       fv.put("descripcion", nulo(item.getDescripcion()));
       fv.put("cantidad", item.getCantidad() == null ? "" : String.valueOf(item.getCantidad()));
       fv.put("tipologia", nulo(item.getTipologia()));
-      String[] ex = item.getId() == null ? null : extra.get(item.getId());
-      fv.put("posicion", ex == null ? "" : ex[0]);
-      fv.put("lote", ex == null ? "" : ex[1]);
-      fv.put("fecha_pallet", ex == null ? "" : ex[2]);
+      String[] ex = porItem.get(n - 1);
+      fv.put("posicion", ex[0]);
+      fv.put("lote", ex[1]);
+      fv.put("fecha_pallet", ex[2]);
+      fv.put("cajas", ex[3]);
       List<Map<String, String>> fila = new ArrayList<>();
       for (Map<String, Object> columna : columnas) {
-        fila.add(Map.of("valor", PlantillaTexto.html((String) columna.get("valor"), fv),
-            "estilo", (String) columna.get("estilo"), "alinear", (String) columna.get("alinear")));
+        String estilo = (String) columna.get("estilo");
+        String valor = (String) columna.get("valor");
+        String img = null;
+        if (estilo.equals("qr") || estilo.equals("barras")) {
+          String plano = PlantillaTexto.texto(valor, fv).trim();
+          img = plano.isEmpty() ? null : imagen(estilo, plano, (double) columna.get("anchoMm"));
+        }
+        fila.add(Map.of("valor", img != null ? img : PlantillaTexto.html(valor, fv),
+            "estilo", estilo, "alinear", (String) columna.get("alinear")));
       }
       filas.add(fila);
     }
@@ -291,6 +354,17 @@ public class BoletaMovimientoService {
     ctx.put("firmas", firmas);
     ctx.put("ancho_firma", firmas.isEmpty() ? 100 : redondo(100.0 / firmas.size()));
 
+    Map<String, Object> espacios = mapa(cfg.get("espacios"));
+    double sobreTitulo = PlantillaTexto.numero(espacios.get("sobreTitulo"), SOBRE_TITULO_MM, 0, 40);
+    double bajoTitulo = PlantillaTexto.numero(espacios.get("bajoTitulo"), BAJO_TITULO_MM, 0, 40);
+    double firmaNombre = PlantillaTexto.numero(espacios.get("firmaNombre"), FIRMA_NOMBRE_MM, 0, 40);
+    // la línea gris sobre el título queda a 60 / 40 del espacio, como en el formato de fábrica
+    ctx.put("titulo_margen", redondo(sobreTitulo * 0.6));
+    ctx.put("titulo_relleno", redondo(sobreTitulo * 0.4));
+    ctx.put("bajo_titulo", redondo(bajoTitulo));
+    ctx.put("firma_nombre", redondo(firmaNombre));
+    double encabezado = ENCABEZADO_MM + (sobreTitulo - SOBRE_TITULO_MM) + (bajoTitulo - BAJO_TITULO_MM) + extraCampos;
+
     Map<String, Object> pie = mapa(cfg.get("pie"));
     ctx.put("pie_izquierda", PlantillaTexto.html(texto(pie.get("izquierda")), vars));
     ctx.put("pie_derecha", PlantillaTexto.html(texto(pie.get("derecha")), vars));
@@ -298,30 +372,33 @@ public class BoletaMovimientoService {
     // margen superior: el de la plantilla y, si la boleta cabe en una hoja, centrada en la hoja segun sus filas
     Map<String, Object> pagina = mapa(cfg.get("pagina"));
     double margen = PlantillaTexto.numero(pagina.get("margenSuperior"), 10, 0, 60);
-    double disponible = HOJA_MM - ENCABEZADO_MM - margen - PIE_MM;
-    double estimado = altoEstimado(equipos, columnas, filas, observaciones, firmas, mostrarTotal);
+    double disponible = HOJA_MM - encabezado - margen - PIE_MM;
+    double estimado = altoEstimado(equipos, columnas, filas, observaciones, firmas, mostrarTotal, altoImagenFila)
+        + (firmas.isEmpty() ? 0 : firmaNombre - FIRMA_NOMBRE_MM);
     double centrado = 0;
     if (!Boolean.FALSE.equals(pagina.get("centrar")) && estimado < disponible) {
       centrado = Math.min(MAX_CENTRADO_MM, (disponible - estimado) / 2);
     }
-    ctx.put("margen_superior", redondo(ENCABEZADO_MM + margen + centrado));
+    ctx.put("margen_superior", redondo(encabezado + margen + centrado));
     return ctx;
   }
 
   /** Alto aproximado del cuerpo (detalle, total, observaciones, firmas) en mm, para centrar una boleta corta. */
   private double altoEstimado(List<BoletaMovimientoDTO.ItemDTO> equipos, List<Map<String, Object>> columnas,
       List<List<Map<String, String>>> filas, Map<String, Object> observaciones, List<Map<String, String>> firmas,
-      boolean total) {
+      boolean total, double altoImagenFila) {
     double alto = 7.5; // títulos del detalle
     for (List<Map<String, String>> fila : filas) {
       int lineas = 1;
       for (int i = 0; i < fila.size() && i < columnas.size(); i++) {
         double anchoMm = (double) columnas.get(i).get("ancho") * ANCHO_UTIL_MM / 100 - 3.2;
         int porLinea = Math.max(4, (int) (anchoMm / 1.45));
-        int largo = fila.get(i).get("valor").replaceAll("<[^>]*>", "").length();
+        String estilo = fila.get(i).get("estilo");
+        int largo = estilo.equals("qr") || estilo.equals("barras") ? 0
+            : fila.get(i).get("valor").replaceAll("<[^>]*>", "").length();
         lineas = Math.max(lineas, (int) Math.ceil(largo / (double) porLinea));
       }
-      alto += 2.4 + lineas * 3.6;
+      alto += 2.4 + Math.max(lineas * 3.6, altoImagenFila);
     }
     if (total) {
       alto += 9;
@@ -335,32 +412,90 @@ public class BoletaMovimientoService {
     return alto;
   }
 
-  /** Posición, lote y fecha de cada pallet: solo si alguna columna los usa. */
-  private Map<Integer, String[]> datosPallets(List<BoletaMovimientoDTO.ItemDTO> equipos,
-      List<Map<String, Object>> columnas) {
+  /** Posición, lote, fecha y cajas de cada pallet: solo si la plantilla usa alguno. */
+  private Map<Integer, String[]> datosPallets(List<BoletaMovimientoDTO.ItemDTO> equipos, String plantilla) {
     Map<Integer, String[]> out = new HashMap<>();
-    boolean usa = columnas.stream().map(col -> (String) col.get("valor"))
-        .anyMatch(v -> v.contains("{posicion}") || v.contains("{lote}") || v.contains("{fecha_pallet}"));
+    boolean usa = List.of("{posicion}", "{lote}", "{fecha_pallet}", "{cajas}", "{lotes}", "{total_cajas}").stream()
+        .anyMatch(plantilla::contains);
     if (!usa || em == null || equipos.isEmpty()) {
       return out;
     }
-    try {
-      String ids = equipos.stream().map(BoletaMovimientoDTO.ItemDTO::getId).filter(i -> i != null && i > 0)
-          .distinct().limit(2000).map(String::valueOf).collect(Collectors.joining(","));
-      if (ids.isEmpty()) {
+    String ids = equipos.stream().map(BoletaMovimientoDTO.ItemDTO::getId).filter(i -> i != null && i > 0)
+        .distinct().limit(2000).map(String::valueOf).collect(Collectors.joining(","));
+    if (ids.isEmpty()) {
+      return out;
+    }
+    // cajas como en Despacho: las de CajaDespacho activas o, si no hay, las cajas de empaque de sus equipos
+    String cajasEmpaque = "(SELECT COUNT(DISTINCT ie.CajaEmpaqueId) FROM Ingreso ie WHERE ie.PalletId = p.Id "
+        + "AND ie.CajaEmpaqueId > 0)";
+    String cajasDespacho = "ISNULL(NULLIF((SELECT COUNT(*) FROM CajaDespacho cd WHERE cd.palletId = p.Id "
+        + "AND cd.Activo = 1), 0), " + cajasEmpaque + ")";
+    for (String cajas : List.of(cajasDespacho, cajasEmpaque, "''")) {
+      try {
+        List<?> rs = em.createNativeQuery("SELECT p.Id, ISNULL(pos.Numero, ''), ISNULL(l.nombre, ''), "
+            + "CONVERT(varchar(16), p.Fecha, 120), " + cajas + " FROM Pallet p "
+            + "LEFT JOIN Posicion pos ON pos.Id = p.PosicionId LEFT JOIN Lote l ON l.id = p.loteId "
+            + "WHERE p.Id IN (" + ids + ")").getResultList();
+        for (Object f : rs) {
+          Object[] r = (Object[]) f;
+          out.put(((Number) r[0]).intValue(), new String[] { texto(r[1]), texto(r[2]), texto(r[3]), texto(r[4]) });
+        }
         return out;
+      } catch (Exception e) {
+        logger.warn("[BoletaMovimiento] datos de los pallets: {}", e.getMessage());
       }
-      List<?> rs = em.createNativeQuery("SELECT p.Id, ISNULL(pos.Numero, ''), ISNULL(l.nombre, ''), "
-          + "CONVERT(varchar(16), p.Fecha, 120) FROM Pallet p LEFT JOIN Posicion pos ON pos.Id = p.PosicionId "
-          + "LEFT JOIN Lote l ON l.id = p.loteId WHERE p.Id IN (" + ids + ")").getResultList();
-      for (Object f : rs) {
-        Object[] r = (Object[]) f;
-        out.put(((Number) r[0]).intValue(), new String[] { texto(r[1]), texto(r[2]), texto(r[3]) });
-      }
-    } catch (Exception e) {
-      logger.warn("[BoletaMovimiento] sin datos extra de los pallets: {}", e.getMessage());
     }
     return out;
+  }
+
+  /** Responsable de operación: Maestros > Responsable Op (los activos, separados por " / "). */
+  private String responsableOp() {
+    if (em == null) {
+      return "";
+    }
+    try {
+      List<?> rs = em.createNativeQuery("SELECT ISNULL(NULLIF(LTRIM(RTRIM(m.Descripcion)), ''), m.Codigo) FROM Maestro m "
+          + "INNER JOIN TipoMaestro tm ON tm.Id = m.TipoMaestroId WHERE tm.Nombre = 'Responsable Op' AND m.Activo = 1 "
+          + "ORDER BY m.Id").getResultList();
+      return rs.stream().map(BoletaMovimientoService::texto).map(String::trim).filter(v -> !v.isEmpty())
+          .collect(Collectors.joining(" / "));
+    } catch (Exception e) {
+      logger.warn("[BoletaMovimiento] sin responsable de operación: {}", e.getMessage());
+      return "";
+    }
+  }
+
+  /** QR o código de barras como imagen; null si no se pudo generar (queda el texto). */
+  private static String imagen(String tipo, String valor, double anchoMm) {
+    try {
+      double ancho;
+      double alto;
+      String uri;
+      if (tipo.equals("qr")) {
+        ancho = Math.min(QR_MM, anchoMm);
+        alto = ancho;
+        uri = CodigoImagen.qr(valor);
+      } else {
+        CodigoImagen.Imagen img = CodigoImagen.barrasImagen(valor);
+        ancho = Math.min(anchoMm, BARRAS_MM * img.proporcion());
+        alto = ancho / img.proporcion();
+        uri = img.uri();
+      }
+      return "<img src=\"" + uri + "\" alt=\"\" style=\"width:" + redondo(ancho) + "mm;height:" + redondo(alto)
+          + "mm\"/>";
+    } catch (Exception e) {
+      logger.warn("[BoletaMovimiento] {} de '{}' no se generó: {}", tipo, valor, e.getMessage());
+      return null;
+    }
+  }
+
+  private static double altoImagen(String tipo, double anchoMm) {
+    return tipo.equals("qr") ? Math.min(QR_MM, anchoMm) : BARRAS_MM;
+  }
+
+  private static String tipoCodigo(Object v) {
+    String t = texto(v);
+    return t.equals("qr") || t.equals("barras") ? t : "";
   }
 
   /** Total bajo la columna marcada: el número de filas si es la columna #, si no el total de unidades. */
@@ -380,7 +515,7 @@ public class BoletaMovimientoService {
   private static String estilo(Object v) {
     String e = texto(v);
     return switch (e) {
-      case "tenue", "mono", "negrita" -> e;
+      case "tenue", "mono", "negrita", "qr", "barras" -> e;
       default -> "";
     };
   }

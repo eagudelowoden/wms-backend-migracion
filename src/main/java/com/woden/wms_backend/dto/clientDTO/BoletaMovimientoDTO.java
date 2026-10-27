@@ -31,5 +31,8 @@ public class BoletaMovimientoDTO {
     private String descripcion;
     private Integer cantidad;
     private String tipologia;
+    // opcionales: si no llegan se buscan por el Id del pallet (la vista previa los manda de ejemplo)
+    private String lote;
+    private Integer cajas;
   }
 }

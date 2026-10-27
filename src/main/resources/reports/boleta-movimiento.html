@@ -40,8 +40,8 @@
     .ctrl table td.val { font-weight: bold; text-align: right; }
 
     .titulo {
-      margin-top: 24px;
-      padding-top: 16px;
+      margin-top: {{ titulo_margen }}mm;
+      padding-top: {{ titulo_relleno }}mm;
       border-top: 0.6px solid #dfe3e8;
       text-align: center;
       font-size: 13px;
@@ -51,7 +51,7 @@
       color: {{ c.texto }};
     }
     .subtitulo { text-align: center; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: {{ c.etiquetas }}; }
-    .acento { border-top: 2px solid {{ c.acento }}; margin: 6px 0 7px; }
+    .acento { border-top: 2px solid {{ c.acento }}; margin: 6px 0 {{ bajo_titulo }}mm; }
 
     /* ── Datos de la boleta ── */
     .meta td { border: 0.6px solid {{ c.bordes }}; padding: 4px 8px; }
@@ -78,6 +78,8 @@
     .items .tenue { color: #8a93a0; }
     .items .mono { font-family: "Courier New", monospace; font-weight: bold; }
     .items .negrita { font-weight: bold; }
+    .items td.qr, .items td.barras { padding: 2px 6px; }
+    .meta td.val img { display: block; margin: 1mm 0; }
 
     /* ── Total: misma grilla que el detalle, el valor queda bajo su columna ── */
     .totales { page-break-inside: avoid; }
@@ -107,7 +109,7 @@
     }
     .linea { border-top: 0.8px solid {{ c.texto }}; margin: 2px 10% 3px; }
     .firmas .etq { font-size: 8.5px; color: {{ c.etiquetas }}; }
-    .firmas .nombre { font-size: 9.5px; margin-top: 3px; }
+    .firmas .nombre { font-size: 9.5px; margin-top: {{ firma_nombre }}mm; }
 
     .pie table td { font-size: 7.5px; color: #8a93a0; padding-top: 4px; border-top: 0.6px solid #dfe3e8; }
   </style>

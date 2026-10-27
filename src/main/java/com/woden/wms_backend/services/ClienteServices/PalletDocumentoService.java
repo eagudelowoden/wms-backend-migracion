@@ -1,6 +1,5 @@
 package com.woden.wms_backend.services.ClienteServices;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -14,8 +13,6 @@ import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
 import org.jsoup.nodes.Document;
-import org.krysalis.barcode4j.impl.code128.Code128Bean;
-import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +20,12 @@ import org.springframework.stereotype.Service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.woden.wms_backend.dto.clientDTO.PalletReportDTO;
+import com.woden.wms_backend.util.CodigoImagen;
 import com.woden.wms_backend.util.PlantillaTexto;
 
 import io.pebbletemplates.pebble.PebbleEngine;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * Boleta del pallet que viaja entre módulos con la plantilla del cliente (Administración > Documentos > Boleta de
@@ -47,6 +47,9 @@ public class PalletDocumentoService {
 
   @Autowired(required = false)
   private DocumentoPlantillaService plantillas;
+
+  @PersistenceContext
+  private EntityManager em;
 
   /** El cliente imprime la boleta de pallet con su plantilla (si falla la lectura, sigue el Jasper). */
   public boolean usaEditor() {
@@ -76,6 +79,9 @@ public class PalletDocumentoService {
     vars.put("modelo", nulo(dto.getModelo()));
     vars.put("usuario", nulo(dto.getUsuario()));
     vars.put("cantidad", dto.getCantidad() == null ? "" : String.valueOf(dto.getCantidad()));
+    String[] extra = datosPallet(dto, cfg);
+    vars.put("nombre_usuario", extra[0]);
+    vars.put("lote", extra[1]);
 
     Map<String, Object> ctx = new HashMap<>();
     ctx.put("pallet", PlantillaTexto.escapar(nulo(dto.getPallet())));
@@ -120,12 +126,18 @@ public class PalletDocumentoService {
       fila.put("valor", PlantillaTexto.escapar(valor));
       fila.put("tamanoEtiqueta", ajustar(etiqueta, PlantillaTexto.numero(f.get("tamanoEtiqueta"), 30, 6, 60), anchoEtqPt, alto));
       fila.put("tamano", ajustar(valor, PlantillaTexto.numero(f.get("tamano"), 30, 6, 60), anchoValPt, alto));
-      if ("barras".equals(texto(f.get("tipo"))) && !valor.isBlank()) {
-        fila.put("barras", barras(valor));
+      String tipo = texto(f.get("tipo"));
+      if ("barras".equals(tipo) && !valor.isBlank()) {
+        fila.put("barras", CodigoImagen.barras(valor));
         // proporción del código del Jasper (281 x 129 en una fila de 140)
         double altoBarras = Math.max(10, alto - 11);
         fila.put("altoBarras", altoBarras);
         fila.put("anchoBarras", Math.min(anchoValPt, altoBarras * 281 / 129));
+      } else if ("qr".equals(tipo) && !valor.isBlank()) {
+        double lado = Math.max(10, Math.min(alto - 6, anchoValPt));
+        fila.put("barras", CodigoImagen.qr(valor));
+        fila.put("altoBarras", lado);
+        fila.put("anchoBarras", lado);
       }
       filas.add(fila);
     }
@@ -153,18 +165,31 @@ public class PalletDocumentoService {
     return Math.max(6, Math.floor(Math.min(t, cabe) * 10) / 10);
   }
 
-  private static String barras(String codigo) throws Exception {
-    Code128Bean bean = new Code128Bean();
-    bean.setModuleWidth(0.3);
-    bean.setBarHeight(15);
-    bean.doQuietZone(true);
-    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-      BitmapCanvasProvider canvas = new BitmapCanvasProvider(out, "image/png", 300, BufferedImage.TYPE_BYTE_BINARY,
-          false, 0);
-      bean.generateBarcode(canvas, codigo);
-      canvas.finish();
-      return "data:image/png;base64," + Base64.getEncoder().encodeToString(out.toByteArray());
+  /**
+   * Usuario (NombreUsuario) y lote del pallet: los manda el front o se buscan por el número del pallet, solo si alguna
+   * fila los usa.
+   */
+  private String[] datosPallet(PalletReportDTO dto, Map<String, Object> cfg) {
+    String usuario = nulo(dto.getNombreUsuario());
+    String lote = nulo(dto.getLote());
+    String filas = String.valueOf(cfg.get("filas")) + texto(cfg.get("titulo")) + texto(cfg.get("pie"));
+    boolean faltaUsuario = usuario.isBlank() && filas.contains("{nombre_usuario}");
+    boolean faltaLote = lote.isBlank() && filas.contains("{lote}");
+    if ((faltaUsuario || faltaLote) && em != null && !nulo(dto.getPallet()).isBlank()) {
+      try {
+        List<?> rs = em.createNativeQuery("SELECT TOP 1 ISNULL(u.NombreUsuario, ''), ISNULL(l.nombre, '') FROM Pallet p "
+            + "LEFT JOIN WmsWdGeneral.dbo.Usuario u ON u.Id = p.UsuarioId LEFT JOIN Lote l ON l.id = p.loteId "
+            + "WHERE p.Numero = ?1 ORDER BY p.Id DESC").setParameter(1, dto.getPallet().trim()).getResultList();
+        if (!rs.isEmpty()) {
+          Object[] r = (Object[]) rs.get(0);
+          usuario = faltaUsuario ? texto(r[0]) : usuario;
+          lote = faltaLote ? texto(r[1]) : lote;
+        }
+      } catch (Exception e) {
+        logger.warn("[Pallet] sin usuario/lote del pallet {}: {}", dto.getPallet(), e.getMessage());
+      }
     }
+    return new String[] { usuario, lote };
   }
 
   private String recurso(String ruta, boolean esLogo) {

@@ -57,14 +57,15 @@ public class DocumentoController {
   }
 
   @GetMapping("/consecutivo")
-  public ResponseEntity<Map<String, Object>> consecutivo(@RequestParam(defaultValue = "") String zonaHoraria) {
-    return ResponseEntity.ok(boletaReservaService.consecutivo(zonaHoraria));
+  public ResponseEntity<Map<String, Object>> consecutivo(@RequestParam(defaultValue = "") String zonaHoraria,
+      @RequestParam(defaultValue = "") String formato) {
+    return ResponseEntity.ok(boletaReservaService.consecutivo(zonaHoraria, formato));
   }
 
   @PutMapping("/consecutivo")
   public ResponseEntity<Map<String, Object>> fijarConsecutivo(@RequestParam int ultimo,
-      @RequestParam(defaultValue = "") String zonaHoraria) {
-    return ResponseEntity.ok(boletaReservaService.fijarConsecutivo(ultimo, zonaHoraria));
+      @RequestParam(defaultValue = "") String zonaHoraria, @RequestParam(defaultValue = "") String formato) {
+    return ResponseEntity.ok(boletaReservaService.fijarConsecutivo(ultimo, zonaHoraria, formato));
   }
 
   @GetMapping("/{tipo}")
@@ -100,7 +101,10 @@ public class DocumentoController {
         return pdf(boletaMovimientoService.generarBoleta(boletaEjemplo(datos, usuario), config));
       }
       case DocumentoPlantillaService.PALLET -> {
-        return pdf(palletDocumentoService.generar(palletEjemplo(usuario), config));
+        PalletReportDTO pallet = palletEjemplo(usuario);
+        pallet.setNombreUsuario(texto(datos.get("login")).isBlank() ? "usuario" : texto(datos.get("login")));
+        pallet.setLote("LOTE-2026-10");
+        return pdf(palletDocumentoService.generar(pallet, config));
       }
       case DocumentoPlantillaService.CORREO_SERIAL_MAC -> {
         String html = notificacionCorreoService.vistaPreviaSerialMac(config, usuario);
@@ -142,6 +146,8 @@ public class DocumentoController {
       it.setDescripcion(i % 2 == 0 ? "EMTA DOCSIS3.0 TG2482 ARRIS" : "DECODIFICADOR HD DCX525");
       it.setCantidad(48 + (i * 37) % 300);
       it.setTipologia(i % 3 == 0 ? "LIBRE UTILIZACION" : "EMPAQUE APROBADO");
+      it.setLote(i < 4 ? "LOTE-2026-10" : "LOTE-2026-11");
+      it.setCajas(2 + i % 4);
       items.add(it);
     }
     r.setEquipos(items);

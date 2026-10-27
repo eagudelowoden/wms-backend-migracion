@@ -164,6 +164,13 @@
 			<version>2.1</version>
 		</dependency>
 
+		<!-- QR de los documentos editables (Administración > Documentos) -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+
 		<!-- Pebble: motor de plantillas (sintaxis Jinja2/Twig) para reportes HTML -->
 		<dependency>
 			<groupId>io.pebbletemplates</groupId>

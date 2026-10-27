@@ -10,6 +10,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -26,7 +28,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
 /**
- * Boletas de movimiento de Despacho guardadas (Reservar / Despachar / Cancelar) y el documento consecutivo AAAA-NNN.
+ * Boletas de movimiento de Despacho guardadas (Reservar / Despachar / Cancelar) y el documento consecutivo (formato
+ * por cliente, AAAA-NNN de fábrica).
  *
  * Las tablas viven en WmsWdGeneral por ClienteId (sql/2026-10-24_boleta_reservas_consecutivo.sql). Mientras la boleta
  * esta RESERVADA sus pallets no se pueden enviar, despachar, abrir ni eliminar: hay que despacharla o cancelarla.
@@ -46,6 +49,19 @@ public class BoletaReservaService {
   private EntityManager em;
 
   // ── consecutivo ───────────────────────────────────────────────────────────
+  // Formato por cliente (Documentos > Boleta de entrega > Consecutivo): {AAAA} año, {AA} año corto, {MM} mes y {NNN}
+  // el número con tantos dígitos como N. El contador se reinicia según el formato: cada mes si lleva {MM}, cada año si
+  // lleva el año y nunca si no lleva ninguno. El formato se guarda en DocumentoPlantilla (Tipo CONSECUTIVO_BOLETA) y el
+  // contador en BoletaConsecutivo con la clave del periodo en Anio (AAAA, AAAAMM o 1).
+  private static final String FORMATO_TIPO = "CONSECUTIVO_BOLETA";
+  private static final String FORMATO_FABRICA = "{AAAA}-{NNN}";
+  private static final Pattern TOKEN = Pattern.compile("\\{([A-Z]+)\\}");
+  private static final Pattern FORMATO_JSON = Pattern.compile("\"formato\"\\s*:\\s*\"([^\"]*)\"");
+  /** BoletaMovimiento.Documento es VARCHAR(20) */
+  private static final int MAX_DOCUMENTO = 20;
+
+  /** clave del contador, año y mes en curso */
+  private record Periodo(int clave, int anio, int mes) {}
 
   public boolean usaConsecutivo() {
     Integer n = entero("SELECT COUNT(*) FROM " + G + "ClienteValidacion cv JOIN " + G
@@ -60,64 +76,181 @@ public class BoletaReservaService {
     boolean consecutivo = tablas() && usaConsecutivo();
     out.put("consecutivo", consecutivo);
     if (consecutivo) {
-      int anio = anio(zonaHoraria);
+      String formato = formatoCliente();
+      Periodo p = periodo(formato, zonaHoraria);
       Integer ultimo = entero("SELECT Ultimo FROM " + G + "BoletaConsecutivo WHERE ClienteId = ?1 AND Anio = ?2",
-          cliente(), anio);
-      out.put("siguiente", formato(anio, (ultimo == null ? 0 : ultimo) + 1));
+          cliente(), p.clave());
+      out.put("siguiente", documento(formato, p, (ultimo == null ? 0 : ultimo) + 1));
     }
-    return out;
-  }
-
-  /** Último documento del año (Administración > Documentos > Boleta de entrega): AAAA-NNN y el siguiente. */
-  public Map<String, Object> consecutivo(String zonaHoraria) {
-    exigirTablas();
-    int anio = anio(zonaHoraria);
-    Integer ultimo = entero("SELECT Ultimo FROM " + G + "BoletaConsecutivo WHERE ClienteId = ?1 AND Anio = ?2",
-        cliente(), anio);
-    Integer usado = entero("SELECT MAX(Consecutivo) FROM " + G + "BoletaMovimiento WHERE ClienteId = ?1 AND Anio = ?2",
-        cliente(), anio);
-    int u = ultimo == null ? 0 : ultimo;
-    Map<String, Object> out = new LinkedHashMap<>();
-    out.put("activo", usaConsecutivo());
-    out.put("anio", anio);
-    out.put("ultimo", u);
-    out.put("ultimoDocumento", u == 0 ? "" : formato(anio, u));
-    out.put("siguiente", formato(anio, u + 1));
-    out.put("minimo", usado == null ? 0 : usado);
     return out;
   }
 
   /**
-   * Fija el último consecutivo del año (cuando la numeración ya venía de antes): el siguiente documento será
-   * ultimo + 1. No puede quedar por debajo de una boleta ya guardada (se repetiría el documento).
+   * Último documento del periodo (Administración > Documentos > Boleta de entrega) y el siguiente. Con un formato
+   * propuesto (aún sin fijar) responde con el contador del periodo de ese formato.
+   */
+  public Map<String, Object> consecutivo(String zonaHoraria, String formatoPropuesto) {
+    exigirTablas();
+    String guardado = formatoCliente();
+    String propuesto = limpio(formatoPropuesto);
+    String error = propuesto.isEmpty() ? null : errorFormato(propuesto);
+    String formato = propuesto.isEmpty() || error != null ? guardado : propuesto;
+    Periodo p = periodo(formato, zonaHoraria);
+    Integer ultimo = entero("SELECT Ultimo FROM " + G + "BoletaConsecutivo WHERE ClienteId = ?1 AND Anio = ?2",
+        cliente(), p.clave());
+    List<Object[]> usado = filas("SELECT TOP 1 Consecutivo, Documento FROM " + G + "BoletaMovimiento "
+        + "WHERE ClienteId = ?1 AND Anio = ?2 AND Consecutivo IS NOT NULL ORDER BY Consecutivo DESC", cliente(), p.clave());
+    int u = ultimo == null ? 0 : ultimo;
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("activo", usaConsecutivo());
+    out.put("formato", formato);
+    out.put("formatoGuardado", guardado);
+    out.put("errorFormato", error == null ? "" : error);
+    out.put("anio", p.anio());
+    out.put("mes", p.mes());
+    out.put("ultimo", u);
+    out.put("ultimoDocumento", u == 0 ? "" : documento(formato, p, u));
+    out.put("siguiente", documento(formato, p, u + 1));
+    out.put("minimo", usado.isEmpty() ? 0 : num(usado.get(0)[0]));
+    out.put("minimoDocumento", usado.isEmpty() ? "" : limpio(String.valueOf(usado.get(0)[1])));
+    return out;
+  }
+
+  /**
+   * Fija el formato y el último consecutivo del periodo (cuando la numeración ya venía de antes): el siguiente
+   * documento será ultimo + 1. No puede quedar por debajo de una boleta ya guardada (se repetiría el documento).
    */
   @Transactional(rollbackFor = Exception.class)
-  public Map<String, Object> fijarConsecutivo(int ultimo, String zonaHoraria) {
+  public Map<String, Object> fijarConsecutivo(int ultimo, String zonaHoraria, String formatoNuevo) {
     exigirTablas();
+    String guardado = formatoCliente();
+    String formato = limpio(formatoNuevo).isEmpty() ? guardado : limpio(formatoNuevo);
+    String error = errorFormato(formato);
+    if (error != null) {
+      throw new BusinessRuleException(error);
+    }
     if (ultimo < 0 || ultimo > 999999) {
       throw new BusinessRuleException("El consecutivo debe estar entre 0 y 999999.");
     }
-    int anio = anio(zonaHoraria);
-    Integer usado = entero("SELECT MAX(Consecutivo) FROM " + G + "BoletaMovimiento WHERE ClienteId = ?1 AND Anio = ?2",
-        cliente(), anio);
-    if (usado != null && ultimo < usado) {
-      throw new BusinessRuleException("Ya existe la boleta " + formato(anio, usado) + ": el último consecutivo no puede "
+    Periodo p = periodo(formato, zonaHoraria);
+    List<Object[]> usado = filas("SELECT TOP 1 Consecutivo, Documento FROM " + G + "BoletaMovimiento "
+        + "WHERE ClienteId = ?1 AND Anio = ?2 AND Consecutivo IS NOT NULL ORDER BY Consecutivo DESC", cliente(), p.clave());
+    if (!usado.isEmpty() && ultimo < num(usado.get(0)[0])) {
+      throw new BusinessRuleException("Ya existe la boleta " + usado.get(0)[1] + ": el último consecutivo no puede "
           + "ser menor.");
+    }
+    String siguiente = documento(formato, p, ultimo + 1);
+    if (siguiente.length() > MAX_DOCUMENTO) {
+      throw new BusinessRuleException("El documento " + siguiente + " pasa de " + MAX_DOCUMENTO + " caracteres.");
+    }
+    if (!formato.equals(guardado)) {
+      guardarFormato(formato);
     }
     actualizar("MERGE " + G + "BoletaConsecutivo WITH (HOLDLOCK) AS t "
         + "USING (SELECT ?1 AS ClienteId, ?2 AS Anio) AS s ON t.ClienteId = s.ClienteId AND t.Anio = s.Anio "
         + "WHEN MATCHED THEN UPDATE SET Ultimo = ?3 "
-        + "WHEN NOT MATCHED THEN INSERT (ClienteId, Anio, Ultimo) VALUES (s.ClienteId, s.Anio, ?3);", cliente(), anio, ultimo);
-    return consecutivo(zonaHoraria);
+        + "WHEN NOT MATCHED THEN INSERT (ClienteId, Anio, Ultimo) VALUES (s.ClienteId, s.Anio, ?3);",
+        cliente(), p.clave(), ultimo);
+    return consecutivo(zonaHoraria, "");
   }
 
-  private int tomarConsecutivo(int cliente, int anio) {
+  private int tomarConsecutivo(int cliente, int clave) {
     Object r = consulta("MERGE " + G + "BoletaConsecutivo WITH (HOLDLOCK) AS t "
         + "USING (SELECT ?1 AS ClienteId, ?2 AS Anio) AS s ON t.ClienteId = s.ClienteId AND t.Anio = s.Anio "
         + "WHEN MATCHED THEN UPDATE SET Ultimo = t.Ultimo + 1 "
         + "WHEN NOT MATCHED THEN INSERT (ClienteId, Anio, Ultimo) VALUES (s.ClienteId, s.Anio, 1) "
-        + "OUTPUT inserted.Ultimo;", cliente, anio).getSingleResult();
+        + "OUTPUT inserted.Ultimo;", cliente, clave).getSingleResult();
     return num(r);
+  }
+
+  /** Formato guardado del cliente; el de fábrica si no hay o no es válido. */
+  private String formatoCliente() {
+    Integer hay = entero("SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.DocumentoPlantilla', 'U') IS NULL THEN 0 ELSE 1 END");
+    if (hay == null || hay == 0) {
+      return FORMATO_FABRICA;
+    }
+    List<Object[]> r = filas("SELECT Config FROM " + G + "DocumentoPlantilla WHERE ClienteId = ?1 AND Tipo = ?2",
+        cliente(), FORMATO_TIPO);
+    if (r.isEmpty() || r.get(0)[0] == null) {
+      return FORMATO_FABRICA;
+    }
+    Matcher m = FORMATO_JSON.matcher(String.valueOf(r.get(0)[0]));
+    String f = m.find() ? m.group(1) : "";
+    return errorFormato(f) == null ? f : FORMATO_FABRICA;
+  }
+
+  private void guardarFormato(String formato) {
+    Integer hay = entero("SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.DocumentoPlantilla', 'U') IS NULL THEN 0 ELSE 1 END");
+    if (hay == null || hay == 0) {
+      throw new BusinessRuleException("Para cambiar el formato falta el script 2026-10-26_documentos_prealertas.sql.");
+    }
+    // el formato ya está validado: solo letras, números, espacios y . _ / # - fuera de las variables (JSON seguro)
+    actualizar("MERGE " + G + "DocumentoPlantilla AS t USING (SELECT ?1 AS ClienteId, ?2 AS Tipo) AS s "
+        + "ON t.ClienteId = s.ClienteId AND t.Tipo = s.Tipo "
+        + "WHEN MATCHED THEN UPDATE SET Config = ?3, Activo = 1, Fecha = GETDATE() "
+        + "WHEN NOT MATCHED THEN INSERT (ClienteId, Tipo, Config, Activo, Usuario, Fecha) "
+        + "VALUES (?1, ?2, ?3, 1, '', GETDATE());", cliente(), FORMATO_TIPO, "{\"formato\":\"" + formato + "\"}");
+  }
+
+  /** null si el formato sirve; si no, el motivo. */
+  private static String errorFormato(String formato) {
+    String f = limpio(formato);
+    if (f.isEmpty()) {
+      return "Indique el formato del consecutivo.";
+    }
+    if (f.length() > 40) {
+      return "El formato admite máximo 40 caracteres.";
+    }
+    int numeros = 0;
+    boolean anio = false;
+    boolean mes = false;
+    Matcher m = TOKEN.matcher(f);
+    while (m.find()) {
+      String t = m.group(1);
+      if (t.matches("N{1,9}")) {
+        numeros++;
+      } else if (t.equals("AAAA") || t.equals("AA")) {
+        anio = true;
+      } else if (t.equals("MM")) {
+        mes = true;
+      } else {
+        return "Variable no válida en el formato: {" + t + "}.";
+      }
+    }
+    if (!TOKEN.matcher(f).replaceAll("").matches("[A-Za-z0-9 ._/#-]*")) {
+      return "El formato solo admite letras, números, espacios, . _ / # - y las variables {AAAA} {AA} {MM} {NNN}.";
+    }
+    if (numeros != 1) {
+      return "El formato debe llevar una vez el número: {NNN}.";
+    }
+    if (mes && !anio) {
+      return "Con {MM} el formato debe llevar también el año ({AAAA} o {AA}).";
+    }
+    return null;
+  }
+
+  private static Periodo periodo(String formato, String zonaHoraria) {
+    LocalDate hoy = hoy(zonaHoraria);
+    int clave = formato.contains("{MM}") ? hoy.getYear() * 100 + hoy.getMonthValue()
+        : formato.contains("{AAAA}") || formato.contains("{AA}") ? hoy.getYear() : 1;
+    return new Periodo(clave, hoy.getYear(), hoy.getMonthValue());
+  }
+
+  private static String documento(String formato, Periodo p, int numero) {
+    Matcher m = TOKEN.matcher(formato);
+    StringBuilder sb = new StringBuilder();
+    while (m.find()) {
+      String t = m.group(1);
+      String v = switch (t) {
+        case "AAAA" -> String.valueOf(p.anio());
+        case "AA" -> String.format("%02d", p.anio() % 100);
+        case "MM" -> String.format("%02d", p.mes());
+        default -> String.format("%0" + t.length() + "d", numero);
+      };
+      m.appendReplacement(sb, Matcher.quoteReplacement(v));
+    }
+    m.appendTail(sb);
+    return sb.toString();
   }
 
   // ── reservar ──────────────────────────────────────────────────────────────
@@ -152,9 +285,15 @@ public class BoletaReservaService {
     int anio = 0;
     int consecutivo = 0;
     if (usaConsecutivo()) {
-      anio = anio(r.getZonaHoraria());
+      String formato = formatoCliente();
+      Periodo p = periodo(formato, r.getZonaHoraria());
+      anio = p.clave();
       consecutivo = tomarConsecutivo(cliente, anio);
-      documento = formato(anio, consecutivo);
+      documento = documento(formato, p, consecutivo);
+      if (documento.length() > MAX_DOCUMENTO) {
+        throw new BusinessRuleException("El documento " + documento + " pasa de " + MAX_DOCUMENTO
+            + " caracteres: revise el formato del consecutivo en Documentos.");
+      }
     } else {
       documento = limpio(r.getPedidoSap());
       if (documento.isEmpty()) {
@@ -392,16 +531,12 @@ public class BoletaReservaService {
     return id;
   }
 
-  private static int anio(String zonaHoraria) {
+  private static LocalDate hoy(String zonaHoraria) {
     try {
-      return LocalDate.now(ZoneId.of(limpio(zonaHoraria))).getYear();
+      return LocalDate.now(ZoneId.of(limpio(zonaHoraria)));
     } catch (DateTimeException e) {
-      return LocalDate.now(ZoneId.of("America/Bogota")).getYear();
+      return LocalDate.now(ZoneId.of("America/Bogota"));
     }
-  }
-
-  private static String formato(int anio, int consecutivo) {
-    return anio + "-" + String.format("%03d", consecutivo);
   }
 
   private static String enLista(List<Integer> ids) {

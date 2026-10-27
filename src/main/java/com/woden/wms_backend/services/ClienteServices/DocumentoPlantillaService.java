@@ -55,16 +55,18 @@ public class DocumentoPlantillaService {
         "destino", "Área destino", "usuario", "Quien entrega", "observaciones", "Observaciones",
         "cliente", "Cliente", "empresa_nombre", "Empresa", "empresa_ruc", "RUC", "empresa_telefono", "Teléfono",
         "empresa_email", "Correo", "empresa_web", "Sitio web", "total_unidades", "Total unidades",
-        "total_pallets", "Total pallets", "fecha_impresion", "Fecha de impresión", "pagina", "Página",
-        "paginas", "Total de páginas",
+        "total_pallets", "Total pallets", "total_cajas", "Total cajas", "lotes", "Lotes de los pallets",
+        "responsable_op", "Responsable de operación (Maestros > Responsable Op)",
+        "fecha_impresion", "Fecha de impresión", "pagina", "Página", "paginas", "Total de páginas",
         // por fila (columnas)
         "n", "Fila #", "no_pallet", "No. pallet", "codigo_sap", "Código SAP", "descripcion", "Descripción",
-        "cantidad", "Cantidad", "tipologia", "Tipología", "posicion", "Posición", "lote", "Lote",
+        "cantidad", "Cantidad", "cajas", "Cajas", "tipologia", "Tipología", "posicion", "Posición", "lote", "Lote",
         "fecha_pallet", "Fecha del pallet"));
     VARIABLES.put(PALLET, vars(
         "cliente", "Cliente", "pallet", "No. pallet", "posicion", "Posición", "fecha", "Fecha creación",
         "origen", "Origen", "destino", "Destino", "tipologia", "Tipología", "codigo_sap", "Código SAP",
-        "modelo", "Modelo", "usuario", "Usuario creación", "cantidad", "Cantidad"));
+        "modelo", "Modelo", "usuario", "Usuario creación", "nombre_usuario", "NombreUsuario",
+        "lote", "Lote", "cantidad", "Cantidad"));
     VARIABLES.put(CORREO_PREALERTA, vars(
         "cliente", "Cliente", "prealerta", "Prealerta", "guia", "Guía", "tipo_origen", "Tipo origen",
         "origen", "Origen", "creada", "Fecha de creación", "cerrada", "Fecha de cierre", "usuario", "Quien cierra",
