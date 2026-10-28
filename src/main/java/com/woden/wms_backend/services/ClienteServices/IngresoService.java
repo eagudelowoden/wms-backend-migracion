@@ -934,7 +934,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setCausa((String) obj[27]);
     }
     if (obj.length > 28) {
-      ingreso.setNovedadId((Integer) obj[28]);
+      ingreso.setModeloId((Integer) obj[28]);
+    }
+    if (obj.length > 29) {
+      ingreso.setNovedadId((Integer) obj[29]);
     }
     return ingreso;
   }
