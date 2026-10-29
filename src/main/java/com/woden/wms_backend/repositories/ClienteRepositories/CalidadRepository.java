@@ -57,8 +57,6 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
 
 
     @Query(value = "SELECT 1 FROM pa_updatequalitypalletentrybatch(p_estadoid => CAST(:estadoId AS integer), p_usuarioid => CAST(:usuarioIdMovimiento AS integer), p_palletids => CAST(:palletId AS text))", nativeQuery = true)
-    /*SP optimizado pa_UpdateQualityPalletEntryBatch*/
-    /*SP optimizado pa_UpdateQualityPalletEntry*/
     void updateQualityPalletEntry(
             @Param("estadoId") Integer estadoId,
             @Param("usuarioIdMovimiento") Integer usuarioIdMovimiento,
@@ -72,7 +70,7 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("serial") String serial
     );
 
-    @Query(value = "DECLARE @filas INT; EXEC pa_UpdateQualityExtrasBySerial :serial, :personal, :dni, :voltaje, :observaciones, @filas OUTPUT; SELECT @filas", nativeQuery = true)
+    @Query(value = "SELECT pa_updatequalityextrasbyserial(p_serial => CAST(:serial AS character varying), p_personal => CAST(:personal AS character varying), p_dni => CAST(:dni AS character varying), p_voltaje => CAST(:voltaje AS character varying), p_observaciones => CAST(:observaciones AS character varying))", nativeQuery = true)
     Integer updateQualityExtrasBySerial(
             @Param("serial") String serial,
             @Param("personal") String personal,
@@ -81,9 +79,8 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
             @Param("observaciones") String observaciones
     );
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_UpdateEstadoCalidadBySerial :serial, :estadoCalidadId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_updateestadocalidadbyserial(CAST(:serial AS character varying), CAST(:estadoCalidadId AS integer))", nativeQuery = true)
     void updateEstadoCalidadBySerial(
             @Param("serial") String serial,
             @Param("estadoCalidadId") Integer estadoCalidadId
@@ -93,15 +90,15 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
     @Query(value = "SELECT CAST(f.resultado AS integer) FROM pa_validatequalitybypallet(CAST(:palletId AS integer)) f", nativeQuery = true)
     Integer validateQualityByPallet(@Param("palletId") Integer palletId);
 
-    @Query(value = "SELECT TOP 1 c.Id, c.SerialId, c.Serial, c.Mac, c.CodigoSapId, c.PalletId, c.CajaEmpaqueId, " +
+    @Query(value = "SELECT c.Id, c.SerialId, c.Serial, c.Mac, c.CodigoSapId, c.PalletId, c.CajaEmpaqueId, " +
             "c.FallaFuncionalId, c.FallaCosmeticaId, c.UsuarioId, c.Fecha, " +
             "mf.Codigo AS FallaFuncionalCodigo, mc.Codigo AS FallaCosmeticaCodigo, " +
-            "CASE WHEN ISNULL(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo " +
-            "FROM dbo.Calidad c " +
-            "LEFT JOIN dbo.Maestro mf ON mf.Id = c.FallaFuncionalId " +
-            "LEFT JOIN dbo.Maestro mc ON mc.Id = c.FallaCosmeticaId " +
-            "LEFT JOIN dbo.Maestro me ON me.Id = c.EstadoFinalId " +
-            "WHERE c.Serial = :serial ORDER BY c.Id DESC", nativeQuery = true)
+            "CASE WHEN COALESCE(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo " +
+            "FROM Calidad c " +
+            "LEFT JOIN Maestro mf ON mf.Id = c.FallaFuncionalId " +
+            "LEFT JOIN Maestro mc ON mc.Id = c.FallaCosmeticaId " +
+            "LEFT JOIN Maestro me ON me.Id = c.EstadoFinalId " +
+            "WHERE c.Serial = :serial ORDER BY c.Id DESC LIMIT 1", nativeQuery = true)
     List<Object[]> findLatestBySerial(@Param("serial") String serial);
 
 

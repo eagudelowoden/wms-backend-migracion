@@ -149,10 +149,10 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
             return false;
         }
         String sql = "SELECT cv.Activo "
-                + "FROM [WmsWdGeneral].[dbo].[ClienteValidacion] cv "
-                + "INNER JOIN [WmsWdGeneral].[dbo].[ClienteValidacionTipo] cvt ON cvt.Id = cv.ValidacionTipoId "
-                + "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = 1 AND cvt.Activo = 1 "
-                + "AND OBJECT_ID('dbo.pa_UpdateQualityExtrasBySerial') IS NOT NULL";
+                + "FROM general.ClienteValidacion cv "
+                + "INNER JOIN general.ClienteValidacionTipo cvt ON cvt.Id = cv.ValidacionTipoId "
+                + "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = true AND cvt.Activo = true "
+                + "AND to_regproc('pa_updatequalityextrasbyserial') IS NOT NULL";
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, clienteId);
