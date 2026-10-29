@@ -43,11 +43,13 @@
     { "titulo": "#", "valor": "{n}", "ancho": 5, "alinear": "center", "estilo": "tenue", "total": false },
     { "titulo": "No pallet", "valor": "{no_pallet}", "ancho": 17, "alinear": "left", "estilo": "mono", "total": false },
     { "titulo": "Cod. SAP", "valor": "{codigo_sap}", "ancho": 14, "alinear": "left", "estilo": "negrita", "total": false },
-    { "titulo": "Descripción material", "valor": "{descripcion}", "ancho": 34, "alinear": "left", "estilo": "normal", "total": false },
-    { "titulo": "Cantidad", "valor": "{cantidad}", "ancho": 10, "alinear": "right", "estilo": "negrita", "total": true },
+    { "titulo": "Descripción material", "valor": "{descripcion}", "ancho": 28, "alinear": "left", "estilo": "normal", "total": false },
+    { "titulo": "Equipos", "valor": "{equipos}", "ancho": 8, "alinear": "right", "estilo": "negrita", "total": true },
+    { "titulo": "Accesorios", "valor": "{accesorios}", "ancho": 9, "alinear": "right", "estilo": "negrita", "total": true },
+    { "titulo": "Smartcard", "valor": "{smartcards}", "ancho": 9, "alinear": "right", "estilo": "negrita", "total": true },
     { "titulo": "Observaciones", "valor": "{tipologia}", "ancho": 20, "alinear": "left", "estilo": "normal", "total": false }
   ],
-  "total": { "mostrar": true, "etiqueta": "Total unidades" },
+  "total": { "mostrar": true, "etiqueta": "Totales" },
   "observaciones": { "mostrar": true, "etiqueta": "Observaciones" },
   "firmas": [
     { "titulo": "Entregado por", "firma": "{usuario}", "nombre": "{usuario}" },

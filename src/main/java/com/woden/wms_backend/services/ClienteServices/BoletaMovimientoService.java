@@ -157,6 +157,9 @@ public class BoletaMovimientoService {
     vars.put("empresa_email", nulo(request.getEmail()));
     vars.put("empresa_web", nulo(request.getWeb()));
     vars.put("total_unidades", miles(totalUnidades));
+    vars.put("total_equipos", miles(suma(equipos, BoletaMovimientoDTO.ItemDTO::getCantidadEquipos)));
+    vars.put("total_accesorios", miles(suma(equipos, BoletaMovimientoDTO.ItemDTO::getCantidadAccesorios)));
+    vars.put("total_smartcards", miles(suma(equipos, BoletaMovimientoDTO.ItemDTO::getCantidadSmartcard)));
     vars.put("total_pallets", String.valueOf(equipos.size()));
     vars.put("fecha_impresion", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
     vars.put("lotes", String.join(", ", lotes));
@@ -279,6 +282,7 @@ public class BoletaMovimientoService {
     ctx.put("columnas", columnas);
 
     List<List<Map<String, String>>> filas = new ArrayList<>();
+    long[] sumas = new long[columnas.size()];
     int n = 0;
     for (BoletaMovimientoDTO.ItemDTO item : equipos) {
       n++;
@@ -288,6 +292,9 @@ public class BoletaMovimientoService {
       fv.put("codigo_sap", nulo(item.getCodigoSap()));
       fv.put("descripcion", nulo(item.getDescripcion()));
       fv.put("cantidad", item.getCantidad() == null ? "" : String.valueOf(item.getCantidad()));
+      fv.put("equipos", item.getCantidadEquipos() == null ? "" : String.valueOf(item.getCantidadEquipos()));
+      fv.put("accesorios", item.getCantidadAccesorios() == null ? "" : String.valueOf(item.getCantidadAccesorios()));
+      fv.put("smartcards", item.getCantidadSmartcard() == null ? "" : String.valueOf(item.getCantidadSmartcard()));
       fv.put("tipologia", nulo(item.getTipologia()));
       String[] ex = porItem.get(n - 1);
       fv.put("posicion", ex[0]);
@@ -295,9 +302,13 @@ public class BoletaMovimientoService {
       fv.put("fecha_pallet", ex[2]);
       fv.put("cajas", ex[3]);
       List<Map<String, String>> fila = new ArrayList<>();
-      for (Map<String, Object> columna : columnas) {
+      for (int k = 0; k < columnas.size(); k++) {
+        Map<String, Object> columna = columnas.get(k);
         String estilo = (String) columna.get("estilo");
         String valor = (String) columna.get("valor");
+        if (Boolean.TRUE.equals(columna.get("total"))) {
+          sumas[k] += numero(PlantillaTexto.texto(valor, fv));
+        }
         String img = null;
         if (estilo.equals("qr") || estilo.equals("barras")) {
           String plano = PlantillaTexto.texto(valor, fv).trim();
@@ -310,7 +321,7 @@ public class BoletaMovimientoService {
     }
     ctx.put("filas", filas);
 
-    // total bajo la columna marcada como total
+    // total bajo cada columna marcada como total (cada una con su suma: equipos, accesorios y smartcards por separado)
     Map<String, Object> totalCfg = mapa(cfg.get("total"));
     Map<String, Object> total = new HashMap<>();
     int iTotal = -1;
@@ -327,13 +338,17 @@ public class BoletaMovimientoService {
       for (int i = 0; i < iTotal; i++) {
         antes += (double) columnas.get(i).get("ancho");
       }
-      double ancho = (double) columnas.get(iTotal).get("ancho");
+      List<Map<String, Object>> celdas = new ArrayList<>();
+      for (int i = iTotal; i < columnas.size(); i++) {
+        Map<String, Object> columna = columnas.get(i);
+        boolean conTotal = Boolean.TRUE.equals(columna.get("total"));
+        String v = !conTotal ? "" : "{n}".equals(((String) columna.get("valor")).trim()) ? miles(equipos.size())
+            : miles(sumas[i]);
+        celdas.add(Map.of("ancho", redondo((double) columna.get("ancho")), "alinear", columna.get("alinear"), "valor", v));
+      }
       total.put("antes", redondo(Math.max(antes, 1)));
-      total.put("ancho", redondo(ancho));
-      total.put("despues", redondo(Math.max(0, 100 - antes - ancho)));
-      total.put("alinear", columnas.get(iTotal).get("alinear"));
+      total.put("celdas", celdas);
       total.put("etiqueta", PlantillaTexto.html(texto(totalCfg.get("etiqueta")), vars));
-      total.put("valor", sumaColumna(equipos, (String) columnas.get(iTotal).get("valor"), totalUnidades));
     }
     ctx.put("total", total);
 
@@ -473,6 +488,9 @@ public class BoletaMovimientoService {
         it.setCodigoSap(texto(r[2]));
         it.setDescripcion(texto(r[3]));
         it.setCantidad(((Number) r[4]).intValue());
+        it.setCantidadEquipos(((Number) r[4]).intValue());
+        it.setCantidadAccesorios(0);
+        it.setCantidadSmartcard(0);
         it.setTipologia(texto(r[5]));
         out.add(it);
       }
@@ -532,12 +550,22 @@ public class BoletaMovimientoService {
     return t.equals("qr") || t.equals("barras") ? t : "";
   }
 
-  /** Total bajo la columna marcada: el número de filas si es la columna #, si no el total de unidades. */
-  private static String sumaColumna(List<BoletaMovimientoDTO.ItemDTO> equipos, String valor, int totalUnidades) {
-    return "{n}".equals(valor.trim()) ? miles(equipos.size()) : miles(totalUnidades);
+  /** El número de una celda para su total ("-" o texto = 0; "1,250" = 1250). */
+  private static long numero(String valor) {
+    String d = valor == null ? "" : valor.replaceAll("[^0-9]", "");
+    try {
+      return d.isEmpty() ? 0 : Long.parseLong(d);
+    } catch (NumberFormatException e) {
+      return 0;
+    }
   }
 
-  private static String miles(int n) {
+  private static int suma(List<BoletaMovimientoDTO.ItemDTO> equipos,
+      java.util.function.Function<BoletaMovimientoDTO.ItemDTO, Integer> campo) {
+    return equipos.stream().map(campo).mapToInt(v -> v == null ? 0 : v).sum();
+  }
+
+  private static String miles(long n) {
     return new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.US)).format(n);
   }
 

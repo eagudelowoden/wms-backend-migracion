@@ -35,6 +35,7 @@ import com.woden.wms_backend.services.ClienteServices.VariableEtiquetaService;
 public class ParametrosClienteController {
 
   private static final String LECTURA_VARIABLE = "ETIQUETAS_LECTURA_VARIABLE";
+  private static final String LARGOS = "ETIQUETAS_LARGOS";
   private static final String MODO_ALMACEN = "BASE_ALMACEN_MODO";
 
   @Autowired
@@ -110,6 +111,33 @@ public class ParametrosClienteController {
     return ResponseEntity.ok(ids);
   }
 
+  /** Largo de los campos de etiqueta que se escanean en Etiquetado: { idCampo: "12" o "12|16" }; sin fila = libre. */
+  @GetMapping("/etiquetas/largos")
+  public ResponseEntity<Map<String, String>> largos() {
+    return ResponseEntity.ok(largosCampos());
+  }
+
+  @PutMapping("/etiquetas/campos/{campoId}/largo")
+  public ResponseEntity<Map<String, String>> guardarLargo(@PathVariable int campoId,
+      @RequestParam(defaultValue = "") String largo, @RequestParam(defaultValue = "") String usuario) {
+    String l = largo.replaceAll("\\s", "");
+    if (!l.isEmpty() && !l.matches("\\d{1,3}(\\|\\d{1,3})*")) {
+      throw new BusinessRuleException("El largo va como 12 o, si admite varios, 12|16.");
+    }
+    Map<String, String> m = new LinkedHashMap<>(largosCampos());
+    if (l.isEmpty() || l.matches("0+")) {
+      m.remove(String.valueOf(campoId));
+    } else {
+      m.put(String.valueOf(campoId), l);
+    }
+    try {
+      config.set(LARGOS, json.writeValueAsString(m), usuario);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new BusinessRuleException("No se pudo guardar: " + e.getMessage());
+    }
+    return ResponseEntity.ok(m);
+  }
+
   // ── Base Almacén ───────────────────────────────────────────────────────────
 
   @GetMapping("/base-almacen")
@@ -174,6 +202,15 @@ public class ParametrosClienteController {
       });
     } catch (Exception e) {
       return List.of();
+    }
+  }
+
+  private Map<String, String> largosCampos() {
+    try {
+      return json.readValue(config.get(LARGOS, "{}"), new TypeReference<LinkedHashMap<String, String>>() {
+      });
+    } catch (Exception e) {
+      return Map.of();
     }
   }
 

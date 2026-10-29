@@ -2,6 +2,8 @@ package com.woden.wms_backend.services.ClienteServices;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -124,54 +126,46 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     if (serialMac != null) {
       return serialMac;
     }
-    String smartcard = ingresoParametrosService.smartcardRepetida(ingreso.getSerial(), ingreso.getSerial3(),
-        smartcardAutomaticaService.config() != null);
-    if (smartcard != null) {
-      return smartcard;
-    }
+    // interruptor INSERT_AUTOMATICO_SMARTCARD: con Serial3 la smartcard se valida y se crea junto con el ingreso
+    SmartcardAutomaticaService.Config smartcard = smartcardAutomaticaService.config();
+    String tarjeta = smartcard == null ? null
+        : SmartcardAutomaticaService.tarjeta(ingreso.getSerial(), ingreso.getSerial3());
     String reglaScrap = validarReglaScrap(ingreso.getSerial(), ingreso.getPalletId());
     if (reglaScrap != null) {
       return reglaScrap;
     }
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall(
-          "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+      Integer codigo;
+      String mensaje;
+      if (tarjeta == null) {
+        CallableStatement stmt = conn.prepareCall(
+            "{call pa_InsertEntry(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+        parametrosEntrada(stmt, 1, ingreso);
+        stmt.registerOutParameter(29, Types.INTEGER);
+        stmt.registerOutParameter(30, Types.VARCHAR);
 
-      stmt.setString(1, ingreso.getSerial());
-      stmt.setString(2, ingreso.getMac());
-      stmt.setString(3, ingreso.getSerial3());
-      stmt.setString(4, ingreso.getSerial4());
-      stmt.setString(5, ingreso.getSerial5());
-      stmt.setObject(6, ingreso.getCodigoSapId(), Types.INTEGER);
-      stmt.setObject(7, ingreso.getPalletId(), Types.INTEGER);
-      stmt.setObject(8, ingreso.getEstadoId(), Types.INTEGER);
-      stmt.setObject(9, ingreso.getTipoOrigenId(), Types.INTEGER);
-      stmt.setObject(10, ingreso.getOrigenId(), Types.INTEGER);
-      stmt.setObject(11, ingreso.getTipologiaId(), Types.INTEGER);
-      stmt.setObject(12, ingreso.getNivelId(), Types.INTEGER);
-      stmt.setString(13, ingreso.getTramite());
-      stmt.setString(14, ingreso.getDocumento());
-      stmt.setString(15, ingreso.getGuia());
-      stmt.setObject(16, ingreso.getCaja(), Types.INTEGER);
-      stmt.setString(17, ingreso.getFalla());
-      stmt.setString(18, ingreso.getTecnicoCliente());
-      stmt.setObject(19, ingreso.getPrealertaId(), Types.INTEGER);
-      stmt.setObject(20, ingreso.getCruce(), Types.INTEGER);
-      stmt.setString(21, ingreso.getNovedad());
-      stmt.setObject(22, ingreso.getGarantiaFabricante(), Types.BIT);
-      stmt.setObject(23, ingreso.getUsuarioId(), Types.INTEGER);
-      stmt.setString(24, ingreso.getObservaciones());
-      stmt.setString(25, ingreso.getEstadoCliente());
-      stmt.setObject(26, ingreso.getLoteId(), Types.INTEGER);
-      stmt.setObject(27, ingreso.getCajaIngresoId(), Types.INTEGER);
-      stmt.setObject(28, ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null, Types.INTEGER);
-      stmt.registerOutParameter(29, Types.INTEGER);
-      stmt.registerOutParameter(30, Types.VARCHAR);
+        stmt.execute();
 
-      stmt.execute();
-
-      Integer codigo = stmt.getInt(29);
-      String mensaje = stmt.getString(30);
+        codigo = stmt.getInt(29);
+        mensaje = stmt.getString(30);
+      } else {
+        PreparedStatement ps = conn.prepareStatement(IngresoParametrosService.INGRESO_CON_SMARTCARD);
+        SmartcardAutomaticaService.parametros(ps, 1, ingreso.getSerial(), tarjeta, smartcard, ingreso.getUsuarioId());
+        parametrosEntrada(ps, 6, ingreso);
+        Object[] r = ultimaFila(ps);
+        if (r == null) {
+          return "Error al registrar el ingreso: la base no devolvió el resultado.";
+        }
+        int campo = ((Number) r[2]).intValue();
+        if (campo > 0) {
+          return IngresoParametrosService.avisoSmartcard(campo, tarjeta, r[3] == null ? "" : String.valueOf(r[3]));
+        }
+        if (r[4] != null) {
+          logger.warn("[Smartcard] {} (equipo {}) no se creó: {}", tarjeta, ingreso.getSerial(), r[4]);
+        }
+        codigo = ((Number) r[0]).intValue();
+        mensaje = r[1] == null ? null : String.valueOf(r[1]);
+      }
 
       if (codigo == 0) {
         String clientDb = ClientDatabaseContext.getCurrentClientDb();
@@ -179,8 +173,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         Integer clientId = ClientDatabaseContext.getCurrentClientId();
         truckrollService.clasificarAsync(ingreso.getSerial(), ingreso.getMac(),
             ingreso.getTipoOrigenId(), clientDb, clientName, clientId);
-        // interruptor INSERT_AUTOMATICO_SMARTCARD: la smartcard del Serial3 también queda en Ingreso
-        smartcardAutomaticaService.crearSiAplica(ingreso.getSerial(), ingreso.getSerial3(), ingreso.getUsuarioId());
         // interruptor APP_PQRS_INGRESO: el ticket PQRS pendiente del serial pasa a En proceso
         ingresoParametrosService.vincularPqrs(ingreso.getSerial(), ingreso.getUsuarioId());
         return null;
@@ -197,6 +189,61 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       logger.error("[createIngresoCallable] Error al crear ingreso para serial {}: {}", ingreso.getSerial(), e.getMessage(), e);
       return "EXCEPCION: " + e.getMessage();
     }
+  }
+
+  /** Los 28 parámetros de entrada de pa_InsertEntry desde la posición desde. */
+  private static void parametrosEntrada(PreparedStatement stmt, int desde, IngresoModel ingreso) throws SQLException {
+    int i = desde;
+    stmt.setString(i++, ingreso.getSerial());
+    stmt.setString(i++, ingreso.getMac());
+    stmt.setString(i++, ingreso.getSerial3());
+    stmt.setString(i++, ingreso.getSerial4());
+    stmt.setString(i++, ingreso.getSerial5());
+    stmt.setObject(i++, ingreso.getCodigoSapId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getPalletId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getEstadoId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getTipoOrigenId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getOrigenId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getTipologiaId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getNivelId(), Types.INTEGER);
+    stmt.setString(i++, ingreso.getTramite());
+    stmt.setString(i++, ingreso.getDocumento());
+    stmt.setString(i++, ingreso.getGuia());
+    stmt.setObject(i++, ingreso.getCaja(), Types.INTEGER);
+    stmt.setString(i++, ingreso.getFalla());
+    stmt.setString(i++, ingreso.getTecnicoCliente());
+    stmt.setObject(i++, ingreso.getPrealertaId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getCruce(), Types.INTEGER);
+    stmt.setString(i++, ingreso.getNovedad());
+    stmt.setObject(i++, ingreso.getGarantiaFabricante(), Types.BIT);
+    stmt.setObject(i++, ingreso.getUsuarioId(), Types.INTEGER);
+    stmt.setString(i++, ingreso.getObservaciones());
+    stmt.setString(i++, ingreso.getEstadoCliente());
+    stmt.setObject(i++, ingreso.getLoteId(), Types.INTEGER);
+    stmt.setObject(i++, ingreso.getCajaIngresoId(), Types.INTEGER);
+    stmt.setObject(i, ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null, Types.INTEGER);
+  }
+
+  /** Ejecuta el lote y devuelve la primera fila del último resultado (los triggers pueden devolver conteos antes). */
+  private static Object[] ultimaFila(PreparedStatement ps) throws SQLException {
+    Object[] fila = null;
+    boolean hayResultado = ps.execute();
+    while (true) {
+      if (hayResultado) {
+        try (ResultSet rs = ps.getResultSet()) {
+          if (rs.next()) {
+            fila = new Object[rs.getMetaData().getColumnCount()];
+            for (int c = 0; c < fila.length; c++) {
+              fila[c] = rs.getObject(c + 1);
+            }
+          }
+        }
+      } else if (ps.getUpdateCount() == -1) {
+        break;
+      }
+      hayResultado = ps.getMoreResults();
+    }
+    return fila;
   }
 
   public Map<String, Object> getTruckRollStatus(String serial) {

@@ -240,7 +240,7 @@ public class CodigoSapReglaService {
     try (Connection conn = dataSource.getConnection()) {
       Campos c;
       try (PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 Serial, Mac, Serial3, Serial4, Serial5 FROM Ingreso "
-          + "WHERE Serial = ? ORDER BY Id DESC")) {
+          + "WHERE Serial = CAST(? AS VARCHAR(50)) ORDER BY Id DESC")) {
         ps.setString(1, serial.trim().toUpperCase());
         try (ResultSet rs = ps.executeQuery()) {
           if (!rs.next()) {
@@ -292,6 +292,11 @@ public class CodigoSapReglaService {
       }
     }
     return out;
+  }
+
+  /** Si algún código SAP del cliente calcula Variable1-4 (sin reglas, Etiquetado no consulta nada más). */
+  public boolean hayVariables() {
+    return activas().values().stream().flatMap(List::stream).anyMatch(r -> CAMPOS_VARIABLE.contains(r.campo()));
   }
 
   public boolean tieneVariables(Integer codigoSapId) {

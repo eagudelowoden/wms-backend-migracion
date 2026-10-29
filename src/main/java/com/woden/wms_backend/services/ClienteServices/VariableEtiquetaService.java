@@ -158,7 +158,11 @@ public class VariableEtiquetaService {
       throw new BusinessRuleException("El serial " + serial + " no está en Ingreso.");
     }
     Map<String, Object> out = new LinkedHashMap<>();
-    out.put("valor", valor(v, equipo));
+    long inicio = System.nanoTime();
+    String origen = origen(v, equipo);
+    out.put("ms", (System.nanoTime() - inicio) / 1_000_000);
+    out.put("origen", nulo(origen));
+    out.put("valor", ReglaCampo.aplicar(v.operacion(), origen, v.parametro1(), v.parametro2()));
     return out;
   }
 
@@ -192,7 +196,12 @@ public class VariableEtiquetaService {
   }
 
   private String valor(Variable v, IngresoModel e) {
-    String origen = switch (v.origen()) {
+    return ReglaCampo.aplicar(v.operacion(), origen(v, e), v.parametro1(), v.parametro2());
+  }
+
+  /** El valor del campo de origen (o el resultado de la consulta) antes de la operación. */
+  private String origen(Variable v, IngresoModel e) {
+    return switch (v.origen()) {
       case "SERIAL" -> e.getSerial();
       case "MAC" -> e.getMac();
       case "SERIAL3" -> e.getSerial3();
@@ -206,13 +215,12 @@ public class VariableEtiquetaService {
       case "CONSULTA" -> consulta(v.consulta(), e);
       default -> "";
     };
-    return ReglaCampo.aplicar(v.operacion(), origen, v.parametro1(), v.parametro2());
   }
 
   private String consulta(String sql, IngresoModel e) {
     try (Connection conn = dataSource.getConnection();
-        PreparedStatement ps = conn.prepareStatement("EXEC sys.sp_executesql ?, N'@serial NVARCHAR(100), "
-            + "@mac NVARCHAR(100), @codigoSap NVARCHAR(100)', ?, ?, ?")) {
+        PreparedStatement ps = conn.prepareStatement("EXEC sys.sp_executesql ?, N'@serial VARCHAR(100), "
+            + "@mac VARCHAR(100), @codigoSap VARCHAR(100)', ?, ?, ?")) {
       ps.setQueryTimeout(5);
       ps.setString(1, sql);
       ps.setString(2, nulo(e.getSerial()));
@@ -236,8 +244,9 @@ public class VariableEtiquetaService {
   private IngresoModel equipo(String serial) {
     try (Connection conn = dataSource.getConnection();
         PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 i.Serial, i.Mac, i.Serial3, i.Serial4, i.Serial5, "
-            + "cs.Codigo, cs.Descripcion FROM Ingreso i LEFT JOIN CodigoSap cs ON cs.Id = i.CodigoSapId "
-            + "WHERE i.Serial = ? ORDER BY i.Id DESC")) {
+            + "cs.Codigo, cs.Descripcion, l.nombre, t.Codigo FROM Ingreso i LEFT JOIN CodigoSap cs ON cs.Id = i.CodigoSapId "
+            + "LEFT JOIN Lote l ON l.id = i.loteId LEFT JOIN Maestro t ON t.Id = i.TipologiaId "
+            + "WHERE i.Serial = CAST(? AS VARCHAR(50)) ORDER BY i.Id DESC")) {
       ps.setString(1, serial);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) {
@@ -251,6 +260,8 @@ public class VariableEtiquetaService {
         m.setSerial5(rs.getString(5));
         m.setCodigoSap(rs.getString(6));
         m.setDescripcion(rs.getString(7));
+        m.setLote(rs.getString(8));
+        m.setTipologia(rs.getString(9));
         return m;
       }
     } catch (Exception e) {

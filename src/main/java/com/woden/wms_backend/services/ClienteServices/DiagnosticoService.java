@@ -453,9 +453,12 @@ public class DiagnosticoService {
    * pa_GetDiagnosticVariables). "calculadas" = true le dice a Etiquetado que no hace falta escanearlas.
    */
   private List<Map<String, Object>> conVariablesCalculadas(String serial, List<Map<String, Object>> filas) {
+    if (!codigoSapReglas.hayVariables()) {
+      return filas;
+    }
     try (Connection conn = dataSource.getConnection();
         PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 CodigoSapId, Serial, Mac, Serial3, Serial4, Serial5 "
-            + "FROM Ingreso WHERE Serial = ? ORDER BY Id DESC")) {
+            + "FROM Ingreso WHERE Serial = CAST(? AS VARCHAR(50)) ORDER BY Id DESC")) {
       ps.setString(1, serial);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next() || !codigoSapReglas.tieneVariables(rs.getInt(1))) {

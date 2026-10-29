@@ -27,7 +27,7 @@
        código SAP, Descripción, Detalle = destino): si no tiene filas se crea una con @SmartcardCodigoSap /
        @SmartcardDestino (se valida que existan en la base).
      - (2026-10-29, correr antes 2026-10-29_parametros_wms.sql) Tipos de maestro "SmartCard Ingreso", "Limpieza
-       Caracteres", "Diagnostico Serial3" y "Responsable Op" (vacíos: se llenan en Administración > Maestros), menú
+       Caracteres", "Diagnostico Serial3", "Responsable Op" y "Tipo Empaque" (vacíos: se llenan en Administración > Maestros), menú
        Administración > Variables de etiquetas (ADVAR) con el módulo 48 para los perfiles ADMINISTRADOR y, con
        @AgregarColumnasForecast = 1, las columnas del Forecast en Etiquetado para probar ETIQUETADO_FORECAST.
    Los interruptores también se encienden o apagan desde Administración > Clientes > Validaciones; el usuario ve el
@@ -311,7 +311,7 @@ END
 SET @sql = N'
 DECLARE @nombre VARCHAR(50);
 DECLARE tipos CURSOR LOCAL FAST_FORWARD FOR
-  SELECT n FROM (VALUES (''SmartCard Ingreso''), (''Limpieza Caracteres''), (''Diagnostico Serial3''), (''Responsable Op'')) v(n);
+  SELECT n FROM (VALUES (''SmartCard Ingreso''), (''Limpieza Caracteres''), (''Diagnostico Serial3''), (''Responsable Op''), (''Tipo Empaque'')) v(n);
 OPEN tipos;
 FETCH NEXT FROM tipos INTO @nombre;
 WHILE @@FETCH_STATUS = 0

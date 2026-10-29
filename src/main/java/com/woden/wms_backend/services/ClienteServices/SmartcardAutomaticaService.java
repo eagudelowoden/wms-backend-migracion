@@ -54,21 +54,31 @@ public class SmartcardAutomaticaService {
   private static final Map<Integer, Cache> CACHE = new ConcurrentHashMap<>();
 
   /**
+   * Variables del bloque CREAR: 1 serial del equipo, 2 smartcard, 3 código SAP, 4 estado, 5 usuario de la sesión. Van
+   * como VARCHAR: con el parámetro NVARCHAR del driver, Serial / Mac / Serial3 no usan su índice.
+   */
+  public static final String DECLARAR = "DECLARE @scSerial VARCHAR(50) = ?, @scTarjeta VARCHAR(50) = ?, "
+      + "@scCodigoSap INT = ?, @scEstado INT = ?, @scUsuario INT = ?; ";
+
+  /**
    * La smartcard con los datos del equipo recién ingresado (copiados de su fila). Va detrás de un IF: el trigger
    * Trg_InsertMovement se dispara aunque el INSERT no inserte filas y falla con SerialId NULL, así que el INSERT solo
    * se ejecuta si el equipo existe y la smartcard no (ni como serial ni como MAC).
-   * Parámetros: 1 serial, 2-3 smartcard, 4-5 smartcard, 6 código SAP, 7 estado, 8-9 usuario de la sesión, 10 serial.
    */
-  private static final String INSERTAR = "IF EXISTS (SELECT 1 FROM Ingreso WHERE Serial = ?) "
-      + "AND NOT EXISTS (SELECT 1 FROM Ingreso WHERE Serial = ? OR Mac = ?) "
+  public static final String CREAR = "IF EXISTS (SELECT 1 FROM Ingreso WHERE Serial = @scSerial) "
+      + "AND NOT EXISTS (SELECT 1 FROM Ingreso WHERE Serial = @scTarjeta) "
+      + "AND NOT EXISTS (SELECT 1 FROM Ingreso WHERE Mac = @scTarjeta) "
       + "INSERT INTO Ingreso (Serial, Mac, Serial3, Serial4, Serial5, CodigoSapId, "
       + "PalletId, PalletIdIngreso, EstadoId, TipoOrigenId, OrigenId, TipologiaId, NivelId, Tramite, Documento, Guia, "
       + "Caja, Falla, TecnicoCliente, PrealertaId, Cruce, Novedad, GarantiaFabricante, UsuarioId, Fecha, "
       + "UsuarioIdMovimiento, FechaMovimiento, Observaciones, EstadoCliente, loteId, CajaIngresoId, modeloId) "
-      + "SELECT ?, ?, NULL, NULL, NULL, ?, 0, i.PalletIdIngreso, ?, i.TipoOrigenId, i.OrigenId, i.TipologiaId, "
-      + "i.NivelId, i.Tramite, i.Documento, i.Guia, 0, i.Falla, i.TecnicoCliente, 0, 0, i.Novedad, "
-      + "i.GarantiaFabricante, ISNULL(NULLIF(?, 0), i.UsuarioId), GETDATE(), ISNULL(NULLIF(?, 0), i.UsuarioId), GETDATE(), "
-      + "i.Observaciones, i.EstadoCliente, i.loteId, 0, NULL FROM Ingreso i WHERE i.Serial = ?";
+      + "SELECT @scTarjeta, @scTarjeta, NULL, NULL, NULL, @scCodigoSap, 0, i.PalletIdIngreso, @scEstado, i.TipoOrigenId, "
+      + "i.OrigenId, i.TipologiaId, i.NivelId, i.Tramite, i.Documento, i.Guia, 0, i.Falla, i.TecnicoCliente, 0, 0, "
+      + "i.Novedad, i.GarantiaFabricante, ISNULL(NULLIF(@scUsuario, 0), i.UsuarioId), GETDATE(), "
+      + "ISNULL(NULLIF(@scUsuario, 0), i.UsuarioId), GETDATE(), i.Observaciones, i.EstadoCliente, i.loteId, 0, NULL "
+      + "FROM Ingreso i WHERE i.Serial = @scSerial; ";
+
+  private static final String INSERTAR = DECLARAR + CREAR;
 
   @Autowired
   private InterruptorClienteService interruptores;
@@ -123,14 +133,11 @@ public class SmartcardAutomaticaService {
     return new Config(codigoSapId, estadoId, codigo, destino);
   }
 
-  /** Después de un ingreso correcto. Nunca lanza error: el equipo ya quedó ingresado. */
-  public void crearSiAplica(String serial, String serial3, Integer usuarioId) {
-    List<String[]> uno = new ArrayList<>();
-    uno.add(new String[] { serial, serial3 });
-    crearSiAplica(uno, usuarioId);
-  }
-
-  /** equipos = [serial, serial3]; devuelve cuántas smartcards se crearon. usuarioId = el de la sesión (0 = el del equipo). */
+  /**
+   * Cargue masivo, después de insertar los equipos (el ingreso uno a uno las crea en INGRESO_CON_SMARTCARD). Nunca lanza
+   * error: los equipos ya quedaron ingresados. equipos = [serial, serial3]; devuelve cuántas smartcards se crearon.
+   * usuarioId = el de la sesión (0 = el del equipo).
+   */
   public int crearSiAplica(List<String[]> equipos, Integer usuarioId) {
     try {
       Config cfg = config();
@@ -141,21 +148,12 @@ public class SmartcardAutomaticaService {
       try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(INSERTAR)) {
         for (String[] e : equipos) {
           String serial = limpio(e[0]);
-          String tarjeta = limpio(e.length > 1 ? e[1] : null);
-          if (serial.isEmpty() || tarjeta.length() <= 1 || tarjeta.equals(serial)) {
+          String tarjeta = tarjeta(serial, e.length > 1 ? e[1] : null);
+          if (serial.isEmpty() || tarjeta == null) {
             continue;
           }
           try {
-            ps.setString(1, serial);
-            ps.setString(2, tarjeta);
-            ps.setString(3, tarjeta);
-            ps.setString(4, tarjeta);
-            ps.setString(5, tarjeta);
-            ps.setInt(6, cfg.codigoSapId());
-            ps.setInt(7, cfg.estadoId());
-            ps.setInt(8, usuarioId == null ? 0 : usuarioId);
-            ps.setInt(9, usuarioId == null ? 0 : usuarioId);
-            ps.setString(10, serial);
+            parametros(ps, 1, serial, tarjeta, cfg, usuarioId);
             creadas += ejecutar(ps);
           } catch (SQLException ex) {
             logger.warn("[Smartcard] {} (equipo {}) no se creó: {}", tarjeta, serial, ex.getMessage());
@@ -246,6 +244,22 @@ public class SmartcardAutomaticaService {
         return rs.next() ? rs.getInt(1) : 0;
       }
     }
+  }
+
+  /** La smartcard que se crea para el equipo, o null si el Serial3 no aplica (vacío, un carácter o igual al serial). */
+  public static String tarjeta(String serial, String serial3) {
+    String t = limpio(serial3);
+    return t.length() <= 1 || t.equals(limpio(serial)) ? null : t;
+  }
+
+  /** Las 5 variables de DECLARAR desde la posición desde. */
+  public static void parametros(PreparedStatement ps, int desde, String serial, String tarjeta, Config cfg,
+      Integer usuarioId) throws SQLException {
+    ps.setString(desde, limpio(serial));
+    ps.setString(desde + 1, tarjeta);
+    ps.setInt(desde + 2, cfg.codigoSapId());
+    ps.setInt(desde + 3, cfg.estadoId());
+    ps.setInt(desde + 4, usuarioId == null ? 0 : usuarioId);
   }
 
   private static String limpio(String s) {

@@ -25,7 +25,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 /**
- * Interruptor ETIQUETADO_FORECAST: tipo de empaque, lote (maestro Familias), año y fecha con que queda cada etiquetado.
+ * Interruptor ETIQUETADO_FORECAST: tipo de empaque (maestro Tipo Empaque), lote (maestro Familias), año y fecha con que
+ * queda cada etiquetado.
  * En DirecTV Ecuador pa_InsertEtiquetado los tomaba de las columnas forecast / familiaId / forecastIngreso de Forecast,
  * que la pantalla web de Forecast ya no edita. Ahora se fijan en la ventana de Etiquetado (administrador o técnico de
  * etiquetado), se guardan en ClienteConfig y, después de cada etiquetado, se escriben en las columnas TipoEmpaque, Lote,
@@ -38,6 +39,7 @@ public class EtiquetadoForecastService {
   private static final Logger logger = LoggerFactory.getLogger(EtiquetadoForecastService.class);
   public static final String INTERRUPTOR = "ETIQUETADO_FORECAST";
   private static final String CLAVE = "ETIQUETADO_FORECAST";
+  public static final String MAESTRO_TIPO_EMPAQUE = "Tipo Empaque";
   private static final long CACHE_MS = 300_000;
 
   private record Columnas(boolean tipoEmpaque, boolean lote, boolean anio, boolean fechaLote, boolean forecastViejo,
@@ -50,6 +52,9 @@ public class EtiquetadoForecastService {
 
   @Autowired
   private ClienteConfigService config;
+
+  @Autowired
+  private MaestroParametroService maestros;
 
   @Autowired
   private ObjectMapper json;
@@ -81,14 +86,27 @@ public class EtiquetadoForecastService {
       lotes.add(Map.of("id", ((Number) r[0]).intValue(), "nombre", String.valueOf(r[1])));
     }
     out.put("lotes", lotes);
+    // tipos de empaque: Maestros > Tipo Empaque; si está vacío, los que ya tiene Etiquetado
     List<String> tipos = new ArrayList<>();
-    if (col.tipoEmpaque()) {
+    for (MaestroParametroService.Fila f : maestros.activos(MAESTRO_TIPO_EMPAQUE)) {
+      if (!f.codigo().isBlank()) {
+        tipos.add(f.codigo().trim());
+      }
+    }
+    if (tipos.isEmpty() && col.tipoEmpaque()) {
       for (Object t : em.createNativeQuery("SELECT TOP 20 TipoEmpaque FROM Etiquetado WHERE ISNULL(TipoEmpaque, '') <> '' "
           + "GROUP BY TipoEmpaque ORDER BY MAX(Id) DESC").getResultList()) {
         tipos.add(String.valueOf(t));
       }
     }
     out.put("tipos", tipos);
+    int anio = java.time.Year.now().getValue();
+    List<String> anios = new ArrayList<>(List.of(String.valueOf(anio - 1), String.valueOf(anio), String.valueOf(anio + 1)));
+    String fijado = texto(out.get("anio"));
+    if (!fijado.isEmpty() && !anios.contains(fijado)) {
+      anios.add(0, fijado);
+    }
+    out.put("anios", anios);
     return out;
   }
 
@@ -150,7 +168,7 @@ public class EtiquetadoForecastService {
       params.add(serial);
       try (Connection conn = dataSource.getConnection();
           PreparedStatement ps = conn.prepareStatement("UPDATE Etiquetado SET " + String.join(", ", sets)
-              + " WHERE Id = (SELECT MAX(Id) FROM Etiquetado WHERE Serial = ?)")) {
+              + " WHERE Id = (SELECT MAX(Id) FROM Etiquetado WHERE Serial = CAST(? AS VARCHAR(50)))")) {
         for (int i = 0; i < params.size(); i++) {
           ps.setObject(i + 1, params.get(i));
         }

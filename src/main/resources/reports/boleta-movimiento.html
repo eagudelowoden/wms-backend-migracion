@@ -82,7 +82,7 @@
     .meta td.val img { display: block; margin: 1mm 0; }
 
     /* ── Total: misma grilla que el detalle, el valor queda bajo su columna ── */
-    .totales { page-break-inside: avoid; }
+    .totales { page-break-inside: avoid; table-layout: fixed; }
     .totales td { border-top: 1.5px solid {{ c.texto }}; padding: 6px 6px; }
     .totales .etq { text-align: right; color: {{ c.etiquetas }}; font-weight: bold; text-transform: uppercase;
       font-size: 8.5px; letter-spacing: 0.6px; }
@@ -191,8 +191,7 @@
   <table class="totales">
     <tr>
       <td class="etq" style="width:{{ total.antes }}%">{{ total.etiqueta | raw }}</td>
-      <td class="val" style="width:{{ total.ancho }}%;text-align:{{ total.alinear }}">{{ total.valor }}</td>
-      {% if total.despues > 0 %}<td style="width:{{ total.despues }}%"></td>{% endif %}
+      {% for t in total.celdas %}<td class="val" style="width:{{ t.ancho }}%;text-align:{{ t.alinear }}">{{ t.valor }}</td>{% endfor %}
     </tr>
   </table>
   {% endif %}

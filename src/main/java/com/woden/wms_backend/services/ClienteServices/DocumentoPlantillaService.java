@@ -55,13 +55,15 @@ public class DocumentoPlantillaService {
         "destino", "Área destino", "usuario", "Quien entrega", "observaciones", "Observaciones",
         "cliente", "Cliente", "empresa_nombre", "Empresa", "empresa_ruc", "RUC", "empresa_telefono", "Teléfono",
         "empresa_email", "Correo", "empresa_web", "Sitio web", "total_unidades", "Total unidades",
+        "total_equipos", "Total equipos", "total_accesorios", "Total accesorios", "total_smartcards", "Total smartcards",
         "total_pallets", "Total pallets", "total_cajas", "Total cajas", "lotes", "Lotes de los pallets",
         "responsable_op", "Responsable de operación (Maestros > Responsable Op)",
         "fecha_impresion", "Fecha de impresión", "pagina", "Página", "paginas", "Total de páginas",
         // por fila (columnas)
         "n", "Fila #", "no_pallet", "No. pallet", "codigo_sap", "Código SAP", "descripcion", "Descripción",
-        "cantidad", "Cantidad", "cajas", "Cajas", "tipologia", "Tipología", "posicion", "Posición", "lote", "Lote",
-        "fecha_pallet", "Fecha del pallet"));
+        "cantidad", "Cantidad (equipos; si no hay, accesorios; si no, smartcards)", "equipos", "Equipos",
+        "accesorios", "Accesorios", "smartcards", "Smartcards", "cajas", "Cajas", "tipologia", "Tipología",
+        "posicion", "Posición", "lote", "Lote", "fecha_pallet", "Fecha del pallet"));
     VARIABLES.put(PALLET, vars(
         "cliente", "Cliente", "pallet", "No. pallet", "posicion", "Posición", "fecha", "Fecha creación",
         "origen", "Origen", "destino", "Destino", "tipologia", "Tipología", "codigo_sap", "Código SAP",

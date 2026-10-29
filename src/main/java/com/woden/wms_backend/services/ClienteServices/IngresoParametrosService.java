@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
  *                                los tres). Era el REPLACE de la MAC de Claro Ecuador.
  *   Campos calculados            MAC y Serial3-5 por código SAP (CodigoSapReglaService).
  *   INSERT_AUTOMATICO_SMARTCARD  la smartcard (Serial3) no puede estar ya en Ingreso como serial, MAC o Serial3 de otro
- *                                equipo: se avisa con el serial relacionado, en la misma conexión del ingreso.
+ *                                equipo: se avisa con el serial relacionado, en la misma ida a la base del ingreso.
  *   APP_PQRS_INGRESO             después del ingreso, el ticket PQRS pendiente del serial pasa a En proceso (etapa 3)
  *                                con su registro en App_PQRS_StatusLog. Era el bloque "VÍNCULO AUTOMÁTICO APP PQRS".
  *   SERIAL_DISTINTO_MAC          el serial no puede ser igual a la MAC (Global Liberty).
@@ -45,11 +45,28 @@ public class IngresoParametrosService {
   public static final String SCRAP_MULTIMODELO = "SCRAP_MULTIMODELO_ENVIO";
   public static final String MAESTRO_LIMPIEZA = "Limpieza Caracteres";
 
-  private static final String SMARTCARD_EXISTE = "SELECT TOP 1 x.Serial, x.Campo FROM ("
-      + "SELECT TOP 1 Serial, 1 AS Campo FROM Ingreso WHERE Serial = ? "
-      + "UNION ALL SELECT TOP 1 Serial, 2 FROM Ingreso WHERE Mac = ? "
-      + "UNION ALL SELECT TOP 1 Serial, 3 FROM Ingreso WHERE Serial3 = ? AND Serial <> ?) x "
-      + "ORDER BY CASE x.Campo WHEN 3 THEN 0 WHEN 2 THEN 1 ELSE 2 END";
+  /**
+   * INSERT_AUTOMATICO_SMARTCARD en una sola ida a la base (antes eran tres): la smartcard repetida, pa_InsertEntry y la
+   * smartcard nueva. Parámetros: los 5 de SmartcardAutomaticaService.DECLARAR y los 28 de entrada de pa_InsertEntry.
+   * Devuelve una fila: código y mensaje de pa_InsertEntry, dónde está repetida la smartcard (0 no está, 1 serial, 2 MAC,
+   * 3 Serial3 de otro equipo), el serial relacionado y el error al crear la smartcard (null si se creó o ya existía).
+   */
+  public static final String INGRESO_CON_SMARTCARD = "SET NOCOUNT ON; " + SmartcardAutomaticaService.DECLARAR
+      + "DECLARE @campo INT = 0, @relacionado VARCHAR(50) = NULL, @codigo INT = 0, @mensaje NVARCHAR(4000) = N'', "
+      + "@errorTarjeta NVARCHAR(4000) = NULL; "
+      + "SELECT TOP 1 @relacionado = x.Serial, @campo = x.Campo FROM ("
+      + "SELECT TOP 1 Serial, 1 AS Campo FROM Ingreso WHERE Serial = @scTarjeta "
+      + "UNION ALL SELECT TOP 1 Serial, 2 FROM Ingreso WHERE Mac = @scTarjeta "
+      + "UNION ALL SELECT TOP 1 Serial, 3 FROM Ingreso WHERE Serial3 = @scTarjeta AND Serial <> @scSerial) x "
+      + "ORDER BY CASE x.Campo WHEN 3 THEN 0 WHEN 2 THEN 1 ELSE 2 END; "
+      + "IF @campo = 0 BEGIN "
+      + "EXEC pa_InsertEntry " + String.join(", ", java.util.Collections.nCopies(28, "?"))
+      + ", @codigo OUTPUT, @mensaje OUTPUT; "
+      + "IF @codigo = 0 BEGIN BEGIN TRY " + SmartcardAutomaticaService.CREAR
+      + "END TRY BEGIN CATCH SET @errorTarjeta = ERROR_MESSAGE(); END CATCH END "
+      + "END "
+      + "SELECT @codigo AS Codigo, @mensaje AS Mensaje, @campo AS Campo, @relacionado AS Relacionado, "
+      + "@errorTarjeta AS ErrorTarjeta;";
 
   private static final String VINCULAR_PQRS = "IF OBJECT_ID(N'dbo.App_PQRS_Tickets', N'U') IS NOT NULL "
       + "AND OBJECT_ID(N'dbo.App_PQRS_StatusLog', N'U') IS NOT NULL "
@@ -107,34 +124,15 @@ public class IngresoParametrosService {
   }
 
   /**
-   * Con INSERT_AUTOMATICO_SMARTCARD activo: null si la smartcard se puede ingresar; si no, el aviso con el serial del
-   * equipo que ya la tiene (primero el equipo que la tiene en Serial3, después en MAC y por último la smartcard sola).
+   * Aviso de INGRESO_CON_SMARTCARD cuando la smartcard ya está en Ingreso, con el serial del equipo que la tiene (primero
+   * el que la tiene en Serial3, después en MAC y por último la smartcard sola).
    */
-  public String smartcardRepetida(String serial, String serial3, boolean smartcardActiva) {
-    String tarjeta = serial3 == null ? "" : serial3.trim().toUpperCase(Locale.ROOT);
-    if (!smartcardActiva || tarjeta.length() <= 1 || tarjeta.equalsIgnoreCase(serial == null ? "" : serial.trim())) {
-      return null;
-    }
-    try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(SMARTCARD_EXISTE)) {
-      ps.setString(1, tarjeta);
-      ps.setString(2, tarjeta);
-      ps.setString(3, tarjeta);
-      ps.setString(4, serial == null ? "" : serial.trim().toUpperCase(Locale.ROOT));
-      try (ResultSet rs = ps.executeQuery()) {
-        if (!rs.next()) {
-          return null;
-        }
-        String relacionado = rs.getString(1);
-        return switch (rs.getInt(2)) {
-          case 1 -> "La smartcard " + tarjeta + " ya está en Ingreso como serial.";
-          case 2 -> "La smartcard " + tarjeta + " ya está en Ingreso como MAC del equipo " + relacionado + ".";
-          default -> "La smartcard " + tarjeta + " ya está en Ingreso como Serial3 del equipo " + relacionado + ".";
-        };
-      }
-    } catch (SQLException e) {
-      logger.warn("[Ingreso] no se pudo validar la smartcard {}: {}", tarjeta, e.getMessage());
-      return null;
-    }
+  public static String avisoSmartcard(int campo, String tarjeta, String relacionado) {
+    return switch (campo) {
+      case 1 -> "La smartcard " + tarjeta + " ya está en Ingreso como serial.";
+      case 2 -> "La smartcard " + tarjeta + " ya está en Ingreso como MAC del equipo " + relacionado + ".";
+      default -> "La smartcard " + tarjeta + " ya está en Ingreso como Serial3 del equipo " + relacionado + ".";
+    };
   }
 
   /**

@@ -44,6 +44,7 @@ public class BoletaReservaService {
 
   // las tablas pueden no existir aun (script sin correr): el bloqueo no debe tumbar el despacho normal
   private static volatile boolean tablasListas = false;
+  private static volatile boolean cantidadesListas = false;
 
   @PersistenceContext
   private EntityManager em;
@@ -321,6 +322,11 @@ public class BoletaReservaService {
           + "Descripcion, Cantidad, Tipologia, Activo, Despachado) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 1, 0)",
           boletaId, cliente, it.getId(), corto(it.getNoPallet(), 50), corto(it.getCodigoSap(), 50),
           corto(it.getDescripcion(), 200), it.getCantidad() == null ? 0 : it.getCantidad(), corto(it.getTipologia(), 100));
+      if (cantidades()) {
+        actualizar("UPDATE " + G + "BoletaMovimientoPallet SET Equipos = ?3, Accesorios = ?4, Smartcards = ?5 "
+            + "WHERE BoletaId = ?1 AND PalletId = ?2", boletaId, it.getId(), cero(it.getCantidadEquipos()),
+            cero(it.getCantidadAccesorios()), cero(it.getCantidadSmartcard()));
+      }
     }
     logger.info("[Boleta] reservada {} cliente {} pallets {}", documento, cliente, vistos.size());
     return detalle(boletaId);
@@ -386,8 +392,10 @@ public class BoletaReservaService {
     out.put("consecutivo", num(c[10]) == 1);
 
     List<Map<String, Object>> pallets = new ArrayList<>();
+    String cantidades = cantidades() ? "p.Equipos, p.Accesorios, p.Smartcards" : "NULL, NULL, NULL";
     for (Object[] p : filas("SELECT p.PalletId, p.NoPallet, p.CodigoSap, p.Descripcion, p.Cantidad, p.Tipologia, "
-        + "p.Activo, p.Despachado FROM " + G + "BoletaMovimientoPallet p WHERE p.BoletaId = ?1 ORDER BY p.Id", boletaId)) {
+        + "p.Activo, p.Despachado, " + cantidades + " FROM " + G + "BoletaMovimientoPallet p WHERE p.BoletaId = ?1 "
+        + "ORDER BY p.Id", boletaId)) {
       Map<String, Object> m = new LinkedHashMap<>();
       m.put("id", num(p[0]));
       m.put("noPallet", p[1]);
@@ -397,6 +405,9 @@ public class BoletaReservaService {
       m.put("tipologia", p[5]);
       m.put("activo", bool(p[6]));
       m.put("despachado", bool(p[7]));
+      m.put("cantidadEquipos", p[8] == null ? null : num(p[8]));
+      m.put("cantidadAccesorios", p[9] == null ? null : num(p[9]));
+      m.put("cantidadSmartcard", p[10] == null ? null : num(p[10]));
       pallets.add(m);
     }
     out.put("pallets", pallets);
@@ -504,6 +515,20 @@ public class BoletaReservaService {
       tablasListas = n != null && n == 1;
     }
     return tablasListas;
+  }
+
+  /** Equipos, Accesorios y Smartcards por pallet (script 2026-10-29_boleta_forecast_largos.sql). */
+  private boolean cantidades() {
+    if (!cantidadesListas) {
+      Integer n = entero("SELECT CASE WHEN COL_LENGTH('WmsWdGeneral.dbo.BoletaMovimientoPallet', 'Smartcards') IS NULL "
+          + "THEN 0 ELSE 1 END");
+      cantidadesListas = n != null && n == 1;
+    }
+    return cantidadesListas;
+  }
+
+  private static int cero(Integer n) {
+    return n == null ? 0 : n;
   }
 
   private void exigirTablas() {

@@ -153,6 +153,9 @@ public class DocumentoController {
       it.setCodigoSap(i % 2 == 0 ? "HME0004010" : "TMS0003135");
       it.setDescripcion(i % 2 == 0 ? "EMTA DOCSIS3.0 TG2482 ARRIS" : "DECODIFICADOR HD DCX525");
       it.setCantidad(48 + (i * 37) % 300);
+      it.setCantidadEquipos(it.getCantidad());
+      it.setCantidadAccesorios(i % 4 == 0 ? 12 : 0);
+      it.setCantidadSmartcard(i % 2 == 0 ? it.getCantidad() : 0);
       it.setTipologia(i % 3 == 0 ? "LIBRE UTILIZACION" : "EMPAQUE APROBADO");
       it.setLote(i < 4 ? "LOTE-2026-10" : "LOTE-2026-11");
       it.setCajas(2 + i % 4);
