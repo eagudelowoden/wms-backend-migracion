@@ -81,4 +81,7 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("serialAnterior") String serialAnterior,
       @Param("filas") Integer filas);
 
+  @Query(value = "SELECT CAST(COUNT(*) AS integer) FROM Empaque WHERE TRIM(Serial) = TRIM(:serial) AND NivelId >= 62", nativeQuery = true)
+  Integer countReingresosNivel62(@Param("serial") String serial);
+
 }

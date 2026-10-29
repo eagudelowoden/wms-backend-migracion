@@ -206,6 +206,10 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         out.put("fallaFuncionalCodigo", r[11] != null ? r[11].toString() : null);
         out.put("fallaCosmeticaCodigo", r[12] != null ? r[12].toString() : null);
         out.put("estadoFinalCodigo", r[13] != null ? r[13].toString() : null);
+        out.put("personal", r.length > 14 && r[14] != null ? r[14].toString() : "");
+        out.put("dni", r.length > 15 && r[15] != null ? r[15].toString() : "");
+        out.put("voltaje", r.length > 16 && r[16] != null ? r[16].toString() : "");
+        out.put("observaciones", r.length > 17 && r[17] != null ? r[17].toString() : "");
         return out;
     }
 

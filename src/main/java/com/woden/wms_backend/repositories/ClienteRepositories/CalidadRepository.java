@@ -93,7 +93,8 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
     @Query(value = "SELECT c.Id, c.SerialId, c.Serial, c.Mac, c.CodigoSapId, c.PalletId, c.CajaEmpaqueId, " +
             "c.FallaFuncionalId, c.FallaCosmeticaId, c.UsuarioId, c.Fecha, " +
             "mf.Codigo AS FallaFuncionalCodigo, mc.Codigo AS FallaCosmeticaCodigo, " +
-            "CASE WHEN COALESCE(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo " +
+            "CASE WHEN COALESCE(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo, " +
+            "c.Personal, c.Dni, c.Voltaje, c.Observaciones " +
             "FROM Calidad c " +
             "LEFT JOIN Maestro mf ON mf.Id = c.FallaFuncionalId " +
             "LEFT JOIN Maestro mc ON mc.Id = c.FallaCosmeticaId " +

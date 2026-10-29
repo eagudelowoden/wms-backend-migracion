@@ -13,7 +13,7 @@ import jakarta.transaction.Transactional;
 public interface DespachoRepository extends BaseRepository<DespachoModel, Integer>, DespachoRepositoryCustom {
 
 	@Transactional
-	@Query(value = "SELECT 1 FROM pa_insertdispatch(CAST(:id AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:codigoSapId AS integer), CAST(:palletId AS integer), CAST(:palletIdIngreso AS integer), CAST(:cajaDespachoId AS integer), CAST(:estadoId AS integer), CAST(:tipoOrigenId AS integer), CAST(:origenId AS integer), CAST(:tipologiaId AS integer), CAST(:nivelId AS integer), CAST(:tramite AS character varying), CAST(:documento AS character varying), CAST(:guia AS character varying), CAST(:falla AS character varying), CAST(:prealertaId AS integer), CAST(:cruce AS integer), CAST(:novedad AS character varying), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone), CAST(:pedidoSap AS character varying), CAST(:smartCardId AS integer), CAST(:smartCard AS character varying), CAST(:loteId AS integer), CAST(:serial3 AS character varying), CAST(:cajaIngresoId AS integer), CAST(:numeroSmartcard AS character varying), CAST(:fallaCosmeticaId AS integer), CAST(:fallaFuncionalId AS integer), CAST(:causa AS character varying), CAST(:observaciones AS character varying))", nativeQuery = true)
+	@Query(value = "SELECT 1 FROM pa_insertdispatch(CAST(:id AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:codigoSapId AS integer), CAST(:palletId AS integer), CAST(:palletIdIngreso AS integer), CAST(:cajaDespachoId AS integer), CAST(:estadoId AS integer), CAST(:tipoOrigenId AS integer), CAST(:origenId AS integer), CAST(:tipologiaId AS integer), CAST(:nivelId AS integer), CAST(:tramite AS character varying), CAST(:documento AS character varying), CAST(:guia AS character varying), CAST(:falla AS character varying), CAST(:prealertaId AS integer), CAST(:cruce AS integer), CAST(:novedad AS character varying), CAST(:usuarioId AS integer), CAST(:fecha AS timestamp without time zone), CAST(:pedidoSap AS character varying), CAST(:smartCardId AS integer), CAST(:smartCard AS character varying), CAST(:loteId AS integer), CAST(:serial3 AS character varying), CAST(:cajaIngresoId AS integer), CAST(:numeroSmartcard AS character varying), CAST(:fallaCosmeticaId AS integer), CAST(:fallaFuncionalId AS integer), CAST(:causa AS character varying), CAST(:observaciones AS character varying), CAST(:modeloId AS integer))", nativeQuery = true)
 	void insertDispatch(
 			@Param("id") Integer id,
 			@Param("serial") String serial,
@@ -46,7 +46,8 @@ public interface DespachoRepository extends BaseRepository<DespachoModel, Intege
 			@Param("fallaCosmeticaId") Integer fallaCosmeticaId,
 			@Param("fallaFuncionalId") Integer fallaFuncionalId,
 			@Param("causa") String causa,
-			@Param("observaciones") String observaciones);
+			@Param("observaciones") String observaciones,
+			@Param("modeloId") Integer modeloId);
 
 	/**
 	 * Novedad final de Reparación (Garantía/TruckRoll) arrastrada de Ingreso a

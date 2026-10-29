@@ -328,8 +328,11 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 	@Query(value = "SELECT f.serial, f.mac, f.pallet, f.caja, f.\"SmartCard\" FROM pa_searchqualityentry() f", nativeQuery = true)
 	List<Object[]> searchQualityEntry();
 
-	@Query(value = "SELECT * FROM pa_searchauditoriainsituentry() f", nativeQuery = true)
-	List<Object[]> searchAuditoriaInSituEntry();
+	@Query(value = "SELECT * FROM pa_searchqualityentryextras(CAST(:extras AS integer)) f", nativeQuery = true)
+	List<Object[]> searchQualityEntryExtras(@Param("extras") Integer extras);
+
+	@Query(value = "SELECT * FROM pa_searchauditoriainsituentry(CAST(:extras AS integer)) f", nativeQuery = true)
+	List<Object[]> searchAuditoriaInSituEntry(@Param("extras") Integer extras);
 
 	@Transactional
 	@Query(value = "SELECT 1 FROM pa_packoffpalletentry(CAST(:palletId AS integer), CAST(:usuarioId AS integer))", nativeQuery = true)
@@ -527,4 +530,16 @@ public interface IngresoRepository extends BaseRepository<IngresoModel, Integer>
 			"INNER JOIN Maestro m ON m.Id = p.TipologiaId " +
 			"WHERE UPPER(p.Numero) IN (:numeros)", nativeQuery = true)
 	List<Object[]> findPalletTipologiasPorNumero(@Param("numeros") List<String> numeros);
+
+	@Query(value = "SELECT e.Id FROM general.Estado e WHERE LOWER(e.Nombre) = LOWER(:nombre) AND e.Activo = true ORDER BY e.Id LIMIT 1", nativeQuery = true)
+	Integer getIdEstadoByNombre(@Param("nombre") String nombre);
+
+	@Query(value = "SELECT Id, EstadoId FROM Ingreso WHERE Serial = :serial ORDER BY Id DESC LIMIT 1", nativeQuery = true)
+	List<Object[]> findUltimoEstadoBySerial(@Param("serial") String serial);
+
+	@Query(value = "SELECT CASE WHEN to_regclass('depreciados') IS NULL THEN 0 ELSE 1 END", nativeQuery = true)
+	Integer existeTablaDepreciados();
+
+	@Query(value = "SELECT CASE WHEN EXISTS (SELECT 1 FROM Depreciados WHERE TRIM(SerialNumber) = TRIM(:serial)) THEN 1 ELSE 0 END", nativeQuery = true)
+	Integer existeDepreciado(@Param("serial") String serial);
 }

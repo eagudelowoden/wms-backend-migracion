@@ -375,6 +375,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       seriales.put("serial3", toStr(result[4]));
       seriales.put("serial4", toStr(result[5]));
       seriales.put("codigo", toStr(result[6]));
+      seriales.put("codigoSap", toStr(result[6]));
       seriales.put("descripcion", toStr(result[7]));
       seriales.put("nivel", toStr(result[8]));
       seriales.put("lote", toStr(result[9]));
@@ -410,8 +411,24 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }).collect(Collectors.toList());
   }
 
-  public List<Map<String, String>> searchAuditoriaInSituEntry() {
-    return ingresoRepository.searchAuditoriaInSituEntry().stream().map(obj -> {
+  public List<Map<String, String>> searchQualityEntryExtras(boolean extras) {
+    return ingresoRepository.searchQualityEntryExtras(extras ? 1 : 0).stream().map(obj -> {
+      Map<String, String> fila = new HashMap<>();
+      fila.put("serial", toStr(obj[0]));
+      fila.put("mac", toStr(obj[1]));
+      fila.put("pallet", toStr(obj[2]));
+      fila.put("caja", toStr(obj[3]));
+      fila.put("smartCard", toStr(obj[4]));
+      fila.put("personal", obj.length > 5 ? toStr(obj[5]) : "");
+      fila.put("dni", obj.length > 6 ? toStr(obj[6]) : "");
+      fila.put("voltaje", obj.length > 7 ? toStr(obj[7]) : "");
+      fila.put("observaciones", obj.length > 8 ? toStr(obj[8]) : "");
+      return fila;
+    }).collect(Collectors.toList());
+  }
+
+  public List<Map<String, String>> searchAuditoriaInSituEntry(boolean extras) {
+    return ingresoRepository.searchAuditoriaInSituEntry(extras ? 1 : 0).stream().map(obj -> {
       Map<String, String> fila = new HashMap<>();
       fila.put("serial", toStr(obj[0]));
       fila.put("mac", toStr(obj[1]));
@@ -424,6 +441,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       fila.put("fallaFuncionalCodigo", obj.length > 8 ? toStr(obj[8]) : "");
       fila.put("fallaCosmeticaCodigo", obj.length > 9 ? toStr(obj[9]) : "");
       fila.put("estadoFinalCodigo", obj.length > 10 ? toStr(obj[10]) : "");
+      fila.put("personal", obj.length > 11 ? toStr(obj[11]) : "");
+      fila.put("dni", obj.length > 12 ? toStr(obj[12]) : "");
+      fila.put("voltaje", obj.length > 13 ? toStr(obj[13]) : "");
+      fila.put("observaciones", obj.length > 14 ? toStr(obj[14]) : "");
       return fila;
     }).collect(Collectors.toList());
   }
@@ -915,7 +936,10 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       ingreso.setCausa((String) obj[27]);
     }
     if (obj.length > 28) {
-      ingreso.setNovedadId((Integer) obj[28]);
+      ingreso.setModeloId((Integer) obj[28]);
+    }
+    if (obj.length > 29) {
+      ingreso.setNovedadId((Integer) obj[29]);
     }
     return ingreso;
   }

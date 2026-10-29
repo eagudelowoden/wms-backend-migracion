@@ -57,4 +57,9 @@ public interface DiagnosticoRepository extends BaseRepository<DiagnosticoModel, 
     @Transactional
     @Query(value = "UPDATE Ingreso SET TruckRollId = :truckRollId WHERE Serial = :serial", nativeQuery = true)
     void updateTruckRollId(@Param("serial") String serial, @Param("truckRollId") Integer truckRollId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Diagnostico SET EstadoFinalId = :estadoDepreciadoId WHERE Id = (SELECT MAX(d2.Id) FROM Diagnostico d2 WHERE d2.SerialId = :serialId)", nativeQuery = true)
+    int marcarDepreciado(@Param("serialId") Integer serialId, @Param("estadoDepreciadoId") Integer estadoDepreciadoId);
 }
