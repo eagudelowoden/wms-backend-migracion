@@ -5,17 +5,8 @@ import java.util.List;
 
 import com.woden.wms_backend.exception.BusinessRuleException;
 
-/**
- * Valor calculado a partir de otro campo: Códigos SAP > Campos calculados (MAC, Serial3-5 al ingresar y Variable1-4 en
- * etiquetado) y Administración > Variables de etiquetas.
- *   COPIAR      el valor tal cual
- *   PRIMEROS    los primeros N caracteres (Parámetro 1 = N)
- *   ULTIMOS     los últimos N caracteres (Parámetro 1 = N)
- *   SUBCADENA   desde la posición P1 (1 = primera) y P2 caracteres
- *   HEX_SUMA    el valor como hexadecimal + P1, con P2 dígitos (12 por defecto): la MAC + 1 de Tigo Nicaragua o el
- *               serial + 1 de Tigo Costa Rica que estaban en pa_InsertEntry
- *   TEXTO       el texto fijo de P1
- */
+// COPIAR, PRIMEROS / ULTIMOS (P1 = cuántos), SUBCADENA (P1 desde, P2 cuántos), HEX_SUMA (P1 suma, P2 dígitos,
+// 12 por defecto) y TEXTO (P1)
 public final class ReglaCampo {
 
   public static final List<String> OPERACIONES = List.of("COPIAR", "PRIMEROS", "ULTIMOS", "SUBCADENA", "HEX_SUMA",

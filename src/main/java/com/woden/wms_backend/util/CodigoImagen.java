@@ -17,10 +17,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
-/** Código de barras (Code 128) y QR como PNG en data URI para los documentos en PDF. */
 public final class CodigoImagen {
 
-  /** data URI y proporción ancho / alto de la imagen */
   public record Imagen(String uri, double proporcion) {}
 
   private CodigoImagen() {
@@ -51,7 +49,6 @@ public final class CodigoImagen {
     }
   }
 
-  /** QR de módulos cuadrados con su margen de 1 módulo; el tamaño final lo pone el HTML. */
   public static Imagen qrImagen(String texto) throws Exception {
     BitMatrix m = new QRCodeWriter().encode(texto, BarcodeFormat.QR_CODE, 0, 0,
         Map.of(EncodeHintType.CHARACTER_SET, "UTF-8", EncodeHintType.MARGIN, 1,

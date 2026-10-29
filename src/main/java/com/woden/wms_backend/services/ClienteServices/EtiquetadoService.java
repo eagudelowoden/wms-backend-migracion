@@ -68,7 +68,6 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     try {
       etiquetadoRepository.insertEtiquetado(serial, mac, variable1, variable2, variable3,
           variable4, reImpresion, usuarioId, fecha);
-      // interruptor ETIQUETADO_FORECAST: tipo de empaque, lote, año y fecha fijados en la ventana de Etiquetado
       etiquetadoForecast.aplicar(serial);
       return 1;
     } catch (Exception e) {

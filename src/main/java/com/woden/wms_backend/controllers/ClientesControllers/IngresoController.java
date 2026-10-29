@@ -502,7 +502,6 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<UpdateNoveltyItemRequest> items) {
     int updated = 0;
     for (UpdateNoveltyItemRequest item : items) {
-      // ERROR SERIAL-MAC: foto del serial original antes del cambio para la notificacion por correo
       boolean serialMac = "ERROR SERIAL-MAC".equalsIgnoreCase(String.valueOf(item.tipoNovedad()).trim());
       Map<String, String> foto = serialMac ? notificacionCorreoService.fotoSerialMac(item.id()) : null;
       int filas = ingresoService.updateNoveltyEntry(

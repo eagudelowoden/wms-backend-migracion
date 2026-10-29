@@ -15,11 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 
-/**
- * Interruptores por cliente (Clientes > Validaciones) para los flujos de alto volumen (cada serie de Ingreso o de
- * Empaque): se guardan 60 s por cliente y código para no sumar una consulta por serie. Si la lectura falla se toma
- * como apagado (el flujo sigue como siempre).
- */
+// los guardo 60 s por cliente y código para no sumar una consulta por serie; si la lectura falla, apagado
 @Service
 public class InterruptorClienteService {
 

@@ -1,23 +1,17 @@
 /* =====================================================================================
-   Parámetros por cliente que reemplazan reglas metidas en SPs de algunas bases.  Base: WmsWdGeneral.
-   Interruptores nuevos (Clientes > Parámetros), apagados para todos hasta que se activen por cliente:
-     LIMPIEZA_CARACTERES_INGRESO  quita en Serial, MAC y Serial3 los textos del maestro "Limpieza Caracteres"
-     APP_PQRS_INGRESO             al ingresar, vincula el ticket PQRS pendiente del serial y lo pasa a En proceso
-     DIAGNOSTICO_REPORTE34        Diagnóstico exige el serial en BaseEtiquetado y Serial3 en los códigos del
+   Parámetros por cliente con los que saco del SP las reglas propias de algunas bases. Base: WmsWdGeneral.
+   Interruptores nuevos, apagados para todos hasta que los encienda por cliente:
+     LIMPIEZA_CARACTERES_INGRESO  quito en Serial, MAC y Serial3 los textos del maestro "Limpieza Caracteres"
+     APP_PQRS_INGRESO             al ingresar vinculo el ticket PQRS pendiente del serial y lo paso a En proceso
+     DIAGNOSTICO_REPORTE34        Diagnóstico exige el serial en BaseEtiquetado y Serial3 para los códigos del
                                   maestro "Diagnostico Serial3"
-     ETIQUETADO_FORECAST          Etiquetado muestra tipo de empaque, lote, año y fecha del Forecast (los cambia
-                                  administrador o técnico de etiquetado)
+     ETIQUETADO_FORECAST          Etiquetado fija tipo de empaque, lote, año y fecha (administrador o técnico)
      SERIAL_DISTINTO_MAC          Ingreso no acepta serial igual a la MAC (salvo smartcards)
-     MODELOID_DESDE_CODIGOSAP     Ingreso sin modelo toma el ModeloId del código SAP (Claro Ecuador)
-     SCRAP_MULTIMODELO_ENVIO      al enviar un pallet MULTIMODELO con tipología SCRAP sus equipos quedan SCRAP
-                                  (pa_SendEntry de Colombia)
-   Tablas nuevas:
-     CodigoSapRegla    campos calculados por código SAP (MAC, Serial3-5 al ingresar; Variable1-4 en etiquetado)
-     ClienteConfig     ajustes simples por cliente (modo de la Base Almacén, etiquetas con lectura variable)
-     BaseAlmacen       base SAP de Almacén por cliente (Cargues > BASE ALMACEN)
-     VariableEtiqueta  variables propias de las etiquetas (Administración > Variables de etiquetas)
-   Módulo 48 "Variables de etiquetas" (Administración); el menú ADVAR va por base (2026-10-25_instalar_por_base.sql).
-   Solo crea lo que falta; correrlo dos veces no hace nada.
+     MODELOID_DESDE_CODIGOSAP     Ingreso sin modelo toma el ModeloId del código SAP
+     SCRAP_MULTIMODELO_ENVIO      al enviar un pallet MULTIMODELO SCRAP sus equipos quedan SCRAP
+   Tablas: CodigoSapRegla (campos calculados por código SAP), ClienteConfig (ajustes por cliente), BaseAlmacen (base
+   SAP de Almacén) y VariableEtiqueta (variables propias de las etiquetas). Módulo 48 "Variables de etiquetas"; el
+   menú ADVAR lo agrego por base. Solo creo lo que falta.
    ===================================================================================== */
 USE WmsWdGeneral;
 SET NOCOUNT ON;

@@ -25,17 +25,6 @@ import com.woden.wms_backend.util.ReglaCampo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/**
- * Códigos SAP > Campos calculados (WmsWdGeneral.dbo.CodigoSapRegla, por cliente y código SAP): reemplaza los CASE por
- * CodigoSapId que había en pa_InsertEntry de algunas bases (MAC = serial hexadecimal + 1 en Tigo Costa Rica, Serial3 /
- * Serial4 = MAC + 1 / + 2 en Tigo Nicaragua y Global Liberty) y calcula las variables de Etiquetado.
- *   Ingreso:    MAC, SERIAL3, SERIAL4, SERIAL5 (en ese orden; cada uno puede usar el ya calculado)
- *   Etiquetado: VARIABLE1 a VARIABLE4
- * Los campos del equipo se calculan al ingresar (Momento INGRESO) o al diagnosticar (DIAGNOSTICO: lo que Tigo Costa Rica
- * tenía en pa_InsertDiagnostic, Serial3 = serial + 2 y Serial4 = sus últimos 6, o Serial3 = últimos 4 del serial).
- * Sin reglas el ingreso, el diagnóstico y el etiquetado quedan exactamente como siempre. Las reglas del cliente se
- * guardan 60 s.
- */
 @Service
 public class CodigoSapReglaService {
 
@@ -49,7 +38,6 @@ public class CodigoSapReglaService {
   public record Regla(String campo, String origen, String operacion, String parametro1, String parametro2,
       boolean activo, String momento) {}
 
-  /** Serial, MAC y Serial3-5 de un equipo (los que entran o los que se calculan). */
   public static final class Campos {
     public String serial;
     public String mac;
@@ -98,7 +86,6 @@ public class CodigoSapReglaService {
   @Autowired
   private DataSource dataSource;
 
-  // ── administración ─────────────────────────────────────────────────────────
 
   public Map<String, Object> listar(int codigoSapId) {
     Map<String, Object> out = new LinkedHashMap<>();
@@ -129,7 +116,6 @@ public class CodigoSapReglaService {
     return out;
   }
 
-  /** Reemplaza las reglas del código SAP por las enviadas (una por campo). */
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> guardar(int codigoSapId, List<Map<String, Object>> reglas, String usuario) {
     if (!tabla()) {
@@ -182,7 +168,6 @@ public class CodigoSapReglaService {
     return listar(codigoSapId);
   }
 
-  /** Vista previa en el editor: los campos calculados con un serial / MAC de ejemplo. */
   public Map<String, String> probar(List<Map<String, Object>> reglas, String serial, String mac) {
     List<Regla> lista = new ArrayList<>();
     for (Map<String, Object> m : reglas == null ? List.<Map<String, Object>>of() : reglas) {
@@ -208,9 +193,7 @@ public class CodigoSapReglaService {
     return out;
   }
 
-  // ── uso en Ingreso y Etiquetado ─────────────────────────────────────────────
 
-  /** Calcula MAC y Serial3-5 del ingreso según las reglas de su código SAP; sin reglas no cambia nada. */
   public void aplicarIngreso(Integer codigoSapId, Campos c) {
     if (codigoSapId == null) {
       return;
@@ -228,10 +211,6 @@ public class CodigoSapReglaService {
     }
   }
 
-  /**
-   * Después de crear el diagnóstico: calcula los campos con Momento DIAGNOSTICO sobre el equipo en Ingreso y los
-   * actualiza. Nunca lanza error: el diagnóstico ya quedó creado.
-   */
   public void aplicarDiagnostico(Integer codigoSapId, String serial) {
     List<Regla> reglas = codigoSapId == null || serial == null ? null : activas().get(codigoSapId);
     if (reglas == null || reglas.stream().noneMatch(r -> "DIAGNOSTICO".equals(r.momento()))) {
@@ -274,7 +253,6 @@ public class CodigoSapReglaService {
     }
   }
 
-  /** Variable1-4 calculadas para el código SAP (solo las que tienen regla). */
   public Map<String, String> variables(Integer codigoSapId, Campos c) {
     Map<String, String> out = new HashMap<>();
     List<Regla> reglas = codigoSapId == null ? null : activas().get(codigoSapId);
@@ -294,7 +272,6 @@ public class CodigoSapReglaService {
     return out;
   }
 
-  /** Si algún código SAP del cliente calcula Variable1-4 (sin reglas, Etiquetado no consulta nada más). */
   public boolean hayVariables() {
     return activas().values().stream().flatMap(List::stream).anyMatch(r -> CAMPOS_VARIABLE.contains(r.campo()));
   }

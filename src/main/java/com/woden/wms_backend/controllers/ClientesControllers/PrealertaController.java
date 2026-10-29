@@ -52,12 +52,11 @@ public class PrealertaController {
   public ResponseEntity<Void> updatePrealerta(@PathVariable int prealertaId) {
     String estadoAnterior = prealertaCierreService.estadoActual(prealertaId);
     prealertaService.updatePrealerta(prealertaId);
-    // cierre al 100 %: registro y correo despues del cierre de siempre (si falla, la prealerta ya quedo cerrada)
+    // registro y aviso después del cierre de siempre: si fallan, la prealerta ya quedó cerrada
     prealertaCierreService.cierreAutomatico(prealertaId, estadoAnterior);
     return ResponseEntity.ok().build();
   }
 
-  // ── cierre manual y sobrantes (interruptores PREALERTA_CIERRE_MANUAL / PREALERTA_SOBRANTES) ──
 
   @GetMapping("/{prealertaId}/resumen")
   public ResponseEntity<Map<String, Object>> resumen(@PathVariable int prealertaId) {

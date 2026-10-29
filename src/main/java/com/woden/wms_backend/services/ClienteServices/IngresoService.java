@@ -107,7 +107,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Creación / eliminación ───────────────────────────────────────────────────
 
   public String createIngresoCallable(IngresoModel ingreso) {
-    // parámetros del cliente que antes estaban en pa_InsertEntry: limpieza de caracteres y campos calculados
     CodigoSapReglaService.Campos campos = new CodigoSapReglaService.Campos(ingreso.getSerial(), ingreso.getMac(),
         ingreso.getSerial3(), ingreso.getSerial4(), ingreso.getSerial5());
     try {
@@ -126,7 +125,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     if (serialMac != null) {
       return serialMac;
     }
-    // interruptor INSERT_AUTOMATICO_SMARTCARD: con Serial3 la smartcard se valida y se crea junto con el ingreso
     SmartcardAutomaticaService.Config smartcard = smartcardAutomaticaService.config();
     String tarjeta = smartcard == null ? null
         : SmartcardAutomaticaService.tarjeta(ingreso.getSerial(), ingreso.getSerial3());
@@ -173,7 +171,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         Integer clientId = ClientDatabaseContext.getCurrentClientId();
         truckrollService.clasificarAsync(ingreso.getSerial(), ingreso.getMac(),
             ingreso.getTipoOrigenId(), clientDb, clientName, clientId);
-        // interruptor APP_PQRS_INGRESO: el ticket PQRS pendiente del serial pasa a En proceso
         ingresoParametrosService.vincularPqrs(ingreso.getSerial(), ingreso.getUsuarioId());
         return null;
       }
@@ -191,7 +188,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     }
   }
 
-  /** Los 28 parámetros de entrada de pa_InsertEntry desde la posición desde. */
   private static void parametrosEntrada(PreparedStatement stmt, int desde, IngresoModel ingreso) throws SQLException {
     int i = desde;
     stmt.setString(i++, ingreso.getSerial());
@@ -224,7 +220,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     stmt.setObject(i, ingreso.getModeloId() != 0 ? ingreso.getModeloId() : null, Types.INTEGER);
   }
 
-  /** Ejecuta el lote y devuelve la primera fila del último resultado (los triggers pueden devolver conteos antes). */
+  // los triggers pueden devolver conteos antes del resultado
   private static Object[] ultimaFila(PreparedStatement ps) throws SQLException {
     Object[] fila = null;
     boolean hayResultado = ps.execute();
@@ -289,7 +285,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   @Transactional
   public void deleteEntries(List<String> seriales) {
     seriales.forEach(truckrollService::limpiarPorEliminacion);
-    // interruptor INSERT_AUTOMATICO_SMARTCARD: smartcards de estos equipos (vacío si está apagado)
     List<String> tarjetas = smartcardAutomaticaService.tarjetasDe(seriales);
 
     try {
@@ -299,7 +294,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       throw new RuntimeException("Error serializando seriales para eliminar", e);
     }
 
-    // misma transacción: se borran las que nadie más usa y siguen como se crearon
     smartcardAutomaticaService.borrarSinUso(tarjetas);
   }
 
@@ -683,7 +677,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Envío ──────────────────────────────────────────────────────────────────────
 
   public void sendEntry(Integer estadoId, Integer tipologiaId, Integer usuarioId, Integer palletId, Integer opcion) {
-    // interruptor SCRAP_MULTIMODELO_ENVIO: pallet MULTIMODELO con tipología SCRAP conserva la suya
     tipologiaId = ingresoParametrosService.tipologiaEnvio(palletId, tipologiaId);
     ingresoRepository.sendIngreso(estadoId, tipologiaId, usuarioId, palletId, opcion, 0);
   }
@@ -1004,7 +997,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     List<MassUploadErrorDTO> errores = new ArrayList<>();
 
     Map<String, Integer> codigoSapMap = resolverCodigoSapIds(rows);
-    // limpieza de caracteres y campos calculados del cliente, antes de validar duplicados (igual que el ingreso uno a uno)
     for (MassUploadRowDTO row : rows) {
       Integer csId = row.getCodigoSap() == null ? null : codigoSapMap.get(row.getCodigoSap().trim().toUpperCase());
       CodigoSapReglaService.Campos c = new CodigoSapReglaService.Campos(row.getSerial(), row.getMac(),
@@ -1427,7 +1419,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
           .toList();
     }
 
-    // limpieza y campos calculados (Serial4/5 solo existen aquí; con los demás da lo mismo que en la vista previa)
     for (MassUploadRowResolvedDTO row : permitidos) {
       CodigoSapReglaService.Campos c = new CodigoSapReglaService.Campos(row.getSerial(), row.getMac(),
           row.getSerial3(), row.getSerial4(), row.getSerial5());
@@ -1448,11 +1439,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       String json = buildJsonFromResolved(permitidos);
       int insertados = ejecutarBulkInsert(json);
       response.setInsertados(insertados);
-      // interruptor INSERT_AUTOMATICO_SMARTCARD
       Integer usuarioCarga = permitidos.isEmpty() ? null : permitidos.get(0).getUsuarioId();
       smartcardAutomaticaService.crearSiAplica(permitidos.stream()
           .map(r -> new String[] { r.getSerial(), r.getSerial3() }).collect(Collectors.toList()), usuarioCarga);
-      // interruptor APP_PQRS_INGRESO
       ingresoParametrosService.vincularPqrs(permitidos.stream().map(MassUploadRowResolvedDTO::getSerial)
           .collect(Collectors.toList()), usuarioCarga);
     } catch (Exception e) {

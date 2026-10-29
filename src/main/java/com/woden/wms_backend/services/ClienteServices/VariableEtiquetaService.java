@@ -26,14 +26,6 @@ import com.woden.wms_backend.util.ReglaCampo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/**
- * Administración > Variables de etiquetas. Lista las variables que ya reemplazan EtiquetadoService (etiquetas de
- * Etiquetado) y ZplPrinterService (etiquetas de Empaque) y permite crear variables propias del cliente
- * (WmsWdGeneral.dbo.VariableEtiqueta): en la plantilla PRN se escriben con su nombre más la posición del equipo
- * (macCorta1, macCorta2...), igual que las de fábrica. El valor sale de un campo del equipo con una operación
- * (ReglaCampo) o de una consulta SELECT de una sola columna sobre la base del cliente con @serial, @mac y @codigoSap.
- * Las variables propias se reemplazan antes que las de fábrica; sin variables propias las etiquetas no cambian.
- */
 @Service
 public class VariableEtiquetaService {
 
@@ -47,7 +39,6 @@ public class VariableEtiquetaService {
       + "exec|execute|grant|revoke|deny|into|backup|restore|shutdown|dbcc|waitfor|openrowset|opendatasource|openquery|"
       + "sp_\\w*|xp_\\w*)\\b", Pattern.CASE_INSENSITIVE);
 
-  /** Variables de fábrica: nombre en la plantilla, dónde aplica y de dónde sale. */
   private static final List<Map<String, String>> INTEGRADAS = new ArrayList<>();
 
   static {
@@ -89,7 +80,6 @@ public class VariableEtiquetaService {
   @PersistenceContext
   private EntityManager em;
 
-  // ── administración ─────────────────────────────────────────────────────────
 
   public Map<String, Object> listar() {
     Map<String, Object> out = new LinkedHashMap<>();
@@ -150,7 +140,6 @@ public class VariableEtiquetaService {
     return listar();
   }
 
-  /** Valor de la variable (sin guardar) para un serial que ya esté en Ingreso. */
   public Map<String, Object> probar(Map<String, Object> m, String serial) {
     Variable v = validar(m);
     IngresoModel equipo = equipo(serial);
@@ -166,9 +155,7 @@ public class VariableEtiquetaService {
     return out;
   }
 
-  // ── uso en las etiquetas ───────────────────────────────────────────────────
 
-  /** Reemplaza las variables propias (nombre + sufijo) del equipo; sin variables propias devuelve el ZPL igual. */
   public String reemplazar(String zpl, String tipo, String sufijo, IngresoModel equipo) {
     if (zpl == null || equipo == null) {
       return zpl;
@@ -199,7 +186,6 @@ public class VariableEtiquetaService {
     return ReglaCampo.aplicar(v.operacion(), origen(v, e), v.parametro1(), v.parametro2());
   }
 
-  /** El valor del campo de origen (o el resultado de la consulta) antes de la operación. */
   private String origen(Variable v, IngresoModel e) {
     return switch (v.origen()) {
       case "SERIAL" -> e.getSerial();

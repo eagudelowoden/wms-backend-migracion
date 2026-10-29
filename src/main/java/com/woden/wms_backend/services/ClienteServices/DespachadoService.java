@@ -29,23 +29,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-/**
- * Despacho > Despachado: devolucion de lo que el cliente rechaza (misma logica que ReverseCore > Novedades).
- *
- * El destino sale del Work flow (origen DESPACHADO, opciones Opc_Equipos / Opc_Accesorios de "Despachado"), asi se
- * puede cambiar sin tocar codigo; hoy NOVEDAD y NOVEDAD-ACCESORIOS.
- *
- * Equipos (por serie, caja o pallet de despacho): la ULTIMA vuelta del serial (su SerialId) vuelve de Despacho a Ingreso
- * con su mismo Id, desempacada, sin pallet, en el destino, tipologia NO CONFORMIDAD y observacion
- * "RECHAZO CLIENTE <salida>" (en NOVEDAD aparece en Novedades > Proceso). Las vueltas anteriores no se tocan; un
- * despacho duplicado de esa vuelta se borra con ella.
- *
- * Accesorios (por cantidad): las unidades mas recientes de esa salida vuelven de DespachoAccesorio a Accesorio con su
- * mismo Id, en un pallet nuevo por referencia (NO CONFORMIDAD) con el destino elegido; en NOVEDAD-ACCESORIOS se envia
- * desde Novedades > Proceso (ACCESORIOS). Requiere la novedad de accesorios instalada en la base del cliente.
- *
- * Todo en una transaccion con verificacion final; lo borrado queda respaldado en WmsWdGeneral (DespachoReversa*).
- */
 @Service
 public class DespachadoService {
 
@@ -55,7 +38,6 @@ public class DespachadoService {
   private static final String OBSERVACION = "RECHAZO CLIENTE";
   private static final int MAX_SERIES = 3000;
   private static final int BLOQUE = 900;
-  // destinos por Work flow: origen DESPACHADO, opciones de la pestana Despachado (catalogo Permiso)
   public static final String WF_ORIGEN = "DESPACHADO";
   public static final String WF_DESCRIPCION = "Despachado";
   public static final String WF_EQUIPOS = "Opc_Equipos";
@@ -70,9 +52,7 @@ public class DespachadoService {
   @Autowired
   private PalletRepository palletRepository;
 
-  // ── equipos ───────────────────────────────────────────────────────────────
 
-  /** Estado de cada serie: se regresa solo si su ultimo despacho es de esa salida y no esta en Ingreso. */
   public List<Map<String, Object>> previa(List<String> series, String salida) {
     String sal = limpio(salida).toUpperCase(Locale.ROOT);
     if (sal.isEmpty()) {
@@ -145,10 +125,6 @@ public class DespachadoService {
     return out;
   }
 
-  /**
-   * Captura como en Ingreso: una serie, un pallet de despacho (todas sus series de esa salida) o una caja de despacho
-   * (numero de caja dentro del pallet). Devuelve la previa de cada serie encontrada.
-   */
   public List<Map<String, Object>> capturar(String salida, String tipo, String valor, String pallet) {
     String sal = limpio(salida).toUpperCase(Locale.ROOT);
     String v = limpio(valor).toUpperCase(Locale.ROOT);
@@ -185,13 +161,11 @@ public class DespachadoService {
     return previa(series, sal);
   }
 
-  /** Destinos del Work flow para Despachado (opcion Opc_Equipos u Opc_Accesorios). */
   public List<String> destinos(String opcion) {
     return filas("EXEC pa_GetNameWorflowDestiny ?1, ?2, ?3, ?4", opcion, WF_ORIGEN, WF_DESCRIPCION, 0).stream()
         .map(r -> texto(r[0])).filter(s -> !s.isEmpty()).collect(Collectors.toList());
   }
 
-  /** El destino elegido debe estar en el Work flow; devuelve su EstadoId. */
   private int destinoValido(String opcion, String destino) {
     String d = limpio(destino);
     if (d.isEmpty()) {
@@ -207,7 +181,6 @@ public class DespachadoService {
     return estadoId(d);
   }
 
-  /** Regresa la ultima vuelta de las series al destino del Work flow; si una falla o algo no cuadra no se regresa ninguna. */
   public List<Map<String, Object>> regresar(List<String> series, String salida, String destino, Integer usuarioId,
       String usuarioNombre, boolean simular) {
     exigirRespaldo();
@@ -243,7 +216,6 @@ public class DespachadoService {
         if (!igual) {
           throw new BusinessRuleException(serial + ": su despacho cambió mientras tanto; valide de nuevo. No se regresó ninguna serie.");
         }
-        // respaldo de lo que se borra (la vuelta completa y su empaque)
         actualizar("INSERT INTO " + G + "DespachoReversa (ClienteId, Db, Serial, SerialId, DespachoId, PedidoSap, FechaDespacho, "
             + "PalletDespacho, Motivo, DespachoJson, EmpaqueJson, UsuarioId, UsuarioNombre) "
             + "SELECT ?1, ?2, ?3, ?4, ?5, d.PedidoSap, d.Fecha, p.Numero, ?6, "
@@ -252,13 +224,11 @@ public class DespachadoService {
             + "FROM Despacho d LEFT JOIN Pallet p ON p.Id = d.PalletId WHERE d.Id = ?5",
             cliente(), db, serial, serialId, despachoId, obs, usuario, corto(usuarioNombre, 150));
 
-        // vuelve a Ingreso con su mismo Id (Empaque, Reparacion y Diagnostico siguen enlazados).
-        // SET IDENTITY_INSERT solo dura en el mismo lote: el driver ejecuta cada sentencia con parametros en su propio
-        // sp_prepexec, asi que va junto con el INSERT (la verificacion de abajo confirma que quedo en Ingreso)
+        // vuelve a Ingreso con su mismo Id. SET IDENTITY_INSERT solo dura en el mismo lote y el driver manda cada
+        // sentencia en su propio sp_prepexec, por eso va junto con el INSERT
         actualizar("SET IDENTITY_INSERT Ingreso ON; " + insertIngreso + "; SET IDENTITY_INSERT Ingreso OFF;",
             estado, tip, TIPOLOGIA, obs, usuario, despachoId);
         actualizar("DELETE FROM Empaque WHERE SerialId = ?1", serialId);
-        // solo esta vuelta (con su despacho duplicado si lo hay); las anteriores tienen otro SerialId
         actualizar("DELETE FROM Despacho WHERE SerialId = ?1 AND Serial = ?2", serialId, serial);
 
         Object[] q = filas("SELECT (SELECT COUNT(*) FROM Despacho WHERE Serial = ?1), "
@@ -279,11 +249,6 @@ public class DespachadoService {
     });
   }
 
-  /**
-   * INSERT Ingreso ... SELECT ... FROM Despacho d WHERE d.Id = ?6, con las columnas que tenga esta base:
-   * lo que no se fija aqui se copia de Despacho si existe con el mismo nombre.
-   * Parametros: ?1 estado, ?2 tipologia, ?3 novedad, ?4 observacion, ?5 usuario, ?6 despacho.
-   */
   private String insertIngresoDesdeDespacho() {
     Map<String, String> fijos = new HashMap<>();
     fijos.put("id", "d.SerialId");
@@ -308,15 +273,13 @@ public class DespachadoService {
     return insertCopiando("Ingreso", despacho, fijos, "FROM Despacho d WHERE d.Id = ?6");
   }
 
-  // ── accesorios ────────────────────────────────────────────────────────────
 
-  /** Accesorios despachados en esa salida que se pueden regresar, por referencia, tipo y estado de limpieza. */
   public List<Map<String, Object>> accPrevia(String salida) {
     String sal = limpio(salida).toUpperCase(Locale.ROOT);
     if (sal.isEmpty()) {
       throw new BusinessRuleException("Escriba la salida (PedidoSap) de los accesorios.");
     }
-    // las unidades se cuentan por AccesoryId: hay salidas con el mismo accesorio registrado 2 o 3 veces
+    // cuento las unidades por AccesoryId: hay salidas con el mismo accesorio registrado 2 o 3 veces
     List<Map<String, Object>> out = new ArrayList<>();
     // tipoCodigo: Novedades de accesorios (pa_SearchNoveltyAccesoryPallet) solo muestra pallets de codigo tipo ACCESORIOS
     for (Object[] r : filas("SELECT d.CodigoSapId, cs.Codigo, cs.Descripcion, ISNULL(d.TipoAccesorio, ''), "
@@ -348,7 +311,6 @@ public class DespachadoService {
     return out;
   }
 
-  /** Regresa la cantidad pedida de cada grupo a un pallet nuevo (uno por grupo) con el destino del Work flow. Todo o nada. */
   public List<Map<String, Object>> accRegresar(String salida, List<Map<String, Object>> items, String destino,
       Integer usuarioId, String usuarioNombre, String zonaHoraria, boolean simular) {
     exigirRespaldo();
@@ -431,11 +393,9 @@ public class DespachadoService {
             cliente(), db, sal, texto(g.get("codigoSap")), corto(texto(g.get("modelo")), 200), texto(g.get("tipo")),
             texto(g.get("estadoLimpieza")), n, "[" + lista + "]", obs, numero, usuario, corto(usuarioNombre, 150));
 
-        // vuelven con su mismo Id (el historial de MovimientoAccesorio sigue enlazado) al pallet de novedad
-        // IDENTITY_INSERT en el mismo lote que el INSERT (ver equipos)
+        // IDENTITY_INSERT en el mismo lote que el INSERT, como en equipos
         actualizar("SET IDENTITY_INSERT Accesorio ON; " + insertAccesorio.replace("{IDS}", lista)
             + "; SET IDENTITY_INSERT Accesorio OFF;", palletId, estado, obs, usuario, TIPOLOGIA, sal);
-        // todas las copias de esas unidades en la salida (despacho doble o triple)
         actualizar("DELETE FROM DespachoAccesorio WHERE PedidoSap = ?1 AND AccesoryId IN (" + lista + ")", sal);
 
         Object[] q = filas("SELECT (SELECT COUNT(*) FROM Accesorio WHERE Id IN (" + lista + ") AND EstadoId = ?1 "
@@ -459,10 +419,6 @@ public class DespachadoService {
     });
   }
 
-  /**
-   * INSERT Accesorio ... SELECT ... FROM DespachoAccesorio (ultima copia de cada unidad), con las columnas de esta base.
-   * Parametros: ?1 pallet, ?2 estado, ?3 observacion, ?4 usuario, ?5 novedad, ?6 salida; {IDS} = lista de AccesoryId.
-   */
   private String insertAccesorioDesdeDespacho() {
     Map<String, String> fijos = new HashMap<>();
     fijos.put("id", "d.AccesoryId");
@@ -512,7 +468,6 @@ public class DespachadoService {
     throw new BusinessRuleException("No se pudo reservar un número de pallet; intente de nuevo.");
   }
 
-  // ── historial ─────────────────────────────────────────────────────────────
 
   public List<Map<String, Object>> historial() {
     if (!respaldoListo()) {
@@ -539,9 +494,7 @@ public class DespachadoService {
     return out;
   }
 
-  // ── utilidades ────────────────────────────────────────────────────────────
 
-  /** INSERT destino (cols) SELECT exprs desde: fijos manda; si no, la columna de origen con el mismo nombre. */
   private String insertCopiando(String destino, Set<String> origen, Map<String, String> fijos, String desde) {
     List<String> cols = new ArrayList<>();
     List<String> exprs = new ArrayList<>();
@@ -592,7 +545,7 @@ public class DespachadoService {
 
   private TransactionTemplate plantilla() {
     TransactionTemplate t = new TransactionTemplate(transactionManager);
-    t.setTimeout(600); // un pallet completo puede traer cientos de series
+    t.setTimeout(600);
     return t;
   }
 

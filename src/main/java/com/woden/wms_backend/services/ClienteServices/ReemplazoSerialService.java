@@ -17,16 +17,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.Query;
 
-/**
- * Reemplazo de un serial empacado en UNA sola transaccion. Antes el front hacia ~6 llamadas sueltas
- * (pa_UpdateChangedPackingEntry, pa_UpdatePackingWeb, smartcard, accesorios...) sin revisar filas: si una fallaba
- * el reemplazo quedaba a medias y se reportaba como exitoso.
- *
- * El registro de Empaque del serial anterior pasa al nuevo (UPDATE, no INSERT): conserva Fecha y FechaCierre, asi
- * un reemplazo no mueve la produccion de mes. Accesorios (SerialEmpaque) y smartcard pasan al serial nuevo y el
- * evento queda en Movimiento para los dos seriales. Al final se verifica el resultado; si algo no cuadra se deshace
- * todo.
- */
 @Service
 public class ReemplazoSerialService {
 
@@ -73,7 +63,7 @@ public class ReemplazoSerialService {
     if (pallet == 0) {
       throw new IllegalStateException("El serial anterior " + anterior + " no esta en un pallet.");
     }
-    // por SerialId: el mismo serial puede tener empaques de vueltas anteriores (otro SerialId) que no se tocan
+    // por SerialId: el mismo serial puede tener empaques de vueltas anteriores (otro SerialId) que no toco
     Integer empaqueId = entero("SELECT MAX(Id) FROM Empaque WHERE SerialId = ?1", idViejo);
     if (empaqueId == null) {
       throw new IllegalStateException("El serial anterior " + anterior + " no tiene registro de empaque.");
@@ -84,12 +74,10 @@ public class ReemplazoSerialService {
     String palletNumero = texto("SELECT Numero FROM Pallet WHERE Id = ?1", pallet);
     String cajaNumero = caja > 0 ? texto("SELECT CAST(Numero AS VARCHAR(20)) FROM CajaEmpaque WHERE Id = ?1", caja) : "";
 
-    // 1) la unidad nueva entra al pallet y caja de la anterior, con su estado y tipologia
     exigir(actualizar("UPDATE Ingreso SET EstadoId = ?1, PalletId = ?2, PalletIdEmpaque = ?2, CajaEmpaqueId = ?3, "
         + "UsuarioIdMovimiento = ?4, TipologiaId = ?5 WHERE Id = ?6",
         estadoViejo, pallet, caja, usuario, tipologia, idNuevo), "mover el serial nuevo al pallet");
 
-    // 2) el registro de empaque pasa al serial nuevo: Fecha y FechaCierre no se tocan
     exigir(actualizar("UPDATE Empaque SET SerialId = ?1, Serial = ?2, Mac = ?3 WHERE Id = ?4",
         idNuevo, nuevo, macNuevo, empaqueId), "pasar el registro de empaque al serial nuevo");
     // NivelId aparte y solo si cambia: trg_AuditoriaNivelIdEmpaque escribe en AuditoriaNivelEmpaque, que no existe en
@@ -104,7 +92,6 @@ public class ReemplazoSerialService {
       }
     }
 
-    // 3) smartcard
     String scEntra = "";
     if ("INGRESO".equals(modo) && !scNuevo.isEmpty()) {
       Object[] sc = fila("SELECT Id, Serial FROM Ingreso WITH (UPDLOCK) WHERE Serial = ?1",
@@ -140,22 +127,18 @@ public class ReemplazoSerialService {
           usuario, scViejo, pallet);
     }
 
-    // 4) el serial anterior sale del pallet al destino elegido, sin smartcard
     exigir(actualizar("UPDATE Ingreso SET EstadoId = ?1, PalletId = 0, PalletIdEmpaque = 0, CajaEmpaqueId = 0, "
         + "UsuarioIdMovimiento = ?2, TipologiaId = ?3, SmartCardId = NULL, SmartCard = NULL WHERE Id = ?4",
         r.destinoId(), usuario, tipologia, idViejo), "sacar el serial anterior del pallet");
 
-    // 5) los accesorios empacados con el serial anterior pasan al nuevo
     int accesorios = actualizar("UPDATE Accesorio SET SerialEmpaque = ?1 WHERE SerialEmpaque = ?2", nuevo, anterior);
 
-    // 6) el evento queda en Movimiento para los dos seriales
     String lugar = palletNumero + (cajaNumero.isEmpty() ? "" : " caja " + cajaNumero);
     movimiento(idViejo, anterior, estadoViejo, r.destinoId(),
         "REEMPLAZO " + modulo + ": sale de pallet " + lugar + ", reemplazado por " + nuevo, usuario);
     movimiento(idNuevo, nuevo, estadoNuevoAntes, estadoViejo,
         "REEMPLAZO " + modulo + ": entra a pallet " + lugar + " en lugar de " + anterior, usuario);
 
-    // 7) verificacion: si algo no quedo como se espera, se deshace todo
     Object[] chk = fila("SELECT (SELECT COUNT(*) FROM Ingreso WHERE Id = ?1 AND PalletId = ?2 AND ISNULL(CajaEmpaqueId, 0) = ?3), "
         + "(SELECT COUNT(*) FROM Empaque WHERE Id = ?4 AND SerialId = ?1 AND Serial = ?5), "
         + "(SELECT COUNT(*) FROM Ingreso WHERE Id = ?6 AND ISNULL(PalletId, 0) = 0 AND EstadoId = ?7), "
@@ -186,7 +169,6 @@ public class ReemplazoSerialService {
     return out;
   }
 
-  // ── utilidades ────────────────────────────────────────────────────────────
 
   private void movimiento(int serialId, String serial, int origen, int destino, String descripcion, int usuario) {
     actualizar("INSERT INTO Movimiento (SerialId, Serial, OrigenId, DestinoId, Descripcion, UsuarioId, Fecha) "
@@ -231,7 +213,6 @@ public class ReemplazoSerialService {
     return filas.isEmpty() || filas.get(0) == null ? "" : String.valueOf(filas.get(0)).trim();
   }
 
-  /** mensaje de la causa raiz (el error de SQL Server o del trigger) */
   public static String causa(Throwable e) {
     Throwable t = e;
     while (t.getCause() != null && t.getCause() != t) {

@@ -41,7 +41,6 @@ public class JasperReportController {
   @PostMapping("/reporte")
   public ResponseEntity<byte[]> generarReportePallet(@RequestBody PalletReportDTO request) throws IOException, JRException {
     try {
-      // con la plantilla del cliente (Administración > Documentos) si la activó; si falla o no, el Jasper de siempre
       byte[] report = null;
       if (palletDocumentoService.usaEditor()) {
         try {

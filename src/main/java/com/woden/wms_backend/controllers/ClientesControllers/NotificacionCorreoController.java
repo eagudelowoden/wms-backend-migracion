@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.services.ClienteServices.NotificacionCorreoService;
 
-/** Administracion > Notificaciones: reglas de correo por evento y cliente, bitacora de envios y correo de prueba. */
 @RestController
 @RequestMapping("/client/notificaciones")
 public class NotificacionCorreoController {
@@ -58,7 +57,6 @@ public class NotificacionCorreoController {
     return ResponseEntity.ok(notificacionCorreoService.probar(id, usuario));
   }
 
-  /** Sonidos de los avisos de Ingreso del cliente (y si el interruptor esta encendido). */
   @GetMapping("/sonidos")
   public ResponseEntity<Map<String, Object>> sonidos() {
     return ResponseEntity.ok(notificacionCorreoService.sonidos());

@@ -20,15 +20,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-/**
- * Administración > Documentos: plantilla editable por cliente de cada documento del WMS.
- *   BOLETA_ENTREGA    boleta de control de movimiento (Despacho)
- *   PALLET            boleta del pallet que viaja entre módulos (si no se activa el editor sigue el formato Jasper)
- *   CORREO_PREALERTA  correo al cerrar una prealerta (automática o manual)
- *   CORREO_SERIAL_MAC correo de la novedad ERROR SERIAL-MAC regularizada (Notificaciones)
- * Sin fila guardada el documento sale igual que siempre (resources/documentos/TIPO.json). Tabla en WmsWdGeneral
- * (sql/2026-10-26_documentos_prealertas.sql).
- */
 @Service
 public class DocumentoPlantillaService {
 
@@ -40,7 +31,6 @@ public class DocumentoPlantillaService {
   public static final String CORREO_SERIAL_MAC = "CORREO_SERIAL_MAC";
   private static final Map<String, String> TIPOS = new LinkedHashMap<>();
   private static final Map<String, List<Map<String, String>>> VARIABLES = new LinkedHashMap<>();
-  /** imagen en base64 (logo, icono): ~450 KB */
   private static final int MAX_IMAGEN = 600_000;
   private static final int MAX_CONFIG = 2_000_000;
 
@@ -59,7 +49,6 @@ public class DocumentoPlantillaService {
         "total_pallets", "Total pallets", "total_cajas", "Total cajas", "lotes", "Lotes de los pallets",
         "responsable_op", "Responsable de operación (Maestros > Responsable Op)",
         "fecha_impresion", "Fecha de impresión", "pagina", "Página", "paginas", "Total de páginas",
-        // por fila (columnas)
         "n", "Fila #", "no_pallet", "No. pallet", "codigo_sap", "Código SAP", "descripcion", "Descripción",
         "cantidad", "Cantidad (equipos; si no hay, accesorios; si no, smartcards)", "equipos", "Equipos",
         "accesorios", "Accesorios", "smartcards", "Smartcards", "cajas", "Cajas", "tipologia", "Tipología",
@@ -104,7 +93,6 @@ public class DocumentoPlantillaService {
     return out;
   }
 
-  /** Lo que necesita el editor: configuración vigente, la de fábrica, si está personalizada y las variables. */
   public Map<String, Object> estado(String tipo) {
     exigirTipo(tipo);
     Map<String, Object> out = new LinkedHashMap<>();
@@ -122,7 +110,6 @@ public class DocumentoPlantillaService {
     return out;
   }
 
-  /** Configuración con la que se genera el documento del cliente de la sesión (la de fábrica si no hay otra). */
   public Map<String, Object> config(String tipo) {
     String clave = cliente() + "|" + tipo;
     Cache c = CACHE.get(clave);
@@ -138,20 +125,18 @@ public class DocumentoPlantillaService {
         out = r.isEmpty() ? base : mezclar(base, leer(texto(r.get(0)[0])));
       }
     } catch (Exception e) {
-      // una plantilla dañada nunca debe impedir imprimir: sale la de fábrica
+      // si la plantilla está dañada imprimo con la de fábrica
       logger.warn("[Documentos] plantilla {} del cliente {} no se pudo leer: {}", tipo, cliente(), e.getMessage());
     }
     CACHE.put(clave, new Cache(out, System.currentTimeMillis() + CACHE_MS));
     return out;
   }
 
-  /** cada boleta de pallet consulta la plantilla: se guarda 30 s por cliente (al guardar se limpia) */
   private record Cache(Map<String, Object> config, long vence) {}
 
   private static final long CACHE_MS = 30_000;
   private static final Map<String, Cache> CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
-  /** La de fábrica completada con lo que llegue del editor (vista previa sin guardar). */
   public Map<String, Object> conCambios(String tipo, Map<String, Object> cambios) {
     exigirTipo(tipo);
     return cambios == null ? porDefecto(tipo) : mezclar(porDefecto(tipo), cambios);
@@ -184,7 +169,6 @@ public class DocumentoPlantillaService {
     return estado(tipo);
   }
 
-  /** Vuelve al formato de fábrica (borra la personalización del cliente). */
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> restablecer(String tipo) {
     exigirTipo(tipo);
@@ -207,9 +191,7 @@ public class DocumentoPlantillaService {
     }
   }
 
-  // ── utilidades ────────────────────────────────────────────────────────────
 
-  /** Mapas se combinan por clave; listas y valores simples reemplazan a los de fábrica. */
   @SuppressWarnings("unchecked")
   static Map<String, Object> mezclar(Map<String, Object> base, Map<String, Object> cambios) {
     Map<String, Object> out = new LinkedHashMap<>(base);

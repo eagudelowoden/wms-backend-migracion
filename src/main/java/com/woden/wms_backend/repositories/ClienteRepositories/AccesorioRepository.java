@@ -147,8 +147,6 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
       @Param("novedad") String novedad,
       @Param("usuarioId") Integer usuarioId);
 
-  // Despacho > Proceso: detalle de los accesorios de un pallet (cualquier estado), por codigo y tipo. Consulta
-  // directa (sin SP) para que sirva igual en todas las bases de cliente.
   @Query(value = """
       SELECT cs.Codigo, cs.Descripcion,
              SUM(CASE WHEN UPPER(LTRIM(RTRIM(ISNULL(a.TipoAccesorio, '')))) = 'NUEVO' THEN 1 ELSE 0 END) AS nuevos,

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.services.ClienteServices.DespachadoService;
 
-/** Despacho > Despachado: equipos y accesorios que el cliente rechaza vuelven al destino del Work flow. */
 @RestController
 @RequestMapping("/client/despachado")
 public class DespachadoController {
@@ -30,7 +29,6 @@ public class DespachadoController {
   public record AccesoriosRequest(String salida, List<Map<String, Object>> items, String destino, Integer usuarioId,
       String usuarioNombre, String zonaHoraria, Boolean simular) {}
 
-  /** Serie, caja (con su pallet) o pallet de despacho de la salida: previa de cada serie. */
   @PostMapping("/equipos/capturar")
   public ResponseEntity<List<Map<String, Object>>> capturar(@RequestBody CapturaRequest r) {
     return ResponseEntity.ok(despachadoService.capturar(r.salida(), r.tipo(), r.valor(), r.pallet()));
@@ -53,7 +51,6 @@ public class DespachadoController {
         r.usuarioNombre(), r.zonaHoraria(), Boolean.TRUE.equals(r.simular())));
   }
 
-  /** Destinos del Work flow: tipo = equipos | accesorios. */
   @GetMapping("/destinos")
   public ResponseEntity<List<String>> destinos(@RequestParam(defaultValue = "equipos") String tipo) {
     return ResponseEntity.ok(despachadoService.destinos(

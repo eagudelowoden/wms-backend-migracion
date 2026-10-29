@@ -26,10 +26,6 @@ import com.woden.wms_backend.services.ClienteServices.EtiquetadoForecastService;
 import com.woden.wms_backend.services.ClienteServices.LoadsService;
 import com.woden.wms_backend.services.ClienteServices.VariableEtiquetaService;
 
-/**
- * Parámetros por cliente que reemplazan reglas de SPs: campos calculados por código SAP, Forecast de Etiquetado,
- * etiquetas con lectura variable, modo de la Base Almacén y variables propias de las etiquetas.
- */
 @RestController
 @RequestMapping("/client/parametros")
 public class ParametrosClienteController {
@@ -56,7 +52,6 @@ public class ParametrosClienteController {
   @Autowired
   private ObjectMapper json;
 
-  // ── Códigos SAP > Campos calculados ────────────────────────────────────────
 
   @GetMapping("/codigosap/{codigoSapId}/reglas")
   public ResponseEntity<Map<String, Object>> reglas(@PathVariable int codigoSapId) {
@@ -76,7 +71,6 @@ public class ParametrosClienteController {
     return ResponseEntity.ok(codigoSapReglas.probar(reglas, texto(body.get("serial")), texto(body.get("mac"))));
   }
 
-  // ── Etiquetado ─────────────────────────────────────────────────────────────
 
   @GetMapping("/etiquetado/forecast")
   public ResponseEntity<Map<String, Object>> forecast() {
@@ -89,7 +83,6 @@ public class ParametrosClienteController {
     return ResponseEntity.ok(etiquetadoForecast.guardar(valores, usuario));
   }
 
-  /** Ids de las etiquetas que marcan Lectura variable al elegirlas en Etiquetado. */
   @GetMapping("/etiquetas/lectura-variable")
   public ResponseEntity<List<Integer>> lecturaVariable() {
     return ResponseEntity.ok(etiquetasLectura());
@@ -111,7 +104,6 @@ public class ParametrosClienteController {
     return ResponseEntity.ok(ids);
   }
 
-  /** Largo de los campos de etiqueta que se escanean en Etiquetado: { idCampo: "12" o "12|16" }; sin fila = libre. */
   @GetMapping("/etiquetas/largos")
   public ResponseEntity<Map<String, String>> largos() {
     return ResponseEntity.ok(largosCampos());
@@ -138,7 +130,6 @@ public class ParametrosClienteController {
     return ResponseEntity.ok(m);
   }
 
-  // ── Base Almacén ───────────────────────────────────────────────────────────
 
   @GetMapping("/base-almacen")
   public ResponseEntity<Map<String, Object>> baseAlmacen() {
@@ -159,7 +150,6 @@ public class ParametrosClienteController {
     return baseAlmacen();
   }
 
-  /** Si el serial pasa por la Base Almacén según el modo (inclusión: debe estar; exclusión: no debe estar). */
   @GetMapping("/base-almacen/serial")
   public ResponseEntity<Map<String, Object>> serialAlmacen(@RequestParam String serial) {
     String modo = config.get(MODO_ALMACEN, "INCLUSION");
@@ -171,7 +161,6 @@ public class ParametrosClienteController {
     return ResponseEntity.ok(out);
   }
 
-  // ── Administración > Variables de etiquetas ────────────────────────────────
 
   @GetMapping("/variables")
   public ResponseEntity<Map<String, Object>> variables() {

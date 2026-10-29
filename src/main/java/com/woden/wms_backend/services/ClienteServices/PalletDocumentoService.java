@@ -28,18 +28,11 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/**
- * Boleta del pallet que viaja entre módulos con la plantilla del cliente (Administración > Documentos > Boleta de
- * pallet). Solo se usa si el cliente activó el editor (usarEditor); si no, JasperReportService genera el Pallet.jasper
- * de siempre. Mismo diseño de fábrica: hoja carta, logo | título | icono y una fila por dato con el código de barras.
- */
 @Service
 public class PalletDocumentoService {
 
   private static final Logger logger = LoggerFactory.getLogger(PalletDocumentoService.class);
-  /** alto útil para las filas (Jasper: de y=90 a y=740) */
   private static final double ALTO_FILAS = 650;
-  /** ancho útil de la hoja en pt (612 - 2 x 5) */
   private static final double ANCHO = 602;
 
   private final PebbleEngine pebble = new PebbleEngine.Builder().build();
@@ -52,7 +45,6 @@ public class PalletDocumentoService {
   @PersistenceContext
   private EntityManager em;
 
-  /** El cliente imprime la boleta de pallet con su plantilla (si falla la lectura, sigue el Jasper). */
   public boolean usaEditor() {
     try {
       return plantillas != null
@@ -106,7 +98,6 @@ public class PalletDocumentoService {
     ctx.put("ancho_etiqueta", anchoEtq);
     ctx.put("pie", PlantillaTexto.html(texto(cfg.get("pie")), vars));
 
-    // filas: si suman más alto que la hoja se reducen en proporción (nunca pasa a una segunda hoja)
     List<?> filasCfg = cfg.get("filas") instanceof List<?> l ? l : List.of();
     double suma = 0;
     for (Object o : filasCfg) {
@@ -130,7 +121,6 @@ public class PalletDocumentoService {
       String tipo = texto(f.get("tipo"));
       if ("barras".equals(tipo) && !valor.isBlank()) {
         fila.put("barras", CodigoImagen.barras(valor));
-        // proporción del código del Jasper (281 x 129 en una fila de 140)
         double altoBarras = Math.max(10, alto - 11);
         fila.put("altoBarras", altoBarras);
         fila.put("anchoBarras", Math.min(anchoValPt, altoBarras * 281 / 129));
@@ -158,7 +148,6 @@ public class PalletDocumentoService {
     }
   }
 
-  /** Tamaño de letra que cabe en el ancho de la celda (en una línea, como el Jasper) y en su alto. */
   private static double ajustar(String texto, double tamano, double anchoPt, double altoPt) {
     double t = Math.min(tamano, altoPt * 0.8);
     double cabe = anchoPt * 0.96 / ems(texto);
@@ -171,7 +160,6 @@ public class PalletDocumentoService {
   private static final int[] MINUSCULAS = { 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556,
       556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500 };
 
-  /** Ancho del texto en em con la letra de la boleta (sin tildes, que no cambian el ancho). */
   private static double ems(String texto) {
     String s = Normalizer.normalize(texto, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
     double total = 0;
@@ -193,10 +181,6 @@ public class PalletDocumentoService {
     return Math.max(total, 278) / 1000;
   }
 
-  /**
-   * El pallet real más reciente del cliente (primero uno con lote) para la vista previa de Documentos; null si no hay.
-   * NombreUsuario y lote se completan por su número como en la impresión de verdad.
-   */
   public PalletReportDTO palletEjemplo(String cliente) {
     if (em == null) {
       return null;
@@ -233,10 +217,6 @@ public class PalletDocumentoService {
     }
   }
 
-  /**
-   * Usuario (NombreUsuario) y lote del pallet: los manda el front o se buscan por el número del pallet, solo si alguna
-   * fila los usa.
-   */
   private String[] datosPallet(PalletReportDTO dto, Map<String, Object> cfg) {
     String usuario = nulo(dto.getNombreUsuario());
     String lote = nulo(dto.getLote());

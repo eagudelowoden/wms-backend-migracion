@@ -28,7 +28,6 @@ import com.woden.wms_backend.services.ClienteServices.NotificacionCorreoService;
 import com.woden.wms_backend.services.ClienteServices.PalletDocumentoService;
 import com.woden.wms_backend.services.ClienteServices.PrealertaCierreService;
 
-/** Administración > Documentos: plantillas editables por cliente, vista previa y consecutivo de la boleta. */
 @RestController
 @RequestMapping("/client/documentos")
 public class DocumentoController {
@@ -84,10 +83,6 @@ public class DocumentoController {
     return ResponseEntity.ok(plantillas.restablecer(tipo));
   }
 
-  /**
-   * Vista previa con datos de ejemplo y la plantilla del editor sin guardar.
-   * body = { config: {...}, datos: { empresaNombre, ruc, telefono, email, web, usuario }, manual: true|false }
-   */
   @SuppressWarnings("unchecked")
   @PostMapping("/{tipo}/vista-previa")
   public ResponseEntity<byte[]> vistaPrevia(@PathVariable String tipo, @RequestBody Map<String, Object> body)

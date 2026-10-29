@@ -15,10 +15,6 @@ import com.woden.wms_backend.exception.BusinessRuleException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/**
- * Ajustes simples por cliente en WmsWdGeneral.dbo.ClienteConfig (clave / valor): modo de la Base Almacén, etiquetas con
- * lectura variable... Sin fila = el valor por defecto de quien lo pide. Se guardan 30 s.
- */
 @Service
 public class ClienteConfigService {
 

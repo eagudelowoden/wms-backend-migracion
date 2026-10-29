@@ -16,15 +16,10 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
-/**
- * Envio de correo por SMTP desde la cuenta noreplyservices (Office 365, la misma de ReverseCore y el Contact Center).
- * Las credenciales llegan por variables de entorno, nunca en el repositorio:
- * SMTP_SERVER, SMTP_PORT (587), SMTP_USER, SMTP_PASSWORD, SMTP_FROM_NAME.
- */
+// credenciales por variables de entorno: SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_NAME
 @Service
 public class CorreoSmtpService {
 
-  /** id del logo Woden incrustado en el correo: en la plantilla, src="cid:logo" */
   public static final String LOGO = "logo";
 
   @Value("${SMTP_SERVER:}")
@@ -52,7 +47,6 @@ public class CorreoSmtpService {
     return usuario;
   }
 
-  /** Variables de entorno que faltan para poder enviar (solo los nombres, nunca los valores). */
   public List<String> faltantes() {
     List<String> out = new java.util.ArrayList<>();
     if (servidor.isBlank()) {
@@ -92,16 +86,11 @@ public class CorreoSmtpService {
     return sender;
   }
 
-  /** Envia el correo HTML con el logo Woden incrustado y los adjuntos (nombre -> contenido). */
   public void enviar(List<String> para, List<String> cc, String asunto, String html, Map<String, byte[]> adjuntos)
       throws MessagingException {
     enviar(para, cc, asunto, html, adjuntos, null);
   }
 
-  /**
-   * Igual, con el logo de la plantilla del cliente (Administración > Documentos) como "cid:logo":
-   * logo = data:image/png;base64,... o data:image/jpeg;base64,...; vacío o no válido = logo Woden.
-   */
   public void enviar(List<String> para, List<String> cc, String asunto, String html, Map<String, byte[]> adjuntos,
       String logo) throws MessagingException {
     if (!configurado()) {

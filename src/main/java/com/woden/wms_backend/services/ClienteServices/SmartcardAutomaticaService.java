@@ -23,19 +23,6 @@ import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/**
- * Interruptor INSERT_AUTOMATICO_SMARTCARD (lo que se hizo en DirecTV Ecuador modificando pa_InsertEntry y
- * pa_DeleteEntry, ahora en el backend y para cualquier cliente):
- *   - al ingresar un equipo con Serial3 (la smartcard), la smartcard queda también en Ingreso con el código SAP y el
- *     destino del maestro "SmartCard Ingreso" de la base del cliente (Código = código SAP, Descripción = su
- *     descripción, Detalle = destino; sin maestro, CARD0001 / SMARTCARD), PalletId 0, el usuario de la sesión, la
- *     fecha del momento y el resto de datos del equipo. Si ya existe en Ingreso (por serial o MAC) no se toca. Va sin
- *     prealerta (PrealertaId 0, Cruce 0) para no contar como recibida ni como sobrante.
- *   - al borrar equipos, sus smartcards se borran en la misma transacción solo si ningún otro equipo las tiene en
- *     Serial3 y siguen como se crearon (mismo código SAP, mismo destino, sin pallet): una smartcard ya procesada
- *     (asignada, empacada...) no se borra.
- * Apagado no hace nada: el ingreso y el borrado siguen igual que siempre. Un error aquí nunca tumba el ingreso.
- */
 @Service
 public class SmartcardAutomaticaService {
 
@@ -46,25 +33,17 @@ public class SmartcardAutomaticaService {
   public static final String MAESTRO = "SmartCard Ingreso";
   private static final long CACHE_MS = 60_000;
 
-  /** codigoSapId y estadoId resueltos en la base del cliente */
   public record Config(int codigoSapId, int estadoId, String codigoSap, String destino) {}
 
   private record Cache(Config config, long vence) {}
 
   private static final Map<Integer, Cache> CACHE = new ConcurrentHashMap<>();
 
-  /**
-   * Variables del bloque CREAR: 1 serial del equipo, 2 smartcard, 3 código SAP, 4 estado, 5 usuario de la sesión. Van
-   * como VARCHAR: con el parámetro NVARCHAR del driver, Serial / Mac / Serial3 no usan su índice.
-   */
+  // VARCHAR: con el NVARCHAR del driver, Serial / Mac / Serial3 no usan su índice
   public static final String DECLARAR = "DECLARE @scSerial VARCHAR(50) = ?, @scTarjeta VARCHAR(50) = ?, "
       + "@scCodigoSap INT = ?, @scEstado INT = ?, @scUsuario INT = ?; ";
 
-  /**
-   * La smartcard con los datos del equipo recién ingresado (copiados de su fila). Va detrás de un IF: el trigger
-   * Trg_InsertMovement se dispara aunque el INSERT no inserte filas y falla con SerialId NULL, así que el INSERT solo
-   * se ejecuta si el equipo existe y la smartcard no (ni como serial ni como MAC).
-   */
+  // el IF va porque Trg_InsertMovement se dispara aunque el INSERT no inserte filas y falla con SerialId NULL
   public static final String CREAR = "IF EXISTS (SELECT 1 FROM Ingreso WHERE Serial = @scSerial) "
       + "AND NOT EXISTS (SELECT 1 FROM Ingreso WHERE Serial = @scTarjeta) "
       + "AND NOT EXISTS (SELECT 1 FROM Ingreso WHERE Mac = @scTarjeta) "
@@ -95,7 +74,6 @@ public class SmartcardAutomaticaService {
   @PersistenceContext
   private EntityManager em;
 
-  /** Configuración del cliente de la sesión; null si el interruptor está apagado o no se resuelve en su base. */
   public Config config() {
     if (!interruptores.activo(INTERRUPTOR)) {
       return null;
@@ -133,11 +111,6 @@ public class SmartcardAutomaticaService {
     return new Config(codigoSapId, estadoId, codigo, destino);
   }
 
-  /**
-   * Cargue masivo, después de insertar los equipos (el ingreso uno a uno las crea en INGRESO_CON_SMARTCARD). Nunca lanza
-   * error: los equipos ya quedaron ingresados. equipos = [serial, serial3]; devuelve cuántas smartcards se crearon.
-   * usuarioId = el de la sesión (0 = el del equipo).
-   */
   public int crearSiAplica(List<String[]> equipos, Integer usuarioId) {
     try {
       Config cfg = config();
@@ -167,7 +140,6 @@ public class SmartcardAutomaticaService {
     }
   }
 
-  /** Antes del borrado (misma transacción): las smartcards (Serial3) de los equipos que se van a borrar. */
   public List<String> tarjetasDe(List<String> seriales) {
     if (seriales == null || seriales.isEmpty() || config() == null) {
       return List.of();
@@ -184,7 +156,6 @@ public class SmartcardAutomaticaService {
     return out;
   }
 
-  /** Después del borrado (misma transacción): borra las smartcards que nadie más usa y siguen sin procesar. */
   public int borrarSinUso(List<String> tarjetas) {
     Config cfg = config();
     if (cfg == null || tarjetas == null || tarjetas.isEmpty()) {
@@ -194,7 +165,7 @@ public class SmartcardAutomaticaService {
         + "WHERE sc.CodigoSapId = ?2 AND sc.EstadoId = ?3 AND ISNULL(sc.PalletId, 0) = 0 "
         + "AND NOT EXISTS (SELECT 1 FROM Ingreso d WHERE d.Serial3 = sc.Serial)";
     String lista = json(tarjetas);
-    // solo se ejecuta el DELETE si hay algo que borrar (los triggers de Ingreso no siempre aguantan sentencias vacías)
+    // ejecuto el DELETE solo si hay algo que borrar (los triggers de Ingreso no siempre aguantan sentencias vacías)
     Object cuantas = em.createNativeQuery("SELECT COUNT(*) " + desde).setParameter(1, lista)
         .setParameter(2, cfg.codigoSapId()).setParameter(3, cfg.estadoId()).getSingleResult();
     if (!(cuantas instanceof Number c) || c.intValue() == 0) {
@@ -216,7 +187,7 @@ public class SmartcardAutomaticaService {
     }
   }
 
-  /** Ejecuta el IF ... INSERT leyendo todos los resultados (los triggers de Ingreso devuelven conteos extra). */
+  // leo todos los resultados: los triggers de Ingreso devuelven conteos extra
   private static int ejecutar(PreparedStatement ps) throws SQLException {
     boolean hayResultado = ps.execute();
     int filas = 0;
@@ -246,13 +217,11 @@ public class SmartcardAutomaticaService {
     }
   }
 
-  /** La smartcard que se crea para el equipo, o null si el Serial3 no aplica (vacío, un carácter o igual al serial). */
   public static String tarjeta(String serial, String serial3) {
     String t = limpio(serial3);
     return t.length() <= 1 || t.equals(limpio(serial)) ? null : t;
   }
 
-  /** Las 5 variables de DECLARAR desde la posición desde. */
   public static void parametros(PreparedStatement ps, int desde, String serial, String tarjeta, Config cfg,
       Integer usuarioId) throws SQLException {
     ps.setString(desde, limpio(serial));

@@ -1,7 +1,6 @@
 /* =====================================================================================
-   Despacho > Despachado: respaldo de lo que se devuelve a Novedades (rechazo de cliente).
-   Lo borrado de Despacho / Empaque / DespachoAccesorio queda aqui en JSON.  Base: WmsWdGeneral.
-   Solo crea lo que falta; correrlo dos veces no hace nada.
+   Respaldo en JSON de lo que Despacho > Despachado devuelve a Novedades (lo que borro de Despacho, Empaque y
+   DespachoAccesorio). Base: WmsWdGeneral. Solo creo lo que falta.
    ===================================================================================== */
 USE WmsWdGeneral;
 SET NOCOUNT ON;

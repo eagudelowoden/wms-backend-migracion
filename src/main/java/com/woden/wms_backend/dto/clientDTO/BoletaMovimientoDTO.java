@@ -19,7 +19,6 @@ public class BoletaMovimientoDTO {
   private String web;
   private String logoUrl;
   private List<ItemDTO> equipos;
-  // al reservar: quien la guarda y su zona horaria (año del consecutivo)
   private Integer usuarioId;
   private String zonaHoraria;
 
@@ -30,12 +29,10 @@ public class BoletaMovimientoDTO {
     private String codigoSap;
     private String descripcion;
     private Integer cantidad;
-    // por separado, sin sumar (variables {equipos}, {accesorios} y {smartcards} de la boleta)
     private Integer cantidadEquipos;
     private Integer cantidadAccesorios;
     private Integer cantidadSmartcard;
     private String tipologia;
-    // opcionales: si no llegan se buscan por el Id del pallet (la vista previa los manda de ejemplo)
     private String lote;
     private Integer cajas;
   }

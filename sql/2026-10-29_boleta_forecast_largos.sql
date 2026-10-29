@@ -1,11 +1,10 @@
 /* =====================================================================================
-   Boleta de entrega con equipos, accesorios y smartcards por separado, y maestro Tipo Empaque del Forecast de
-   Etiquetado. Solo crea lo que falta; correrlo dos veces no hace nada.
-     1. WmsWdGeneral: columnas Equipos, Accesorios y Smartcards en BoletaMovimientoPallet (boletas guardadas). Sin
-        ellas las boletas nuevas salen bien; las guardadas solo conservan la cantidad de siempre.
-     2. Base @Db: tipo de maestro "Tipo Empaque" con FULL y SERVICE (Etiquetado > Forecast). Sin filas, Etiquetado
-        ofrece los tipos que ya tiene la tabla Etiquetado. Se edita en Administración > Maestros.
-   Los largos de los campos de etiqueta no necesitan script (van en ClienteConfig).
+   Boleta de entrega con equipos, accesorios y smartcards por separado, y maestro Tipo Empaque del Forecast.
+     1. WmsWdGeneral: columnas Equipos, Accesorios y Smartcards en BoletaMovimientoPallet. Sin ellas las boletas
+        guardadas solo conservan la cantidad de siempre.
+     2. Base @Db: tipo de maestro "Tipo Empaque" con FULL y SERVICE. Lo corro solo en las bases que usan
+        ETIQUETADO_FORECAST; sin filas, Etiquetado ofrece los tipos que ya tiene la tabla Etiquetado.
+   Los largos de los campos de etiqueta no necesitan script. Solo creo lo que falta.
    ===================================================================================== */
 SET NOCOUNT ON;
 

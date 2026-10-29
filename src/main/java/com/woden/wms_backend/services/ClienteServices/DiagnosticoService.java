@@ -55,7 +55,6 @@ public class DiagnosticoService {
   @Autowired
   private CodigoSapReglaService codigoSapReglas;
 
-  /** Interruptor: el serial debe estar en BaseEtiquetado y los códigos del maestro exigen Serial3 (DirecTV Ecuador). */
   public static final String REPORTE34 = "DIAGNOSTICO_REPORTE34";
   public static final String MAESTRO_SERIAL3 = "Diagnostico Serial3";
 
@@ -77,7 +76,6 @@ public class DiagnosticoService {
         System.out.println(variable3);
         System.out.println(variable4);
     repository.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
-    // Códigos SAP > Campos calculados con Momento DIAGNOSTICO (Serial3 / Serial4 de Tigo Costa Rica)
     codigoSapReglas.aplicarDiagnostico(codigoSapId, serial);
   }
 
@@ -448,10 +446,6 @@ public class DiagnosticoService {
     return conVariablesCalculadas(serial, formattedResults);
   }
 
-  /**
-   * Códigos SAP > Campos calculados: Variable1-4 del código SAP del serial (las que tengan regla reemplazan a las de
-   * pa_GetDiagnosticVariables). "calculadas" = true le dice a Etiquetado que no hace falta escanearlas.
-   */
   private List<Map<String, Object>> conVariablesCalculadas(String serial, List<Map<String, Object>> filas) {
     if (!codigoSapReglas.hayVariables()) {
       return filas;
@@ -482,7 +476,6 @@ public class DiagnosticoService {
     return filas;
   }
 
-  /** Lo que DirecTV Ecuador tenía en pa_InsertDiagnostic, por interruptor y con los códigos en el maestro. */
   private void validarReporte34(Integer serialId, String serial, Integer codigoSapId) {
     if (!interruptores.activo(REPORTE34)) {
       return;

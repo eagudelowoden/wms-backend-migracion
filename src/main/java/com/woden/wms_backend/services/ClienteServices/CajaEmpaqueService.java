@@ -277,7 +277,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
           empaque.getSerialId(),
           empaque.getSerial(),
           empaque.getMac(),
-          empaqueCodigoPallet.codigoSap(empaque.getCodigoSapId(), empaque.getPalletId()), // EMPAQUE_CODIGOSAP_PALLET
+          empaqueCodigoPallet.codigoSap(empaque.getCodigoSapId(), empaque.getPalletId()),
           empaque.getPalletId(),
           empaque.getCajaEmpaqueId(),
           empaque.getNivelId(),

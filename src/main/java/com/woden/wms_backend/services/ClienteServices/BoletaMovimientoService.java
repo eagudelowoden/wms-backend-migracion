@@ -43,27 +43,20 @@ import jakarta.persistence.PersistenceContext;
  * (/reports/boleta-movimiento.html, sintaxis Jinja2/Twig) y OpenHTMLtoPDF
  * convierte el HTML final a PDF. No toca ni depende de JasperReportService.
  *
- * El contenido sale de la plantilla del cliente (Administración > Documentos > Boleta de entrega): colores, logo,
- * líneas de la empresa, control del documento, títulos, campos, columnas, total, observaciones, firmas y pie. Sin
- * plantilla guardada es el formato LS-ADM-FO-16 de siempre (resources/documentos/BOLETA_ENTREGA.json).
  */
 @Service
 public class BoletaMovimientoService {
 
   private static final Logger logger = LoggerFactory.getLogger(BoletaMovimientoService.class);
 
-  /** alto del encabezado que se repite (logo, título y datos de la boleta) y del pie, en mm */
   private static final double ENCABEZADO_MM = 65;
   private static final double PIE_MM = 18;
   private static final double HOJA_MM = 297;
   private static final double ANCHO_UTIL_MM = 210 - 26;
-  /** centrado de una boleta de una sola hoja: nunca más de esto hacia abajo */
   private static final double MAX_CENTRADO_MM = 45;
-  /** espacios de fábrica (mm): sobre el título, bajo el título y entre la firma y el nombre */
   private static final double SOBRE_TITULO_MM = 10.5;
   private static final double BAJO_TITULO_MM = 2;
   private static final double FIRMA_NOMBRE_MM = 0.8;
-  /** QR y código de barras dentro de la boleta (alto en mm); fila de campos sin imagen */
   private static final double QR_MM = 14;
   private static final double BARRAS_MM = 9;
   private static final double FILA_CAMPOS_MM = 6.4;
@@ -73,8 +66,8 @@ public class BoletaMovimientoService {
   // Cacheado en memoria: se lee y codifica una sola vez, no en cada boleta.
   private String logoWodenBase64;
 
-  // Firma en cursiva: Brush Script MT si el servidor la tiene (la misma de las hojas de vida); si no, Great
-  // Vibes (licencia OFL) empaquetada en el backend. OpenHTMLtoPDF no usa las fuentes del sistema por si solo.
+  // firma en cursiva: uso Brush Script MT si el servidor la tiene; si no, Great Vibes (OFL), que va en el
+  // backend. OpenHTMLtoPDF no toma solo las fuentes del sistema
   private static final String[] FIRMA_SISTEMA = {
       "C:/Windows/Fonts/BRUSHSCI.TTF", "C:/Windows/Fonts/brushsci.ttf" };
   private static final String FIRMA_RECURSO = "/reports/fonts/GreatVibes-Regular.ttf";
@@ -85,13 +78,11 @@ public class BoletaMovimientoService {
   @PersistenceContext
   private EntityManager em;
 
-  /** Boleta con la plantilla del cliente de la sesión. */
   public byte[] generarBoleta(BoletaMovimientoDTO request) throws Exception {
     Map<String, Object> config = plantillas != null ? plantillas.config(DocumentoPlantillaService.BOLETA) : null;
     return generarBoleta(request, config);
   }
 
-  /** Boleta con una plantilla dada (vista previa del editor de Documentos). */
   public byte[] generarBoleta(BoletaMovimientoDTO request, Map<String, Object> config) throws Exception {
     if (config == null) {
       config = new DocumentoPlantillaService().porDefecto(DocumentoPlantillaService.BOLETA);
@@ -126,7 +117,6 @@ public class BoletaMovimientoService {
     int totalUnidades = totalUnidades(equipos);
     String todo = String.valueOf(cfg);
 
-    // posición, lote, fecha y cajas de cada pallet (los de la base o, en la vista previa, los del ejemplo)
     Map<Integer, String[]> extra = datosPallets(equipos, todo);
     List<String[]> porItem = new ArrayList<>();
     LinkedHashSet<String> lotes = new LinkedHashSet<>();
@@ -169,7 +159,6 @@ public class BoletaMovimientoService {
     Map<String, Object> ctx = new HashMap<>();
     ctx.put("documento", PlantillaTexto.escapar(nulo(request.getPedidoSap())));
 
-    // colores (solo #hex: nada de CSS libre)
     Map<String, Object> col = mapa(cfg.get("colores"));
     Map<String, String> c = new HashMap<>();
     c.put("texto", PlantillaTexto.color(col.get("texto"), "#1b232d"));
@@ -183,8 +172,7 @@ public class BoletaMovimientoService {
     c.put("cebra", PlantillaTexto.color(col.get("cebra"), "#f7f8fa"));
     ctx.put("c", c);
 
-    // El logo del cliente (ClienteModel.bandera) es una ruta relativa que solo existe en el servidor del frontend
-    // Angular; por eso va embebido como data URI: el que se cargue en Documentos o el de Woden empaquetado.
+    // el logo del cliente es una ruta del servidor del front: lo embebo como data URI
     String logo = texto(cfg.get("logo"));
     ctx.put("logo_url", logo.startsWith("data:image/") ? logo : cargarLogoWodenBase64());
     ctx.put("logo_alto", (int) PlantillaTexto.numero(cfg.get("logoAlto"), 50, 20, 90));
@@ -212,7 +200,6 @@ public class BoletaMovimientoService {
     ctx.put("titulo", PlantillaTexto.html(texto(cfg.get("titulo")), vars));
     ctx.put("subtitulo", PlantillaTexto.html(texto(cfg.get("subtitulo")), vars));
 
-    // campos de dos en dos (etiqueta | valor | etiqueta | valor); el último impar ocupa la fila
     List<Map<String, Object>> campos = new ArrayList<>();
     for (Object o : lista(cfg.get("campos"))) {
       Map<String, Object> f = mapa(o);
@@ -233,8 +220,6 @@ public class BoletaMovimientoService {
         camposFilas.add(List.of(campos.get(i)));
       }
     }
-    // valor de cada campo: texto o, si es QR / código de barras, la imagen (una fila con imagen hace más alto el
-    // encabezado que se repite en cada hoja)
     double extraCampos = 0;
     for (List<Map<String, Object>> fila : camposFilas) {
       double altoImagen = 0;
@@ -253,7 +238,6 @@ public class BoletaMovimientoService {
     }
     ctx.put("campos_filas", camposFilas);
 
-    // columnas del detalle (anchos normalizados a 100 %)
     List<Map<String, Object>> columnas = new ArrayList<>();
     double suma = 0;
     for (Object o : lista(cfg.get("columnas"))) {
@@ -321,7 +305,6 @@ public class BoletaMovimientoService {
     }
     ctx.put("filas", filas);
 
-    // total bajo cada columna marcada como total (cada una con su suma: equipos, accesorios y smartcards por separado)
     Map<String, Object> totalCfg = mapa(cfg.get("total"));
     Map<String, Object> total = new HashMap<>();
     int iTotal = -1;
@@ -374,7 +357,6 @@ public class BoletaMovimientoService {
     double sobreTitulo = PlantillaTexto.numero(espacios.get("sobreTitulo"), SOBRE_TITULO_MM, 0, 40);
     double bajoTitulo = PlantillaTexto.numero(espacios.get("bajoTitulo"), BAJO_TITULO_MM, 0, 40);
     double firmaNombre = PlantillaTexto.numero(espacios.get("firmaNombre"), FIRMA_NOMBRE_MM, 0, 40);
-    // la línea gris sobre el título queda a 60 / 40 del espacio, como en el formato de fábrica
     ctx.put("titulo_margen", redondo(sobreTitulo * 0.6));
     ctx.put("titulo_relleno", redondo(sobreTitulo * 0.4));
     ctx.put("bajo_titulo", redondo(bajoTitulo));
@@ -385,7 +367,6 @@ public class BoletaMovimientoService {
     ctx.put("pie_izquierda", PlantillaTexto.html(texto(pie.get("izquierda")), vars));
     ctx.put("pie_derecha", PlantillaTexto.html(texto(pie.get("derecha")), vars));
 
-    // margen superior: el de la plantilla y, si la boleta cabe en una hoja, centrada en la hoja segun sus filas
     Map<String, Object> pagina = mapa(cfg.get("pagina"));
     double margen = PlantillaTexto.numero(pagina.get("margenSuperior"), 10, 0, 60);
     double disponible = HOJA_MM - encabezado - margen - PIE_MM;
@@ -399,11 +380,10 @@ public class BoletaMovimientoService {
     return ctx;
   }
 
-  /** Alto aproximado del cuerpo (detalle, total, observaciones, firmas) en mm, para centrar una boleta corta. */
   private double altoEstimado(List<BoletaMovimientoDTO.ItemDTO> equipos, List<Map<String, Object>> columnas,
       List<List<Map<String, String>>> filas, Map<String, Object> observaciones, List<Map<String, String>> firmas,
       boolean total, double altoImagenFila) {
-    double alto = 7.5; // títulos del detalle
+    double alto = 7.5;
     for (List<Map<String, String>> fila : filas) {
       int lineas = 1;
       for (int i = 0; i < fila.size() && i < columnas.size(); i++) {
@@ -428,7 +408,6 @@ public class BoletaMovimientoService {
     return alto;
   }
 
-  /** Posición, lote, fecha y cajas de cada pallet: solo si la plantilla usa alguno. */
   private Map<Integer, String[]> datosPallets(List<BoletaMovimientoDTO.ItemDTO> equipos, String plantilla) {
     Map<Integer, String[]> out = new HashMap<>();
     boolean usa = List.of("{posicion}", "{lote}", "{fecha_pallet}", "{cajas}", "{lotes}", "{total_cajas}").stream()
@@ -466,10 +445,6 @@ public class BoletaMovimientoService {
     return out;
   }
 
-  /**
-   * Pallets reales del cliente para la vista previa de Documentos (los más recientes activos, primero los que tienen
-   * lote), así lote, cajas y posición salen como en una boleta de verdad. Vacío si la base no tiene pallets.
-   */
   public List<BoletaMovimientoDTO.ItemDTO> palletsEjemplo() {
     List<BoletaMovimientoDTO.ItemDTO> out = new ArrayList<>();
     if (em == null) {
@@ -500,7 +475,6 @@ public class BoletaMovimientoService {
     return out;
   }
 
-  /** Responsable de operación: Maestros > Responsable Op (los activos, separados por " / "). */
   private String responsableOp() {
     if (em == null) {
       return "";
@@ -517,7 +491,6 @@ public class BoletaMovimientoService {
     }
   }
 
-  /** QR o código de barras como imagen; null si no se pudo generar (queda el texto). */
   private static String imagen(String tipo, String valor, double anchoMm) {
     try {
       double ancho;
@@ -550,7 +523,6 @@ public class BoletaMovimientoService {
     return t.equals("qr") || t.equals("barras") ? t : "";
   }
 
-  /** El número de una celda para su total ("-" o texto = 0; "1,250" = 1250). */
   private static long numero(String valor) {
     String d = valor == null ? "" : valor.replaceAll("[^0-9]", "");
     try {

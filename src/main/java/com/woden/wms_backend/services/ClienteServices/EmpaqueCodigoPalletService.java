@@ -11,12 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Interruptor EMPAQUE_CODIGOSAP_PALLET (el arreglo de pa_InsertPacking en DirecTV Ecuador): la serie empacada queda en
- * Empaque con el código SAP del pallet de empaque y no con el suyo (el front deja empacar series de otro código).
- * Pallets MULTIMODELO conservan el código de cada serie. Ingreso no se toca. Apagado o si la lectura falla: el código
- * de la serie, como siempre.
- */
 @Service
 public class EmpaqueCodigoPalletService {
 

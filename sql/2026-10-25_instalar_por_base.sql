@@ -1,51 +1,38 @@
 /* =====================================================================================
-   Instalación por base cliente de los ajustes WMS (rama Bernabe-ajustes).
-   Correr DESPUÉS de los scripts generales (WmsWdGeneral):
-     1) 2026-10-24_boleta_reservas_consecutivo.sql
-     2) 2026-10-25_despachado_reversa.sql
-     3) 2026-10-25_notificaciones_correo.sql
-     4) 2026-10-26_documentos_prealertas.sql
-   y luego este, una vez por cada base, cambiando @Db (empezar con Legacy).
-
-   Hace en la base indicada (solo lo que falta; correrlo dos veces no hace nada):
-     - Catálogo Permiso (general, una sola vez): pestaña Despachado (Opc_Despachado) y sus secciones
-       Equipos / Accesorios (Opc_Equipos, Opc_Accesorios). Se asignan a los perfiles ADMINISTRADOR del cliente;
-       a los demás perfiles se les da desde Administración > Perfiles.
-     - Work flow de Despachado: origen DESPACHADO -> NOVEDAD (equipos) y NOVEDAD-ACCESORIOS (accesorios).
-       Se cambia cuando se quiera desde Administración > Work flow.
-     - Menú: Administración > Notificaciones (ADNOT) y el módulo 44 a los perfiles ADMINISTRADOR del cliente.
-     - Menú: Administración > Documentos (ADDOC) y el módulo 47 a los perfiles ADMINISTRADOR del cliente.
-     - Tipo de novedad de accesorios NO CONFORMIDAD (si la base tiene la novedad de accesorios).
-     - Columna CAJAS de Despacho > Proceso: si el pallet no tiene cajas de despacho cuenta las de empaque.
-     - AuditoriaNivelEmpaque si la base tiene el trigger pero no la tabla.
-     - Interruptor BOLETA_CONSECUTIVO del cliente (boletas guardadas + consecutivo) si @ActivarConsecutivo = 1.
-     - Interruptor SONIDO_ALERTAS_INGRESO (catálogo, una vez) y para el cliente si @ActivarSonido = 1.
-     - Interruptores PREALERTA_CIERRE_MANUAL / PREALERTA_SOBRANTES para el cliente si @ActivarCierreManual /
-       @ActivarSobrantes = 1.
-     - INSERT_AUTOMATICO_SMARTCARD y EMPAQUE_CODIGOSAP_PALLET si @ActivarSmartcardAutomatica /
-       @ActivarEmpaqueCodigoPallet = 1. La smartcard se configura en el maestro "SmartCard Ingreso" de la base (Código =
-       código SAP, Descripción, Detalle = destino): si no tiene filas se crea una con @SmartcardCodigoSap /
-       @SmartcardDestino (se valida que existan en la base).
-     - (2026-10-29, correr antes 2026-10-29_parametros_wms.sql) Tipos de maestro "SmartCard Ingreso", "Limpieza
-       Caracteres", "Diagnostico Serial3", "Responsable Op" y "Tipo Empaque" (vacíos: se llenan en Administración > Maestros), menú
-       Administración > Variables de etiquetas (ADVAR) con el módulo 48 para los perfiles ADMINISTRADOR y, con
-       @AgregarColumnasForecast = 1, las columnas del Forecast en Etiquetado para probar ETIQUETADO_FORECAST.
-   Los interruptores también se encienden o apagan desde Administración > Clientes > Validaciones; el usuario ve el
-   cambio al volver a iniciar sesión.
-     - Avisa si falta la tipología NO CONFORMIDAD o la novedad de accesorios (Despachado de accesorios la necesita).
+   Instalo en una base cliente lo que necesitan las pantallas nuevas. Lo corro después de los scripts de WmsWdGeneral
+   (2026-10-24, 2026-10-25 despachado y notificaciones, 2026-10-26 y 2026-10-29_parametros_wms), una vez por base
+   cambiando @Db, y solo con el backend y el front nuevos ya desplegados. Solo creo lo que falta.
+     - Permisos de Despachado (Opc_Despachado, Opc_Equipos, Opc_Accesorios) para los perfiles ADMINISTRADOR, cada uno
+       solo si la base lo soporta: Equipos necesita la tipología NO CONFORMIDAD y Accesorios la novedad de accesorios.
+       Los demás perfiles se asignan en Administración > Perfiles.
+     - Work flow de Despachado: DESPACHADO -> NOVEDAD (equipos) y NOVEDAD-ACCESORIOS (accesorios).
+     - Menús Notificaciones (ADNOT, módulo 44), Documentos (ADDOC, módulo 47) y Variables de etiquetas (ADVAR,
+       módulo 48) para los perfiles ADMINISTRADOR.
+     - Novedad de accesorios NO CONFORMIDAD, si la base tiene novedad de accesorios.
+     - Columna CAJAS de Despacho > Proceso (pa_SearchPalletBoxDispatchPallet): sin cajas de despacho cuento las de
+       empaque.
+     - AuditoriaNivelEmpaque si la base tiene el trigger y no la tabla.
+     - Tipos de maestro vacíos: SmartCard Ingreso, Limpieza Caracteres, Diagnostico Serial3, Responsable Op y Tipo
+       Empaque.
+     - Con @Activar... = 1 enciendo para el cliente BOLETA_CONSECUTIVO, SONIDO_ALERTAS_INGRESO,
+       PREALERTA_CIERRE_MANUAL, PREALERTA_SOBRANTES, INSERT_AUTOMATICO_SMARTCARD (con su maestro SmartCard Ingreso,
+       @SmartcardCodigoSap y @SmartcardDestino) y EMPAQUE_CODIGOSAP_PALLET. @AgregarColumnasForecast = 1 agrega
+       TipoEmpaque, Lote, Año y FechaLote en Etiquetado (solo para probar ETIQUETADO_FORECAST).
+   Los interruptores también se cambian en Administración > Clientes > Validaciones; el usuario lo ve al volver a
+   iniciar sesión.
    ===================================================================================== */
 SET NOCOUNT ON;
 
 DECLARE @Db SYSNAME = 'WmsWdLegacyCostaRica';
-DECLARE @ActivarConsecutivo BIT = 0;     -- 1 = boletas guardadas con documento consecutivo AAAA-NNN para este cliente
-DECLARE @ActivarSonido BIT = 0;          -- 1 = sonido en los avisos y errores del WMS para este cliente
-DECLARE @ActivarCierreManual BIT = 0;    -- 1 = botón Cerrar prealerta en Ingreso
-DECLARE @ActivarSobrantes BIT = 0;       -- 1 = campo Sobrante de en Ingreso
-DECLARE @ActivarSmartcardAutomatica BIT = 0;          -- 1 = el Serial3 (smartcard) se crea también en Ingreso
-DECLARE @SmartcardCodigoSap VARCHAR(50) = 'CARD0001'; -- código SAP de la smartcard en esta base
-DECLARE @SmartcardDestino VARCHAR(50) = 'SMARTCARD';  -- estado (destino) con el que queda la smartcard
-DECLARE @ActivarEmpaqueCodigoPallet BIT = 0;          -- 1 = el empaque toma el código SAP del pallet
-DECLARE @AgregarColumnasForecast BIT = 0;             -- 1 = TipoEmpaque, Lote, Año y FechaLote en Etiquetado (pruebas)
+DECLARE @ActivarConsecutivo BIT = 0;
+DECLARE @ActivarSonido BIT = 0;
+DECLARE @ActivarCierreManual BIT = 0;
+DECLARE @ActivarSobrantes BIT = 0;
+DECLARE @ActivarSmartcardAutomatica BIT = 0;
+DECLARE @SmartcardCodigoSap VARCHAR(50) = 'CARD0001';
+DECLARE @SmartcardDestino VARCHAR(50) = 'SMARTCARD';
+DECLARE @ActivarEmpaqueCodigoPallet BIT = 0;
+DECLARE @AgregarColumnasForecast BIT = 0;
 
 DECLARE @sql NVARCHAR(MAX), @n INT, @clienteId INT;
 
@@ -73,7 +60,16 @@ IF NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Permiso WHERE ModuloId = @moduloDe
 IF NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Permiso WHERE ModuloId = @moduloDespacho AND Nombre = 'Opc_Accesorios' AND Descripcion = 'Despachado')
   INSERT INTO WmsWdGeneral.dbo.Permiso (ModuloId, Nombre, Descripcion) VALUES (@moduloDespacho, 'Opc_Accesorios', 'Despachado');
 
--- perfiles ADMINISTRADOR del cliente
+/* Perfiles ADMINISTRADOR del cliente, solo con lo que la base puede hacer: Equipos necesita la tipología
+   NO CONFORMIDAD y Accesorios la novedad de accesorios (columna Accesorio.Novedad y pa_SearchNoveltyAccesoryPallet). */
+DECLARE @equiposOk BIT = 0, @accesoriosOk BIT = 0;
+SET @sql = N'SELECT @eq = CASE WHEN EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Maestro m JOIN ' + QUOTENAME(@Db)
+         + N'.dbo.TipoMaestro t ON t.Id = m.TipoMaestroId WHERE t.Nombre = ''Tipologias'' AND m.Codigo = ''NO CONFORMIDAD'' '
+         + N'AND m.Activo = 1) THEN 1 ELSE 0 END, @acc = CASE WHEN COL_LENGTH(''' + QUOTENAME(@Db) + N'.dbo.Accesorio'', '
+         + N'''Novedad'') IS NOT NULL AND EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.sys.objects '
+         + N'WHERE name = ''pa_SearchNoveltyAccesoryPallet'') THEN 1 ELSE 0 END';
+EXEC sys.sp_executesql @sql, N'@eq BIT OUTPUT, @acc BIT OUTPUT', @equiposOk OUTPUT, @accesoriosOk OUTPUT;
+
 INSERT INTO WmsWdGeneral.dbo.PerfilPermiso (PerfilId, PermisoId)
 SELECT pf.Id, pe.Id
   FROM WmsWdGeneral.dbo.Perfil pf
@@ -81,10 +77,12 @@ SELECT pf.Id, pe.Id
  WHERE pf.ClienteId = @clienteId
    AND pf.Nombre LIKE '%ADMINISTRADOR%'
    AND pe.ModuloId = @moduloDespacho
-   AND ((pe.Nombre = 'Opc_Despachado' AND pe.Descripcion = 'Despacho')
-     OR (pe.Nombre IN ('Opc_Equipos', 'Opc_Accesorios') AND pe.Descripcion = 'Despachado'))
+   AND ((pe.Nombre = 'Opc_Despachado' AND pe.Descripcion = 'Despacho' AND (@equiposOk = 1 OR @accesoriosOk = 1))
+     OR (pe.Nombre = 'Opc_Equipos' AND pe.Descripcion = 'Despachado' AND @equiposOk = 1)
+     OR (pe.Nombre = 'Opc_Accesorios' AND pe.Descripcion = 'Despachado' AND @accesoriosOk = 1))
    AND NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.PerfilPermiso x WHERE x.PerfilId = pf.Id AND x.PermisoId = pe.Id);
-PRINT CONCAT('Permisos de Despachado asignados a perfiles ADMINISTRADOR: ', @@ROWCOUNT);
+PRINT CONCAT('Permisos de Despachado asignados a perfiles ADMINISTRADOR: ', @@ROWCOUNT,
+             ' (equipos ', IIF(@equiposOk = 1, 'sí', 'no'), ', accesorios ', IIF(@accesoriosOk = 1, 'sí', 'no'), ')');
 
 /* ── 2. Work flow de Despachado (destinos al guardar) ─────────────────────────────── */
 DECLARE @despachado INT = (SELECT Id FROM WmsWdGeneral.dbo.Estado WHERE Nombre = 'DESPACHADO');
@@ -121,7 +119,6 @@ BEGIN
 END';
 EXEC sys.sp_executesql @sql;
 
--- módulo Notificaciones (44) a los perfiles ADMINISTRADOR del cliente (el resto se asigna en Perfiles)
 IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Modulo WHERE Id = 44 AND Nombre = 'Notificaciones')
 BEGIN
   INSERT INTO WmsWdGeneral.dbo.PerfilModulo (PerfilId, ModuloId, Orden)

@@ -156,7 +156,6 @@ public class ZplPrinterService {
     }
   }
 
-  /** Administración > Variables de etiquetas: las propias del cliente van antes que las de fábrica. */
   private String reemplazarVariablesPropias(String zpl, List<IngresoModel> seriales) {
     if (variablesEtiqueta == null) {
       return zpl;

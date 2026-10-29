@@ -40,10 +40,6 @@ public class LoadsService {
       "BaseDespacho", "BaseEmpaque", "BaseIngreso", "BaseAlmacen"
   );
 
-  /**
-   * Base Almacén (Almacén > Agrupación): no es una tabla de la base del cliente sino WmsWdGeneral.dbo.BaseAlmacen por
-   * ClienteId, para no tocar los SPs de bases (pa_SearchBase / pa_DeleteBase) en cada base.
-   */
   public static final String BASE_ALMACEN = "BaseAlmacen";
   private static final String TABLA_ALMACEN = "WmsWdGeneral.dbo.BaseAlmacen";
 
@@ -63,7 +59,6 @@ public class LoadsService {
     }
   }
 
-  /** Registros de la Base Almacén del cliente. */
   public int contarAlmacen() {
     exigirTablaAlmacen();
     Integer n = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?",
@@ -71,7 +66,6 @@ public class LoadsService {
     return n == null ? 0 : n;
   }
 
-  /** El serial está en la Base Almacén del cliente. */
   public boolean enAlmacen(String serial) {
     exigirTablaAlmacen();
     List<Integer> r = jdbcTemplate.queryForList("SELECT TOP 1 1 FROM " + TABLA_ALMACEN + " WHERE ClienteId = ? "

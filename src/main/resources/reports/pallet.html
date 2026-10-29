@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <title>Pallet {{ pallet }}</title>
   <style>
-    /* Boleta del pallet editable (Administración > Documentos > Boleta de pallet). Replica el Pallet.jrxml: hoja carta,
-       márgenes de 5 pt, encabezado logo | título | icono y una fila por dato (etiqueta | valor). Medidas en pt; los
-       textos llegan escapados y con el tamaño ya ajustado al ancho desde PalletDocumentoService. */
     @page { size: 612pt 792pt; margin: 5pt; }
     body { margin: 0; font-family: "Helvetica", Arial, sans-serif; color: {{ c.texto }}; }
     table { border-collapse: collapse; width: 100%; table-layout: fixed; }
@@ -24,7 +21,6 @@
     .datos td.etq { width: {{ ancho_etiqueta }}%; color: {{ c.etiquetas }}; background: {{ c.fondoEtiquetas }}; }
     .datos td.val { color: {{ c.texto }}; }
 
-    /* al pie de la hoja (fixed = relativo a la página, no al contenido) */
     .pie { position: fixed; left: 0; right: 0; bottom: 0; height: 29pt; text-align: center; font-size: 10pt;
       color: {{ c.texto }}; }
   </style>

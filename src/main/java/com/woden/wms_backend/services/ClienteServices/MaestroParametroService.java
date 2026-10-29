@@ -17,11 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 
-/**
- * Parámetros por cliente guardados como Maestros de su base (Administración > Maestros), para que se cambien desde el
- * WMS sin scripts: "SmartCard Ingreso", "Limpieza Caracteres", "Diagnostico Serial3"... Solo las filas activas;
- * se guardan 60 s por cliente y tipo porque se leen en cada serie de Ingreso.
- */
+// los guardo 60 s por cliente y tipo: se leen en cada serie de Ingreso
 @Service
 public class MaestroParametroService {
 

@@ -31,10 +31,6 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
     @Autowired
     private ReemplazoSerialService reemplazoSerialService;
 
-    /**
-     * Reemplazo de un serial empacado (Empaque y Calidad) en una sola transaccion, con el evento en Movimiento.
-     * 400 con el motivo si algo no cuadra: en ese caso no se cambio nada.
-     */
     @PostMapping("/reemplazarSerial")
     public ResponseEntity<?> reemplazarSerial(@RequestBody ReemplazoSerialRequest request) {
         try {

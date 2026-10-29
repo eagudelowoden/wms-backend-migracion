@@ -24,15 +24,7 @@ import com.woden.wms_backend.exception.BusinessRuleException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-/**
- * Interruptor ETIQUETADO_FORECAST: tipo de empaque (maestro Tipo Empaque), lote (maestro Familias), año y fecha con que
- * queda cada etiquetado.
- * En DirecTV Ecuador pa_InsertEtiquetado los tomaba de las columnas forecast / familiaId / forecastIngreso de Forecast,
- * que la pantalla web de Forecast ya no edita. Ahora se fijan en la ventana de Etiquetado (administrador o técnico de
- * etiquetado), se guardan en ClienteConfig y, después de cada etiquetado, se escriben en las columnas TipoEmpaque, Lote,
- * Año y FechaLote de Etiquetado que existan en la base (hoy solo DirecTV Ecuador las tiene). Si la base tiene las
- * columnas viejas de Forecast también se actualizan, para que su pa_InsertEtiquetado dé lo mismo.
- */
+// en DirecTV Ecuador también actualizo las columnas viejas de Forecast para que su pa_InsertEtiquetado dé lo mismo
 @Service
 public class EtiquetadoForecastService {
 
@@ -86,7 +78,6 @@ public class EtiquetadoForecastService {
       lotes.add(Map.of("id", ((Number) r[0]).intValue(), "nombre", String.valueOf(r[1])));
     }
     out.put("lotes", lotes);
-    // tipos de empaque: Maestros > Tipo Empaque; si está vacío, los que ya tiene Etiquetado
     List<String> tipos = new ArrayList<>();
     for (MaestroParametroService.Fila f : maestros.activos(MAESTRO_TIPO_EMPAQUE)) {
       if (!f.codigo().isBlank()) {
@@ -134,7 +125,6 @@ public class EtiquetadoForecastService {
     return estado();
   }
 
-  /** Después de insertar el etiquetado del serial; nunca lanza error. */
   public void aplicar(String serial) {
     try {
       if (serial == null || !activo()) {

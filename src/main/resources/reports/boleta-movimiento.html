@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <title>Control movimiento – {{ documento }}</title>
   <style>
-    /* Boleta de entrega armada con la plantilla del cliente (Administración > Documentos; sin plantilla = formato
-       LS-ADM-FO-16 de fábrica). Logo y datos de la empresa, control del documento y datos de la boleta se repiten en
-       cada hoja (elemento "running"), el detalle repite sus títulos (-fs-table-paginate) y el pie lleva la página.
-       Los textos llegan ya escapados desde BoletaMovimientoService (por eso | raw). */
     @page {
       size: A4;
       margin: {{ margen_superior }}mm 13mm 18mm 13mm;
@@ -28,7 +24,6 @@
     .num-pagina::after { content: counter(page); }
     .num-paginas::after { content: counter(pages); }
 
-    /* ── Logo + empresa + control del documento ── */
     .cab td { vertical-align: middle; }
     .cab .logo { width: 24%; }
     .cab .logo img { height: {{ logo_alto }}px; }
@@ -53,13 +48,11 @@
     .subtitulo { text-align: center; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: {{ c.etiquetas }}; }
     .acento { border-top: 2px solid {{ c.acento }}; margin: 6px 0 {{ bajo_titulo }}mm; }
 
-    /* ── Datos de la boleta ── */
     .meta td { border: 0.6px solid {{ c.bordes }}; padding: 4px 8px; }
     .meta td.etq { width: 17%; background: {{ c.fondoEtiquetas }}; color: {{ c.etiquetas }}; font-size: 8.5px; font-weight: bold; text-transform: uppercase; }
     .meta td.val { width: 33%; font-size: 10.5px; font-weight: bold; }
     .meta td.val.doc { color: {{ c.documento }}; }
 
-    /* ── Detalle ── */
     .items { -fs-table-paginate: paginate; }
     .items thead { display: table-header-group; }
     .items tr { page-break-inside: avoid; }
@@ -81,7 +74,6 @@
     .items td.qr, .items td.barras { padding: 2px 6px; }
     .meta td.val img { display: block; margin: 1mm 0; }
 
-    /* ── Total: misma grilla que el detalle, el valor queda bajo su columna ── */
     .totales { page-break-inside: avoid; table-layout: fixed; }
     .totales td { border-top: 1.5px solid {{ c.texto }}; padding: 6px 6px; }
     .totales .etq { text-align: right; color: {{ c.etiquetas }}; font-weight: bold; text-transform: uppercase;
@@ -94,12 +86,10 @@
     .obs-gen .caja { border: 0.6px solid {{ c.bordes }}; border-left: 3px solid {{ c.acento }}; min-height: 46px; padding: 6px 8px;
       white-space: pre-wrap; }
 
-    /* ── Firmas ── */
     .firmas { margin-top: 18px; page-break-inside: avoid; }
     .firmas td { text-align: center; vertical-align: bottom; padding: 0 18px; }
     .firmas .tit { font-weight: bold; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.6px; color: {{ c.etiquetas }}; }
     .firma-cursiva {
-      /* "Firma" se registra en BoletaMovimientoService: Brush Script MT del servidor si existe, si no Great Vibes */
       font-family: "Firma", "Brush Script MT", cursive;
       font-size: 22px;
       line-height: 1.1;
@@ -116,7 +106,6 @@
 </head>
 <body>
 
-  <!-- ENCABEZADO: se repite en cada hoja -->
   <div class="encabezado">
     <table class="cab">
       <tr>
@@ -167,7 +156,6 @@
     </table>
   </div>
 
-  <!-- DETALLE: los títulos de la tabla se repiten en cada hoja -->
   <table class="items">
     <thead>
       <tr>
@@ -197,7 +185,6 @@
   {% endif %}
 
   {% if observaciones.mostrar %}
-  <!-- siempre visible: si no se escribio nada queda el espacio para anotar a mano -->
   <div class="obs-gen">
     <div class="etq">{{ observaciones.etiqueta | raw }}</div>
     <div class="caja">{{ observaciones.texto }}</div>

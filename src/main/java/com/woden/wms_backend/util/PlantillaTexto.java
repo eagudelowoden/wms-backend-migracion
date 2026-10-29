@@ -4,10 +4,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Textos de los documentos editables (Administración > Documentos): "RUC {empresa_ruc}", "Página {pagina} de {paginas}".
- * Las variables van entre llaves; {pagina} y {paginas} las pone el PDF (contador de páginas de OpenHTMLtoPDF).
- */
 public final class PlantillaTexto {
 
   private static final Pattern VARIABLE = Pattern.compile("\\{([a-z_]+)\\}");
@@ -17,7 +13,6 @@ public final class PlantillaTexto {
   private PlantillaTexto() {
   }
 
-  /** Texto plano con las variables reemplazadas (las desconocidas quedan tal cual). */
   public static String texto(String plantilla, Map<String, String> vars) {
     if (plantilla == null || plantilla.isEmpty()) {
       return "";
@@ -32,7 +27,6 @@ public final class PlantillaTexto {
     return sb.toString();
   }
 
-  /** HTML escapado; {pagina} / {paginas} quedan como contadores del PDF. */
   public static String html(String plantilla, Map<String, String> vars) {
     if (plantilla == null || plantilla.isEmpty()) {
       return "";
@@ -58,10 +52,7 @@ public final class PlantillaTexto {
     return sb.toString();
   }
 
-  /**
-   * Texto de correo: como html() y además **negrita** y partes opcionales entre corchetes, que desaparecen si sus
-   * variables salen vacías: "novedad **ERROR SERIAL-MAC**[ (equipo **{modelo}**)]".
-   */
+  // texto de correo: además **negrita** y [partes opcionales] que desaparecen si sus variables salen vacías
   public static String htmlRico(String plantilla, Map<String, String> vars) {
     return html(opcionales(plantilla, vars), vars).replaceAll("\\*\\*(.+?)\\*\\*", "<b>$1</b>");
   }
@@ -80,7 +71,6 @@ public final class PlantillaTexto {
     return sb.toString();
   }
 
-  /** Una línea con variables que salieron todas vacías no se muestra ("RUC {empresa_ruc}" sin RUC). */
   public static boolean vacia(String plantilla, Map<String, String> vars) {
     if (plantilla == null || plantilla.isBlank()) {
       return true;
@@ -118,7 +108,6 @@ public final class PlantillaTexto {
     return sb.toString();
   }
 
-  /** Color #rgb / #rrggbb; cualquier otra cosa vuelve al de por defecto (no se deja pasar CSS arbitrario). */
   public static String color(Object valor, String porDefecto) {
     String v = valor == null ? "" : String.valueOf(valor).trim();
     return COLOR.matcher(v).matches() ? v : porDefecto;
@@ -141,7 +130,6 @@ public final class PlantillaTexto {
     return Math.max(min, Math.min(max, v));
   }
 
-  /** "NORMAN SANDINO" -> "Norman Sandino" (firma en cursiva). */
   public static String nombrePropio(String s) {
     String v = nulo(s).toLowerCase();
     StringBuilder sb = new StringBuilder(v.length());

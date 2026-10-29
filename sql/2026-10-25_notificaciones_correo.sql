@@ -1,14 +1,8 @@
 /* =====================================================================================
-   Administración > Notificaciones: reglas de correo por evento y cliente + bitácora de envíos.
-   - Tablas en WmsWdGeneral (ClienteId NULL = todos los clientes)
-   - Regla inicial: NOVEDAD_ERROR_SERIAL_MAC para todos los clientes -> nsandino@woden.com.co
-   - Módulo 44 "Notificaciones" (Administración): el menú ADNOT solo lo ven los perfiles que lo tengan
-     (Administración > Perfiles > Módulos de Administración)
-   - Configuración de sonidos por cliente (NotificacionSonido)
-   - La opción de menú ADNOT "Notificaciones" va por base (2026-10-25_instalar_por_base.sql)
-   El SMTP no va en la base: el backend lo lee de las variables de entorno
-   SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_NAME (cuenta noreplyservices).
-   Solo crea lo que falta; correrlo dos veces no hace nada.
+   Notificaciones por correo por evento y cliente (ClienteId NULL = todos), bitácora de envíos, módulo 44 y sonidos
+   por cliente. Base: WmsWdGeneral. Dejo una regla inicial de NOVEDAD_ERROR_SERIAL_MAC a nsandino@woden.com.co.
+   El SMTP lo lee el backend de las variables de entorno SMTP_*; el menú ADNOT lo agrego por base con
+   2026-10-25_instalar_por_base.sql. Solo creo lo que falta.
    ===================================================================================== */
 USE WmsWdGeneral;
 SET NOCOUNT ON;
@@ -17,7 +11,7 @@ IF OBJECT_ID('dbo.NotificacionCorreo', 'U') IS NULL
   CREATE TABLE dbo.NotificacionCorreo (
     Id            INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_NotificacionCorreo PRIMARY KEY,
     Evento        VARCHAR(60)    NOT NULL,
-    ClienteId     INT            NULL,          -- NULL = todos los clientes
+    ClienteId     INT            NULL,
     Para          NVARCHAR(MAX)  NOT NULL,
     Cc            NVARCHAR(MAX)  NULL,
     Activo        BIT            NOT NULL CONSTRAINT DF_NotificacionCorreo_Activo DEFAULT (1),
@@ -47,7 +41,6 @@ IF NOT EXISTS (SELECT 1 FROM dbo.NotificacionCorreo WHERE Evento = 'NOVEDAD_ERRO
   INSERT INTO dbo.NotificacionCorreo (Evento, ClienteId, Para, Cc, Activo, Usuario, Fecha)
   VALUES ('NOVEDAD_ERROR_SERIAL_MAC', NULL, 'nsandino@woden.com.co', NULL, 1, 'script 2026-10-25', GETDATE());
 
--- Módulo Notificaciones (Id 44, sección Administración); el backend lo asocia al menú ADNOT
 IF NOT EXISTS (SELECT 1 FROM dbo.Modulo WHERE Id = 44)
 BEGIN
   SET IDENTITY_INSERT dbo.Modulo ON;
@@ -57,7 +50,6 @@ END
 ELSE IF NOT EXISTS (SELECT 1 FROM dbo.Modulo WHERE Id = 44 AND Nombre = 'Notificaciones')
   RAISERROR('El Id 44 de Modulo ya lo usa otro módulo: revisar antes de seguir.', 16, 1);
 
--- Sonidos de los avisos de Ingreso por cliente (el interruptor es SONIDO_ALERTAS_INGRESO)
 IF OBJECT_ID('dbo.NotificacionSonido', 'U') IS NULL
   CREATE TABLE dbo.NotificacionSonido (
     ClienteId     INT          NOT NULL CONSTRAINT PK_NotificacionSonido PRIMARY KEY,
@@ -70,4 +62,3 @@ IF OBJECT_ID('dbo.NotificacionSonido', 'U') IS NULL
     Fecha         DATETIME     NOT NULL CONSTRAINT DF_NotificacionSonido_Fecha DEFAULT (GETDATE())
   );
 
--- La opción de menú ADNOT "Notificaciones" se agrega por base con 2026-10-25_instalar_por_base.sql

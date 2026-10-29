@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.woden.wms_backend.dto.clientDTO.BoletaMovimientoDTO;
 import com.woden.wms_backend.services.ClienteServices.BoletaReservaService;
 
-/** Boletas de movimiento guardadas en Despacho: reservar, listar, abrir, despachar y cancelar. */
 @RestController
 @RequestMapping("/client/boletas")
 public class BoletaReservaController {

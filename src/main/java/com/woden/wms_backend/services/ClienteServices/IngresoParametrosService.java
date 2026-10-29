@@ -17,23 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Reglas de Ingreso por cliente que estaban dentro de pa_InsertEntry de algunas bases, ahora en el backend para que el
- * SP sea igual en todas:
- *   LIMPIEZA_CARACTERES_INGRESO  quita en Serial, MAC y Serial3 los textos del maestro "Limpieza Caracteres" (Código =
- *                                texto a quitar; Detalle = campos SERIAL, MAC, SERIAL3 separados por coma, vacío =
- *                                los tres). Era el REPLACE de la MAC de Claro Ecuador.
- *   Campos calculados            MAC y Serial3-5 por código SAP (CodigoSapReglaService).
- *   INSERT_AUTOMATICO_SMARTCARD  la smartcard (Serial3) no puede estar ya en Ingreso como serial, MAC o Serial3 de otro
- *                                equipo: se avisa con el serial relacionado, en la misma ida a la base del ingreso.
- *   APP_PQRS_INGRESO             después del ingreso, el ticket PQRS pendiente del serial pasa a En proceso (etapa 3)
- *                                con su registro en App_PQRS_StatusLog. Era el bloque "VÍNCULO AUTOMÁTICO APP PQRS".
- *   SERIAL_DISTINTO_MAC          el serial no puede ser igual a la MAC (Global Liberty).
- *   MODELOID_DESDE_CODIGOSAP     ingreso sin modelo toma el ModeloId del código SAP (Claro Ecuador).
- *   SCRAP_MULTIMODELO_ENVIO      al enviar un pallet MULTIMODELO con tipología SCRAP sus equipos quedan SCRAP
- *                                (pa_SendEntry de Colombia).
- * Con los interruptores apagados y sin reglas el ingreso no cambia en nada.
- */
 @Service
 public class IngresoParametrosService {
 
@@ -45,12 +28,8 @@ public class IngresoParametrosService {
   public static final String SCRAP_MULTIMODELO = "SCRAP_MULTIMODELO_ENVIO";
   public static final String MAESTRO_LIMPIEZA = "Limpieza Caracteres";
 
-  /**
-   * INSERT_AUTOMATICO_SMARTCARD en una sola ida a la base (antes eran tres): la smartcard repetida, pa_InsertEntry y la
-   * smartcard nueva. Parámetros: los 5 de SmartcardAutomaticaService.DECLARAR y los 28 de entrada de pa_InsertEntry.
-   * Devuelve una fila: código y mensaje de pa_InsertEntry, dónde está repetida la smartcard (0 no está, 1 serial, 2 MAC,
-   * 3 Serial3 de otro equipo), el serial relacionado y el error al crear la smartcard (null si se creó o ya existía).
-   */
+  // una sola ida a la base: smartcard repetida, pa_InsertEntry y smartcard nueva. Columnas: código y mensaje del
+  // SP, dónde está repetida (0 no, 1 serial, 2 MAC, 3 Serial3), el serial relacionado y el error de la smartcard
   public static final String INGRESO_CON_SMARTCARD = "SET NOCOUNT ON; " + SmartcardAutomaticaService.DECLARAR
       + "DECLARE @campo INT = 0, @relacionado VARCHAR(50) = NULL, @codigo INT = 0, @mensaje NVARCHAR(4000) = N'', "
       + "@errorTarjeta NVARCHAR(4000) = NULL; "
@@ -99,7 +78,6 @@ public class IngresoParametrosService {
   @Autowired
   private DataSource dataSource;
 
-  /** Limpieza de caracteres y campos calculados: cambia los valores de c. */
   public void preparar(Integer codigoSapId, CodigoSapReglaService.Campos c) {
     if (interruptores.activo(LIMPIEZA)) {
       for (MaestroParametroService.Fila f : maestros.activos(MAESTRO_LIMPIEZA)) {
@@ -123,10 +101,6 @@ public class IngresoParametrosService {
     reglas.aplicarIngreso(codigoSapId, c);
   }
 
-  /**
-   * Aviso de INGRESO_CON_SMARTCARD cuando la smartcard ya está en Ingreso, con el serial del equipo que la tiene (primero
-   * el que la tiene en Serial3, después en MAC y por último la smartcard sola).
-   */
   public static String avisoSmartcard(int campo, String tarjeta, String relacionado) {
     return switch (campo) {
       case 1 -> "La smartcard " + tarjeta + " ya está en Ingreso como serial.";
@@ -135,11 +109,6 @@ public class IngresoParametrosService {
     };
   }
 
-  /**
-   * SERIAL_DISTINTO_MAC (lo que Global Liberty tenía en pa_InsertEntry, código 1004): null si el serial y la MAC son
-   * distintos; si no, el aviso. Las smartcards (tipo SMARTCARD o clasificación SMARTSAP) quedan fuera porque en
-   * Ingreso su MAC es una copia del serial.
-   */
   public String serialIgualMac(String serial, String mac, Integer codigoSapId) {
     if (serial == null || mac == null || serial.isBlank() || !serial.trim().equalsIgnoreCase(mac.trim())
         || !interruptores.activo(SERIAL_DISTINTO_MAC)) {
@@ -161,10 +130,6 @@ public class IngresoParametrosService {
     return "El serial no puede ser igual a la MAC.";
   }
 
-  /**
-   * MODELOID_DESDE_CODIGOSAP (Claro Ecuador): si el ingreso llega sin modelo toma el ModeloId del código SAP. El SP
-   * también buscaba el último ingreso del mismo serial, pero Ingreso no repite seriales y nunca encontraba nada.
-   */
   public Integer modeloPorDefecto(Integer modeloId, Integer codigoSapId) {
     if ((modeloId != null && modeloId != 0) || codigoSapId == null || !interruptores.activo(MODELOID_CODIGOSAP)) {
       return modeloId;
@@ -183,10 +148,6 @@ public class IngresoParametrosService {
     return modeloId;
   }
 
-  /**
-   * SCRAP_MULTIMODELO_ENVIO (Colombia, pa_SendEntry): al enviar un pallet MULTIMODELO con tipología SCRAP sus equipos
-   * conservan la tipología SCRAP del pallet en lugar de la que llega. En cualquier otro caso no cambia nada.
-   */
   public Integer tipologiaEnvio(Integer palletId, Integer tipologiaId) {
     if (palletId == null || !interruptores.activo(SCRAP_MULTIMODELO)) {
       return tipologiaId;
@@ -207,7 +168,6 @@ public class IngresoParametrosService {
     return tipologiaId;
   }
 
-  /** Después de un ingreso correcto. Nunca lanza error: el equipo ya quedó ingresado. */
   public void vincularPqrs(List<String> seriales, Integer usuarioId) {
     if (seriales == null || seriales.isEmpty() || !interruptores.activo(PQRS)) {
       return;

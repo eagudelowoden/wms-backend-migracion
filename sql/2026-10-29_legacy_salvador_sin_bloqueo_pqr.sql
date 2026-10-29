@@ -1,11 +1,9 @@
 /* =====================================================================================
-   Legacy Salvador: pa_InsertEntry sin el bloqueo "Serial pertenece a una PQR Tigo".
-   - Quita la consulta a PQRS (id_stage = 2) y el RAISERROR que impedía ingresar el serial salvo tipología 620.
-   - El CATCH devuelve los códigos de siempre (1001 serial repetido, 1002 MAC repetida, 1003 otro error con su
-     mensaje). Antes, cualquier otro error también salía como "Serial pertenece a una PQR Tigo".
-   - Se deja igual el insert (con CajaEmpaqueId) y el vínculo automático con App_PQRS_Tickets.
-   - Antes de cambiarlo guarda la versión actual en WMS_Local_TEMP.dbo.Bk_SP_Definiciones (para volver atrás:
-     tomar la Definicion de esa tabla y ejecutarla cambiando CREATE por ALTER).
+   Legacy Salvador: quito de pa_InsertEntry el bloqueo "Serial pertenece a una PQR Tigo" (consulta a PQRS con
+   id_stage = 2 y su RAISERROR). El CATCH vuelve a los códigos de siempre: 1001 serial repetido, 1002 MAC repetida y
+   1003 otro error con su mensaje. Dejo igual el insert y el vínculo con App_PQRS_Tickets.
+   Antes de cambiarlo guardo la versión actual en WMS_Local_TEMP.dbo.Bk_SP_Definiciones; para volver atrás tomo esa
+   Definicion y la ejecuto cambiando CREATE por ALTER.
    ===================================================================================== */
 USE WmsWdLegacySalvador;
 SET NOCOUNT ON;

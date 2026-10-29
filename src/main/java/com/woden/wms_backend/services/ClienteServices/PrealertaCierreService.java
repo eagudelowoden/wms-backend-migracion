@@ -41,17 +41,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-/**
- * Cierre de prealertas con resultado:
- *   - automático: cuando Ingreso completa el 100 % y el usuario la finaliza (PUT /updatePrealerta, igual que siempre);
- *     después de ese cierre se registra y se avisa por correo (si algo falla aquí el cierre ya quedó hecho).
- *   - manual: botón "Cerrar prealerta" de Ingreso, solo con el interruptor PREALERTA_CIERRE_MANUAL del cliente.
- * Resultado: esperados (seriales de la prealerta), recibidos, faltantes (de la prealerta sin ingreso), sobrantes
- * (ingresados con la prealerta pero que no estaban en ella: Cruce = 0, como los marca el trigger de Ingreso) y series
- * que siguen en novedad. Sobrantes también se marcan desde Ingreso sin prealerta (interruptor PREALERTA_SOBRANTES):
- * se elige la prealerta de la que vino el equipo y se guarda con su Id y Cruce = 0.
- * Correo con la plantilla de Administración > Documentos > Correo de prealerta y el Excel con los listados.
- */
 @Service
 public class PrealertaCierreService {
 
@@ -60,13 +49,10 @@ public class PrealertaCierreService {
   public static final String CIERRE_MANUAL = "PREALERTA_CIERRE_MANUAL";
   public static final String SOBRANTES = "PREALERTA_SOBRANTES";
   private static final String COMPLETADA = "COMPLETADA";
-  /** filas de cada listado que devuelve el resumen para el aviso de Ingreso */
   private static final int FILAS_RESUMEN = 200;
 
-  /** logo = el de la plantilla (data URI) o vacío para el de Woden */
   public record Correo(String asunto, String html, Map<String, byte[]> adjuntos, String logo) {}
 
-  /** una fila de los listados: serial, código SAP, descripción, detalle, fecha */
   private record Linea(String serial, String codigoSap, String descripcion, String detalle, String fecha) {}
 
   private static class Resultado {
@@ -106,7 +92,6 @@ public class PrealertaCierreService {
   @Autowired
   private DocumentoPlantillaService plantillas;
 
-  // ── consultas para Ingreso ────────────────────────────────────────────────
 
   public boolean interruptor(String codigo) {
     Integer n = entero("SELECT COUNT(*) FROM " + G + "ClienteValidacion cv JOIN " + G + "ClienteValidacionTipo t "
@@ -115,7 +100,6 @@ public class PrealertaCierreService {
     return n != null && n > 0;
   }
 
-  /** Resultado actual de la prealerta (para confirmar el cierre manual). */
   public Map<String, Object> resumen(int id) {
     Resultado r = calcular(id, null);
     Map<String, Object> out = new LinkedHashMap<>();
@@ -133,10 +117,6 @@ public class PrealertaCierreService {
     return out;
   }
 
-  /**
-   * Prealertas que se pueden elegir como origen de un sobrante: las mismas del selector de prealerta de Ingreso
-   * (RECOGIDO si el cliente trabaja con recogida, si no CARGADO).
-   */
   public List<Map<String, Object>> paraSobrante() {
     List<Map<String, Object>> out = new ArrayList<>();
     Integer cliente = ClientDatabaseContext.getCurrentClientId();
@@ -156,7 +136,6 @@ public class PrealertaCierreService {
     return out;
   }
 
-  /** Guía, documento (el pedido más común de la prealerta), tipo de origen y origen para llenar Ingreso. */
   public Map<String, Object> datosSobrante(int id) {
     List<Object[]> p = filas("SELECT p.Id, p.Nombre, ISNULL(p.Guia, ''), ISNULL(m.Codigo, ''), ISNULL(ma.Codigo, ''), "
         + "ISNULL(p.tipologiaId, 0) FROM Prealerta p LEFT JOIN Maestro m ON m.Id = p.TipoOrigenId "
@@ -178,9 +157,7 @@ public class PrealertaCierreService {
     return out;
   }
 
-  // ── cierres ───────────────────────────────────────────────────────────────
 
-  /** Cierre manual desde Ingreso (interruptor PREALERTA_CIERRE_MANUAL). */
   public Map<String, Object> cerrarManual(int id, String usuario, String observacion) {
     if (!interruptor(CIERRE_MANUAL)) {
       throw new BusinessRuleException("El cliente no tiene activo el cierre manual de prealertas (" + CIERRE_MANUAL + ").");
@@ -204,7 +181,6 @@ public class PrealertaCierreService {
     return out;
   }
 
-  /** Estado antes del cierre automático (para saber si de verdad la cerró este pedido). */
   public String estadoActual(int id) {
     try {
       List<Object[]> r = filas("SELECT ISNULL(Estado, '') FROM Prealerta WHERE Id = ?1", id);
@@ -214,7 +190,6 @@ public class PrealertaCierreService {
     }
   }
 
-  /** Después del cierre automático de siempre: registro y correo. Nunca lanza error (el cierre ya quedó hecho). */
   public void cierreAutomatico(int id, String estadoAnterior) {
     try {
       if (COMPLETADA.equalsIgnoreCase(estadoAnterior) || !COMPLETADA.equalsIgnoreCase(estadoActual(id))) {
@@ -253,9 +228,7 @@ public class PrealertaCierreService {
     }
   }
 
-  // ── resultado de la prealerta ─────────────────────────────────────────────
 
-  /** estadoFiltro = estado con el que se cuentan los esperados (RECOGIDO cuenta solo los recogidos). */
   private Resultado calcular(int id, String estadoFiltro) {
     List<Object[]> p = filas("SELECT p.Id, p.Nombre, ISNULL(p.Guia, ''), ISNULL(p.Estado, ''), "
         + "CONVERT(varchar(16), p.Fecha, 120), ISNULL(tor.Codigo, ''), ISNULL(o.Codigo, '') FROM Prealerta p "
@@ -274,7 +247,6 @@ public class PrealertaCierreService {
     r.origen = texto(f[6]);
     boolean recogida = "RECOGIDO".equalsIgnoreCase(estadoFiltro == null ? r.estado : estadoFiltro);
 
-    // esperados: seriales (serializables) de la prealerta, como el contador de Ingreso
     List<Object[]> esperados = filas("SELECT UPPER(LTRIM(RTRIM(s.Serial))), UPPER(LTRIM(RTRIM(ISNULL(s.Mac, '')))), "
         + "ISNULL(s.CodigoSap, ''), ISNULL(s.Descripcion, ''), ISNULL(s.Pedido, ''), ISNULL(s.Novedad, '') "
         + "FROM PrealertaSerial s WHERE s.PrealertaId = ?1 AND ISNULL(s.tipo, 'Serializable') = 'Serializable'"
@@ -313,7 +285,7 @@ public class PrealertaCierreService {
         pendientes.add(s);
       }
     }
-    // los que ya salieron de Ingreso (despachados) cuentan como recibidos: se buscan por serial en Despacho
+    // los que ya salieron de Ingreso (despachados) cuentan como recibidos: los busco por serial en Despacho
     Set<String> despachados = despachados(id, pendientes);
     for (Object[] s : pendientes) {
       if (!despachados.contains(texto(s[0]))) {
@@ -360,9 +332,7 @@ public class PrealertaCierreService {
     return out;
   }
 
-  // ── correo ────────────────────────────────────────────────────────────────
 
-  /** Correo de ejemplo (prueba de la regla en Notificaciones y vista previa de Documentos). */
   public Correo ejemplo(boolean manual, String usuario) {
     return ejemplo(manual, usuario, plantillas.config(DocumentoPlantillaService.CORREO_PREALERTA));
   }
@@ -511,7 +481,6 @@ public class PrealertaCierreService {
     return new Correo(asunto, html, adjuntos, texto(cfg.get("logo")));
   }
 
-  /** HTML del correo con datos de ejemplo y una plantilla dada (vista previa del editor; el logo va embebido). */
   public String vistaPrevia(Map<String, Object> cfg, boolean manual, String usuario) {
     String logo = texto(cfg.get("logo"));
     if (!logo.startsWith("data:image/")) {
@@ -617,7 +586,6 @@ public class PrealertaCierreService {
     }
   }
 
-  // ── utilidades ────────────────────────────────────────────────────────────
 
   private boolean tablaCierre() {
     Integer n = entero("SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.PrealertaCierre', 'U') IS NULL THEN 0 ELSE 1 END");

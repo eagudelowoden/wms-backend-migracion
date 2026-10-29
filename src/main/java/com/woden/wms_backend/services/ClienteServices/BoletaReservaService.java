@@ -27,14 +27,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-/**
- * Boletas de movimiento de Despacho guardadas (Reservar / Despachar / Cancelar) y el documento consecutivo (formato
- * por cliente, AAAA-NNN de fábrica).
- *
- * Las tablas viven en WmsWdGeneral por ClienteId (sql/2026-10-24_boleta_reservas_consecutivo.sql). Mientras la boleta
- * esta RESERVADA sus pallets no se pueden enviar, despachar, abrir ni eliminar: hay que despacharla o cancelarla.
- * Estados: RESERVADA, DESPACHANDO (el front esta despachando sus pallets), DESPACHADA, CANCELADA.
- */
 @Service
 public class BoletaReservaService {
 
@@ -42,26 +34,21 @@ public class BoletaReservaService {
   private static final String G = "WmsWdGeneral.dbo.";
   private static final String CONSECUTIVO = "BOLETA_CONSECUTIVO";
 
-  // las tablas pueden no existir aun (script sin correr): el bloqueo no debe tumbar el despacho normal
+  // si el script no está corrido no bloqueo el despacho normal
   private static volatile boolean tablasListas = false;
   private static volatile boolean cantidadesListas = false;
 
   @PersistenceContext
   private EntityManager em;
 
-  // ── consecutivo ───────────────────────────────────────────────────────────
-  // Formato por cliente (Documentos > Boleta de entrega > Consecutivo): {AAAA} año, {AA} año corto, {MM} mes y {NNN}
-  // el número con tantos dígitos como N. El contador se reinicia según el formato: cada mes si lleva {MM}, cada año si
-  // lleva el año y nunca si no lleva ninguno. El formato se guarda en DocumentoPlantilla (Tipo CONSECUTIVO_BOLETA) y el
-  // contador en BoletaConsecutivo con la clave del periodo en Anio (AAAA, AAAAMM o 1).
+  // {AAAA} año, {AA} año corto, {MM} mes, {NNN} número. Reinicio el contador cada mes si lleva {MM}, cada año
+  // si lleva el año y nunca si no lleva ninguno
   private static final String FORMATO_TIPO = "CONSECUTIVO_BOLETA";
   private static final String FORMATO_FABRICA = "{AAAA}-{NNN}";
   private static final Pattern TOKEN = Pattern.compile("\\{([A-Z]+)\\}");
   private static final Pattern FORMATO_JSON = Pattern.compile("\"formato\"\\s*:\\s*\"([^\"]*)\"");
-  /** BoletaMovimiento.Documento es VARCHAR(20) */
   private static final int MAX_DOCUMENTO = 20;
 
-  /** clave del contador, año y mes en curso */
   private record Periodo(int clave, int anio, int mes) {}
 
   public boolean usaConsecutivo() {
@@ -71,7 +58,6 @@ public class BoletaReservaService {
     return n != null && n > 0;
   }
 
-  /** Configuracion para el modal: si usa consecutivo y el proximo documento (sin consumirlo). */
   public Map<String, Object> config(String zonaHoraria) {
     Map<String, Object> out = new LinkedHashMap<>();
     boolean consecutivo = tablas() && usaConsecutivo();
@@ -86,10 +72,6 @@ public class BoletaReservaService {
     return out;
   }
 
-  /**
-   * Último documento del periodo (Administración > Documentos > Boleta de entrega) y el siguiente. Con un formato
-   * propuesto (aún sin fijar) responde con el contador del periodo de ese formato.
-   */
   public Map<String, Object> consecutivo(String zonaHoraria, String formatoPropuesto) {
     exigirTablas();
     String guardado = formatoCliente();
@@ -117,10 +99,6 @@ public class BoletaReservaService {
     return out;
   }
 
-  /**
-   * Fija el formato y el último consecutivo del periodo (cuando la numeración ya venía de antes): el siguiente
-   * documento será ultimo + 1. No puede quedar por debajo de una boleta ya guardada (se repetiría el documento).
-   */
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> fijarConsecutivo(int ultimo, String zonaHoraria, String formatoNuevo) {
     exigirTablas();
@@ -164,7 +142,6 @@ public class BoletaReservaService {
     return num(r);
   }
 
-  /** Formato guardado del cliente; el de fábrica si no hay o no es válido. */
   private String formatoCliente() {
     Integer hay = entero("SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.DocumentoPlantilla', 'U') IS NULL THEN 0 ELSE 1 END");
     if (hay == null || hay == 0) {
@@ -185,7 +162,6 @@ public class BoletaReservaService {
     if (hay == null || hay == 0) {
       throw new BusinessRuleException("Para cambiar el formato falta el script 2026-10-26_documentos_prealertas.sql.");
     }
-    // el formato ya está validado: solo letras, números, espacios y . _ / # - fuera de las variables (JSON seguro)
     actualizar("MERGE " + G + "DocumentoPlantilla AS t USING (SELECT ?1 AS ClienteId, ?2 AS Tipo) AS s "
         + "ON t.ClienteId = s.ClienteId AND t.Tipo = s.Tipo "
         + "WHEN MATCHED THEN UPDATE SET Config = ?3, Activo = 1, Fecha = GETDATE() "
@@ -193,7 +169,6 @@ public class BoletaReservaService {
         + "VALUES (?1, ?2, ?3, 1, '', GETDATE());", cliente(), FORMATO_TIPO, "{\"formato\":\"" + formato + "\"}");
   }
 
-  /** null si el formato sirve; si no, el motivo. */
   private static String errorFormato(String formato) {
     String f = limpio(formato);
     if (f.isEmpty()) {
@@ -254,12 +229,10 @@ public class BoletaReservaService {
     return sb.toString();
   }
 
-  // ── reservar ──────────────────────────────────────────────────────────────
 
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> reservar(BoletaMovimientoDTO r) {
     exigirTablas();
-    // boletas guardadas y documento consecutivo van juntos (interruptor BOLETA_CONSECUTIVO del cliente)
     if (!usaConsecutivo()) {
       throw new BusinessRuleException("El cliente no tiene activas las boletas guardadas (BOLETA_CONSECUTIVO).");
     }
@@ -332,7 +305,6 @@ public class BoletaReservaService {
     return detalle(boletaId);
   }
 
-  // ── consultar ─────────────────────────────────────────────────────────────
 
   public List<Map<String, Object>> listar(String estado, String texto) {
     if (!tablas()) {
@@ -414,7 +386,6 @@ public class BoletaReservaService {
     return out;
   }
 
-  /** Pallets bloqueados por boletas abiertas del cliente (para el candado en Despacho). */
   public List<Map<String, Object>> reservados() {
     if (!tablas()) {
       return List.of();
@@ -432,9 +403,7 @@ public class BoletaReservaService {
     return out;
   }
 
-  // ── despachar / cancelar ──────────────────────────────────────────────────
 
-  /** El front va a despachar los pallets: mientras tanto la reserva no los bloquea. */
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> iniciarDespacho(int boletaId) {
     String estado = estado(boletaId);
@@ -445,10 +414,6 @@ public class BoletaReservaService {
     return detalle(boletaId);
   }
 
-  /**
-   * Cierra el despacho segun lo que quedo en la base: un pallet de la boleta inactivo (Pallet.Activo = 0) ya salio.
-   * Si salieron todos la boleta queda DESPACHADA; si no, vuelve a RESERVADA con los que faltan bloqueados.
-   */
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> finalizarDespacho(int boletaId, Integer usuarioId) {
     String estado = estado(boletaId);
@@ -488,9 +453,7 @@ public class BoletaReservaService {
         boletaId);
   }
 
-  // ── bloqueo ───────────────────────────────────────────────────────────────
 
-  /** Lanza error si alguno de los pallets esta en una boleta RESERVADA. */
   public void validarPalletsLibres(Collection<Integer> palletIds) {
     List<Integer> ids = palletIds == null ? List.of()
         : palletIds.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
@@ -506,7 +469,6 @@ public class BoletaReservaService {
     }
   }
 
-  // ── utilidades ────────────────────────────────────────────────────────────
 
   private boolean tablas() {
     if (!tablasListas) {
@@ -517,7 +479,6 @@ public class BoletaReservaService {
     return tablasListas;
   }
 
-  /** Equipos, Accesorios y Smartcards por pallet (script 2026-10-29_boleta_forecast_largos.sql). */
   private boolean cantidades() {
     if (!cantidadesListas) {
       Integer n = entero("SELECT CASE WHEN COL_LENGTH('WmsWdGeneral.dbo.BoletaMovimientoPallet', 'Smartcards') IS NULL "
@@ -565,7 +526,7 @@ public class BoletaReservaService {
   }
 
   private static String enLista(List<Integer> ids) {
-    // solo enteros: no hay riesgo de inyeccion
+    // solo enteros: sin riesgo de inyección
     return ids.stream().map(String::valueOf).collect(Collectors.joining(","));
   }
 

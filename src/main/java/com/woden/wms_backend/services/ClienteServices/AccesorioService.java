@@ -410,7 +410,6 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         }
     }
 
-    /** Despacho > Proceso: accesorios del pallet por codigo SAP (nuevos / reacondicionados) para validarlos. */
     public List<Map<String, Object>> resumenAccesoriosPallet(Integer palletId) {
         return accesorioRepository.resumenAccesoriosPallet(palletId).stream().map(obj -> {
             Map<String, Object> map = new HashMap<>();

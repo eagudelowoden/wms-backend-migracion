@@ -40,14 +40,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-/**
- * Notificaciones por correo del WMS (como ReverseCore): cada regla = evento + cliente (o todos) + Para / CC.
- * Se envia desde la cuenta noreplyservices en segundo plano y cada envio queda en NotificacionCorreoEnvio.
- * Tablas en WmsWdGeneral (sql/2026-10-25_notificaciones_correo.sql).
- *
- * Evento NOVEDAD_ERROR_SERIAL_MAC: al terminar en Novedades > Proceso una novedad ERROR SERIAL-MAC, correo con quien la
- * hizo, fechas, serial original y regularizado, origen, prealerta, destinos y el Excel de movimientos del equipo.
- */
 @Service
 public class NotificacionCorreoService {
 
@@ -83,12 +75,10 @@ public class NotificacionCorreoService {
   @Autowired
   private DocumentoPlantillaService plantillas;
 
-  // correo de prueba de los eventos de prealerta (PrealertaCierreService usa este servicio para enviar)
   @Autowired
   @org.springframework.context.annotation.Lazy
   private PrealertaCierreService prealertas;
 
-  // ── administracion de reglas ──────────────────────────────────────────────
 
   public List<Map<String, String>> eventos() {
     return EVENTOS.entrySet().stream().map(e -> Map.of("clave", e.getKey(), "nombre", e.getValue()))
@@ -187,7 +177,6 @@ public class NotificacionCorreoService {
     return out;
   }
 
-  /** Correo de prueba de la regla, con datos de ejemplo, a sus destinatarios. */
   public Map<String, Object> probar(int id, String usuario) {
     exigirTablas();
     List<Object[]> r = filas("SELECT Evento, Para, Cc FROM " + G + "NotificacionCorreo WHERE Id = ?1 "
@@ -238,9 +227,7 @@ public class NotificacionCorreoService {
     return Map.of("ok", true, "destinatarios", String.join("; ", para));
   }
 
-  // ── envio generico de un evento (prealertas) ─────────────────────────────
 
-  /** Hay al menos una regla activa del evento para el cliente de la sesion (para no armar correos que nadie recibe). */
   public boolean hayDestinatarios(String evento) {
     try {
       return tablas() && !destinatarios(evento, cliente()).para.isEmpty();
@@ -250,10 +237,6 @@ public class NotificacionCorreoService {
     }
   }
 
-  /**
-   * Envia en segundo plano a los destinatarios del evento y lo deja en la bitacora (nunca lanza error).
-   * logo = el de la plantilla del documento (data URI) o vacio para el de Woden.
-   */
   public void enviarEvento(String evento, String referencia, String asunto, String html, Map<String, byte[]> adjuntos,
       String usuario, String logo) {
     try {
@@ -289,11 +272,9 @@ public class NotificacionCorreoService {
     }
   }
 
-  // ── sonidos de Ingreso por cliente ────────────────────────────────────────
 
   public static final String SONIDO_ALERTAS = "SONIDO_ALERTAS_INGRESO";
 
-  /** Configuracion de sonidos del cliente (por defecto si no hay fila) y si el interruptor esta encendido. */
   public Map<String, Object> sonidos() {
     Map<String, Object> m = new LinkedHashMap<>();
     m.put("activo", interruptorSonido());
@@ -302,7 +283,6 @@ public class NotificacionCorreoService {
     m.put("fallo", "pum-pom");
     m.put("ok", "tin");
     m.put("repetir", true);
-    // volumen (10-100 %), duracion de cada pitido y pausa entre pitidos (ms)
     m.put("volumen", VOLUMEN);
     m.put("pulso", PULSO);
     m.put("pausa", PAUSA);
@@ -385,7 +365,6 @@ public class NotificacionCorreoService {
     return sonidos();
   }
 
-  /** Enciende o apaga el interruptor SONIDO_ALERTAS_INGRESO del cliente. */
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> activarSonidos(boolean activo) {
     Integer tipo = entero("SELECT Id FROM " + G + "ClienteValidacionTipo WHERE Codigo = ?1", SONIDO_ALERTAS);
@@ -423,9 +402,7 @@ public class NotificacionCorreoService {
     return v;
   }
 
-  // ── evento: novedad ERROR SERIAL-MAC ──────────────────────────────────────
 
-  /** Foto del equipo ANTES de cambiarle el serial (null si no se pudo tomar: la novedad sigue igual). */
   public Map<String, String> fotoSerialMac(Integer ingresoId) {
     if (ingresoId == null || !tablas()) {
       return null;
@@ -450,11 +427,9 @@ public class NotificacionCorreoService {
       m.put("tipoOrigen", texto(f[8]));
       m.put("origen", texto(f[9]));
       m.put("prealerta", texto(f[10]).isEmpty() ? "Sin prealerta" : texto(f[10]));
-      // cuando entro a la novedad (ultimo movimiento hacia su estado actual)
       List<Object[]> nov = filas("SELECT TOP 1 CONVERT(varchar(19), m.Fecha, 120) FROM Movimiento m "
           + "WHERE m.SerialId = ?1 AND m.DestinoId = ?2 ORDER BY m.Id DESC", ingresoId, num(f[4]));
       m.put("fechaNovedad", nov.isEmpty() ? "" : texto(nov.get(0)[0]));
-      // ultimo destino del serial original (por el serial, en cualquier vuelta)
       List<Object[]> ult = filas("SELECT TOP 1 e.Nombre, CONVERT(varchar(16), m.Fecha, 120) FROM Movimiento m "
           + "LEFT JOIN Estado e ON e.Id = m.DestinoId WHERE m.Serial = ?1 ORDER BY m.Id DESC", texto(f[1]));
       m.put("ultimoDestinoOriginal", ult.isEmpty() ? texto(f[5])
@@ -466,7 +441,6 @@ public class NotificacionCorreoService {
     }
   }
 
-  /** Despues del cambio: arma el correo y lo envia en segundo plano a los destinatarios de la regla. */
   public void notificarSerialMac(Map<String, String> foto, Integer usuarioId) {
     if (foto == null) {
       return;
@@ -487,8 +461,7 @@ public class NotificacionCorreoService {
       datos.put("fechaCambio", texto(nuevo[3]));
       datos.put("usuario", nombreUsuario(usuarioId));
 
-      // Excel: los movimientos del SerialId que cambió de serial (con el serial anterior y el nuevo), no toda la
-      // historia de los dos seriales en otras vueltas
+      // Excel con los movimientos del SerialId que cambió, no toda la historia de los dos seriales
       List<Object[]> movimientos = movimientosSerialId(serialId);
       Map<String, Object> cfg = plantillas.config(DocumentoPlantillaService.CORREO_SERIAL_MAC);
       String asunto = asuntoSerialMac(datos, cfg);
@@ -501,7 +474,7 @@ public class NotificacionCorreoService {
       String referencia = datos.get("serialOriginal") + " -> " + datos.get("serialNuevo");
       String usuario = datos.get("usuario");
 
-      // el envio y su registro van en otro hilo: se le pasa el cliente de la sesion
+      // el envío va en otro hilo: le paso el cliente de la sesión
       String nombre = ClientDatabaseContext.getCurrentClientName();
       String db = ClientDatabaseContext.getCurrentClientDb();
       ENVIOS.submit(() -> {
@@ -526,7 +499,6 @@ public class NotificacionCorreoService {
     }
   }
 
-  /** SerialId, Serial, Origen, Destino, Descripcion, NombreUsuario, Fecha del equipo (Movimiento.SerialId = Ingreso.Id). */
   private List<Object[]> movimientosSerialId(int serialId) {
     return filas("SELECT m.SerialId, m.Serial, eo.Nombre, ed.Nombre, m.Descripcion, u.NombreUsuario, m.Fecha "
         + "FROM Movimiento m LEFT JOIN Estado eo ON eo.Id = m.OrigenId LEFT JOIN Estado ed ON ed.Id = m.DestinoId "
@@ -539,7 +511,6 @@ public class NotificacionCorreoService {
         : asunto;
   }
 
-  /** Datos de ejemplo (correo de prueba y vista previa de Documentos). */
   private static Map<String, String> ejemploSerialMac(String usuario) {
     Map<String, String> ejemplo = new LinkedHashMap<>();
     ejemplo.put("usuario", usuario == null || usuario.isBlank() ? "usuario" : usuario);
@@ -560,7 +531,6 @@ public class NotificacionCorreoService {
     return ejemplo;
   }
 
-  /** HTML del correo con datos de ejemplo y una plantilla dada (vista previa del editor; el logo va embebido). */
   public String vistaPreviaSerialMac(Map<String, Object> cfg, String usuario) {
     String html = htmlSerialMac("Vista previa", ejemploSerialMac(usuario), 4567, 18, cfg);
     String logo = texto(cfg.get("logo"));
@@ -590,7 +560,6 @@ public class NotificacionCorreoService {
     v.put("tipo_origen", texto(d.get("tipoOrigen")));
     v.put("origen", texto(d.get("origen")));
     v.put("prealerta", texto(d.get("prealerta")));
-    // "NOVEDAD · 2026-10-24 09:15": el destino y su fecha por separado
     String[] ultimo = texto(d.get("ultimoDestinoOriginal")).split(" · ", 2);
     v.put("ultimo_destino", ultimo[0]);
     v.put("ultimo_destino_fecha", ultimo.length > 1 ? ultimo[1] : "");
@@ -599,7 +568,6 @@ public class NotificacionCorreoService {
     return v;
   }
 
-  /** Correo con la plantilla de Administración > Documentos > Correo ERROR SERIAL-MAC (horizontal o en ficha). */
   @SuppressWarnings("unchecked")
   private String htmlSerialMac(String asunto, Map<String, String> d, int serialId, int movimientos,
       Map<String, Object> cfg) {
@@ -616,7 +584,6 @@ public class NotificacionCorreoService {
     c.put("pieFondo", PlantillaTexto.color(col.get("pieFondo"), "#1b232d"));
     c.put("pieTexto", PlantillaTexto.color(col.get("pieTexto"), "#c7ccd3"));
 
-    // una columna por dato (la MAC va debajo de su serial, la fecha debajo del destino)
     List<Map<String, Object>> celdas = new ArrayList<>();
     if (cfg.get("columnas") instanceof List<?> columnas) {
       for (Object o : columnas) {
@@ -666,15 +633,10 @@ public class NotificacionCorreoService {
     }
   }
 
-  /** "2026-10-24 09:15:00" -> "2026-10-24 09:15" */
   private static String minuto(String fecha) {
     return fecha == null ? "" : fecha.length() > 16 ? fecha.substring(0, 16) : fecha;
   }
 
-  /**
-   * Movimientos del SerialId que cambió de serial (con el serial anterior y el nuevo), en el orden de la consulta
-   * del equipo: SerialId, Serial, Origen, Destino, Descripcion, NombreUsuario, Fecha.
-   */
   private byte[] excelMovimientos(List<Object[]> movimientos, int serialId) {
     try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       CellStyle cab = wb.createCellStyle();
@@ -682,7 +644,6 @@ public class NotificacionCorreoService {
       f.setBold(true);
       f.setColor(IndexedColors.WHITE.getIndex());
       cab.setFont(f);
-      // naranja Woden (#E47D06); las filas de este equipo en naranja claro
       ((org.apache.poi.xssf.usermodel.XSSFCellStyle) cab).setFillForegroundColor(
           new org.apache.poi.xssf.usermodel.XSSFColor(new byte[] { (byte) 0xE4, (byte) 0x7D, (byte) 0x06 }, null));
       cab.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -728,7 +689,6 @@ public class NotificacionCorreoService {
     }
   }
 
-  // ── destinatarios y registro ──────────────────────────────────────────────
 
   private record Destinos(List<String> para, List<String> cc) {}
 
@@ -785,7 +745,6 @@ public class NotificacionCorreoService {
     return lista;
   }
 
-  // ── utilidades ────────────────────────────────────────────────────────────
 
   private boolean tablas() {
     List<Object[]> r = filas("SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.NotificacionCorreo', 'U') IS NULL "

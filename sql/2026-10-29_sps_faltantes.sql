@@ -1,27 +1,16 @@
 /* =====================================================================================
-   SPs que usa el backend web y no existen en algunas bases cliente (sondeo 2026-10-29).
-   Crear un SP que no existe no cambia nada de lo que hoy funciona: solo hace que respondan las pantallas que hoy
-   dan "Could not find stored procedure". Se copian de WmsWdLegacyCostaRica (la base de referencia de la web).
-
-   Hace, solo donde falta:
-     1. Tabla CodigoSapPermitido vacía (multimodelo restringido) en 56 bases.
-     2. 1467 SPs (base x SP) cuyas tablas y columnas ya existen en la base destino. Los 266 pares
-        que usan tablas o columnas que la base no tiene NO se crean (lista al final en el resultado OMITIDO): primero
-        habría que instalar esa funcionalidad en la base (Calidad.EstadoProceso, Accesorio.Novedad, MovimientoAccesorio,
-        Ingreso.TruckRollId...).
-        Tampoco se crea pa_BulkInsertEntry (cargue masivo) en Claro Ecuador, DirecTV Ecuador y ENSA Panamá: inserta
-        directo en Ingreso y se saltaría las reglas propias de su pa_InsertEntry (MAC, ModeloId, smartcard, PQRS).
-        Se crea cuando esté desplegado el backend nuevo con LIMPIEZA_CARACTERES_INGRESO, MODELOID_DESDE_CODIGOSAP,
-        INSERT_AUTOMATICO_SMARTCARD o APP_PQRS_INGRESO encendidos para ese cliente.
-     3. pa_InsertEntry con la firma que usa la web (@codigoError / @mensajeError) en las 7 bases que tienen
-        la versión vieja de 28 parámetros (sin ingresos en los últimos 30 días): sin esto el Ingreso web no funciona ahí.
-        Los parámetros nuevos tienen valor por defecto, así que quien llame con 28 parámetros sigue funcionando.
-        Antes de cambiarlo se guarda la versión actual en WMS_Local_TEMP.dbo.Bk_SP_Definiciones.
-   No se tocan: Claro Ecuador Ensamble (su pa_InsertEntry recibe @EAN en la misma posición) ni Telefónica Colombia
-   Rework (Ingreso sin CajaIngresoId): se revisan aparte.
-
-   @Modo: LISTAR (por defecto, no cambia nada), PROBAR (crea cada objeto dentro de una transacción y la revierte:
-   dice si compila), APLICAR (crea). @SoloBase limita a una base (empezar por una de prueba).
+   SPs que usa la web y faltaban en algunas bases (sondeo 2026-10-29). Los copio de WmsWdLegacyCostaRica, solo donde
+   falta:
+     1. Tabla CodigoSapPermitido vacía (multimodelo restringido).
+     2. Los SPs cuyas tablas y columnas existen en la base destino; los que necesitan algo que la base no tiene salen
+        como OMITIDO. No creo pa_BulkInsertEntry en Claro Ecuador, DirecTV Ecuador ni ENSA Panamá: inserta directo en
+        Ingreso y se saltaría las reglas de su pa_InsertEntry; lo creo cuando el backend nuevo tenga encendidos sus
+        interruptores.
+     3. pa_InsertEntry con @codigoError / @mensajeError en las bases con la versión vieja de 28 parámetros, guardando
+        antes la versión actual en WMS_Local_TEMP.dbo.Bk_SP_Definiciones.
+   No toco Claro Ecuador Ensamble ni Telefónica Colombia Rework.
+   @Modo: LISTAR (no cambia nada), PROBAR (crea en una transacción y la deshace) o APLICAR. @SoloBase: una sola base.
+   Aplicado el 2026-10-29 en las 58 bases, sin errores.
    ===================================================================================== */
 SET NOCOUNT ON;
 SET LOCK_TIMEOUT 5000;
