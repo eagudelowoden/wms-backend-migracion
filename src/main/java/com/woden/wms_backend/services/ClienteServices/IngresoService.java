@@ -118,6 +118,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setSerial3(campos.serial3);
     ingreso.setSerial4(campos.serial4);
     ingreso.setSerial5(campos.serial5);
+    ingreso.setModeloId(ingresoParametrosService.modeloPorDefecto(ingreso.getModeloId(), ingreso.getCodigoSapId()));
     String serialMac = ingresoParametrosService.serialIgualMac(ingreso.getSerial(), ingreso.getMac(),
         ingreso.getCodigoSapId());
     if (serialMac != null) {
@@ -635,6 +636,8 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Envío ──────────────────────────────────────────────────────────────────────
 
   public void sendEntry(Integer estadoId, Integer tipologiaId, Integer usuarioId, Integer palletId, Integer opcion) {
+    // interruptor SCRAP_MULTIMODELO_ENVIO: pallet MULTIMODELO con tipología SCRAP conserva la suya
+    tipologiaId = ingresoParametrosService.tipologiaEnvio(palletId, tipologiaId);
     ingresoRepository.sendIngreso(estadoId, tipologiaId, usuarioId, palletId, opcion, 0);
   }
 
@@ -1391,6 +1394,7 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       } catch (com.woden.wms_backend.exception.BusinessRuleException e) {
         logger.warn("[massUploadConfirm] {}: {}", row.getSerial(), e.getMessage());
       }
+      row.setModeloId(ingresoParametrosService.modeloPorDefecto(row.getModeloId(), row.getCodigoSapId()));
     }
 
     try {

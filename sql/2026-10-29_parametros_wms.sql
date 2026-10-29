@@ -8,6 +8,9 @@
      ETIQUETADO_FORECAST          Etiquetado muestra tipo de empaque, lote, año y fecha del Forecast (los cambia
                                   administrador o técnico de etiquetado)
      SERIAL_DISTINTO_MAC          Ingreso no acepta serial igual a la MAC (salvo smartcards)
+     MODELOID_DESDE_CODIGOSAP     Ingreso sin modelo toma el ModeloId del código SAP (Claro Ecuador)
+     SCRAP_MULTIMODELO_ENVIO      al enviar un pallet MULTIMODELO con tipología SCRAP sus equipos quedan SCRAP
+                                  (pa_SendEntry de Colombia)
    Tablas nuevas:
      CodigoSapRegla    campos calculados por código SAP (MAC, Serial3-5 al ingresar; Variable1-4 en etiquetado)
      ClienteConfig     ajustes simples por cliente (modo de la Base Almacén, etiquetas con lectura variable)
@@ -59,6 +62,14 @@ ELSE IF COL_LENGTH('dbo.CodigoSapRegla', 'Momento') IS NULL
 IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'SERIAL_DISTINTO_MAC')
   INSERT INTO dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
   VALUES ('SERIAL_DISTINTO_MAC', 'Ingreso: el serial no puede ser igual a la MAC (no aplica a smartcards)', 1, GETDATE());
+
+IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'MODELOID_DESDE_CODIGOSAP')
+  INSERT INTO dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
+  VALUES ('MODELOID_DESDE_CODIGOSAP', 'Ingreso: si el equipo llega sin modelo toma el ModeloId del código SAP', 1, GETDATE());
+
+IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'SCRAP_MULTIMODELO_ENVIO')
+  INSERT INTO dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
+  VALUES ('SCRAP_MULTIMODELO_ENVIO', 'Envío de Ingreso: un pallet MULTIMODELO con tipología SCRAP deja sus equipos en SCRAP', 1, GETDATE());
 
 IF OBJECT_ID('dbo.ClienteConfig', 'U') IS NULL
   CREATE TABLE dbo.ClienteConfig (

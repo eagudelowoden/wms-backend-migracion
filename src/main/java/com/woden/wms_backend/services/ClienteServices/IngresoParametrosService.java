@@ -29,6 +29,9 @@ import org.springframework.stereotype.Service;
  *   APP_PQRS_INGRESO             después del ingreso, el ticket PQRS pendiente del serial pasa a En proceso (etapa 3)
  *                                con su registro en App_PQRS_StatusLog. Era el bloque "VÍNCULO AUTOMÁTICO APP PQRS".
  *   SERIAL_DISTINTO_MAC          el serial no puede ser igual a la MAC (Global Liberty).
+ *   MODELOID_DESDE_CODIGOSAP     ingreso sin modelo toma el ModeloId del código SAP (Claro Ecuador).
+ *   SCRAP_MULTIMODELO_ENVIO      al enviar un pallet MULTIMODELO con tipología SCRAP sus equipos quedan SCRAP
+ *                                (pa_SendEntry de Colombia).
  * Con los interruptores apagados y sin reglas el ingreso no cambia en nada.
  */
 @Service
@@ -38,6 +41,8 @@ public class IngresoParametrosService {
   public static final String LIMPIEZA = "LIMPIEZA_CARACTERES_INGRESO";
   public static final String PQRS = "APP_PQRS_INGRESO";
   public static final String SERIAL_DISTINTO_MAC = "SERIAL_DISTINTO_MAC";
+  public static final String MODELOID_CODIGOSAP = "MODELOID_DESDE_CODIGOSAP";
+  public static final String SCRAP_MULTIMODELO = "SCRAP_MULTIMODELO_ENVIO";
   public static final String MAESTRO_LIMPIEZA = "Limpieza Caracteres";
 
   private static final String SMARTCARD_EXISTE = "SELECT TOP 1 x.Serial, x.Campo FROM ("
@@ -156,6 +161,52 @@ public class IngresoParametrosService {
       logger.warn("[Ingreso] tipo del código SAP {}: {}", codigoSapId, e.getMessage());
     }
     return "El serial no puede ser igual a la MAC.";
+  }
+
+  /**
+   * MODELOID_DESDE_CODIGOSAP (Claro Ecuador): si el ingreso llega sin modelo toma el ModeloId del código SAP. El SP
+   * también buscaba el último ingreso del mismo serial, pero Ingreso no repite seriales y nunca encontraba nada.
+   */
+  public Integer modeloPorDefecto(Integer modeloId, Integer codigoSapId) {
+    if ((modeloId != null && modeloId != 0) || codigoSapId == null || !interruptores.activo(MODELOID_CODIGOSAP)) {
+      return modeloId;
+    }
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT ISNULL(modeloId, 0) FROM CodigoSap WHERE Id = ?")) {
+      ps.setInt(1, codigoSapId);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (rs.next() && rs.getInt(1) > 0) {
+          return rs.getInt(1);
+        }
+      }
+    } catch (SQLException e) {
+      logger.warn("[Ingreso] ModeloId del código SAP {}: {}", codigoSapId, e.getMessage());
+    }
+    return modeloId;
+  }
+
+  /**
+   * SCRAP_MULTIMODELO_ENVIO (Colombia, pa_SendEntry): al enviar un pallet MULTIMODELO con tipología SCRAP sus equipos
+   * conservan la tipología SCRAP del pallet en lugar de la que llega. En cualquier otro caso no cambia nada.
+   */
+  public Integer tipologiaEnvio(Integer palletId, Integer tipologiaId) {
+    if (palletId == null || !interruptores.activo(SCRAP_MULTIMODELO)) {
+      return tipologiaId;
+    }
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT p.TipologiaId FROM Pallet p "
+            + "INNER JOIN CodigoSap cs ON cs.Id = p.CodigoSapId INNER JOIN Maestro m ON m.Id = p.TipologiaId "
+            + "WHERE p.Id = ? AND cs.Codigo = 'MULTIMODELO' AND m.Codigo = 'SCRAP'")) {
+      ps.setInt(1, palletId);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) {
+          return rs.getInt(1);
+        }
+      }
+    } catch (SQLException e) {
+      logger.warn("[Envio] tipología del pallet {}: {}", palletId, e.getMessage());
+    }
+    return tipologiaId;
   }
 
   /** Después de un ingreso correcto. Nunca lanza error: el equipo ya quedó ingresado. */
