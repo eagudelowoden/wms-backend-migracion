@@ -3,6 +3,7 @@ package com.woden.wms_backend.services.ClienteServices;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -160,9 +161,36 @@ public class PalletDocumentoService {
   /** Tamaño de letra que cabe en el ancho de la celda (en una línea, como el Jasper) y en su alto. */
   private static double ajustar(String texto, double tamano, double anchoPt, double altoPt) {
     double t = Math.min(tamano, altoPt * 0.8);
-    int largo = Math.max(1, texto.length());
-    double cabe = anchoPt / (largo * 0.56);
+    double cabe = anchoPt * 0.96 / ems(texto);
     return Math.max(6, Math.floor(Math.min(t, cabe) * 10) / 10);
+  }
+
+  // anchos de Helvetica en milésimas de em (A-Z y a-z): las mayúsculas miden más que el promedio
+  private static final int[] MAYUSCULAS = { 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
+      667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611 };
+  private static final int[] MINUSCULAS = { 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556,
+      556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500 };
+
+  /** Ancho del texto en em con la letra de la boleta (sin tildes, que no cambian el ancho). */
+  private static double ems(String texto) {
+    String s = Normalizer.normalize(texto, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+    double total = 0;
+    for (char ch : s.toCharArray()) {
+      if (ch >= 'A' && ch <= 'Z') {
+        total += MAYUSCULAS[ch - 'A'];
+      } else if (ch >= 'a' && ch <= 'z') {
+        total += MINUSCULAS[ch - 'a'];
+      } else if (ch >= '0' && ch <= '9') {
+        total += 556;
+      } else if (" .,:;/|!'".indexOf(ch) >= 0) {
+        total += 278;
+      } else if ("-()[]".indexOf(ch) >= 0) {
+        total += 333;
+      } else {
+        total += 600;
+      }
+    }
+    return Math.max(total, 278) / 1000;
   }
 
   /**

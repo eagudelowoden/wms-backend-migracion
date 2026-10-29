@@ -464,7 +464,8 @@ public class BoletaMovimientoService {
       for (Object f : em.createNativeQuery("SELECT TOP 8 p.Id, p.Numero, ISNULL(cs.Codigo, ''), ISNULL(cs.Descripcion, ''), "
           + "(SELECT COUNT(*) FROM Ingreso i WHERE i.PalletId = p.Id), ISNULL(t.Codigo, '') FROM Pallet p "
           + "LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId LEFT JOIN Maestro t ON t.Id = p.TipologiaId "
-          + "WHERE p.Activo = 1 ORDER BY CASE WHEN p.loteId IS NOT NULL THEN 0 ELSE 1 END, p.Id DESC").getResultList()) {
+          + "WHERE p.Activo = 1 AND EXISTS (SELECT 1 FROM Ingreso i WHERE i.PalletId = p.Id) "
+          + "ORDER BY CASE WHEN p.loteId IS NOT NULL THEN 0 ELSE 1 END, p.Id DESC").getResultList()) {
         Object[] r = (Object[]) f;
         BoletaMovimientoDTO.ItemDTO it = new BoletaMovimientoDTO.ItemDTO();
         it.setId(((Number) r[0]).intValue());
