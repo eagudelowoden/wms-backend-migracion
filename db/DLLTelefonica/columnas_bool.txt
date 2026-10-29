@@ -1,0 +1,1 @@
+activo,altas,asignacion_confirmada,bajas,componenteobligatorio,confirmado,cruce,fuente,garantia,garantiafabricante,garantiawoden,gaveta,reimpresion,smartcard,sobrante,usuarioactivo

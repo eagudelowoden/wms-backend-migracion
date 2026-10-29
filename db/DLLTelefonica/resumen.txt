@@ -1,0 +1,4 @@
+{'tablas': 82, 'indices': 78, 'fks': 94}
+columnas boolean: activo,altas,asignacion_confirmada,bajas,componenteobligatorio,confirmado,cruce,fuente,garantia,garantiafabricante,garantiawoden,gaveta,reimpresion,smartcard,sobrante,usuarioactivo
+avisos (0):
+  
