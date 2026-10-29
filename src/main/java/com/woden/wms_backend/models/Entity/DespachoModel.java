@@ -48,4 +48,5 @@ public class DespachoModel {
     /** Novedad final de Reparación (Garantía/TruckRoll) — Id de Maestro, se arrastra desde Ingreso. */
     private Integer novedadId;
     private String observaciones;
+    private Integer modeloId;
 }

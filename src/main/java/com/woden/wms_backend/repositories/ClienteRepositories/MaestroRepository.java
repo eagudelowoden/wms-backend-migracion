@@ -32,6 +32,15 @@ public interface MaestroRepository extends BaseRepository<MaestroModel, Integer>
 	@Query(value = "SELECT id FROM Maestro WHERE codigo = :codigo AND TipoMaestroId = :tipoMaestroId", nativeQuery = true)
 	Integer getIdByCodigo(@Param("codigo") String codigo, @Param("tipoMaestroId") Integer tipoMaestroId);
 
+	@Query(value = "SELECT TOP 1 m.Id " +
+			"FROM Maestro m " +
+			"INNER JOIN TipoMaestro tm ON tm.Id = m.TipoMaestroId " +
+			"WHERE m.Codigo = 'DEPRECIADO' " +
+			"AND m.Activo = 1 " +
+			"AND tm.Nombre = 'Estados Diagnostico' " +
+			"ORDER BY m.Id", nativeQuery = true)
+	Integer getIdEstadoDepreciado();
+
 	@Query(value = "EXEC pa_GetOriginsMaster :tipo", nativeQuery = true)
 	List<String> getOrigenes(@Param("tipo") String tipo);
 

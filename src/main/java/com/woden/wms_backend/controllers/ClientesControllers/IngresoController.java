@@ -153,9 +153,16 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
     return ResponseEntity.ok(ingresoService.searchQualityEntry());
   }
 
+  @GetMapping("/searchQualityEntryExtras")
+  public ResponseEntity<List<Map<String, String>>> searchQualityEntryExtras(
+      @RequestParam(defaultValue = "false") boolean extras) {
+    return ResponseEntity.ok(ingresoService.searchQualityEntryExtras(extras));
+  }
+
   @GetMapping("/searchAuditoriaInSituEntry")
-  public ResponseEntity<List<Map<String, String>>> searchAuditoriaInSituEntry() {
-    return ResponseEntity.ok(ingresoService.searchAuditoriaInSituEntry());
+  public ResponseEntity<List<Map<String, String>>> searchAuditoriaInSituEntry(
+      @RequestParam(defaultValue = "false") boolean extras) {
+    return ResponseEntity.ok(ingresoService.searchAuditoriaInSituEntry(extras));
   }
 
   @GetMapping("/searchDiagnosticEntry")

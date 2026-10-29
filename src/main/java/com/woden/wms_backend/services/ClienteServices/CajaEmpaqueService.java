@@ -207,6 +207,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
       seriales.put("serial3", result[4] != null ? result[4].toString() : "");
       seriales.put("serial4", result[5] != null ? result[5].toString() : "");
       seriales.put("codigo", result[6] != null ? result[6].toString() : "");
+      seriales.put("codigoSap", result[6] != null ? result[6].toString() : "");
       seriales.put("descripcion", result[7] != null ? result[7].toString() : "");
       seriales.put("nivel", result[8] != null ? result[8].toString() : "");
       seriales.put("lote", result[9] != null ? result[9].toString() : "");
