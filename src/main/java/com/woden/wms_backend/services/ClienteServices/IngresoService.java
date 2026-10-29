@@ -118,6 +118,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     ingreso.setSerial3(campos.serial3);
     ingreso.setSerial4(campos.serial4);
     ingreso.setSerial5(campos.serial5);
+    String serialMac = ingresoParametrosService.serialIgualMac(ingreso.getSerial(), ingreso.getMac(),
+        ingreso.getCodigoSapId());
+    if (serialMac != null) {
+      return serialMac;
+    }
     String smartcard = ingresoParametrosService.smartcardRepetida(ingreso.getSerial(), ingreso.getSerial3(),
         smartcardAutomaticaService.config() != null);
     if (smartcard != null) {
@@ -1025,6 +1030,11 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
 
       if (row.getSerial() == null || row.getSerial().trim().isEmpty()) {
         erroresFila.add("Serial vacío");
+      }
+      String serialMac = ingresoParametrosService.serialIgualMac(row.getSerial(), row.getMac(),
+          row.getCodigoSap() == null ? null : codigoSapMap.get(row.getCodigoSap().trim().toUpperCase()));
+      if (serialMac != null) {
+        erroresFila.add(serialMac);
       }
       if (row.getFecha() == null || row.getFecha().trim().isEmpty()) {
         erroresFila.add("Fecha vacía");

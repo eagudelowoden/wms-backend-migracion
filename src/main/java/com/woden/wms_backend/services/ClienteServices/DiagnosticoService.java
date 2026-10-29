@@ -77,6 +77,8 @@ public class DiagnosticoService {
         System.out.println(variable3);
         System.out.println(variable4);
     repository.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
+    // Códigos SAP > Campos calculados con Momento DIAGNOSTICO (Serial3 / Serial4 de Tigo Costa Rica)
+    codigoSapReglas.aplicarDiagnostico(codigoSapId, serial);
   }
 
   public Integer updateSapCode(String serial) {

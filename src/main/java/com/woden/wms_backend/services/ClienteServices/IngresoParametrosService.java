@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
  *                                equipo: se avisa con el serial relacionado, en la misma conexión del ingreso.
  *   APP_PQRS_INGRESO             después del ingreso, el ticket PQRS pendiente del serial pasa a En proceso (etapa 3)
  *                                con su registro en App_PQRS_StatusLog. Era el bloque "VÍNCULO AUTOMÁTICO APP PQRS".
+ *   SERIAL_DISTINTO_MAC          el serial no puede ser igual a la MAC (Global Liberty).
  * Con los interruptores apagados y sin reglas el ingreso no cambia en nada.
  */
 @Service
@@ -36,6 +37,7 @@ public class IngresoParametrosService {
   private static final Logger logger = LoggerFactory.getLogger(IngresoParametrosService.class);
   public static final String LIMPIEZA = "LIMPIEZA_CARACTERES_INGRESO";
   public static final String PQRS = "APP_PQRS_INGRESO";
+  public static final String SERIAL_DISTINTO_MAC = "SERIAL_DISTINTO_MAC";
   public static final String MAESTRO_LIMPIEZA = "Limpieza Caracteres";
 
   private static final String SMARTCARD_EXISTE = "SELECT TOP 1 x.Serial, x.Campo FROM ("
@@ -128,6 +130,32 @@ public class IngresoParametrosService {
       logger.warn("[Ingreso] no se pudo validar la smartcard {}: {}", tarjeta, e.getMessage());
       return null;
     }
+  }
+
+  /**
+   * SERIAL_DISTINTO_MAC (lo que Global Liberty tenía en pa_InsertEntry, código 1004): null si el serial y la MAC son
+   * distintos; si no, el aviso. Las smartcards (tipo SMARTCARD o clasificación SMARTSAP) quedan fuera porque en
+   * Ingreso su MAC es una copia del serial.
+   */
+  public String serialIgualMac(String serial, String mac, Integer codigoSapId) {
+    if (serial == null || mac == null || serial.isBlank() || !serial.trim().equalsIgnoreCase(mac.trim())
+        || !interruptores.activo(SERIAL_DISTINTO_MAC)) {
+      return null;
+    }
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT CASE WHEN t.Codigo = 'SMARTCARD' OR c.Codigo = 'SMARTSAP' "
+            + "THEN 1 ELSE 0 END FROM CodigoSap cs LEFT JOIN Maestro t ON t.Id = cs.TipoId "
+            + "LEFT JOIN Maestro c ON c.Id = cs.ClasificacionId WHERE cs.Id = ?")) {
+      ps.setInt(1, codigoSapId == null ? 0 : codigoSapId);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (rs.next() && rs.getInt(1) == 1) {
+          return null;
+        }
+      }
+    } catch (SQLException e) {
+      logger.warn("[Ingreso] tipo del código SAP {}: {}", codigoSapId, e.getMessage());
+    }
+    return "El serial no puede ser igual a la MAC.";
   }
 
   /** Después de un ingreso correcto. Nunca lanza error: el equipo ya quedó ingresado. */

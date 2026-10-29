@@ -1,5 +1,8 @@
 package com.woden.wms_backend.services.ClienteServices;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,8 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +31,10 @@ import jakarta.persistence.PersistenceContext;
  * Serial4 = MAC + 1 / + 2 en Tigo Nicaragua y Global Liberty) y calcula las variables de Etiquetado.
  *   Ingreso:    MAC, SERIAL3, SERIAL4, SERIAL5 (en ese orden; cada uno puede usar el ya calculado)
  *   Etiquetado: VARIABLE1 a VARIABLE4
- * Sin reglas el ingreso y el etiquetado quedan exactamente como siempre. Las reglas del cliente se guardan 60 s.
+ * Los campos del equipo se calculan al ingresar (Momento INGRESO) o al diagnosticar (DIAGNOSTICO: lo que Tigo Costa Rica
+ * tenía en pa_InsertDiagnostic, Serial3 = serial + 2 y Serial4 = sus últimos 6, o Serial3 = últimos 4 del serial).
+ * Sin reglas el ingreso, el diagnóstico y el etiquetado quedan exactamente como siempre. Las reglas del cliente se
+ * guardan 60 s.
  */
 @Service
 public class CodigoSapReglaService {
@@ -35,9 +44,10 @@ public class CodigoSapReglaService {
   public static final List<String> CAMPOS_INGRESO = List.of("MAC", "SERIAL3", "SERIAL4", "SERIAL5");
   public static final List<String> CAMPOS_VARIABLE = List.of("VARIABLE1", "VARIABLE2", "VARIABLE3", "VARIABLE4");
   public static final List<String> ORIGENES = List.of("SERIAL", "MAC", "SERIAL3", "SERIAL4", "SERIAL5");
+  public static final List<String> MOMENTOS = List.of("INGRESO", "DIAGNOSTICO");
 
   public record Regla(String campo, String origen, String operacion, String parametro1, String parametro2,
-      boolean activo) {}
+      boolean activo, String momento) {}
 
   /** Serial, MAC y Serial3-5 de un equipo (los que entran o los que se calculan). */
   public static final class Campos {
@@ -85,6 +95,9 @@ public class CodigoSapReglaService {
   @PersistenceContext
   private EntityManager em;
 
+  @Autowired
+  private DataSource dataSource;
+
   // ── administración ─────────────────────────────────────────────────────────
 
   public Map<String, Object> listar(int codigoSapId) {
@@ -93,10 +106,12 @@ public class CodigoSapReglaService {
     out.put("campos", List.of(CAMPOS_INGRESO, CAMPOS_VARIABLE));
     out.put("origenes", ORIGENES);
     out.put("operaciones", ReglaCampo.OPERACIONES);
+    out.put("momentos", MOMENTOS);
     List<Map<String, Object>> reglas = new ArrayList<>();
     if (tabla()) {
       for (Object f : em.createNativeQuery("SELECT Campo, Origen, Operacion, ISNULL(Parametro1, ''), "
-          + "ISNULL(Parametro2, ''), Activo FROM WmsWdGeneral.dbo.CodigoSapRegla WHERE ClienteId = ?1 AND CodigoSapId = ?2")
+          + "ISNULL(Parametro2, ''), Activo, ISNULL(Momento, 'INGRESO') FROM WmsWdGeneral.dbo.CodigoSapRegla "
+          + "WHERE ClienteId = ?1 AND CodigoSapId = ?2")
           .setParameter(1, cliente()).setParameter(2, codigoSapId).getResultList()) {
         Object[] r = (Object[]) f;
         Map<String, Object> m = new LinkedHashMap<>();
@@ -106,6 +121,7 @@ public class CodigoSapReglaService {
         m.put("parametro1", r[3]);
         m.put("parametro2", r[4]);
         m.put("activo", r[5] instanceof Boolean b ? b : r[5] instanceof Number n && n.intValue() != 0);
+        m.put("momento", r[6]);
         reglas.add(m);
       }
     }
@@ -140,17 +156,27 @@ public class CodigoSapReglaService {
       if (porCampo.containsKey(campo)) {
         throw new BusinessRuleException("El campo " + campo + " está dos veces.");
       }
+      String momento = texto(m.get("momento")).toUpperCase();
+      if (CAMPOS_VARIABLE.contains(campo)) {
+        momento = "ETIQUETADO";
+      } else if (momento.isEmpty()) {
+        momento = "INGRESO";
+      } else if (!MOMENTOS.contains(momento)) {
+        throw new BusinessRuleException("Momento no válido: " + momento);
+      }
       porCampo.put(campo, new Regla(campo, origen, operacion, corto(texto(m.get("parametro1")), 100),
-          corto(texto(m.get("parametro2")), 100), !Boolean.FALSE.equals(m.get("activo"))));
+          corto(texto(m.get("parametro2")), 100), !Boolean.FALSE.equals(m.get("activo")), momento));
     }
     em.createNativeQuery("DELETE FROM WmsWdGeneral.dbo.CodigoSapRegla WHERE ClienteId = ?1 AND CodigoSapId = ?2")
         .setParameter(1, cliente).setParameter(2, codigoSapId).executeUpdate();
     for (Regla r : porCampo.values()) {
       em.createNativeQuery("INSERT INTO WmsWdGeneral.dbo.CodigoSapRegla (ClienteId, CodigoSapId, Campo, Origen, "
-          + "Operacion, Parametro1, Parametro2, Activo, Usuario, Fecha) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, GETDATE())")
+          + "Operacion, Parametro1, Parametro2, Activo, Momento, Usuario, Fecha) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, "
+          + "?9, ?10, GETDATE())")
           .setParameter(1, cliente).setParameter(2, codigoSapId).setParameter(3, r.campo()).setParameter(4, r.origen())
           .setParameter(5, r.operacion()).setParameter(6, r.parametro1()).setParameter(7, r.parametro2())
-          .setParameter(8, r.activo()).setParameter(9, corto(usuario, 150)).executeUpdate();
+          .setParameter(8, r.activo()).setParameter(9, r.momento()).setParameter(10, corto(usuario, 150))
+          .executeUpdate();
     }
     CACHE.remove(cliente);
     return listar(codigoSapId);
@@ -161,7 +187,8 @@ public class CodigoSapReglaService {
     List<Regla> lista = new ArrayList<>();
     for (Map<String, Object> m : reglas == null ? List.<Map<String, Object>>of() : reglas) {
       lista.add(new Regla(texto(m.get("campo")).toUpperCase(), texto(m.get("origen")).toUpperCase(),
-          texto(m.get("operacion")).toUpperCase(), texto(m.get("parametro1")), texto(m.get("parametro2")), true));
+          texto(m.get("operacion")).toUpperCase(), texto(m.get("parametro1")), texto(m.get("parametro2")), true,
+          texto(m.get("momento")).toUpperCase()));
     }
     Campos c = new Campos(serial, mac, "", "", "");
     Map<String, String> out = new LinkedHashMap<>();
@@ -194,10 +221,56 @@ public class CodigoSapReglaService {
     }
     for (String campo : CAMPOS_INGRESO) {
       for (Regla r : reglas) {
-        if (r.campo().equals(campo)) {
+        if (r.campo().equals(campo) && !"DIAGNOSTICO".equals(r.momento())) {
           c.set(campo, ReglaCampo.aplicar(r.operacion(), c.get(r.origen()), r.parametro1(), r.parametro2()));
         }
       }
+    }
+  }
+
+  /**
+   * Después de crear el diagnóstico: calcula los campos con Momento DIAGNOSTICO sobre el equipo en Ingreso y los
+   * actualiza. Nunca lanza error: el diagnóstico ya quedó creado.
+   */
+  public void aplicarDiagnostico(Integer codigoSapId, String serial) {
+    List<Regla> reglas = codigoSapId == null || serial == null ? null : activas().get(codigoSapId);
+    if (reglas == null || reglas.stream().noneMatch(r -> "DIAGNOSTICO".equals(r.momento()))) {
+      return;
+    }
+    try (Connection conn = dataSource.getConnection()) {
+      Campos c;
+      try (PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 Serial, Mac, Serial3, Serial4, Serial5 FROM Ingreso "
+          + "WHERE Serial = ? ORDER BY Id DESC")) {
+        ps.setString(1, serial.trim().toUpperCase());
+        try (ResultSet rs = ps.executeQuery()) {
+          if (!rs.next()) {
+            return;
+          }
+          c = new Campos(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
+        }
+      }
+      List<String> sets = new ArrayList<>();
+      List<String> valores = new ArrayList<>();
+      for (String campo : CAMPOS_INGRESO) {
+        for (Regla r : reglas) {
+          if (r.campo().equals(campo) && "DIAGNOSTICO".equals(r.momento())) {
+            String v = ReglaCampo.aplicar(r.operacion(), c.get(r.origen()), r.parametro1(), r.parametro2()).toUpperCase();
+            c.set(campo, v);
+            sets.add((campo.equals("MAC") ? "Mac" : "Serial" + campo.substring(6)) + " = ?");
+            valores.add(v);
+          }
+        }
+      }
+      try (PreparedStatement ps = conn.prepareStatement("UPDATE Ingreso SET " + String.join(", ", sets)
+          + " WHERE Serial = ?")) {
+        for (int i = 0; i < valores.size(); i++) {
+          ps.setString(i + 1, valores.get(i));
+        }
+        ps.setString(valores.size() + 1, serial.trim().toUpperCase());
+        ps.executeUpdate();
+      }
+    } catch (Exception e) {
+      logger.warn("[CamposCalculados] diagnóstico de {}: {}", serial, e.getMessage());
     }
   }
 
@@ -239,11 +312,12 @@ public class CodigoSapReglaService {
     try {
       if (tabla()) {
         for (Object f : em.createNativeQuery("SELECT CodigoSapId, Campo, Origen, Operacion, ISNULL(Parametro1, ''), "
-            + "ISNULL(Parametro2, '') FROM WmsWdGeneral.dbo.CodigoSapRegla WHERE ClienteId = ?1 AND Activo = 1")
+            + "ISNULL(Parametro2, ''), ISNULL(Momento, 'INGRESO') FROM WmsWdGeneral.dbo.CodigoSapRegla "
+            + "WHERE ClienteId = ?1 AND Activo = 1")
             .setParameter(1, cliente).getResultList()) {
           Object[] r = (Object[]) f;
           out.computeIfAbsent(((Number) r[0]).intValue(), k -> new ArrayList<>()).add(new Regla(texto(r[1]),
-              texto(r[2]), texto(r[3]), texto(r[4]), texto(r[5]), true));
+              texto(r[2]), texto(r[3]), texto(r[4]), texto(r[5]), true, texto(r[6])));
         }
       }
     } catch (Exception e) {

@@ -7,6 +7,7 @@
                                   maestro "Diagnostico Serial3"
      ETIQUETADO_FORECAST          Etiquetado muestra tipo de empaque, lote, año y fecha del Forecast (los cambia
                                   administrador o técnico de etiquetado)
+     SERIAL_DISTINTO_MAC          Ingreso no acepta serial igual a la MAC (salvo smartcards)
    Tablas nuevas:
      CodigoSapRegla    campos calculados por código SAP (MAC, Serial3-5 al ingresar; Variable1-4 en etiquetado)
      ClienteConfig     ajustes simples por cliente (modo de la Base Almacén, etiquetas con lectura variable)
@@ -45,12 +46,19 @@ BEGIN
     Operacion   VARCHAR(20)   NOT NULL,
     Parametro1  VARCHAR(100)  NULL,
     Parametro2  VARCHAR(100)  NULL,
+    Momento     VARCHAR(15)   NOT NULL CONSTRAINT DF_CodigoSapRegla_Momento DEFAULT ('INGRESO'),
     Activo      BIT           NOT NULL CONSTRAINT DF_CodigoSapRegla_Activo DEFAULT (1),
     Usuario     VARCHAR(150)  NULL,
     Fecha       DATETIME      NOT NULL CONSTRAINT DF_CodigoSapRegla_Fecha DEFAULT (GETDATE())
   );
   CREATE UNIQUE INDEX UX_CodigoSapRegla ON dbo.CodigoSapRegla (ClienteId, CodigoSapId, Campo);
 END
+ELSE IF COL_LENGTH('dbo.CodigoSapRegla', 'Momento') IS NULL
+  ALTER TABLE dbo.CodigoSapRegla ADD Momento VARCHAR(15) NOT NULL CONSTRAINT DF_CodigoSapRegla_Momento DEFAULT ('INGRESO');
+
+IF NOT EXISTS (SELECT 1 FROM dbo.ClienteValidacionTipo WHERE Codigo = 'SERIAL_DISTINTO_MAC')
+  INSERT INTO dbo.ClienteValidacionTipo (Codigo, Descripcion, Activo, Fecha)
+  VALUES ('SERIAL_DISTINTO_MAC', 'Ingreso: el serial no puede ser igual a la MAC (no aplica a smartcards)', 1, GETDATE());
 
 IF OBJECT_ID('dbo.ClienteConfig', 'U') IS NULL
   CREATE TABLE dbo.ClienteConfig (
