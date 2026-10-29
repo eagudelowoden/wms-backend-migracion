@@ -5,10 +5,14 @@
 
    Hace, solo donde falta:
      1. Tabla CodigoSapPermitido vacía (multimodelo restringido) en 56 bases.
-     2. 1470 SPs (base x SP) cuyas tablas y columnas ya existen en la base destino. Los 266 pares
+     2. 1467 SPs (base x SP) cuyas tablas y columnas ya existen en la base destino. Los 266 pares
         que usan tablas o columnas que la base no tiene NO se crean (lista al final en el resultado OMITIDO): primero
         habría que instalar esa funcionalidad en la base (Calidad.EstadoProceso, Accesorio.Novedad, MovimientoAccesorio,
         Ingreso.TruckRollId...).
+        Tampoco se crea pa_BulkInsertEntry (cargue masivo) en Claro Ecuador, DirecTV Ecuador y ENSA Panamá: inserta
+        directo en Ingreso y se saltaría las reglas propias de su pa_InsertEntry (MAC, ModeloId, smartcard, PQRS).
+        Se crea cuando esté desplegado el backend nuevo con LIMPIEZA_CARACTERES_INGRESO, MODELOID_DESDE_CODIGOSAP,
+        INSERT_AUTOMATICO_SMARTCARD o APP_PQRS_INGRESO encendidos para ese cliente.
      3. pa_InsertEntry con la firma que usa la web (@codigoError / @mensajeError) en las 7 bases que tienen
         la versión vieja de 28 parámetros (sin ingresos en los últimos 30 días): sin esto el Ingreso web no funciona ahí.
         Los parámetros nuevos tienen valor por defecto, así que quien llame con 28 parámetros sigue funcionando.
@@ -164,7 +168,6 @@ INSERT INTO @pares (Base, Nombre) VALUES
   ('WmsWdClaroCostaRica', 'pa_ValidarReingresoScrap'),
   ('WmsWdClaroCostaRica', 'pa_updateSapCodePallet'),
   ('WmsWdClaroEcuador', 'pa_BackCleanEntry'),
-  ('WmsWdClaroEcuador', 'pa_BulkInsertEntry'),
   ('WmsWdClaroEcuador', 'pa_CountAvailableAccesory'),
   ('WmsWdClaroEcuador', 'pa_GetCountDiffSap'),
   ('WmsWdClaroEcuador', 'pa_GetCountEntrySap'),
@@ -477,7 +480,6 @@ INSERT INTO @pares (Base, Nombre) VALUES
   ('WmsWdDirectvColombia', 'pa_UpdateStateEntryNotUsuarioDiagnosed'),
   ('WmsWdDirectvColombia', 'pa_ValidarReingresoScrap'),
   ('WmsWdDirectvColombia', 'pa_updateSapCodePallet'),
-  ('WmsWdDirectvEcuador', 'pa_BulkInsertEntry'),
   ('WmsWdDirectvEcuador', 'pa_CountAvailableAccesory'),
   ('WmsWdDirectvEcuador', 'pa_GetDiasUltimoIngreso'),
   ('WmsWdDirectvEcuador', 'pa_GetEtiquetadoUser'),
@@ -506,7 +508,6 @@ INSERT INTO @pares (Base, Nombre) VALUES
   ('WmsWdDirectvPeru', 'pa_UpdateEstadoSmartCardAsign'),
   ('WmsWdDirectvPeru', 'pa_ValidarReingresoScrap'),
   ('WmsWdDirectvPeru', 'pa_updateSapCodePallet'),
-  ('WmsWdEnsaPanama', 'pa_BulkInsertEntry'),
   ('WmsWdEnsaPanama', 'pa_CountAvailableAccesory'),
   ('WmsWdEnsaPanama', 'pa_DeleteCodigoSapPermitido'),
   ('WmsWdEnsaPanama', 'pa_GetDiasUltimoIngreso'),
@@ -1511,6 +1512,9 @@ INSERT INTO @pares (Base, Nombre) VALUES
   ('WmswdxtrimmEcuador', 'pa_ValidarReingresoScrap'),
   ('WmswdxtrimmEcuador', 'pa_updateSapCodePallet');
 INSERT INTO @omitidos (Base, Nombre, Falta) VALUES
+  ('WmsWdClaroEcuador', 'pa_BulkInsertEntry', 'el backend nuevo con sus interruptores (pa_InsertEntry con reglas propias que el masivo se saltaría)'),
+  ('WmsWdDirectvEcuador', 'pa_BulkInsertEntry', 'el backend nuevo con sus interruptores (pa_InsertEntry con reglas propias que el masivo se saltaría)'),
+  ('WmsWdEnsaPanama', 'pa_BulkInsertEntry', 'el backend nuevo con sus interruptores (pa_InsertEntry con reglas propias que el masivo se saltaría)'),
   ('WmsWdBancardParaguay', 'pa_SearchNoveltyAccesoryPallet', 'Accesorio.Novedad'),
   ('WmsWdBancardParaguay', 'pa_UpdateAccesoryNovedadCantidad', 'Accesorio.Novedad, Accesorio.UsuarioIdMovimiento'),
   ('WmsWdBancardParaguay', 'pa_UpdateNoveltyAllAccesory', 'Accesorio.Novedad, Accesorio.UsuarioIdMovimiento'),
