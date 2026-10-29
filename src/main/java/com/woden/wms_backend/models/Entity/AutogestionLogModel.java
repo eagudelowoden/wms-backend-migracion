@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "AutogestionLog", schema = "dbo")
+@Table(name = "AutogestionLog")
 public class AutogestionLogModel {
   @Id
   @Column(name = "Id")

@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.woden.wms_backend.dto.clientDTO.AutogestionPalletDTO;
-import com.woden.wms_backend.dto.clientDTO.AutogestionSerialDTO;
+import com.woden.wms_backend.dto.clientDTO.AutogestionSolicitudDTO;
 import com.woden.wms_backend.services.ClienteServices.AutogestionService;
 
 @RestController
@@ -22,8 +21,8 @@ public class AutogestionController {
   private AutogestionService service;
 
   @GetMapping("/estados")
-  public ResponseEntity<?> estados() {
-    return ResponseEntity.ok(service.estados());
+  public ResponseEntity<?> estados(@RequestParam(defaultValue = "SERIAL") String ambito) {
+    return ResponseEntity.ok(service.estados(ambito));
   }
 
   @GetMapping("/serial")
@@ -32,43 +31,45 @@ public class AutogestionController {
     return result == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(result);
   }
 
-  @PostMapping("/serial/accion")
-  public ResponseEntity<?> accionSerial(@RequestBody AutogestionSerialDTO request) {
-    try {
-      service.accionSerial(request);
-      return ResponseEntity.ok(Map.of("message", "Acción registrada correctamente.", "success", true));
-    } catch (Exception e) {
-      Throwable root = e;
-      while (root.getCause() != null) {
-        root = root.getCause();
-      }
-      return ResponseEntity.ok(Map.of("message", String.valueOf(root.getMessage()), "success", false));
-    }
-  }
-
   @GetMapping("/pallet")
   public ResponseEntity<?> buscarPallet(@RequestParam String pallet) {
     Map<String, Object> result = service.buscarPallet(pallet);
     return result == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(result);
   }
 
-  @PostMapping("/pallet/accion")
-  public ResponseEntity<?> accionPallet(@RequestBody AutogestionPalletDTO request) {
+  /** Crea una solicitud de movimiento y envía los enlaces de aprobación. No mueve nada. */
+  @PostMapping("/solicitud")
+  public ResponseEntity<?> crearSolicitud(@RequestBody AutogestionSolicitudDTO request) {
     try {
-      service.accionPallet(request);
-      return ResponseEntity.ok(Map.of("message", "Acción registrada correctamente.", "success", true));
+      Map<String, Object> result = service.crearSolicitud(request);
+      return ResponseEntity.ok(Map.of("success", true, "message", "Solicitud creada.", "data", result));
     } catch (Exception e) {
-      Throwable root = e;
-      while (root.getCause() != null) {
-        root = root.getCause();
-      }
-      return ResponseEntity.ok(Map.of("message", String.valueOf(root.getMessage()), "success", false));
+      return ResponseEntity.ok(Map.of("success", false, "message", mensajeRaiz(e)));
     }
+  }
+
+  @GetMapping("/solicitudes")
+  public ResponseEntity<?> solicitudes(@RequestParam(required = false) Integer limite) {
+    return ResponseEntity.ok(service.solicitudes(limite));
   }
 
   @GetMapping("/logs")
   public ResponseEntity<?> logs(@RequestParam(required = false) String serial,
       @RequestParam(required = false) Integer limite) {
     return ResponseEntity.ok(service.logs(serial, limite));
+  }
+
+  /** Mensaje de la causa raíz. PostgreSQL lo entrega como "ERROR: texto" seguido de líneas "Where: ...": se deja solo el texto. */
+  public static String mensajeRaiz(Throwable e) {
+    Throwable root = e;
+    while (root.getCause() != null) {
+      root = root.getCause();
+    }
+    String msg = String.valueOf(root.getMessage());
+    if (msg.startsWith("ERROR: ")) {
+      msg = msg.substring(7);
+    }
+    int salto = msg.indexOf(10); // 10 = salto de línea
+    return salto > 0 ? msg.substring(0, salto).trim() : msg;
   }
 }

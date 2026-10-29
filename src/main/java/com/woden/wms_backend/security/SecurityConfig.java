@@ -41,6 +41,9 @@ public class SecurityConfig {
             .requestMatchers("/general/users/ping").permitAll()
             .requestMatchers("/general/avisos/activo").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            // Aprobación de Autogestión desde el enlace del correo: la credencial es un
+            // token de un solo uso (ver AutogestionPublicController).
+            .requestMatchers("/public/autogestion/**").permitAll()
             // Rutas de integración externa (sistema-a-sistema, sin JWT/usuario) —
             // permitAll acá porque quien las protege de verdad es
             // ApiKeyAuthenticationFilter (X-Api-Key), no este filtro de sesión.
@@ -62,7 +65,7 @@ public class SecurityConfig {
         "http://18.217.246.39:9000", "http://localhost:4200", "http://52.14.166.232:8443",
          "http://52.14.166.232:8084","http://52.14.166.232:8084", "http://52.14.166.232:9005",
         "https://woden-wts-dev.arkade.com.co","http://localhost:9001","http://localhost:8084",
-        "https://wmstest.woden.com.co/admin",
+        "https://wmstest.woden.com.co/admin","http://localhost:8081","http://3.142.175.223:8081",
         "http://woden-wts-dev.arkade.com.co", "http://52.14.166.232:*", "http://localhost:5173",
         "http://woden-wts-dev.arkade.com.co:443"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
