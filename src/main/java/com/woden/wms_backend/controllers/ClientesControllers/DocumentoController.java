@@ -98,12 +98,20 @@ public class DocumentoController {
     String usuario = texto(datos.get("usuario"));
     switch (tipo) {
       case DocumentoPlantillaService.BOLETA -> {
-        return pdf(boletaMovimientoService.generarBoleta(boletaEjemplo(datos, usuario), config));
+        BoletaMovimientoDTO boleta = boletaEjemplo(datos, usuario);
+        List<BoletaMovimientoDTO.ItemDTO> reales = boletaMovimientoService.palletsEjemplo();
+        if (!reales.isEmpty()) {
+          boleta.setEquipos(reales);
+        }
+        return pdf(boletaMovimientoService.generarBoleta(boleta, config));
       }
       case DocumentoPlantillaService.PALLET -> {
-        PalletReportDTO pallet = palletEjemplo(usuario);
-        pallet.setNombreUsuario(texto(datos.get("login")).isBlank() ? "usuario" : texto(datos.get("login")));
-        pallet.setLote("LOTE-2026-10");
+        PalletReportDTO pallet = palletDocumentoService.palletEjemplo(texto(ClientDatabaseContext.getCurrentClientName()));
+        if (pallet == null) {
+          pallet = palletEjemplo(usuario);
+          pallet.setNombreUsuario(texto(datos.get("login")).isBlank() ? "usuario" : texto(datos.get("login")));
+          pallet.setLote("LOTE-2026-10");
+        }
         return pdf(palletDocumentoService.generar(pallet, config));
       }
       case DocumentoPlantillaService.CORREO_SERIAL_MAC -> {

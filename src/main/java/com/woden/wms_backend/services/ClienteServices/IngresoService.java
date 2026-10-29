@@ -77,6 +77,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   private SmartcardAutomaticaService smartcardAutomaticaService;
 
   @Autowired
+  private IngresoParametrosService ingresoParametrosService;
+
+  @Autowired
   private DataSource dataSource;
 
   @Autowired
@@ -102,6 +105,24 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
   // ── Creación / eliminación ───────────────────────────────────────────────────
 
   public String createIngresoCallable(IngresoModel ingreso) {
+    // parámetros del cliente que antes estaban en pa_InsertEntry: limpieza de caracteres y campos calculados
+    CodigoSapReglaService.Campos campos = new CodigoSapReglaService.Campos(ingreso.getSerial(), ingreso.getMac(),
+        ingreso.getSerial3(), ingreso.getSerial4(), ingreso.getSerial5());
+    try {
+      ingresoParametrosService.preparar(ingreso.getCodigoSapId(), campos);
+    } catch (com.woden.wms_backend.exception.BusinessRuleException e) {
+      return e.getMessage();
+    }
+    ingreso.setSerial(campos.serial);
+    ingreso.setMac(campos.mac);
+    ingreso.setSerial3(campos.serial3);
+    ingreso.setSerial4(campos.serial4);
+    ingreso.setSerial5(campos.serial5);
+    String smartcard = ingresoParametrosService.smartcardRepetida(ingreso.getSerial(), ingreso.getSerial3(),
+        smartcardAutomaticaService.config() != null);
+    if (smartcard != null) {
+      return smartcard;
+    }
     String reglaScrap = validarReglaScrap(ingreso.getSerial(), ingreso.getPalletId());
     if (reglaScrap != null) {
       return reglaScrap;
@@ -153,7 +174,9 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
         truckrollService.clasificarAsync(ingreso.getSerial(), ingreso.getMac(),
             ingreso.getTipoOrigenId(), clientDb, clientName, clientId);
         // interruptor INSERT_AUTOMATICO_SMARTCARD: la smartcard del Serial3 también queda en Ingreso
-        smartcardAutomaticaService.crearSiAplica(ingreso.getSerial(), ingreso.getSerial3());
+        smartcardAutomaticaService.crearSiAplica(ingreso.getSerial(), ingreso.getSerial3(), ingreso.getUsuarioId());
+        // interruptor APP_PQRS_INGRESO: el ticket PQRS pendiente del serial pasa a En proceso
+        ingresoParametrosService.vincularPqrs(ingreso.getSerial(), ingreso.getUsuarioId());
         return null;
       }
 
@@ -926,6 +949,20 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     List<MassUploadErrorDTO> errores = new ArrayList<>();
 
     Map<String, Integer> codigoSapMap = resolverCodigoSapIds(rows);
+    // limpieza de caracteres y campos calculados del cliente, antes de validar duplicados (igual que el ingreso uno a uno)
+    for (MassUploadRowDTO row : rows) {
+      Integer csId = row.getCodigoSap() == null ? null : codigoSapMap.get(row.getCodigoSap().trim().toUpperCase());
+      CodigoSapReglaService.Campos c = new CodigoSapReglaService.Campos(row.getSerial(), row.getMac(),
+          row.getSerial3(), null, null);
+      try {
+        ingresoParametrosService.preparar(csId, c);
+        row.setSerial(c.serial);
+        row.setMac(c.mac);
+        row.setSerial3(c.serial3);
+      } catch (com.woden.wms_backend.exception.BusinessRuleException e) {
+        logger.warn("[massUploadPreview] {}: {}", row.getSerial(), e.getMessage());
+      }
+    }
     Map<String, Integer> palletMap = resolverPalletIds(rows);
     Map<String, Integer> usuarioMap = resolverUsuarioIds(rows);
     Map<String, Integer> tipoOrigenMap = resolverMaestroIds(rows, "Tipo Origenes");
@@ -1330,13 +1367,33 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
           .toList();
     }
 
+    // limpieza y campos calculados (Serial4/5 solo existen aquí; con los demás da lo mismo que en la vista previa)
+    for (MassUploadRowResolvedDTO row : permitidos) {
+      CodigoSapReglaService.Campos c = new CodigoSapReglaService.Campos(row.getSerial(), row.getMac(),
+          row.getSerial3(), row.getSerial4(), row.getSerial5());
+      try {
+        ingresoParametrosService.preparar(row.getCodigoSapId(), c);
+        row.setSerial(c.serial);
+        row.setMac(c.mac);
+        row.setSerial3(c.serial3);
+        row.setSerial4(c.serial4);
+        row.setSerial5(c.serial5);
+      } catch (com.woden.wms_backend.exception.BusinessRuleException e) {
+        logger.warn("[massUploadConfirm] {}: {}", row.getSerial(), e.getMessage());
+      }
+    }
+
     try {
       String json = buildJsonFromResolved(permitidos);
       int insertados = ejecutarBulkInsert(json);
       response.setInsertados(insertados);
       // interruptor INSERT_AUTOMATICO_SMARTCARD
+      Integer usuarioCarga = permitidos.isEmpty() ? null : permitidos.get(0).getUsuarioId();
       smartcardAutomaticaService.crearSiAplica(permitidos.stream()
-          .map(r -> new String[] { r.getSerial(), r.getSerial3() }).collect(Collectors.toList()));
+          .map(r -> new String[] { r.getSerial(), r.getSerial3() }).collect(Collectors.toList()), usuarioCarga);
+      // interruptor APP_PQRS_INGRESO
+      ingresoParametrosService.vincularPqrs(permitidos.stream().map(MassUploadRowResolvedDTO::getSerial)
+          .collect(Collectors.toList()), usuarioCarga);
     } catch (Exception e) {
       logger.error("[massUploadConfirm] Error en inserción masiva: {}", e.getMessage(), e);
       for (MassUploadRowResolvedDTO s : permitidos) {

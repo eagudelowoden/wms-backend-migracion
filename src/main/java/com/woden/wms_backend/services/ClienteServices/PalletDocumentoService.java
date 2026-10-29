@@ -166,6 +166,46 @@ public class PalletDocumentoService {
   }
 
   /**
+   * El pallet real más reciente del cliente (primero uno con lote) para la vista previa de Documentos; null si no hay.
+   * NombreUsuario y lote se completan por su número como en la impresión de verdad.
+   */
+  public PalletReportDTO palletEjemplo(String cliente) {
+    if (em == null) {
+      return null;
+    }
+    try {
+      List<?> rs = em.createNativeQuery("SELECT TOP 1 p.Numero, ISNULL(pos.Numero, ''), CONVERT(varchar(19), p.Fecha, 120), "
+          + "ISNULL(eo.Nombre, ''), ISNULL(ed.Nombre, ''), ISNULL(t.Codigo, ''), ISNULL(cs.Codigo, ''), "
+          + "ISNULL(cs.Descripcion, ''), ISNULL(LTRIM(RTRIM(ISNULL(u.Nombres, '') + ' ' + ISNULL(u.Apellidos, ''))), ''), "
+          + "(SELECT COUNT(*) FROM Ingreso i WHERE i.PalletId = p.Id) FROM Pallet p "
+          + "LEFT JOIN Posicion pos ON pos.Id = p.PosicionId LEFT JOIN WmsWdGeneral.dbo.Estado eo ON eo.Id = p.OrigenId "
+          + "LEFT JOIN WmsWdGeneral.dbo.Estado ed ON ed.Id = p.DestinoId LEFT JOIN Maestro t ON t.Id = p.TipologiaId "
+          + "LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId LEFT JOIN WmsWdGeneral.dbo.Usuario u ON u.Id = p.UsuarioId "
+          + "WHERE p.Activo = 1 ORDER BY CASE WHEN p.loteId IS NOT NULL THEN 0 ELSE 1 END, p.Id DESC").getResultList();
+      if (rs.isEmpty()) {
+        return null;
+      }
+      Object[] r = (Object[]) rs.get(0);
+      PalletReportDTO p = new PalletReportDTO();
+      p.setCliente(cliente);
+      p.setPallet(texto(r[0]));
+      p.setPosicion(texto(r[1]));
+      p.setFecha(texto(r[2]));
+      p.setOrigen(texto(r[3]));
+      p.setDestino(texto(r[4]));
+      p.setTipologia(texto(r[5]));
+      p.setCodigoSap(texto(r[6]));
+      p.setModelo(texto(r[7]));
+      p.setUsuario(texto(r[8]));
+      p.setCantidad(((Number) r[9]).intValue());
+      return p;
+    } catch (Exception e) {
+      logger.warn("[Pallet] sin pallet de ejemplo: {}", e.getMessage());
+      return null;
+    }
+  }
+
+  /**
    * Usuario (NombreUsuario) y lote del pallet: los manda el front o se buscan por el número del pallet, solo si alguna
    * fila los usa.
    */

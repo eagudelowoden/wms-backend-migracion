@@ -134,7 +134,8 @@ public class BoletaMovimientoService {
     for (BoletaMovimientoDTO.ItemDTO item : equipos) {
       String[] ex = item.getId() == null ? null : extra.get(item.getId());
       String lote = ex != null ? ex[1] : nulo(item.getLote());
-      String cajas = ex != null ? ex[3] : (item.getCajas() == null ? "" : String.valueOf(item.getCajas()));
+      String cajas = ex != null ? ex[3]
+          : item.getCajas() == null ? "" : item.getCajas() == 0 ? "-" : String.valueOf(item.getCajas());
       porItem.add(new String[] { ex == null ? "" : ex[0], lote, ex == null ? "" : ex[2], cajas });
       if (!lote.isBlank()) {
         lotes.add(lote);
@@ -438,12 +439,44 @@ public class BoletaMovimientoService {
             + "WHERE p.Id IN (" + ids + ")").getResultList();
         for (Object f : rs) {
           Object[] r = (Object[]) f;
-          out.put(((Number) r[0]).intValue(), new String[] { texto(r[1]), texto(r[2]), texto(r[3]), texto(r[4]) });
+          String nCajas = texto(r[4]);
+          out.put(((Number) r[0]).intValue(), new String[] { texto(r[1]), texto(r[2]), texto(r[3]),
+              nCajas.isEmpty() || nCajas.equals("0") ? "-" : nCajas });
         }
         return out;
       } catch (Exception e) {
         logger.warn("[BoletaMovimiento] datos de los pallets: {}", e.getMessage());
       }
+    }
+    return out;
+  }
+
+  /**
+   * Pallets reales del cliente para la vista previa de Documentos (los más recientes activos, primero los que tienen
+   * lote), así lote, cajas y posición salen como en una boleta de verdad. Vacío si la base no tiene pallets.
+   */
+  public List<BoletaMovimientoDTO.ItemDTO> palletsEjemplo() {
+    List<BoletaMovimientoDTO.ItemDTO> out = new ArrayList<>();
+    if (em == null) {
+      return out;
+    }
+    try {
+      for (Object f : em.createNativeQuery("SELECT TOP 8 p.Id, p.Numero, ISNULL(cs.Codigo, ''), ISNULL(cs.Descripcion, ''), "
+          + "(SELECT COUNT(*) FROM Ingreso i WHERE i.PalletId = p.Id), ISNULL(t.Codigo, '') FROM Pallet p "
+          + "LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId LEFT JOIN Maestro t ON t.Id = p.TipologiaId "
+          + "WHERE p.Activo = 1 ORDER BY CASE WHEN p.loteId IS NOT NULL THEN 0 ELSE 1 END, p.Id DESC").getResultList()) {
+        Object[] r = (Object[]) f;
+        BoletaMovimientoDTO.ItemDTO it = new BoletaMovimientoDTO.ItemDTO();
+        it.setId(((Number) r[0]).intValue());
+        it.setNoPallet(texto(r[1]));
+        it.setCodigoSap(texto(r[2]));
+        it.setDescripcion(texto(r[3]));
+        it.setCantidad(((Number) r[4]).intValue());
+        it.setTipologia(texto(r[5]));
+        out.add(it);
+      }
+    } catch (Exception e) {
+      logger.warn("[BoletaMovimiento] sin pallets de ejemplo: {}", e.getMessage());
     }
     return out;
   }

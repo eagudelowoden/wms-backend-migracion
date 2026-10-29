@@ -32,6 +32,12 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
   @Autowired
   private PrnPathResolverService prnPathResolver;
 
+  @Autowired
+  private VariableEtiquetaService variablesEtiqueta;
+
+  @Autowired
+  private EtiquetadoForecastService etiquetadoForecast;
+
   private boolean esReemplazoBoxActivo() {
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
     if (clientId == null) return false;
@@ -62,6 +68,8 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
     try {
       etiquetadoRepository.insertEtiquetado(serial, mac, variable1, variable2, variable3,
           variable4, reImpresion, usuarioId, fecha);
+      // interruptor ETIQUETADO_FORECAST: tipo de empaque, lote, año y fecha fijados en la ventana de Etiquetado
+      etiquetadoForecast.aplicar(serial);
       return 1;
     } catch (Exception e) {
       System.err.println("Error insertando etiquetado: " + e.getMessage());
@@ -273,6 +281,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       boolean usarLecturaVariables) {
 
     String sufijo = String.valueOf(index + 1);
+    zpl = variablesEtiqueta.reemplazar(zpl, "ETIQUETADO", sufijo, serial);
 
     System.out.println("   ➜ Sufijo: " + sufijo);
     System.out.println("   📋 PASO 1: Campos configurados (siempre se reemplazan)");
@@ -351,6 +360,7 @@ public class EtiquetadoService extends BaseService<EtiquetadoModel, Integer> {
       boolean usarLecturaVariables) {
 
     String sufijo = getSwitchCaseSuffix(index);
+    zpl = variablesEtiqueta.reemplazar(zpl, "ETIQUETADO", sufijo, serial);
 
     System.out.println("   ➜ Sufijo (switch): " + sufijo);
     System.out.println("   📋 PASO 1: Campos configurados (switch)");

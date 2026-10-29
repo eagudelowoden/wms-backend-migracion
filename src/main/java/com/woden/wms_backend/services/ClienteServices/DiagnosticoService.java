@@ -46,6 +46,19 @@ public class DiagnosticoService {
   @Autowired
   private ObjectMapper objectMapper;
 
+  @Autowired
+  private InterruptorClienteService interruptores;
+
+  @Autowired
+  private MaestroParametroService maestros;
+
+  @Autowired
+  private CodigoSapReglaService codigoSapReglas;
+
+  /** Interruptor: el serial debe estar en BaseEtiquetado y los códigos del maestro exigen Serial3 (DirecTV Ecuador). */
+  public static final String REPORTE34 = "DIAGNOSTICO_REPORTE34";
+  public static final String MAESTRO_SERIAL3 = "Diagnostico Serial3";
+
   /**
    * Ruta ÚNICA y global de la plantilla de hoja de vida — independiente del cliente.
    * A diferencia de RutaArchivos (que sí es por cliente, para las evidencias ya firmadas),
@@ -58,6 +71,7 @@ public class DiagnosticoService {
   @Transactional
   public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId,
       String variable1, String variable2, String variable3, String variable4) {
+    validarReporte34(serialId, serial, codigoSapId);
         System.out.println(variable1);
         System.out.println(variable2);
         System.out.println(variable3);
@@ -429,6 +443,79 @@ public class DiagnosticoService {
       map.put("variable4", row[3] != null ? row[3].toString() : "");
       formattedResults.add(map);
     }
-    return formattedResults;
+    return conVariablesCalculadas(serial, formattedResults);
+  }
+
+  /**
+   * Códigos SAP > Campos calculados: Variable1-4 del código SAP del serial (las que tengan regla reemplazan a las de
+   * pa_GetDiagnosticVariables). "calculadas" = true le dice a Etiquetado que no hace falta escanearlas.
+   */
+  private List<Map<String, Object>> conVariablesCalculadas(String serial, List<Map<String, Object>> filas) {
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 CodigoSapId, Serial, Mac, Serial3, Serial4, Serial5 "
+            + "FROM Ingreso WHERE Serial = ? ORDER BY Id DESC")) {
+      ps.setString(1, serial);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (!rs.next() || !codigoSapReglas.tieneVariables(rs.getInt(1))) {
+          return filas;
+        }
+        Map<String, String> calculadas = codigoSapReglas.variables(rs.getInt(1), new CodigoSapReglaService.Campos(
+            rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6)));
+        Map<String, Object> fila = filas.isEmpty() ? new HashMap<>() : filas.get(0);
+        for (int i = 1; i <= 4; i++) {
+          fila.putIfAbsent("variable" + i, "");
+        }
+        fila.putAll(calculadas);
+        fila.put("calculadas", true);
+        if (filas.isEmpty()) {
+          filas.add(fila);
+        }
+      }
+    } catch (SQLException e) {
+      logger.warn("[Etiquetado] variables calculadas de {}: {}", serial, e.getMessage());
+    }
+    return filas;
+  }
+
+  /** Lo que DirecTV Ecuador tenía en pa_InsertDiagnostic, por interruptor y con los códigos en el maestro. */
+  private void validarReporte34(Integer serialId, String serial, Integer codigoSapId) {
+    if (!interruptores.activo(REPORTE34)) {
+      return;
+    }
+    try (Connection conn = dataSource.getConnection()) {
+      List<MaestroParametroService.Fila> codigos = maestros.activos(MAESTRO_SERIAL3);
+      if (!codigos.isEmpty() && codigoSapId != null) {
+        String codigo = null;
+        try (PreparedStatement ps = conn.prepareStatement("SELECT Codigo FROM CodigoSap WHERE Id = ?")) {
+          ps.setInt(1, codigoSapId);
+          try (ResultSet rs = ps.executeQuery()) {
+            codigo = rs.next() ? rs.getString(1) : null;
+          }
+        }
+        final String cod = codigo == null ? "" : codigo.trim();
+        if (codigos.stream().anyMatch(f -> f.codigo().trim().equalsIgnoreCase(cod))) {
+          String serial3 = null;
+          try (PreparedStatement ps = conn.prepareStatement("SELECT Serial3 FROM Ingreso WHERE Id = ?")) {
+            ps.setInt(1, serialId == null ? 0 : serialId);
+            try (ResultSet rs = ps.executeQuery()) {
+              serial3 = rs.next() ? rs.getString(1) : null;
+            }
+          }
+          if (serial3 == null || serial3.isBlank()) {
+            throw new IllegalStateException("Serie No está en Reporte34 (sin Serial3)");
+          }
+        }
+      }
+      try (PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 1 FROM BaseEtiquetado WHERE Serial = ?")) {
+        ps.setString(1, serial);
+        try (ResultSet rs = ps.executeQuery()) {
+          if (!rs.next()) {
+            throw new IllegalStateException("Serie No está en Reporte34");
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new IllegalStateException("No se pudo validar contra BaseEtiquetado: " + e.getMessage(), e);
+    }
   }
 }

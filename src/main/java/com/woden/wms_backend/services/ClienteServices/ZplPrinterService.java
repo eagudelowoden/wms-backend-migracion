@@ -48,6 +48,9 @@ public class ZplPrinterService {
   @Autowired
   private EtiquetaRepository etiquetaRepository;
 
+  @Autowired(required = false)
+  private VariableEtiquetaService variablesEtiqueta;
+
   private boolean esReemplazoBoxActivo() {
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
     if (clientId == null) return false;
@@ -115,6 +118,7 @@ public class ZplPrinterService {
               plantillaBasePath, etiqueta.getNombre(), porImpresion);
       String zpl = leerPlantilla(plantillaPath);
       List<IngresoModel> subl = seriales.subList(contador, contador + porImpresion);
+      zpl = reemplazarVariablesPropias(zpl, subl);
       zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
@@ -131,6 +135,7 @@ public class ZplPrinterService {
               plantillaBasePath, etiqueta.getNombre(), residuo);
       String zpl = leerPlantilla(plantillaPath);
       List<IngresoModel> subl = seriales.subList(contador, contador + residuo);
+      zpl = reemplazarVariablesPropias(zpl, subl);
       zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
@@ -149,6 +154,17 @@ public class ZplPrinterService {
     } catch (IOException e) {
       throw new RuntimeException("Error al leer plantilla ZPL: " + e.getMessage());
     }
+  }
+
+  /** Administración > Variables de etiquetas: las propias del cliente van antes que las de fábrica. */
+  private String reemplazarVariablesPropias(String zpl, List<IngresoModel> seriales) {
+    if (variablesEtiqueta == null) {
+      return zpl;
+    }
+    for (int i = 0; i < seriales.size(); i++) {
+      zpl = variablesEtiqueta.reemplazar(zpl, "EMPAQUE", getKey(i, ""), seriales.get(i));
+    }
+    return zpl;
   }
 
   private String reemplazarCampos(String zpl, List<IngresoModel> seriales, List<EtiquetaCampoModel> campos) {

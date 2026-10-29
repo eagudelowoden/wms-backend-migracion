@@ -22,8 +22,14 @@
      - Interruptor SONIDO_ALERTAS_INGRESO (catálogo, una vez) y para el cliente si @ActivarSonido = 1.
      - Interruptores PREALERTA_CIERRE_MANUAL / PREALERTA_SOBRANTES para el cliente si @ActivarCierreManual /
        @ActivarSobrantes = 1.
-     - INSERT_AUTOMATICO_SMARTCARD (con @SmartcardCodigoSap / @SmartcardDestino, se valida que existan en la base) y
-       EMPAQUE_CODIGOSAP_PALLET si @ActivarSmartcardAutomatica / @ActivarEmpaqueCodigoPallet = 1.
+     - INSERT_AUTOMATICO_SMARTCARD y EMPAQUE_CODIGOSAP_PALLET si @ActivarSmartcardAutomatica /
+       @ActivarEmpaqueCodigoPallet = 1. La smartcard se configura en el maestro "SmartCard Ingreso" de la base (Código =
+       código SAP, Descripción, Detalle = destino): si no tiene filas se crea una con @SmartcardCodigoSap /
+       @SmartcardDestino (se valida que existan en la base).
+     - (2026-10-29, correr antes 2026-10-29_parametros_wms.sql) Tipos de maestro "SmartCard Ingreso", "Limpieza
+       Caracteres", "Diagnostico Serial3" y "Responsable Op" (vacíos: se llenan en Administración > Maestros), menú
+       Administración > Variables de etiquetas (ADVAR) con el módulo 48 para los perfiles ADMINISTRADOR y, con
+       @AgregarColumnasForecast = 1, las columnas del Forecast en Etiquetado para probar ETIQUETADO_FORECAST.
    Los interruptores también se encienden o apagan desde Administración > Clientes > Validaciones; el usuario ve el
    cambio al volver a iniciar sesión.
      - Avisa si falta la tipología NO CONFORMIDAD o la novedad de accesorios (Despachado de accesorios la necesita).
@@ -39,6 +45,7 @@ DECLARE @ActivarSmartcardAutomatica BIT = 0;          -- 1 = el Serial3 (smartca
 DECLARE @SmartcardCodigoSap VARCHAR(50) = 'CARD0001'; -- código SAP de la smartcard en esta base
 DECLARE @SmartcardDestino VARCHAR(50) = 'SMARTCARD';  -- estado (destino) con el que queda la smartcard
 DECLARE @ActivarEmpaqueCodigoPallet BIT = 0;          -- 1 = el empaque toma el código SAP del pallet
+DECLARE @AgregarColumnasForecast BIT = 0;             -- 1 = TipoEmpaque, Lote, Año y FechaLote en Etiquetado (pruebas)
 
 DECLARE @sql NVARCHAR(MAX), @n INT, @clienteId INT;
 
@@ -263,13 +270,19 @@ BEGIN
   IF @csId IS NULL OR @estId IS NULL
     PRINT CONCAT('SMARTCARD: no se activó: en ', @Db, ' no existe el código SAP ', @SmartcardCodigoSap,
                  ' o el estado ', @SmartcardDestino);
-  ELSE IF OBJECT_ID('WmsWdGeneral.dbo.SmartcardAutomatica', 'U') IS NULL
-    PRINT 'SMARTCARD: falta correr 2026-10-26_documentos_prealertas.sql';
   ELSE
   BEGIN
-    MERGE WmsWdGeneral.dbo.SmartcardAutomatica AS t USING (SELECT @clienteId AS ClienteId) AS s ON t.ClienteId = s.ClienteId
-    WHEN MATCHED THEN UPDATE SET CodigoSap = @SmartcardCodigoSap, Destino = @SmartcardDestino, Usuario = 'script por base', Fecha = GETDATE()
-    WHEN NOT MATCHED THEN INSERT (ClienteId, CodigoSap, Destino, Usuario, Fecha) VALUES (@clienteId, @SmartcardCodigoSap, @SmartcardDestino, 'script por base', GETDATE());
+    SET @sql = N'
+DECLARE @tm INT = (SELECT TOP 1 Id FROM ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro WHERE Nombre = ''SmartCard Ingreso'');
+IF @tm IS NULL
+BEGIN
+  INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro (Nombre, Descripcion, Activo) VALUES (''SmartCard Ingreso'', ''SmartCard Ingreso'', 1);
+  SET @tm = SCOPE_IDENTITY();
+END
+IF NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Maestro WHERE TipoMaestroId = @tm AND Activo = 1)
+  INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.Maestro (Codigo, Descripcion, TipoMaestroId, Activo, Detalle, adicional)
+  SELECT TOP 1 Codigo, Descripcion, @tm, 1, @des, 0 FROM ' + QUOTENAME(@Db) + N'.dbo.CodigoSap WHERE Codigo = @cod;';
+    EXEC sys.sp_executesql @sql, N'@cod VARCHAR(50), @des VARCHAR(50)', @SmartcardCodigoSap, @SmartcardDestino;
     SET @tipoVal = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'INSERT_AUTOMATICO_SMARTCARD');
     IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacion WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal)
       UPDATE WmsWdGeneral.dbo.ClienteValidacion SET Activo = 1 WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal;
@@ -292,6 +305,60 @@ BEGIN
       INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoVal, 1, GETDATE());
     PRINT 'EMPAQUE_CODIGOSAP_PALLET activo para el cliente';
   END
+END
+
+/* ── 6e. Tipos de maestro de los parámetros por cliente (2026-10-29) ─────────────── */
+SET @sql = N'
+DECLARE @nombre VARCHAR(50);
+DECLARE tipos CURSOR LOCAL FAST_FORWARD FOR
+  SELECT n FROM (VALUES (''SmartCard Ingreso''), (''Limpieza Caracteres''), (''Diagnostico Serial3''), (''Responsable Op'')) v(n);
+OPEN tipos;
+FETCH NEXT FROM tipos INTO @nombre;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro WHERE Nombre = @nombre)
+  BEGIN
+    INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro (Nombre, Descripcion, Activo) VALUES (@nombre, @nombre, 1);
+    PRINT CONCAT(''Tipo de maestro creado: '', @nombre);
+  END
+  FETCH NEXT FROM tipos INTO @nombre;
+END
+CLOSE tipos;
+DEALLOCATE tipos;';
+EXEC sys.sp_executesql @sql;
+
+/* ── 6f. Menú Administración > Variables de etiquetas (módulo 48) ──────────────────── */
+SET @sql = N'
+IF OBJECT_ID(''' + QUOTENAME(@Db) + N'.dbo.Menu'', ''U'') IS NOT NULL
+   AND EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Menu WHERE Id = ''ADM'')
+   AND NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Menu WHERE Id = ''ADVAR'')
+BEGIN
+  INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.Menu (Id, Descripcion, Tipo, Orden, Accion, Estado, Icono, Id_padre, View_name, Controller_name)
+  VALUES (''ADVAR'', ''Variables de etiquetas'', ''item'', 22, ''ADMVAR'', ''activo'', '''', ''ADM'', '''', '''');
+  PRINT ''Menú Variables de etiquetas agregado'';
+END';
+EXEC sys.sp_executesql @sql;
+
+IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.Modulo WHERE Id = 48 AND Nombre = 'Variables de etiquetas')
+BEGIN
+  INSERT INTO WmsWdGeneral.dbo.PerfilModulo (PerfilId, ModuloId, Orden)
+  SELECT pf.Id, 48, 0
+    FROM WmsWdGeneral.dbo.Perfil pf
+   WHERE pf.ClienteId = @clienteId AND pf.Nombre LIKE '%ADMINISTRADOR%'
+     AND NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.PerfilModulo x WHERE x.PerfilId = pf.Id AND x.ModuloId = 48);
+  PRINT CONCAT('Módulo Variables de etiquetas asignado a perfiles ADMINISTRADOR: ', @@ROWCOUNT);
+END
+ELSE
+  PRINT 'AVISO: falta el módulo 48 Variables de etiquetas (correr 2026-10-29_parametros_wms.sql)';
+
+/* ── 6g. Columnas de Forecast en Etiquetado (opcional, solo para probar ETIQUETADO_FORECAST) ── */
+IF @AgregarColumnasForecast = 1
+BEGIN
+  SET @sql = N'
+IF COL_LENGTH(''' + QUOTENAME(@Db) + N'.dbo.Etiquetado'', ''TipoEmpaque'') IS NULL
+  ALTER TABLE ' + QUOTENAME(@Db) + N'.dbo.Etiquetado ADD TipoEmpaque VARCHAR(50) NULL, Lote INT NULL, [Año] VARCHAR(20) NULL, FechaLote DATETIME NULL;';
+  EXEC sys.sp_executesql @sql;
+  PRINT 'Columnas TipoEmpaque, Lote, Año y FechaLote en Etiquetado';
 END
 
 /* ── 7. Avisos ───────────────────────────────────────────────────────────────────── */

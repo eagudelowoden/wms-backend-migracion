@@ -27,9 +27,10 @@ import jakarta.persistence.PersistenceContext;
  * Interruptor INSERT_AUTOMATICO_SMARTCARD (lo que se hizo en DirecTV Ecuador modificando pa_InsertEntry y
  * pa_DeleteEntry, ahora en el backend y para cualquier cliente):
  *   - al ingresar un equipo con Serial3 (la smartcard), la smartcard queda también en Ingreso con el código SAP y el
- *     destino de WmsWdGeneral.dbo.SmartcardAutomatica (por defecto CARD0001 / SMARTCARD), PalletId 0 y el resto de
- *     datos del equipo. Si ya existe en Ingreso (por serial o MAC) no se toca. Va sin prealerta (PrealertaId 0,
- *     Cruce 0) para no contar como recibida ni como sobrante.
+ *     destino del maestro "SmartCard Ingreso" de la base del cliente (Código = código SAP, Descripción = su
+ *     descripción, Detalle = destino; sin maestro, CARD0001 / SMARTCARD), PalletId 0, el usuario de la sesión, la
+ *     fecha del momento y el resto de datos del equipo. Si ya existe en Ingreso (por serial o MAC) no se toca. Va sin
+ *     prealerta (PrealertaId 0, Cruce 0) para no contar como recibida ni como sobrante.
  *   - al borrar equipos, sus smartcards se borran en la misma transacción solo si ningún otro equipo las tiene en
  *     Serial3 y siguen como se crearon (mismo código SAP, mismo destino, sin pallet): una smartcard ya procesada
  *     (asignada, empacada...) no se borra.
@@ -42,6 +43,7 @@ public class SmartcardAutomaticaService {
   public static final String INTERRUPTOR = "INSERT_AUTOMATICO_SMARTCARD";
   private static final String CODIGO_POR_DEFECTO = "CARD0001";
   private static final String DESTINO_POR_DEFECTO = "SMARTCARD";
+  public static final String MAESTRO = "SmartCard Ingreso";
   private static final long CACHE_MS = 60_000;
 
   /** codigoSapId y estadoId resueltos en la base del cliente */
@@ -55,7 +57,7 @@ public class SmartcardAutomaticaService {
    * La smartcard con los datos del equipo recién ingresado (copiados de su fila). Va detrás de un IF: el trigger
    * Trg_InsertMovement se dispara aunque el INSERT no inserte filas y falla con SerialId NULL, así que el INSERT solo
    * se ejecuta si el equipo existe y la smartcard no (ni como serial ni como MAC).
-   * Parámetros: 1 serial, 2-3 smartcard, 4-5 smartcard, 6 código SAP, 7 estado, 8 serial.
+   * Parámetros: 1 serial, 2-3 smartcard, 4-5 smartcard, 6 código SAP, 7 estado, 8-9 usuario de la sesión, 10 serial.
    */
   private static final String INSERTAR = "IF EXISTS (SELECT 1 FROM Ingreso WHERE Serial = ?) "
       + "AND NOT EXISTS (SELECT 1 FROM Ingreso WHERE Serial = ? OR Mac = ?) "
@@ -65,11 +67,14 @@ public class SmartcardAutomaticaService {
       + "UsuarioIdMovimiento, FechaMovimiento, Observaciones, EstadoCliente, loteId, CajaIngresoId, modeloId) "
       + "SELECT ?, ?, NULL, NULL, NULL, ?, 0, i.PalletIdIngreso, ?, i.TipoOrigenId, i.OrigenId, i.TipologiaId, "
       + "i.NivelId, i.Tramite, i.Documento, i.Guia, 0, i.Falla, i.TecnicoCliente, 0, 0, i.Novedad, "
-      + "i.GarantiaFabricante, i.UsuarioId, GETDATE(), i.UsuarioId, GETDATE(), i.Observaciones, i.EstadoCliente, "
-      + "i.loteId, 0, NULL FROM Ingreso i WHERE i.Serial = ?";
+      + "i.GarantiaFabricante, ISNULL(NULLIF(?, 0), i.UsuarioId), GETDATE(), ISNULL(NULLIF(?, 0), i.UsuarioId), GETDATE(), "
+      + "i.Observaciones, i.EstadoCliente, i.loteId, 0, NULL FROM Ingreso i WHERE i.Serial = ?";
 
   @Autowired
   private InterruptorClienteService interruptores;
+
+  @Autowired
+  private MaestroParametroService maestros;
 
   @Autowired
   private DataSource dataSource;
@@ -103,17 +108,10 @@ public class SmartcardAutomaticaService {
   private Config leer(Connection conn, int cliente) throws SQLException {
     String codigo = CODIGO_POR_DEFECTO;
     String destino = DESTINO_POR_DEFECTO;
-    if (entero(conn, "SELECT CASE WHEN OBJECT_ID('WmsWdGeneral.dbo.SmartcardAutomatica', 'U') IS NULL THEN 0 ELSE 1 END") == 1) {
-      try (PreparedStatement ps = conn.prepareStatement(
-          "SELECT CodigoSap, Destino FROM WmsWdGeneral.dbo.SmartcardAutomatica WHERE ClienteId = ?")) {
-        ps.setInt(1, cliente);
-        try (ResultSet rs = ps.executeQuery()) {
-          if (rs.next()) {
-            codigo = texto(rs.getString(1), CODIGO_POR_DEFECTO);
-            destino = texto(rs.getString(2), DESTINO_POR_DEFECTO);
-          }
-        }
-      }
+    List<MaestroParametroService.Fila> filas = maestros.activos(MAESTRO);
+    if (!filas.isEmpty()) {
+      codigo = texto(filas.get(0).codigo(), CODIGO_POR_DEFECTO);
+      destino = texto(filas.get(0).detalle(), DESTINO_POR_DEFECTO);
     }
     int codigoSapId = entero(conn, "SELECT TOP 1 Id FROM CodigoSap WHERE Codigo = ?", codigo);
     int estadoId = entero(conn, "SELECT TOP 1 Id FROM Estado WHERE Nombre = ?", destino);
@@ -126,14 +124,14 @@ public class SmartcardAutomaticaService {
   }
 
   /** Después de un ingreso correcto. Nunca lanza error: el equipo ya quedó ingresado. */
-  public void crearSiAplica(String serial, String serial3) {
+  public void crearSiAplica(String serial, String serial3, Integer usuarioId) {
     List<String[]> uno = new ArrayList<>();
     uno.add(new String[] { serial, serial3 });
-    crearSiAplica(uno);
+    crearSiAplica(uno, usuarioId);
   }
 
-  /** equipos = [serial, serial3]; devuelve cuántas smartcards se crearon. */
-  public int crearSiAplica(List<String[]> equipos) {
+  /** equipos = [serial, serial3]; devuelve cuántas smartcards se crearon. usuarioId = el de la sesión (0 = el del equipo). */
+  public int crearSiAplica(List<String[]> equipos, Integer usuarioId) {
     try {
       Config cfg = config();
       if (cfg == null || equipos == null || equipos.isEmpty()) {
@@ -155,7 +153,9 @@ public class SmartcardAutomaticaService {
             ps.setString(5, tarjeta);
             ps.setInt(6, cfg.codigoSapId());
             ps.setInt(7, cfg.estadoId());
-            ps.setString(8, serial);
+            ps.setInt(8, usuarioId == null ? 0 : usuarioId);
+            ps.setInt(9, usuarioId == null ? 0 : usuarioId);
+            ps.setString(10, serial);
             creadas += ejecutar(ps);
           } catch (SQLException ex) {
             logger.warn("[Smartcard] {} (equipo {}) no se creó: {}", tarjeta, serial, ex.getMessage());
