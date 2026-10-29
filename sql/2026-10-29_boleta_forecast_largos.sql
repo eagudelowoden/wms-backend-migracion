@@ -9,7 +9,7 @@
    ===================================================================================== */
 SET NOCOUNT ON;
 
-DECLARE @Db SYSNAME = 'WmsWdDirectvEcuador';
+DECLARE @Db SYSNAME = 'WmsWdLegacyCostaRica';
 
 IF COL_LENGTH('WmsWdGeneral.dbo.BoletaMovimientoPallet', 'Smartcards') IS NULL
   ALTER TABLE WmsWdGeneral.dbo.BoletaMovimientoPallet ADD Equipos INT NULL, Accesorios INT NULL, Smartcards INT NULL;
