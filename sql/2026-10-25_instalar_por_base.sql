@@ -18,6 +18,8 @@
        PREALERTA_CIERRE_MANUAL, PREALERTA_SOBRANTES, INSERT_AUTOMATICO_SMARTCARD (con su maestro SmartCard Ingreso,
        @SmartcardCodigoSap y @SmartcardDestino) y EMPAQUE_CODIGOSAP_PALLET. @AgregarColumnasForecast = 1 agrega
        TipoEmpaque, Lote, Año y FechaLote en Etiquetado (solo para probar ETIQUETADO_FORECAST).
+     - En Global Liberty, Tigo Costa Rica, Tigo Nicaragua y Ventas Panamá dejo activos en Códigos SAP > Campos
+       calculados los valores que hoy calculan su pa_InsertEntry y su pa_InsertDiagnostic.
    Los interruptores también se cambian en Administración > Clientes > Validaciones; el usuario lo ve al volver a
    iniciar sesión.
    ===================================================================================== */
@@ -356,6 +358,50 @@ IF COL_LENGTH(''' + QUOTENAME(@Db) + N'.dbo.Etiquetado'', ''TipoEmpaque'') IS NU
   ALTER TABLE ' + QUOTENAME(@Db) + N'.dbo.Etiquetado ADD TipoEmpaque VARCHAR(50) NULL, Lote INT NULL, [Año] VARCHAR(20) NULL, FechaLote DATETIME NULL;';
   EXEC sys.sp_executesql @sql;
   PRINT 'Columnas TipoEmpaque, Lote, Año y FechaLote en Etiquetado';
+END
+
+/* ── 6h. Campos calculados que hoy hace el SP de la base ───────────────────────────────
+   Paso a Códigos SAP > Campos calculados lo que calculan pa_InsertEntry y pa_InsertDiagnostic en estas bases, para no
+   perderlo cuando el SP quede igual en todas. Los comprobé contra los datos guardados por cada SP (500 de 500 en
+   Ingreso, 300 de 300 en Diagnóstico). Si el cliente ya tiene una regla para ese código y campo, la dejo. */
+IF OBJECT_ID('WmsWdGeneral.dbo.CodigoSapRegla', 'U') IS NOT NULL AND @clienteId IS NOT NULL
+BEGIN
+  DECLARE @reglas TABLE (Base SYSNAME, CodigoSapId INT, Campo VARCHAR(20), Origen VARCHAR(20), Operacion VARCHAR(20),
+                         Parametro1 VARCHAR(100), Parametro2 VARCHAR(100), Momento VARCHAR(15));
+  INSERT INTO @reglas VALUES
+    ('WmsWdGlobalLiberty', 153, 'SERIAL3', 'MAC', 'HEX_SUMA', '1', '12', 'INGRESO'),
+    ('WmsWdGlobalLiberty', 153, 'SERIAL4', 'MAC', 'HEX_SUMA', '2', '12', 'INGRESO'),
+    ('WmsWdTigoNicaragua', 44, 'SERIAL3', 'MAC', 'HEX_SUMA', '1', '12', 'INGRESO'),
+    ('WmsWdTigoNicaragua', 44, 'SERIAL4', 'MAC', 'HEX_SUMA', '2', '12', 'INGRESO'),
+    ('WmsWdTigoNicaragua', 107, 'SERIAL3', 'MAC', 'HEX_SUMA', '1', '12', 'INGRESO'),
+    ('WmsWdTigoNicaragua', 107, 'SERIAL4', 'MAC', 'HEX_SUMA', '2', '12', 'INGRESO'),
+    ('WmsWdTigoNicaragua', 108, 'SERIAL3', 'MAC', 'HEX_SUMA', '1', '12', 'INGRESO'),
+    ('WmsWdTigoNicaragua', 108, 'SERIAL4', 'MAC', 'HEX_SUMA', '2', '12', 'INGRESO'),
+    ('WmsWdTigoCostaRica', 58, 'MAC', 'SERIAL', 'HEX_SUMA', '1', '12', 'INGRESO'),
+    ('WmsWdTigoCostaRica', 58, 'SERIAL3', 'SERIAL', 'HEX_SUMA', '2', '12', 'DIAGNOSTICO'),
+    ('WmsWdTigoCostaRica', 58, 'SERIAL4', 'SERIAL3', 'ULTIMOS', '6', '', 'DIAGNOSTICO'),
+    ('WmsWdTigoCostaRica', 115, 'SERIAL3', 'SERIAL', 'ULTIMOS', '4', '', 'DIAGNOSTICO'),
+    ('WmsWdTigoCostaRica', 87, 'SERIAL3', 'SERIAL', 'ULTIMOS', '4', '', 'DIAGNOSTICO'),
+    ('WmsWdVentasPanama', 54, 'SERIAL3', 'MAC', 'HEX_SUMA', '1', '12', 'INGRESO'),
+    ('WmsWdVentasPanama', 54, 'SERIAL4', 'MAC', 'HEX_SUMA', '2', '12', 'INGRESO');
+
+  IF EXISTS (SELECT 1 FROM @reglas WHERE Base = @Db)
+  BEGIN
+    DECLARE @codigosBase TABLE (Id INT PRIMARY KEY);
+    SET @sql = N'SELECT Id FROM ' + QUOTENAME(@Db) + N'.dbo.CodigoSap';
+    INSERT INTO @codigosBase EXEC sys.sp_executesql @sql;
+
+    INSERT INTO WmsWdGeneral.dbo.CodigoSapRegla (ClienteId, CodigoSapId, Campo, Origen, Operacion, Parametro1, Parametro2,
+                                                 Momento, Activo, Usuario, Fecha)
+    SELECT @clienteId, r.CodigoSapId, r.Campo, r.Origen, r.Operacion, r.Parametro1, NULLIF(r.Parametro2, ''), r.Momento, 1,
+           'script 2026-10-25_instalar_por_base', GETDATE()
+      FROM @reglas r
+     WHERE r.Base = @Db
+       AND EXISTS (SELECT 1 FROM @codigosBase c WHERE c.Id = r.CodigoSapId)
+       AND NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.CodigoSapRegla x
+                        WHERE x.ClienteId = @clienteId AND x.CodigoSapId = r.CodigoSapId AND x.Campo = r.Campo);
+    PRINT CONCAT('Campos calculados del SP pasados a Códigos SAP: ', @@ROWCOUNT);
+  END
 END
 
 /* ── 7. Avisos ───────────────────────────────────────────────────────────────────── */
