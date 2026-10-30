@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -24,6 +25,9 @@ public class ReemplazoSerialService {
 
   @PersistenceContext
   private EntityManager em;
+
+  @Autowired
+  private EmpaqueCodigoPalletService empaqueCodigoPallet;
 
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> reemplazar(ReemplazoSerialRequest r) {
@@ -80,6 +84,16 @@ public class ReemplazoSerialService {
 
     exigir(actualizar("UPDATE Empaque SET SerialId = ?1, Serial = ?2, Mac = ?3 WHERE Id = ?4",
         idNuevo, nuevo, macNuevo, empaqueId), "pasar el registro de empaque al serial nuevo");
+    // con EMPAQUE_CODIGOSAP_PALLET el que entra queda con el código del pallet en Ingreso y Empaque, como al empacar
+    Integer codigoNuevo = entero("SELECT CodigoSapId FROM Ingreso WHERE Id = ?1", idNuevo);
+    int codigoPallet = empaqueCodigoPallet.codigoParaIngreso(codigoNuevo,
+        empaqueCodigoPallet.codigoSap(codigoNuevo, pallet));
+    if (codigoPallet > 0) {
+      exigir(actualizar("UPDATE Ingreso SET CodigoSapId = ?1 WHERE Id = ?2", codigoPallet, idNuevo),
+          "dejar el serial nuevo con el código SAP del pallet");
+      exigir(actualizar("UPDATE Empaque SET CodigoSapId = ?1 WHERE Id = ?2", codigoPallet, empaqueId),
+          "dejar el empaque con el código SAP del pallet");
+    }
     // NivelId aparte y solo si cambia: trg_AuditoriaNivelIdEmpaque escribe en AuditoriaNivelEmpaque, que no existe en
     // todas las bases; con el mismo nivel no se dispara
     Integer nivelEmpaque = entero("SELECT NivelId FROM Empaque WHERE Id = ?1", empaqueId);

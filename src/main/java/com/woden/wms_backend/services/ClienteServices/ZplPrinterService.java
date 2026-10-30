@@ -94,9 +94,11 @@ public class ZplPrinterService {
           List<IngresoModel> seriales,
           EtiquetaDatosGeneralesDTO datosGenerales) {
 
-    // con PRN_LOCAL_PATH uso la carpeta local aunque el front mande la ruta del servidor (Empaque siempre la manda)
+    // con PRN_LOCAL_PATH uso la carpeta local solo si la ruta que manda el front (Empaque siempre manda la del
+    // servidor) no existe en esta máquina: en el servidor el share existe y todo sigue igual
     String local = etiqueta == null || etiqueta.getTipo() == null ? null : prnPathResolver.rutaLocal(etiqueta.getTipo());
-    if (local != null) {
+    if (local != null && (plantillaBasePath == null || plantillaBasePath.isBlank()
+        || !new java.io.File(plantillaBasePath).isDirectory())) {
       plantillaBasePath = local;
     } else if ((plantillaBasePath == null || plantillaBasePath.isBlank())
         && etiqueta != null && etiqueta.getTipo() != null) {
