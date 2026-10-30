@@ -20,6 +20,8 @@
        TipoEmpaque, Lote, Año y FechaLote en Etiquetado (solo para probar ETIQUETADO_FORECAST).
      - En Global Liberty, Tigo Costa Rica, Tigo Nicaragua y Ventas Panamá dejo activos en Códigos SAP > Campos
        calculados los valores que hoy calculan su pa_InsertEntry y su pa_InsertDiagnostic.
+     - En Claro Ecuador cargo el maestro Limpieza Caracteres con lo que quita hoy su pa_InsertEntry de la MAC ('+1C',
+       'Ñ' y ':') y enciendo LIMPIEZA_CARACTERES_INGRESO.
    Los interruptores también se cambian en Administración > Clientes > Validaciones; el usuario lo ve al volver a
    iniciar sesión.
    ===================================================================================== */
@@ -401,6 +403,35 @@ BEGIN
        AND NOT EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.CodigoSapRegla x
                         WHERE x.ClienteId = @clienteId AND x.CodigoSapId = r.CodigoSapId AND x.Campo = r.Campo);
     PRINT CONCAT('Campos calculados del SP pasados a Códigos SAP: ', @@ROWCOUNT);
+  END
+END
+
+/* ── 6i. Limpieza de caracteres que hoy hace el SP de la base ───────────────────────────
+   El pa_InsertEntry de Claro Ecuador quita de la MAC '+1C', 'Ñ' y ':'. Lo dejo en el maestro Limpieza Caracteres y
+   enciendo LIMPIEZA_CARACTERES_INGRESO: mientras el SP siga igual se quita dos veces y queda lo mismo. */
+IF @Db = 'WmsWdClaroEcuador' AND @clienteId IS NOT NULL
+BEGIN
+  SET @sql = N'
+DECLARE @tm INT = (SELECT Id FROM ' + QUOTENAME(@Db) + N'.dbo.TipoMaestro WHERE Nombre = ''Limpieza Caracteres'');
+INSERT INTO ' + QUOTENAME(@Db) + N'.dbo.Maestro (Codigo, Descripcion, TipoMaestroId, Activo, Detalle, adicional)
+SELECT v.Texto, CONCAT(''Quitar '', v.Texto, '' de la MAC''), @tm, 1, ''MAC'', 0
+  FROM (VALUES (1, ''+1C''), (2, CHAR(209)), (3, '':'')) v(Orden, Texto)
+ WHERE @tm IS NOT NULL
+   AND NOT EXISTS (SELECT 1 FROM ' + QUOTENAME(@Db) + N'.dbo.Maestro m WHERE m.TipoMaestroId = @tm AND m.Codigo = v.Texto)
+ ORDER BY v.Orden;
+SET @n = @@ROWCOUNT;';
+  EXEC sys.sp_executesql @sql, N'@n INT OUTPUT', @n OUTPUT;
+  PRINT CONCAT('Limpieza de caracteres del SP pasada al maestro Limpieza Caracteres: ', @n);
+  SET @tipoVal = (SELECT Id FROM WmsWdGeneral.dbo.ClienteValidacionTipo WHERE Codigo = 'LIMPIEZA_CARACTERES_INGRESO');
+  IF @tipoVal IS NULL
+    PRINT 'LIMPIEZA_CARACTERES_INGRESO: falta correr 2026-10-29_parametros_wms.sql';
+  ELSE
+  BEGIN
+    IF EXISTS (SELECT 1 FROM WmsWdGeneral.dbo.ClienteValidacion WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal)
+      UPDATE WmsWdGeneral.dbo.ClienteValidacion SET Activo = 1 WHERE ClienteId = @clienteId AND ValidacionTipoId = @tipoVal;
+    ELSE
+      INSERT INTO WmsWdGeneral.dbo.ClienteValidacion (ClienteId, ValidacionTipoId, Activo, Fecha) VALUES (@clienteId, @tipoVal, 1, GETDATE());
+    PRINT 'LIMPIEZA_CARACTERES_INGRESO activo para el cliente';
   END
 END
 

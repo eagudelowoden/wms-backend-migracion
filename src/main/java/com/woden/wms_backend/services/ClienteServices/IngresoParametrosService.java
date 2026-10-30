@@ -5,8 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 
 @Service
 public class IngresoParametrosService {
@@ -134,18 +139,35 @@ public class IngresoParametrosService {
     if ((modeloId != null && modeloId != 0) || codigoSapId == null || !interruptores.activo(MODELOID_CODIGOSAP)) {
       return modeloId;
     }
+    Integer modelo = modelosPorCodigo().get(codigoSapId);
+    return modelo != null ? modelo : modeloId;
+  }
+
+  private record Modelos(Map<Integer, Integer> porCodigo, long vence) {}
+
+  private static final Map<Integer, Modelos> MODELOS = new ConcurrentHashMap<>();
+
+  // leo los modelos de todos los códigos SAP una vez por minuto para no sumarle una ida a la base a cada ingreso
+  private Map<Integer, Integer> modelosPorCodigo() {
+    Integer cliente = ClientDatabaseContext.getCurrentClientId();
+    Modelos l = cliente == null ? null : MODELOS.get(cliente);
+    if (l != null && l.vence() > System.currentTimeMillis()) {
+      return l.porCodigo();
+    }
+    Map<Integer, Integer> out = new HashMap<>();
     try (Connection conn = dataSource.getConnection();
-        PreparedStatement ps = conn.prepareStatement("SELECT ISNULL(modeloId, 0) FROM CodigoSap WHERE Id = ?")) {
-      ps.setInt(1, codigoSapId);
-      try (ResultSet rs = ps.executeQuery()) {
-        if (rs.next() && rs.getInt(1) > 0) {
-          return rs.getInt(1);
-        }
+        PreparedStatement ps = conn.prepareStatement("SELECT Id, modeloId FROM CodigoSap WHERE modeloId > 0");
+        ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        out.put(rs.getInt(1), rs.getInt(2));
       }
     } catch (SQLException e) {
-      logger.warn("[Ingreso] ModeloId del código SAP {}: {}", codigoSapId, e.getMessage());
+      logger.warn("[Ingreso] ModeloId de los códigos SAP: {}", e.getMessage());
     }
-    return modeloId;
+    if (cliente != null) {
+      MODELOS.put(cliente, new Modelos(out, System.currentTimeMillis() + 60_000));
+    }
+    return out;
   }
 
   public Integer tipologiaEnvio(Integer palletId, Integer tipologiaId) {

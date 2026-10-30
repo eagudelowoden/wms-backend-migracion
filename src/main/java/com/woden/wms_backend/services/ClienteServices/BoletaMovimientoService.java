@@ -451,22 +451,32 @@ public class BoletaMovimientoService {
       return out;
     }
     try {
+      // cuento igual que pa_SearchPalletBoxDispatchPallet; primero los pallets con accesorios o smartcards
       for (Object f : em.createNativeQuery("SELECT TOP 8 p.Id, p.Numero, ISNULL(cs.Codigo, ''), ISNULL(cs.Descripcion, ''), "
-          + "(SELECT COUNT(*) FROM Ingreso i WHERE i.PalletId = p.Id), ISNULL(t.Codigo, '') FROM Pallet p "
+          + "x.Equipos, y.Accesorios, x.Smartcards, ISNULL(t.Codigo, '') "
+          + "FROM (SELECT TOP 300 Id, Numero, CodigoSapId, TipologiaId, loteId FROM Pallet WHERE Activo = 1 ORDER BY Id DESC) p "
           + "LEFT JOIN CodigoSap cs ON cs.Id = p.CodigoSapId LEFT JOIN Maestro t ON t.Id = p.TipologiaId "
-          + "WHERE p.Activo = 1 AND EXISTS (SELECT 1 FROM Ingreso i WHERE i.PalletId = p.Id) "
-          + "ORDER BY CASE WHEN p.loteId IS NOT NULL THEN 0 ELSE 1 END, p.Id DESC").getResultList()) {
+          + "CROSS APPLY (SELECT COUNT(CASE WHEN ISNULL(m.Codigo, '') <> 'SMARTCARD' THEN 1 END) AS Equipos, "
+          + "COUNT(CASE WHEN m.Codigo = 'SMARTCARD' THEN 1 END) AS Smartcards FROM Ingreso i "
+          + "LEFT JOIN CodigoSap c2 ON c2.Id = i.CodigoSapId LEFT JOIN Maestro m ON m.Id = c2.TipoId "
+          + "WHERE i.PalletId = p.Id) x "
+          + "CROSS APPLY (SELECT COUNT(*) AS Accesorios FROM Accesorio a WHERE a.PalletId = p.Id) y "
+          + "WHERE x.Equipos + x.Smartcards + y.Accesorios > 0 "
+          + "ORDER BY CASE WHEN y.Accesorios > 0 OR x.Smartcards > 0 THEN 0 ELSE 1 END, "
+          + "CASE WHEN p.loteId IS NOT NULL THEN 0 ELSE 1 END, p.Id DESC").getResultList()) {
         Object[] r = (Object[]) f;
+        int equipos = ((Number) r[4]).intValue(), accesorios = ((Number) r[5]).intValue();
+        int smartcards = ((Number) r[6]).intValue();
         BoletaMovimientoDTO.ItemDTO it = new BoletaMovimientoDTO.ItemDTO();
         it.setId(((Number) r[0]).intValue());
         it.setNoPallet(texto(r[1]));
         it.setCodigoSap(texto(r[2]));
         it.setDescripcion(texto(r[3]));
-        it.setCantidad(((Number) r[4]).intValue());
-        it.setCantidadEquipos(((Number) r[4]).intValue());
-        it.setCantidadAccesorios(0);
-        it.setCantidadSmartcard(0);
-        it.setTipologia(texto(r[5]));
+        it.setCantidad(equipos > 0 ? equipos : accesorios > 0 ? accesorios : smartcards);
+        it.setCantidadEquipos(equipos);
+        it.setCantidadAccesorios(accesorios);
+        it.setCantidadSmartcard(smartcards);
+        it.setTipologia(texto(r[7]));
         out.add(it);
       }
     } catch (Exception e) {
