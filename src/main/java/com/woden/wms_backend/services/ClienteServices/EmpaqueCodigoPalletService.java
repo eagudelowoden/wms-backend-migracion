@@ -56,7 +56,43 @@ public class EmpaqueCodigoPalletService {
       c = new CodigoPallet(codigo, System.currentTimeMillis() + 60_000);
       PALLETS.put(clave, c);
     }
-    return c.codigoSapId() > 0 ? c.codigoSapId() : codigoSapSerie;
+    if (c.codigoSapId() <= 0) {
+      return codigoSapSerie;
+    }
+    // solo entre códigos del mismo tipo: un equipo no puede quedar como smartcard o accesorio por el código del pallet
+    Map<Integer, Integer> tipos = tipos();
+    Integer tipoPallet = tipos.get(c.codigoSapId());
+    Integer tipoSerie = codigoSapSerie == null ? null : tipos.get(codigoSapSerie);
+    if (tipoPallet != null && tipoSerie != null && !tipoPallet.equals(tipoSerie)) {
+      return codigoSapSerie;
+    }
+    return c.codigoSapId();
+  }
+
+  private record Tipos(Map<Integer, Integer> porCodigo, long vence) {}
+
+  private static final Map<Integer, Tipos> TIPOS = new ConcurrentHashMap<>();
+
+  private Map<Integer, Integer> tipos() {
+    Integer cliente = ClientDatabaseContext.getCurrentClientId();
+    Tipos t = cliente == null ? null : TIPOS.get(cliente);
+    if (t != null && t.vence() > System.currentTimeMillis()) {
+      return t.porCodigo();
+    }
+    Map<Integer, Integer> out = new java.util.HashMap<>();
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT Id, TipoId FROM CodigoSap WHERE TipoId IS NOT NULL");
+        ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        out.put(rs.getInt(1), rs.getInt(2));
+      }
+    } catch (Exception e) {
+      logger.warn("[Empaque] tipos de los códigos SAP: {}", e.getMessage());
+    }
+    if (cliente != null) {
+      TIPOS.put(cliente, new Tipos(out, System.currentTimeMillis() + 60_000));
+    }
+    return out;
   }
 
   // el código que también va a Ingreso (0 = no cambia), para que Ingreso y Empaque queden con el mismo

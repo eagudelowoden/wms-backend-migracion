@@ -94,7 +94,11 @@ public class ZplPrinterService {
           List<IngresoModel> seriales,
           EtiquetaDatosGeneralesDTO datosGenerales) {
 
-    if ((plantillaBasePath == null || plantillaBasePath.isBlank())
+    // con PRN_LOCAL_PATH uso la carpeta local aunque el front mande la ruta del servidor (Empaque siempre la manda)
+    String local = etiqueta == null || etiqueta.getTipo() == null ? null : prnPathResolver.rutaLocal(etiqueta.getTipo());
+    if (local != null) {
+      plantillaBasePath = local;
+    } else if ((plantillaBasePath == null || plantillaBasePath.isBlank())
         && etiqueta != null && etiqueta.getTipo() != null) {
       String resolved = prnPathResolver.resolvePath(etiqueta.getTipo());
       if (resolved != null) {
