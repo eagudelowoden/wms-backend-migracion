@@ -30,13 +30,16 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
       @Param("SmartCard") String smartCard);
 
   @Transactional
-  @Query(value = "DECLARE @FilasOut INT; " +
+  // con :CodigoSapIngreso > 0 (EMPAQUE_CODIGOSAP_PALLET) Ingreso queda con el mismo código SAP que el Empaque
+  @Query(value = "SET NOCOUNT ON; DECLARE @FilasOut INT; " +
           "EXEC [dbo].[pa_InsertPackingWebD2] " +
           ":SerialId, :Serial, :Mac, :CodigoSapId, :PalletId, :CajaEmpaqueId, " +
           ":EstadoId, " +
           ":NivelId, :UsuarioId, :Fecha, :LoteId, :SmartCardId, :SmartCard, " +
           ":EstadoSmartCard, :SmartCardCode, " +
           "@FilasOut OUTPUT; " +
+          "IF :CodigoSapIngreso > 0 AND ISNULL(@FilasOut, 0) > 0 " +
+          "UPDATE Ingreso SET CodigoSapId = :CodigoSapIngreso WHERE Id = :SerialId AND ISNULL(CodigoSapId, 0) <> :CodigoSapIngreso; " +
           "SELECT @FilasOut;", nativeQuery = true)
   Integer executeInsertPacking(
           @Param("SerialId") Integer serialId,
@@ -53,7 +56,8 @@ public interface EmpaqueRepository extends BaseRepository<EmpaqueModel, Integer>
           @Param("SmartCardId") Integer smartCardId,
           @Param("SmartCard") String smartCard,
           @Param("EstadoSmartCard") Integer estadoSmartCard,
-          @Param("SmartCardCode") String smartCardCode
+          @Param("SmartCardCode") String smartCardCode,
+          @Param("CodigoSapIngreso") Integer codigoSapIngreso
   );
 
   @Procedure(procedureName = "pa_DeletePacking")

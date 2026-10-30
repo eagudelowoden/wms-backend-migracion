@@ -1,9 +1,16 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +58,9 @@ public class ParametrosClienteController {
 
   @Autowired
   private ObjectMapper json;
+
+  @Autowired
+  private DataSource dataSource;
 
 
   @GetMapping("/codigosap/{codigoSapId}/reglas")
@@ -107,6 +117,31 @@ public class ParametrosClienteController {
   @GetMapping("/etiquetas/largos")
   public ResponseEntity<Map<String, String>> largos() {
     return ResponseEntity.ok(largosCampos());
+  }
+
+  // Etiquetado recibe los campos de pa_GetListLabelField, que no trae el Id: le devuelvo los largos por nombre
+  @GetMapping("/etiquetas/{etiquetaId}/largos")
+  public ResponseEntity<Map<String, String>> largosEtiqueta(@PathVariable int etiquetaId) {
+    Map<String, String> porId = largosCampos();
+    Map<String, String> out = new LinkedHashMap<>();
+    if (porId.isEmpty()) {
+      return ResponseEntity.ok(out);
+    }
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT Id, Nombre FROM EtiquetaCampo WHERE EtiquetaId = ?")) {
+      ps.setInt(1, etiquetaId);
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          String largo = porId.get(String.valueOf(rs.getInt(1)));
+          if (largo != null && rs.getString(2) != null) {
+            out.put(rs.getString(2).trim().toLowerCase(Locale.ROOT), largo);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new BusinessRuleException("No se pudieron leer los campos de la etiqueta: " + e.getMessage());
+    }
+    return ResponseEntity.ok(out);
   }
 
   @PutMapping("/etiquetas/campos/{campoId}/largo")

@@ -273,11 +273,12 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     try {
       // ✅ Si el loteId es 0, lo mando como null
       Integer loteIdParam = (empaque.getLoteId() != 0) ? empaque.getLoteId() : null;
+      Integer codigoEmpaque = empaqueCodigoPallet.codigoSap(empaque.getCodigoSapId(), empaque.getPalletId());
       empaqueRepository.createInsert(
           empaque.getSerialId(),
           empaque.getSerial(),
           empaque.getMac(),
-          empaqueCodigoPallet.codigoSap(empaque.getCodigoSapId(), empaque.getPalletId()),
+          codigoEmpaque,
           empaque.getPalletId(),
           empaque.getCajaEmpaqueId(),
           empaque.getNivelId(),
@@ -286,6 +287,8 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
           loteIdParam,
           empaque.getSmartCardId(),
           empaque.getSmartCard());
+      empaqueCodigoPallet.alinearIngreso(empaque.getSerialId(),
+          empaqueCodigoPallet.codigoParaIngreso(empaque.getCodigoSapId(), codigoEmpaque));
       logger.info("Guardado correctamente");
     } catch (Exception e) {
       logger.error("Error al insertar empaque: {}", e.getMessage(), e);
