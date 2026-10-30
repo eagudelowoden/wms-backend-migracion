@@ -1039,7 +1039,18 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
     List<MassUploadRowResolvedDTO> validos = new ArrayList<>();
     List<MassUploadErrorDTO> errores = new ArrayList<>();
 
-    Map<String, Integer> codigoSapMap = resolverCodigoSapIds(rows);
+    Map<String, CodigoSapInfo> codigoSapInfoMap = resolverCodigoSapInfo(rows);
+    Map<String, Integer> codigoSapMap = new HashMap<>();
+    Map<String, Integer> codigoSapLargosMap = new HashMap<>();
+    Map<String, String> codigoSapTipoMap = new HashMap<>();
+    Map<String, Integer> reingresoLimitMap = new HashMap<>();
+    for (Map.Entry<String, CodigoSapInfo> entry : codigoSapInfoMap.entrySet()) {
+      CodigoSapInfo info = entry.getValue();
+      codigoSapMap.put(entry.getKey(), info.id);
+      if (info.largos != null) codigoSapLargosMap.put(entry.getKey(), info.largos);
+      codigoSapTipoMap.put(entry.getKey(), info.tipo);
+      reingresoLimitMap.put(entry.getKey(), info.reingreso);
+    }
     for (MassUploadRowDTO row : rows) {
       Integer csId = row.getCodigoSap() == null ? null : codigoSapMap.get(row.getCodigoSap().trim().toUpperCase());
       CodigoSapReglaService.Campos c = new CodigoSapReglaService.Campos(row.getSerial(), row.getMac(),
@@ -1052,18 +1063,6 @@ public class IngresoService extends BaseService<IngresoModel, Integer> {
       } catch (com.woden.wms_backend.exception.BusinessRuleException e) {
         logger.warn("[massUploadPreview] {}: {}", row.getSerial(), e.getMessage());
       }
-    }
-    Map<String, CodigoSapInfo> codigoSapInfoMap = resolverCodigoSapInfo(rows);
-    Map<String, Integer> codigoSapMap = new HashMap<>();
-    Map<String, Integer> codigoSapLargosMap = new HashMap<>();
-    Map<String, String> codigoSapTipoMap = new HashMap<>();
-    Map<String, Integer> reingresoLimitMap = new HashMap<>();
-    for (Map.Entry<String, CodigoSapInfo> entry : codigoSapInfoMap.entrySet()) {
-      CodigoSapInfo info = entry.getValue();
-      codigoSapMap.put(entry.getKey(), info.id);
-      if (info.largos != null) codigoSapLargosMap.put(entry.getKey(), info.largos);
-      codigoSapTipoMap.put(entry.getKey(), info.tipo);
-      reingresoLimitMap.put(entry.getKey(), info.reingreso);
     }
     Map<String, Integer> palletMap = resolverPalletIds(rows);
     Map<String, Integer> usuarioMap = resolverUsuarioIds(rows);
