@@ -1,6 +1,7 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,17 +11,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.dto.PreAlertaDTO;
 import com.woden.wms_backend.models.Entity.PrealertaModel;
+import com.woden.wms_backend.services.ClienteServices.PrealertaCierreService;
 import com.woden.wms_backend.services.ClienteServices.PrealertaService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/client/prealerta")
 public class PrealertaController {
   @Autowired
   private PrealertaService prealertaService;
+
+  @Autowired
+  private PrealertaCierreService prealertaCierreService;
 
   @GetMapping("/getModelPrealerta")
   public ResponseEntity<PrealertaModel> getPrealerta(@RequestParam String nombre) {
@@ -43,7 +50,34 @@ public class PrealertaController {
 
   @PutMapping("/updatePrealerta/{prealertaId}")
   public ResponseEntity<Void> updatePrealerta(@PathVariable int prealertaId) {
+    String estadoAnterior = prealertaCierreService.estadoActual(prealertaId);
     prealertaService.updatePrealerta(prealertaId);
+    // registro y aviso después del cierre de siempre: si fallan, la prealerta ya quedó cerrada
+    prealertaCierreService.cierreAutomatico(prealertaId, estadoAnterior);
     return ResponseEntity.ok().build();
+  }
+
+
+  @GetMapping("/{prealertaId}/resumen")
+  public ResponseEntity<Map<String, Object>> resumen(@PathVariable int prealertaId) {
+    return ResponseEntity.ok(prealertaCierreService.resumen(prealertaId));
+  }
+
+  @PostMapping("/{prealertaId}/cerrar")
+  public ResponseEntity<Map<String, Object>> cerrar(@PathVariable int prealertaId,
+      @RequestBody(required = false) Map<String, String> body) {
+    String usuario = body == null ? "" : body.getOrDefault("usuario", "");
+    String observacion = body == null ? "" : body.getOrDefault("observacion", "");
+    return ResponseEntity.ok(prealertaCierreService.cerrarManual(prealertaId, usuario, observacion));
+  }
+
+  @GetMapping("/sobrante/lista")
+  public ResponseEntity<List<Map<String, Object>>> paraSobrante() {
+    return ResponseEntity.ok(prealertaCierreService.paraSobrante());
+  }
+
+  @GetMapping("/sobrante/{prealertaId}")
+  public ResponseEntity<Map<String, Object>> datosSobrante(@PathVariable int prealertaId) {
+    return ResponseEntity.ok(prealertaCierreService.datosSobrante(prealertaId));
   }
 }

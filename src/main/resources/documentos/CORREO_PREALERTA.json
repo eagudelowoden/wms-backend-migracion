@@ -1,0 +1,27 @@
+{
+  "colores": {
+    "encabezado": "#f97316",
+    "encabezadoFin": "#ea580c",
+    "acento": "#ea580c",
+    "suave": "#fff7ed",
+    "bordeSuave": "#fed7aa",
+    "texto": "#111827",
+    "fondo": "#f5f5f5"
+  },
+  "titulo": "PREALERTAS WMS",
+  "subtitulo": "Woden Group — Control de Movimiento de Equipos",
+  "marca": "WODEN",
+  "usarLogo": false,
+  "logo": "",
+  "asunto": "WMS {cliente} · Prealerta {prealerta} cerrada {modo} · {porcentaje}% recibido",
+  "introAuto": "La prealerta {prealerta} se cerró automáticamente al completar el 100 % de los ingresos.",
+  "introManual": "La prealerta {prealerta} fue cerrada manualmente por {usuario} con {recibidos} de {esperados} equipos recibidos.",
+  "secciones": { "resultado": true, "faltantes": true, "sobrantes": true, "novedades": true },
+  "maxFilas": 50,
+  "adjuntarExcel": true,
+  "pie": [
+    "WODEN GROUP DE COSTA RICA S.A.",
+    "San José, Santa Ana, 150 metros este de Hultec, contiguo a Blue Flame",
+    "Tel: 4030-4252 | www.woden.com.co"
+  ]
+}

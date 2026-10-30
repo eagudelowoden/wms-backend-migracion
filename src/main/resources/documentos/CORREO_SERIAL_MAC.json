@@ -1,0 +1,39 @@
+{
+  "colores": {
+    "acento": "#E47D06",
+    "bordeAcento": "#d96f00",
+    "texto": "#1b232d",
+    "resaltado": "#fff4e8",
+    "resaltadoTexto": "#b45f00",
+    "tenue": "#6b7280",
+    "fondo": "#f3f4f6",
+    "pieFondo": "#1b232d",
+    "pieTexto": "#c7ccd3"
+  },
+  "usarLogo": true,
+  "logo": "",
+  "marca": "WMS",
+  "asunto": "WMS {cliente} · Novedad ERROR SERIAL-MAC: {serial_original} → {serial_nuevo}",
+  "titulo": "Novedad ERROR SERIAL-MAC regularizada",
+  "subtitulo": "{cliente}",
+  "intro": "Estimado usuario, le informamos que se regularizó el serial de un equipo por la novedad **ERROR SERIAL-MAC**[ (equipo **{modelo}**)] con los siguientes detalles:",
+  "disposicion": "horizontal",
+  "columnas": [
+    { "titulo": "Usuario", "valor": "{usuario}", "sub": "", "resaltar": false, "nowrap": false },
+    { "titulo": "Fecha novedad", "valor": "{fecha_novedad}", "sub": "", "resaltar": false, "nowrap": true },
+    { "titulo": "Fecha ingreso", "valor": "{fecha_ingreso}", "sub": "", "resaltar": false, "nowrap": true },
+    { "titulo": "Fecha cambio", "valor": "{fecha_cambio}", "sub": "", "resaltar": false, "nowrap": true },
+    { "titulo": "SerialId", "valor": "{serial_id}", "sub": "", "resaltar": false, "nowrap": true },
+    { "titulo": "Serial original", "valor": "{serial_original}", "sub": "MAC {mac_original}", "resaltar": false, "nowrap": true },
+    { "titulo": "Serial regularizado", "valor": "{serial_nuevo}", "sub": "MAC {mac_nuevo}", "resaltar": true, "nowrap": true },
+    { "titulo": "Tipo origen", "valor": "{tipo_origen}", "sub": "", "resaltar": false, "nowrap": false },
+    { "titulo": "Origen", "valor": "{origen}", "sub": "", "resaltar": false, "nowrap": false },
+    { "titulo": "Prealerta", "valor": "{prealerta}", "sub": "", "resaltar": false, "nowrap": false },
+    { "titulo": "Último destino serial original", "valor": "{ultimo_destino}", "sub": "{ultimo_destino_fecha}", "resaltar": false, "nowrap": true },
+    { "titulo": "Primer destino serial regularizado", "valor": "{primer_destino}", "sub": "", "resaltar": true, "nowrap": false }
+  ],
+  "textoMovimientos": "Se adjunta el Excel con los movimientos del SerialId **{serial_id}** ({movimientos} registros), con el serial anterior y el regularizado, al momento del cambio.",
+  "despedida": ["Saludos cordiales,", "El equipo de soporte WMS"],
+  "pie": "Este correo electrónico fue generado automáticamente. Por favor, no responda a este mensaje.",
+  "adjuntarExcel": true
+}

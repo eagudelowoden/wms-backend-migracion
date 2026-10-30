@@ -170,11 +170,28 @@
 			<version>2.1</version>
 		</dependency>
 
+		<!-- QR de los documentos editables (Administración > Documentos) -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+
 		<!-- Pebble: motor de plantillas (sintaxis Jinja2/Twig) para reportes HTML -->
 		<dependency>
 			<groupId>io.pebbletemplates</groupId>
 			<artifactId>pebble</artifactId>
 			<version>3.2.2</version>
+		</dependency>
+		<!-- Notificaciones por correo (SMTP noreplyservices) y adjunto Excel de movimientos -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
 		</dependency>
 
 		<!-- OpenHTMLtoPDF: convierte HTML+CSS renderizado a PDF -->

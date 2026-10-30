@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.loads.UpdateNotAvailableRowDTO;
 import com.woden.wms_backend.exception.BusinessRuleException;
 
@@ -32,12 +33,45 @@ public class LoadsService {
 
   private static final Set<String> ALLOWED_BASES = Set.of(
       "BaseDespacho", "BaseEmpaque", "BaseInventario",
-      "BaseSeparacion", "BaseIngreso", "BaseEtiquetado"
+      "BaseSeparacion", "BaseIngreso", "BaseEtiquetado", "BaseAlmacen"
   );
 
   private static final Set<String> BASES_WITH_LOTE = Set.of(
-      "BaseDespacho", "BaseEmpaque", "BaseIngreso"
+      "BaseDespacho", "BaseEmpaque", "BaseIngreso", "BaseAlmacen"
   );
+
+  public static final String BASE_ALMACEN = "BaseAlmacen";
+  private static final String TABLA_ALMACEN = "WmsWdGeneral.dbo.BaseAlmacen";
+
+  private static int cliente() {
+    Integer id = ClientDatabaseContext.getCurrentClientId();
+    if (id == null || id <= 0) {
+      throw new BusinessRuleException("No se identificó el cliente de la sesión.");
+    }
+    return id;
+  }
+
+  private void exigirTablaAlmacen() {
+    Integer n = jdbcTemplate.queryForObject("SELECT CASE WHEN OBJECT_ID('" + TABLA_ALMACEN + "', 'U') IS NULL THEN 0 "
+        + "ELSE 1 END", Integer.class);
+    if (n == null || n == 0) {
+      throw new BusinessRuleException("Falta el script 2026-10-29_parametros_wms.sql en WmsWdGeneral (Base Almacén).");
+    }
+  }
+
+  public int contarAlmacen() {
+    exigirTablaAlmacen();
+    Integer n = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?",
+        Integer.class, cliente());
+    return n == null ? 0 : n;
+  }
+
+  public boolean enAlmacen(String serial) {
+    exigirTablaAlmacen();
+    List<Integer> r = jdbcTemplate.queryForList("SELECT TOP 1 1 FROM " + TABLA_ALMACEN + " WHERE ClienteId = ? "
+        + "AND Serial = ?", Integer.class, cliente(), serial == null ? "" : serial.trim());
+    return !r.isEmpty();
+  }
 
   private static final int BATCH_SIZE = 500;
 
@@ -55,17 +89,37 @@ public class LoadsService {
 
   public void deleteBase(String base) {
     validateBase(base);
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      jdbcTemplate.update("DELETE FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?", cliente());
+      return;
+    }
     jdbcTemplate.execute("EXEC pa_DeleteBase '" + base + "'");
   }
 
   public List<Map<String, Object>> searchBase(String base) {
     validateBase(base);
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      return jdbcTemplate.queryForList("SELECT Id, Serial, CodigoSap, EstadoSap, EstadoRR, Lote FROM " + TABLA_ALMACEN
+          + " WHERE ClienteId = ? ORDER BY Id", cliente());
+    }
     return jdbcTemplate.queryForList("EXEC pa_SearchBase '" + base + "'");
   }
 
   public Map<String, Object> searchBasePaged(String base, int page, int size) {
     validateBase(base);
     Map<String, Object> result = new LinkedHashMap<>();
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      result.put("data", jdbcTemplate.queryForList("SELECT Id, Serial, CodigoSap, EstadoSap, EstadoRR, Lote FROM "
+          + TABLA_ALMACEN + " WHERE ClienteId = ? ORDER BY Id OFFSET " + Math.max(0, page * size) + " ROWS FETCH NEXT "
+          + Math.max(1, size) + " ROWS ONLY", cliente()));
+      result.put("total", contarAlmacen());
+      result.put("page", page);
+      result.put("size", size);
+      return result;
+    }
     String tmpTable = "#tmpCargues_" + System.currentTimeMillis();
     boolean hasLote = BASES_WITH_LOTE.contains(base);
     String createSql = hasLote
@@ -111,6 +165,9 @@ public class LoadsService {
 
   public int countBase(String base) {
     validateBase(base);
+    if (BASE_ALMACEN.equals(base)) {
+      return contarAlmacen();
+    }
     String tmpTable = "#tmpCarguesCount_" + System.currentTimeMillis();
     boolean hasLote = BASES_WITH_LOTE.contains(base);
     String createSql = hasLote
@@ -171,6 +228,11 @@ public class LoadsService {
   }
 
   private String buildInsertSql(String base, boolean hasLote) {
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      return "INSERT INTO " + TABLA_ALMACEN + " (Serial, CodigoSap, EstadoSap, EstadoRR, Lote, ClienteId) "
+          + "VALUES (?, ?, ?, ?, ?, " + cliente() + ")";
+    }
     if (hasLote) {
       return "INSERT INTO " + base + " (Serial, CodigoSap, EstadoSap, EstadoRR, Lote) VALUES (?, ?, ?, ?, ?)";
     }

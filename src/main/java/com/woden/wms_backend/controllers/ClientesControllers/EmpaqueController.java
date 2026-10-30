@@ -2,6 +2,8 @@ package com.woden.wms_backend.controllers.ClientesControllers;
 
 import com.woden.wms_backend.models.Entity.EmpaqueModel;
 import com.woden.wms_backend.services.ClienteServices.EmpaqueService;
+import com.woden.wms_backend.services.ClienteServices.ReemplazoSerialService;
+import com.woden.wms_backend.dto.clientDTO.ReemplazoSerialRequest;
 import com.woden.wms_backend.dto.PackingTransactionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,22 @@ public class EmpaqueController extends BaseController<EmpaqueModel, Integer> {
 
     @Autowired
     private EmpaqueService empaqueService;
+
+    @Autowired
+    private ReemplazoSerialService reemplazoSerialService;
+
+    @PostMapping("/reemplazarSerial")
+    public ResponseEntity<?> reemplazarSerial(@RequestBody ReemplazoSerialRequest request) {
+        try {
+            return ResponseEntity.ok(reemplazoSerialService.reemplazar(request));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        } catch (RuntimeException e) {
+            // error de SQL o de un trigger (p. ej. trg_bloqueo_Novedad): la transaccion ya se deshizo
+            return ResponseEntity.badRequest().body(Map.of("success", false,
+                "message", "No se pudo hacer el reemplazo: " + ReemplazoSerialService.causa(e) + ". No se cambio nada."));
+        }
+    }
 
 
     @PostMapping("/insertPacking")
