@@ -19,6 +19,8 @@ public class BoletaMovimientoDTO {
   private String web;
   private String logoUrl;
   private List<ItemDTO> equipos;
+  private Integer usuarioId;
+  private String zonaHoraria;
 
   @Data
   public static class ItemDTO {
@@ -27,6 +29,11 @@ public class BoletaMovimientoDTO {
     private String codigoSap;
     private String descripcion;
     private Integer cantidad;
+    private Integer cantidadEquipos;
+    private Integer cantidadAccesorios;
+    private Integer cantidadSmartcard;
     private String tipologia;
+    private String lote;
+    private Integer cajas;
   }
 }

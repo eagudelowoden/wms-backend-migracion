@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pallet {{ pallet }}</title>
+  <style>
+    @page { size: 612pt 792pt; margin: 5pt; }
+    body { margin: 0; font-family: "Helvetica", Arial, sans-serif; color: {{ c.texto }}; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    td { padding: 0; overflow: hidden; }
+
+    .cab td { height: 78pt; border: 1pt solid {{ c.bordes }}; vertical-align: middle; text-align: center; }
+    .cab .logo { width: 120pt; background: {{ c.logoFondo }}; }
+    .cab .logo img { width: 118pt; height: 76pt; }
+    .cab .icono { width: 77pt; }
+    .cab .icono img { width: 76pt; height: 76pt; }
+    .cab .titulo { font-size: {{ tamano_titulo }}pt; color: {{ c.titulo }}; }
+
+    .datos { margin-top: 12pt; }
+    .datos td { border: 1pt solid {{ c.bordes }}; vertical-align: middle; text-align: center; white-space: nowrap; }
+    .datos td.etq { width: {{ ancho_etiqueta }}%; color: {{ c.etiquetas }}; background: {{ c.fondoEtiquetas }}; }
+    .datos td.val { color: {{ c.texto }}; }
+
+    .pie { position: fixed; left: 0; right: 0; bottom: 0; height: 29pt; text-align: center; font-size: 10pt;
+      color: {{ c.texto }}; }
+  </style>
+</head>
+<body>
+  <table class="cab">
+    <tr>
+      <td class="logo">{% if logo %}<img src="{{ logo }}" alt="Logo">{% endif %}</td>
+      <td class="titulo">{{ titulo | raw }}</td>
+      <td class="icono">{% if icono %}<img src="{{ icono }}" alt="Icono">{% endif %}</td>
+    </tr>
+  </table>
+
+  <table class="datos">
+    {% for f in filas %}
+    <tr>
+      <td class="etq" style="height:{{ f.alto }}pt;font-size:{{ f.tamanoEtiqueta }}pt">{{ f.etiqueta | raw }}</td>
+      <td class="val" style="height:{{ f.alto }}pt;font-size:{{ f.tamano }}pt">
+        {% if f.barras %}<img src="{{ f.barras }}" alt="" style="width:{{ f.anchoBarras }}pt;height:{{ f.altoBarras }}pt">{% else %}{{ f.valor | raw }}{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="pie">{{ pie | raw }}</div>
+</body>
+</html>

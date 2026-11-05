@@ -48,6 +48,9 @@ public class ZplPrinterService {
   @Autowired
   private EtiquetaRepository etiquetaRepository;
 
+  @Autowired(required = false)
+  private VariableEtiquetaService variablesEtiqueta;
+
   private boolean esReemplazoBoxActivo() {
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
     if (clientId == null) return false;
@@ -91,7 +94,13 @@ public class ZplPrinterService {
           List<IngresoModel> seriales,
           EtiquetaDatosGeneralesDTO datosGenerales) {
 
-    if ((plantillaBasePath == null || plantillaBasePath.isBlank())
+    // con PRN_LOCAL_PATH uso la carpeta local solo si la ruta que manda el front (Empaque siempre manda la del
+    // servidor) no existe en esta máquina: en el servidor el share existe y todo sigue igual
+    String local = etiqueta == null || etiqueta.getTipo() == null ? null : prnPathResolver.rutaLocal(etiqueta.getTipo());
+    if (local != null && (plantillaBasePath == null || plantillaBasePath.isBlank()
+        || !new java.io.File(plantillaBasePath).isDirectory())) {
+      plantillaBasePath = local;
+    } else if ((plantillaBasePath == null || plantillaBasePath.isBlank())
         && etiqueta != null && etiqueta.getTipo() != null) {
       String resolved = prnPathResolver.resolvePath(etiqueta.getTipo());
       if (resolved != null) {
@@ -115,6 +124,7 @@ public class ZplPrinterService {
               plantillaBasePath, etiqueta.getNombre(), porImpresion);
       String zpl = leerPlantilla(plantillaPath);
       List<IngresoModel> subl = seriales.subList(contador, contador + porImpresion);
+      zpl = reemplazarVariablesPropias(zpl, subl);
       zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
@@ -131,6 +141,7 @@ public class ZplPrinterService {
               plantillaBasePath, etiqueta.getNombre(), residuo);
       String zpl = leerPlantilla(plantillaPath);
       List<IngresoModel> subl = seriales.subList(contador, contador + residuo);
+      zpl = reemplazarVariablesPropias(zpl, subl);
       zpl = reemplazarCampos(zpl, subl, campos);
       zpl = reemplazarDatosGenerales(zpl, datosGenerales);
       zpl = reemplazarGeneralConSufijos(zpl, subl, datosGenerales);
@@ -149,6 +160,16 @@ public class ZplPrinterService {
     } catch (IOException e) {
       throw new RuntimeException("Error al leer plantilla ZPL: " + e.getMessage());
     }
+  }
+
+  private String reemplazarVariablesPropias(String zpl, List<IngresoModel> seriales) {
+    if (variablesEtiqueta == null) {
+      return zpl;
+    }
+    for (int i = 0; i < seriales.size(); i++) {
+      zpl = variablesEtiqueta.reemplazar(zpl, "EMPAQUE", getKey(i, ""), seriales.get(i));
+    }
+    return zpl;
   }
 
   private String reemplazarCampos(String zpl, List<IngresoModel> seriales, List<EtiquetaCampoModel> campos) {

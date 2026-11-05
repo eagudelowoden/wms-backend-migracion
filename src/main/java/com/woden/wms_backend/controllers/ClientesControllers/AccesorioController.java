@@ -305,6 +305,11 @@ public class AccesorioController extends BaseController<AccesorioModel, Integer>
         return ResponseEntity.ok(ApiSuccess.of(palletIds.size() + " pallet(s) actualizado(s) a novedad."));
     }
 
+    @GetMapping("/resumenPallet")
+    public ResponseEntity<List<Map<String, Object>>> resumenAccesoriosPallet(@RequestParam Integer palletId) {
+        return ResponseEntity.ok(accesorioService.resumenAccesoriosPallet(palletId));
+    }
+
     @GetMapping("/searchNoveltyAccesoryPallet")
     public ResponseEntity<List<Map<String, Object>>> searchNoveltyAccesoryPallet(
             @RequestParam String tipoNovedad) {

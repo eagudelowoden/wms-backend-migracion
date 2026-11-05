@@ -60,6 +60,7 @@ import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateTipologiaRequest;
 import com.woden.wms_backend.dto.response.ApiSuccess;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
+import com.woden.wms_backend.services.ClienteServices.NotificacionCorreoService;
 import com.woden.wms_backend.services.ClienteServices.ZplService;
 
 @RestController
@@ -70,6 +71,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @Autowired
   private IngresoService ingresoService;
+  @Autowired
+  private NotificacionCorreoService notificacionCorreoService;
 
   @Autowired
   private ZplService zplService;
@@ -511,10 +514,16 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<UpdateNoveltyItemRequest> items) {
     int updated = 0;
     for (UpdateNoveltyItemRequest item : items) {
-      updated += ingresoService.updateNoveltyEntry(
+      boolean serialMac = "ERROR SERIAL-MAC".equalsIgnoreCase(String.valueOf(item.tipoNovedad()).trim());
+      Map<String, String> foto = serialMac ? notificacionCorreoService.fotoSerialMac(item.id()) : null;
+      int filas = ingresoService.updateNoveltyEntry(
           item.id(), item.serial(), item.mac(), item.codigoSapId(), item.guia(),
           item.documento(), item.tipoOrigenId(), item.origenId(), item.tipologiaId(),
           item.estadoId(), item.tipoNovedad(), item.usuarioId());
+      updated += filas;
+      if (foto != null && filas > 0) {
+        notificacionCorreoService.notificarSerialMac(foto, item.usuarioId());
+      }
     }
     return ResponseEntity.ok(updated);
   }

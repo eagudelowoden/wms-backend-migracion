@@ -415,6 +415,18 @@ public class AccesorioService extends BaseService<AccesorioModel, Integer> {
         }
     }
 
+    public List<Map<String, Object>> resumenAccesoriosPallet(Integer palletId) {
+        return accesorioRepository.resumenAccesoriosPallet(palletId).stream().map(obj -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("codigo",           obj[0]);
+            map.put("descripcion",      obj[1]);
+            map.put("nuevos",           obj[2]);
+            map.put("reacondicionados", obj[3]);
+            map.put("total",            obj[4]);
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
     public List<Map<String, Object>> searchNoveltyAccesoryPallet(String tipoNovedad) {
         List<Object[]> results = accesorioRepository.searchNoveltyAccesoryPallet(tipoNovedad);
         return results.stream().map(obj -> {

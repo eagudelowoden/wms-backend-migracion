@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.loads.UpdateNotAvailableRowDTO;
 import com.woden.wms_backend.exception.BusinessRuleException;
 
@@ -32,12 +33,48 @@ public class LoadsService {
 
   private static final Set<String> ALLOWED_BASES = Set.of(
       "BaseDespacho", "BaseEmpaque", "BaseInventario",
-      "BaseSeparacion", "BaseIngreso", "BaseEtiquetado"
+      "BaseSeparacion", "BaseIngreso", "BaseEtiquetado", "BaseAlmacen"
   );
 
   private static final Set<String> BASES_WITH_LOTE = Set.of(
-      "BaseDespacho", "BaseEmpaque", "BaseIngreso"
+      "BaseDespacho", "BaseEmpaque", "BaseIngreso", "BaseAlmacen"
   );
+
+  public static final String BASE_ALMACEN = "BaseAlmacen";
+  private static final String TABLA_ALMACEN = "general.BaseAlmacen";
+  // Alias entre comillas: el front espera las columnas con la misma capitalizacion que las demas bases.
+  private static final String ALMACEN_SELECT = "SELECT Id AS \"Id\", Serial AS \"Serial\", CodigoSap AS \"CodigoSap\", "
+      + "EstadoSap AS \"EstadoSap\", EstadoRR AS \"EstadoRR\", Lote AS \"Lote\" FROM ";
+
+  private static int cliente() {
+    Integer id = ClientDatabaseContext.getCurrentClientId();
+    if (id == null || id <= 0) {
+      throw new BusinessRuleException("No se identificó el cliente de la sesión.");
+    }
+    return id;
+  }
+
+  private void exigirTablaAlmacen() {
+    Integer n = jdbcTemplate.queryForObject("SELECT CASE WHEN to_regclass('" + TABLA_ALMACEN + "') IS NULL THEN 0 "
+        + "ELSE 1 END", Integer.class);
+    if (n == null || n == 0) {
+      throw new BusinessRuleException("Falta crear la tabla general.BaseAlmacen (ver db/produccion_nov2026_postgres.sql).");
+    }
+  }
+
+  public int contarAlmacen() {
+    exigirTablaAlmacen();
+    Integer n = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?",
+        Integer.class, cliente());
+    return n == null ? 0 : n;
+  }
+
+  public boolean enAlmacen(String serial) {
+    exigirTablaAlmacen();
+    List<Integer> r = jdbcTemplate.queryForList("SELECT 1 FROM " + TABLA_ALMACEN + " WHERE ClienteId = ? "
+        + "AND Serial = ? LIMIT 1", Integer.class, cliente(), serial == null ? "" : serial.trim());
+    return !r.isEmpty();
+  }
 
   private static final int BATCH_SIZE = 500;
 
@@ -55,6 +92,11 @@ public class LoadsService {
 
   public void deleteBase(String base) {
     validateBase(base);
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      jdbcTemplate.update("DELETE FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?", cliente());
+      return;
+    }
     jdbcTemplate.query("SELECT 1 FROM pa_deletebase(CAST(? AS character varying))",
         ps -> ps.setString(1, base), rs -> {
         });
@@ -69,12 +111,27 @@ public class LoadsService {
 
   public List<Map<String, Object>> searchBase(String base) {
     validateBase(base);
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      return jdbcTemplate.queryForList(ALMACEN_SELECT + TABLA_ALMACEN
+          + " WHERE ClienteId = ? ORDER BY Id", cliente());
+    }
     return jdbcTemplate.queryForList(searchBaseSelect(base), base);
   }
 
   public Map<String, Object> searchBasePaged(String base, int page, int size) {
     validateBase(base);
     Map<String, Object> result = new LinkedHashMap<>();
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      result.put("data", jdbcTemplate.queryForList(ALMACEN_SELECT
+          + TABLA_ALMACEN + " WHERE ClienteId = ? ORDER BY Id LIMIT " + Math.max(1, size) + " OFFSET "
+          + Math.max(0, page * size), cliente()));
+      result.put("total", contarAlmacen());
+      result.put("page", page);
+      result.put("size", size);
+      return result;
+    }
     String select = searchBaseSelect(base);
 
     try (Connection conn = dataSource.getConnection()) {
@@ -115,6 +172,9 @@ public class LoadsService {
 
   public int countBase(String base) {
     validateBase(base);
+    if (BASE_ALMACEN.equals(base)) {
+      return contarAlmacen();
+    }
     try (Connection conn = dataSource.getConnection();
          PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM pa_searchbase(CAST(? AS character varying))")) {
       ps.setString(1, base);
@@ -162,6 +222,11 @@ public class LoadsService {
   }
 
   private String buildInsertSql(String base, boolean hasLote) {
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      return "INSERT INTO " + TABLA_ALMACEN + " (Serial, CodigoSap, EstadoSap, EstadoRR, Lote, ClienteId) "
+          + "VALUES (?, ?, ?, ?, ?, " + cliente() + ")";
+    }
     if (hasLote) {
       return "INSERT INTO " + base + " (Serial, CodigoSap, EstadoSap, EstadoRR, Lote) VALUES (?, ?, ?, ?, ?)";
     }
