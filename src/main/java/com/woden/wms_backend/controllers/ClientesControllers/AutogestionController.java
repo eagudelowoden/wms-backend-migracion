@@ -4,7 +4,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.woden.wms_backend.dto.clientDTO.AutogestionSolicitudDTO;
+import com.woden.wms_backend.services.ClienteServices.AutogestionAprobadorService;
 import com.woden.wms_backend.services.ClienteServices.AutogestionService;
 
 @RestController
@@ -19,6 +22,9 @@ import com.woden.wms_backend.services.ClienteServices.AutogestionService;
 public class AutogestionController {
   @Autowired
   private AutogestionService service;
+
+  @Autowired
+  private AutogestionAprobadorService aprobadorService;
 
   @GetMapping("/estados")
   public ResponseEntity<?> estados(@RequestParam(defaultValue = "SERIAL") String ambito) {
@@ -57,6 +63,25 @@ public class AutogestionController {
   public ResponseEntity<?> logs(@RequestParam(required = false) String serial,
       @RequestParam(required = false) Integer limite) {
     return ResponseEntity.ok(service.logs(serial, limite));
+  }
+
+  // ── Aprobadores (correos que reciben el enlace de aprobación) ──
+
+  @GetMapping("/aprobadores")
+  public ResponseEntity<?> aprobadores() {
+    return ResponseEntity.ok(Map.of("instalado", aprobadorService.instalada(), "aprobadores", aprobadorService.listar()));
+  }
+
+  @PostMapping("/aprobadores")
+  public ResponseEntity<?> guardarAprobador(@RequestBody Map<String, Object> aprobador,
+      @RequestParam(defaultValue = "") String usuario) {
+    return ResponseEntity.ok(aprobadorService.guardar(aprobador, usuario));
+  }
+
+  @DeleteMapping("/aprobadores/{id}")
+  public ResponseEntity<?> eliminarAprobador(@PathVariable Integer id) {
+    aprobadorService.eliminar(id);
+    return ResponseEntity.ok(Map.of("ok", true));
   }
 
   private static String mensajeRaiz(Throwable e) {

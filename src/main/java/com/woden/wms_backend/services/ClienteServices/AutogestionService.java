@@ -30,6 +30,9 @@ public class AutogestionService {
   @Autowired
   private AutogestionCorreoService correoService;
 
+  @Autowired
+  private AutogestionAprobadorService aprobadorService;
+
   @Value("${autogestion.frontend-url:http://localhost:4200}")
   private String frontendUrl;
 
@@ -172,7 +175,7 @@ public class AutogestionService {
     List<Object[]> aprobadores = aprobadoresConfigurados();
     if (aprobadores.isEmpty()) {
       throw new IllegalStateException(
-          "No hay correos de aprobadores configurados: defina autogestion.aprobadores.correos en application.properties.");
+          "No hay correos de aprobadores configurados: agréguelos en Administración → Notificaciones (evento Autogestión).");
     }
 
     Integer solicitudId = repository.crearSolicitud(
@@ -340,11 +343,12 @@ public class AutogestionService {
    */
   private List<Object[]> aprobadoresConfigurados() {
     List<Object[]> result = new ArrayList<>();
-    if (correosAprobadores == null) {
-      return result;
-    }
+    // Tabla AutogestionAprobador (Administración → Notificaciones). Solo si la tabla no está instalada
+    // se usa application.properties como respaldo.
+    List<String> deTabla = aprobadorService.correosActivos();
+    String fuente = deTabla != null ? String.join(",", deTabla) : (correosAprobadores == null ? "" : correosAprobadores);
     Set<String> vistos = new java.util.LinkedHashSet<>();
-    for (String correo : correosAprobadores.split("[,;\\s]+")) {
+    for (String correo : fuente.split("[,;\\s]+")) {
       String limpio = correo.trim().toLowerCase();
       if (limpio.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$") && vistos.add(limpio)) {
         result.add(new Object[] { 0, limpio, limpio });
