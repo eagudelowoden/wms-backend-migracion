@@ -22,16 +22,17 @@ public class CorreoSmtpService {
 
   public static final String LOGO = "logo";
 
-  @Value("${SMTP_SERVER:}")
+  // Si no hay SMTP_*, usa las mismas credenciales MAIL_* de Autogestión (una sola cuenta para todo el WMS).
+  @Value("${SMTP_SERVER:${MAIL_HOST:}}")
   private String servidor;
 
-  @Value("${SMTP_PORT:587}")
+  @Value("${SMTP_PORT:${MAIL_PORT:587}}")
   private int puerto;
 
-  @Value("${SMTP_USER:}")
+  @Value("${SMTP_USER:${MAIL_USER:}}")
   private String usuario;
 
-  @Value("${SMTP_PASSWORD:}")
+  @Value("${SMTP_PASSWORD:${MAIL_PASS:}}")
   private String clave;
 
   @Value("${SMTP_FROM_NAME:WMS Woden}")

@@ -8,6 +8,7 @@ SELECT item, CASE WHEN ok THEN 'OK' ELSE 'FALTA' END AS estado FROM (
     UNION ALL SELECT 'general.notificacioncorreo / envio / sonido', to_regclass('general.notificacioncorreo') IS NOT NULL AND to_regclass('general.notificacioncorreoenvio') IS NOT NULL AND to_regclass('general.notificacionsonido') IS NOT NULL
     UNION ALL SELECT 'general.documentoplantilla / prealertacierre / smartcardautomatica', to_regclass('general.documentoplantilla') IS NOT NULL AND to_regclass('general.prealertacierre') IS NOT NULL AND to_regclass('general.smartcardautomatica') IS NOT NULL
     UNION ALL SELECT 'general.codigosapregla / clienteconfig / basealmacen / variableetiqueta', to_regclass('general.codigosapregla') IS NOT NULL AND to_regclass('general.clienteconfig') IS NOT NULL AND to_regclass('general.basealmacen') IS NOT NULL AND to_regclass('general.variableetiqueta') IS NOT NULL
+    UNION ALL SELECT 'general.autogestionaprobador', to_regclass('general.autogestionaprobador') IS NOT NULL
     UNION ALL SELECT 'interruptores nuevos en clientevalidaciontipo (14)', (SELECT COUNT(*) FROM general.clientevalidaciontipo WHERE codigo IN ('BOLETA_CONSECUTIVO','PREALERTA_CIERRE_MANUAL','PREALERTA_SOBRANTES','INSERT_AUTOMATICO_SMARTCARD','EMPAQUE_CODIGOSAP_PALLET','LIMPIEZA_CARACTERES_INGRESO','APP_PQRS_INGRESO','DIAGNOSTICO_REPORTE34','ETIQUETADO_FORECAST','SERIAL_DISTINTO_MAC','MODELOID_DESDE_CODIGOSAP','SCRAP_MULTIMODELO_ENVIO','MODO_DEPRECIACION_CUALQUIERA','MODO_DEPRECIACION_AMBAS')) = 14
 ) t
 ORDER BY ok, item;

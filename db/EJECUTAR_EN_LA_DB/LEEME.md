@@ -23,6 +23,7 @@ Todos se pueden repetir sin dañar nada.
 | `02_boletas_y_reversa.sql` | Boletas con consecutivo, respaldo de Despachado y la función `general.col_length` |
 | `03_notificaciones_documentos.sql` | Notificaciones por correo, plantillas de documentos, cierres de prealerta, smartcard automática, módulos 44 y 47 |
 | `04_parametros.sql` | Interruptores nuevos (apagados), campos calculados por código SAP, ajustes por cliente, base Almacén, variables de etiquetas, módulo 48, códigos de depreciación |
+| `05_autogestion_aprobadores.sql` | Aprobadores de Autogestión (correos que reciben el enlace de aprobación; reemplaza la lista de `application.properties`) |
 | `99_verificar_general.sql` | Comprueba lo anterior (cada fila debe decir OK) |
 
 ## Paso 2 — `2_POR_CLIENTE_repetir/cliente_85_wmswdlegacycostarica/` (por cada cliente)

@@ -15,7 +15,7 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface EnsambleRepository extends BaseRepository<EnsambleModel, Integer> {
   @Transactional
-  @Query(value = "SELECT 1 FROM pa_insertassemble(CAST(:serialId AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:serial3 AS character varying), CAST(:serial4 AS character varying), CAST(:serial5 AS character varying), CAST(:codigoSapId AS integer), CAST(:palletId AS integer), CAST(:estadoId AS integer), CAST(:tipologiaId AS integer), CAST(:nivelId AS integer), CAST(:usuarioId AS integer), CAST(:usuarioIdAsignado AS integer), CAST(:loteId AS character varying), CAST(:smartCard AS integer))", nativeQuery = true)
+  @Query(value = "SELECT 1 FROM pa_insertassemble(CAST(:serialId AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:serial3 AS character varying), CAST(:serial4 AS character varying), CAST(:serial5 AS character varying), CAST(:codigoSapId AS integer), CAST(:palletId AS integer), CAST(:estadoId AS integer), CAST(:tipologiaId AS integer), CAST(:nivelId AS integer), CAST(:usuarioId AS integer), CAST(:loteId AS integer), CAST(:smartCard AS character varying), CAST(:usuarioIdAsignado AS integer))", nativeQuery = true)
   void insertAssemble(
       @Param("serialId") Integer serialId,
       @Param("serial") String serial,
