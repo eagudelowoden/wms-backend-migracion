@@ -32,6 +32,8 @@ def tipo_pg(t):
     base, arg = m.group(1), (m.group(2) or "").replace(" ", "")
     if base == "int":
         return "integer"
+    if base == "sysname":
+        return "varchar(128)"
     if base == "bigint":
         return "bigint"
     if base == "smallint":
@@ -128,7 +130,7 @@ nombres_idx = set()
 resumen = {"tablas": 0, "indices": 0, "fks": 0}
 
 for b in bloques:
-    m = re.match(r"\s*create\s+table\s+dbo\.(\w+)\s*\((.*)\)\s*$", b, re.I | re.S)
+    m = re.match(r"\s*create\s+table\s+(?:dbo\.)?(\w+)\s*\((.*)\)\s*$", b, re.I | re.S)
     if not m:
         continue
     tabla = ident(m.group(1))
@@ -219,8 +221,9 @@ for b in bloques:
     resumen["tablas"] += 1
 
 idx_re = re.compile(
-    r"(?is)^\s*create\s+(unique\s+)?(?:nonclustered\s+|clustered\s+)?index\s+(\[[^\]]*\]|\w+)\s+on\s+dbo\.(\w+)\s*\(([^)]*)\)\s*(?:include\s*\(([^)]*)\))?\s*(?:where\s+(.*?))?\s*$")
+    r"(?is)^\s*create\s+(unique\s+)?(?:nonclustered\s+|clustered\s+)?index\s+(\[[^\]]*\]|\w+)\s+on\s+(?:dbo\.)?(\w+)\s*\(([^)]*)\)\s*(?:include\s*\(([^)]*)\))?\s*(?:where\s+(.*?))?\s*$")
 for b in bloques:
+    b = re.sub(r"(?is)\s+with\s*\([^)]*\)\s*$", "", b)  # opciones de SQL Server (fillfactor, etc.)
     m = idx_re.match(b)
     if not m:
         continue
