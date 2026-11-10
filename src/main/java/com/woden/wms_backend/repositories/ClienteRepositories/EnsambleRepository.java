@@ -16,7 +16,7 @@ import jakarta.transaction.Transactional;
 public interface EnsambleRepository extends BaseRepository<EnsambleModel, Integer> {
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertAssemble :serialId, :serial, :mac, :serial3, :serial4, :serial5, :codigoSapId, :palletId, :estadoId, :tipologiaId, :nivelId, :usuarioId, :usuarioIdAsignado, :loteId, :smartCard", nativeQuery = true)
+  @Query(value = "EXEC pa_InsertAssemble :serialId, :serial, :mac, :serial3, :serial4, :serial5, :codigoSapId, :palletId, :estadoId, :tipologiaId, :nivelId, :usuarioId, :loteId, :smartCard, :usuarioIdAsignado", nativeQuery = true)
   void insertAssemble(
       @Param("serialId") Integer serialId,
       @Param("serial") String serial,
