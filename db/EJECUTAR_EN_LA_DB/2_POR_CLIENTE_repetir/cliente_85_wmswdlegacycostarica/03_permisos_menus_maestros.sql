@@ -138,7 +138,7 @@ BEGIN
 
         -- B1 (V2_6_2): menu de Autogestion, copia el de Cosmetica (PCOS) bajo Produccion
         INSERT INTO menu (id, descripcion, tipo, orden, accion, estado, icono, id_padre, view_name, controller_name)
-        SELECT 'PAUT', 'Autogestión', tipo, (SELECT MAX(orden) + 1 FROM menu WHERE id_padre = 'PROD'),
+        SELECT 'PAUT', 'Autogestión', tipo, (SELECT COALESCE(MAX(orden), 0) + 1 FROM menu WHERE id_padre = 'PROD'),
                accion, estado, icono, id_padre, view_name, controller_name
         FROM menu
         WHERE id = 'PCOS' AND NOT EXISTS (SELECT 1 FROM menu WHERE id = 'PAUT');
