@@ -7,4 +7,5 @@ import java.util.List;
 public class InsertCosmeticaDTO {
     private List<String> seriales;
     private Integer usuarioId;
+    private Integer usuarioAsignadoId;
 }

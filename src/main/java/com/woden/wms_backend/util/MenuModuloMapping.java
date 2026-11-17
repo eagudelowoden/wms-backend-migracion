@@ -38,6 +38,7 @@ public class MenuModuloMapping {
         MODULO_TO_MENU.put(34, "PINN");
         MODULO_TO_MENU.put(35, "LLIM");
         MODULO_TO_MENU.put(36, "PSMART");
+        MODULO_TO_MENU.put(46, "PAUT");
         MODULO_TO_MENU.put(18, "ADTM");
         MODULO_TO_MENU.put(19, "ADMA");
         MODULO_TO_MENU.put(22, "ADCS");
@@ -45,6 +46,9 @@ public class MenuModuloMapping {
         MODULO_TO_MENU.put(25, "ADPER");
         MODULO_TO_MENU.put(26, "ADUS");
         MODULO_TO_MENU.put(43, "ADDEV");
+        MODULO_TO_MENU.put(44, "ADNOT"); // Notificaciones (correo y sonidos)
+        MODULO_TO_MENU.put(47, "ADDOC"); // Documentos (boleta de entrega, boleta de pallet, correo de prealerta)
+        MODULO_TO_MENU.put(48, "ADVAR"); // Variables de etiquetas (Etiquetado y Empaque)
 
         ALL_MENU_IDS.addAll(MODULO_TO_MENU.values());
         ALL_MENU_IDS.add("ADMXP");

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.diagnostico.DiagnosticoRequest;
 import com.woden.wms_backend.repositories.ClienteRepositories.DiagnosticoRepository;
+import com.woden.wms_backend.repositories.ClienteRepositories.IngresoRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -36,6 +37,7 @@ public class DiagnosticoService {
 
   private static final Logger logger     = LoggerFactory.getLogger(DiagnosticoService.class);
   private static final int    CHUNK_SIZE = 50;
+  private static final String ESTADO_DIAGNOSTICO_TERMINADO = "DIAGNOSTICO-TERMINADO";
 
   @Autowired
   private DataSource dataSource;
@@ -44,7 +46,25 @@ public class DiagnosticoService {
   private DiagnosticoRepository repository;
 
   @Autowired
+  private IngresoRepository ingresoRepository;
+
+  @Autowired
+  private DepreciacionService depreciacionService;
+
+  @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private InterruptorClienteService interruptores;
+
+  @Autowired
+  private MaestroParametroService maestros;
+
+  @Autowired
+  private CodigoSapReglaService codigoSapReglas;
+
+  public static final String REPORTE34 = "DIAGNOSTICO_REPORTE34";
+  public static final String MAESTRO_SERIAL3 = "Diagnostico Serial3";
 
   /**
    * Ruta ÚNICA y global de la plantilla de hoja de vida — independiente del cliente.
@@ -58,11 +78,13 @@ public class DiagnosticoService {
   @Transactional
   public void create(Integer serialId, String serial, String mac, Integer codigoSapId, Integer usuarioId,
       String variable1, String variable2, String variable3, String variable4) {
+    validarReporte34(serialId, serial, codigoSapId);
         System.out.println(variable1);
         System.out.println(variable2);
         System.out.println(variable3);
         System.out.println(variable4);
     repository.create(serialId, serial, mac, codigoSapId, usuarioId, variable1, variable2, variable3, variable4);
+    codigoSapReglas.aplicarDiagnostico(codigoSapId, serial);
   }
 
   public Integer updateSapCode(String serial) {
@@ -151,6 +173,16 @@ public class DiagnosticoService {
       map.put("fecha", row[12] != null ? row[12].toString() : "");
       // El SP devuelve: ..., Fecha(12), TruckRollId(13), rn(14). Con el SP viejo (14 cols) la posición 13 es rn — no mapear.
       map.put("truckRollId", row.length > 13 && row[13] != null ? Integer.parseInt(row[13].toString()) : null);
+      String serialVal = row[2] != null ? row[2].toString() : null;
+      boolean seraDepreciado = false;
+      if (serialVal != null) {
+        try {
+          Map<String, Object> dep = depreciacionService.consultarEstadoDepreciacion(serialVal);
+          seraDepreciado = Boolean.TRUE.equals(dep.get("seraDepreciado"));
+        } catch (Exception ignored) {
+        }
+      }
+      map.put("seraDepreciado", seraDepreciado);
       formattedResults.add(map);
     }
     return formattedResults;
@@ -160,7 +192,31 @@ public class DiagnosticoService {
   public void save(List<DiagnosticoRequest> items) {
     int total = items.size();
     int procesados = 0;
+    Map<String, Integer> transiciones = new HashMap<>();
+    Integer estadoTerminadoId = resolverEstadoTerminadoId();
     try {
+      if (estadoTerminadoId != null) {
+        for (DiagnosticoRequest item : items) {
+          if (item.getSerial() == null
+              || !estadoTerminadoId.equals(item.getEstadoId())) {
+            continue;
+          }
+
+          List<Object[]> previos = ingresoRepository.findUltimoEstadoBySerial(item.getSerial());
+          if (previos == null || previos.isEmpty()) {
+            continue;
+          }
+
+          Object[] previo = previos.get(0);
+          Integer estadoAnterior = previo[1] != null ? ((Number) previo[1]).intValue() : null;
+          if (estadoTerminadoId.equals(estadoAnterior)) {
+            continue;
+          }
+
+          transiciones.put(item.getSerial(), ((Number) previo[0]).intValue());
+        }
+      }
+
       for (int i = 0; i < total; i += CHUNK_SIZE) {
         List<DiagnosticoRequest> chunk = items.subList(i, Math.min(i + CHUNK_SIZE, total));
         String json = objectMapper.writeValueAsString(chunk);
@@ -176,8 +232,31 @@ public class DiagnosticoService {
           logger.info("[DIAGNOSTICO] TruckRollId actualizado: serial={} → {}", item.getSerial(), item.getTruckRollId());
         }
       }
+
+      if (!transiciones.isEmpty()) {
+        DepreciacionService.Modo modo = depreciacionService
+            .obtenerModoActivo(ClientDatabaseContext.getCurrentClientId());
+        if (modo != null) {
+          for (Map.Entry<String, Integer> transicion : transiciones.entrySet()) {
+            depreciacionService.evaluarTransicion(transicion.getValue(), transicion.getKey(), modo);
+          }
+        }
+      }
     } catch (Exception e) {
       throw new RuntimeException("Error al guardar diagnóstico: " + e.getMessage(), e);
+    }
+  }
+
+  private Integer resolverEstadoTerminadoId() {
+    try {
+      Integer id = ingresoRepository.getIdEstadoByNombre(ESTADO_DIAGNOSTICO_TERMINADO);
+      if (id == null) {
+        logger.warn("[DIAGNOSTICO] No se encontro Estado {}; se omite evaluacion de depreciacion", ESTADO_DIAGNOSTICO_TERMINADO);
+      }
+      return id;
+    } catch (Exception e) {
+      logger.error("[DIAGNOSTICO] No se pudo resolver Estado {}; se omite evaluacion de depreciacion", ESTADO_DIAGNOSTICO_TERMINADO, e);
+      return null;
     }
   }
 
@@ -429,6 +508,77 @@ public class DiagnosticoService {
       map.put("variable4", row[3] != null ? row[3].toString() : "");
       formattedResults.add(map);
     }
-    return formattedResults;
+    return conVariablesCalculadas(serial, formattedResults);
+  }
+
+  private List<Map<String, Object>> conVariablesCalculadas(String serial, List<Map<String, Object>> filas) {
+    if (!codigoSapReglas.hayVariables()) {
+      return filas;
+    }
+    try (Connection conn = dataSource.getConnection();
+        PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 CodigoSapId, Serial, Mac, Serial3, Serial4, Serial5 "
+            + "FROM Ingreso WHERE Serial = CAST(? AS VARCHAR(50)) ORDER BY Id DESC")) {
+      ps.setString(1, serial);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (!rs.next() || !codigoSapReglas.tieneVariables(rs.getInt(1))) {
+          return filas;
+        }
+        Map<String, String> calculadas = codigoSapReglas.variables(rs.getInt(1), new CodigoSapReglaService.Campos(
+            rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6)));
+        Map<String, Object> fila = filas.isEmpty() ? new HashMap<>() : filas.get(0);
+        for (int i = 1; i <= 4; i++) {
+          fila.putIfAbsent("variable" + i, "");
+        }
+        fila.putAll(calculadas);
+        fila.put("calculadas", true);
+        if (filas.isEmpty()) {
+          filas.add(fila);
+        }
+      }
+    } catch (SQLException e) {
+      logger.warn("[Etiquetado] variables calculadas de {}: {}", serial, e.getMessage());
+    }
+    return filas;
+  }
+
+  private void validarReporte34(Integer serialId, String serial, Integer codigoSapId) {
+    if (!interruptores.activo(REPORTE34)) {
+      return;
+    }
+    try (Connection conn = dataSource.getConnection()) {
+      List<MaestroParametroService.Fila> codigos = maestros.activos(MAESTRO_SERIAL3);
+      if (!codigos.isEmpty() && codigoSapId != null) {
+        String codigo = null;
+        try (PreparedStatement ps = conn.prepareStatement("SELECT Codigo FROM CodigoSap WHERE Id = ?")) {
+          ps.setInt(1, codigoSapId);
+          try (ResultSet rs = ps.executeQuery()) {
+            codigo = rs.next() ? rs.getString(1) : null;
+          }
+        }
+        final String cod = codigo == null ? "" : codigo.trim();
+        if (codigos.stream().anyMatch(f -> f.codigo().trim().equalsIgnoreCase(cod))) {
+          String serial3 = null;
+          try (PreparedStatement ps = conn.prepareStatement("SELECT Serial3 FROM Ingreso WHERE Id = ?")) {
+            ps.setInt(1, serialId == null ? 0 : serialId);
+            try (ResultSet rs = ps.executeQuery()) {
+              serial3 = rs.next() ? rs.getString(1) : null;
+            }
+          }
+          if (serial3 == null || serial3.isBlank()) {
+            throw new IllegalStateException("Serie No está en Reporte34 (sin Serial3)");
+          }
+        }
+      }
+      try (PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 1 FROM BaseEtiquetado WHERE Serial = ?")) {
+        ps.setString(1, serial);
+        try (ResultSet rs = ps.executeQuery()) {
+          if (!rs.next()) {
+            throw new IllegalStateException("Serie No está en Reporte34");
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new IllegalStateException("No se pudo validar contra BaseEtiquetado: " + e.getMessage(), e);
+    }
   }
 }

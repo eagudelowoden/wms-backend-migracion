@@ -16,10 +16,10 @@ public class CosmeticaService {
   @Autowired
   private CosmeticaRepository repository;
 
-  public void insertCosmetica(List<String> seriales, Integer usuarioId) {
+  public void insertCosmetica(List<String> seriales, Integer usuarioId, Integer usuarioAsignadoId) {
     Date fecha = new Date();
     for (String serial : seriales) {
-      repository.insertCosmetica(serial, usuarioId, fecha);
+      repository.insertCosmetica(serial, usuarioId, fecha, usuarioAsignadoId);
     }
   }
 

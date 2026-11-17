@@ -21,9 +21,10 @@ public interface CosmeticaRepository extends BaseRepository<CosmeticaModel, Inte
 
   @Modifying
   @Transactional
-  @Query(value = "EXEC pa_InsertCosmetica :serial, :usuarioId, :fecha", nativeQuery = true)
+  @Query(value = "EXEC pa_InsertCosmetica :serial, :usuarioId, :fecha, :usuarioAsignadoId", nativeQuery = true)
   void insertCosmetica(
       @Param("serial") String serial,
       @Param("usuarioId") Integer usuarioId,
-      @Param("fecha") Date fecha);
+      @Param("fecha") Date fecha,
+      @Param("usuarioAsignadoId") Integer usuarioAsignadoId);
 }

@@ -26,6 +26,12 @@ public interface ClienteValidacionRepository extends JpaRepository<ClienteValida
     @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM ClienteValidacion cv JOIN ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id WHERE cv.ClienteId = :clienteId AND cvt.Codigo = :codigo AND cv.Activo = 1", nativeQuery = true)
     Integer tieneValidacion(@Param("clienteId") Integer clienteId, @Param("codigo") String codigo);
 
+    @Query(value = "SELECT cvt.Codigo FROM [WmsWdGeneral].dbo.ClienteValidacion cv "
+            + "JOIN [WmsWdGeneral].dbo.ClienteValidacionTipo cvt ON cv.ValidacionTipoId = cvt.Id "
+            + "WHERE cv.ClienteId = :clienteId AND cv.Activo = 1 "
+            + "AND cvt.Codigo IN ('MODO_DEPRECIACION_CUALQUIERA', 'MODO_DEPRECIACION_AMBAS')", nativeQuery = true)
+    List<String> findModosDepreciacionActivos(@Param("clienteId") Integer clienteId);
+
     @Modifying
     @Transactional
     @Query(value = "EXEC dbo.pa_InsertClienteValidacion :clienteId, :validacionTipoId", nativeQuery = true)

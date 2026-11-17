@@ -147,6 +147,19 @@ public interface AccesorioRepository extends BaseRepository<AccesorioModel, Inte
       @Param("novedad") String novedad,
       @Param("usuarioId") Integer usuarioId);
 
+  @Query(value = """
+      SELECT cs.Codigo, cs.Descripcion,
+             SUM(CASE WHEN UPPER(LTRIM(RTRIM(ISNULL(a.TipoAccesorio, '')))) = 'NUEVO' THEN 1 ELSE 0 END) AS nuevos,
+             SUM(CASE WHEN UPPER(LTRIM(RTRIM(ISNULL(a.TipoAccesorio, '')))) = 'NUEVO' THEN 0 ELSE 1 END) AS reacondicionados,
+             COUNT(*) AS total
+        FROM Accesorio a WITH (NOLOCK)
+        INNER JOIN CodigoSap cs WITH (NOLOCK) ON cs.Id = a.CodigoSapId
+       WHERE a.PalletId = :palletId
+       GROUP BY cs.Codigo, cs.Descripcion
+       ORDER BY cs.Codigo
+      """, nativeQuery = true)
+  List<Object[]> resumenAccesoriosPallet(@Param("palletId") Integer palletId);
+
   @Query(value = "EXEC pa_SearchNoveltyAccesoryPallet :tipoNovedad", nativeQuery = true)
   List<Object[]> searchNoveltyAccesoryPallet(@Param("tipoNovedad") String tipoNovedad);
 

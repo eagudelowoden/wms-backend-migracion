@@ -15,4 +15,6 @@ public class PalletReportDTO {
   private String usuario;
   private Integer cantidad;
   private String posicion;
+  private String nombreUsuario;
+  private String lote;
 }

@@ -22,13 +22,22 @@ public class PrnPathResolverService {
   @Autowired
   private DataSource dataSource;
 
+  // solo hay carpeta local en un PC de desarrollo (PRN_LOCAL_PATH); en el servidor devuelve null
+  public String rutaLocal(String tipo) {
+    if (localPrnPath == null || localPrnPath.isBlank()) {
+      return null;
+    }
+    String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
+    if ("empaque_despacho".equals(tipoLower)) {
+      tipoLower = "empaque";
+    }
+    return localPrnPath + File.separator + tipoLower;
+  }
+
   public String resolvePath(String tipo) {
-    if (localPrnPath != null && !localPrnPath.isBlank()) {
-      String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
-      if ("empaque_despacho".equals(tipoLower)) {
-        tipoLower = "empaque";
-      }
-      return localPrnPath + File.separator + tipoLower;
+    String local = rutaLocal(tipo);
+    if (local != null) {
+      return local;
     }
 
     Integer clientId = ClientDatabaseContext.getCurrentClientId();

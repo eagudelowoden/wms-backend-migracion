@@ -47,6 +47,7 @@ public class EnsambleService extends BaseService<EnsambleModel, Integer> {
     List<Object[]> results = ensambleRepository.getAssembleUser(perfil, usuarioId);
 
     System.out.println(results);
+    System.out.println(results);
     List<Map<String, Object>> formattedResults = new ArrayList<>();
 
     for (Object[] row : results) {
