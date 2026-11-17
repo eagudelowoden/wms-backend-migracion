@@ -206,11 +206,31 @@ public class CalidadService extends BaseService<CalidadModel, Integer> {
         out.put("fallaFuncionalCodigo", r[11] != null ? r[11].toString() : null);
         out.put("fallaCosmeticaCodigo", r[12] != null ? r[12].toString() : null);
         out.put("estadoFinalCodigo", r[13] != null ? r[13].toString() : null);
-        out.put("personal", r.length > 14 && r[14] != null ? r[14].toString() : "");
-        out.put("dni", r.length > 15 && r[15] != null ? r[15].toString() : "");
-        out.put("voltaje", r.length > 16 && r[16] != null ? r[16].toString() : "");
-        out.put("observaciones", r.length > 17 && r[17] != null ? r[17].toString() : "");
+        out.put("personal", "");
+        out.put("dni", "");
+        out.put("voltaje", "");
+        out.put("observaciones", "");
+        cargarExtrasPorSerial(out, serial);
         return out;
+    }
+
+    private void cargarExtrasPorSerial(Map<String, Object> out, String serial) {
+        if (!camposExtrasActivos()) {
+            return;
+        }
+        try {
+            List<Object[]> extras = calidadRepository.findExtrasBySerial(serial);
+            if (extras == null || extras.isEmpty()) {
+                return;
+            }
+            Object[] e = extras.get(0);
+            out.put("personal", e.length > 0 && e[0] != null ? e[0].toString() : "");
+            out.put("dni", e.length > 1 && e[1] != null ? e[1].toString() : "");
+            out.put("voltaje", e.length > 2 && e[2] != null ? e[2].toString() : "");
+            out.put("observaciones", e.length > 3 && e[3] != null ? e[3].toString() : "");
+        } catch (Exception ex) {
+            logger.error("[CalidadService] Error leyendo campos extras para serial={}: {}", serial, ex.getMessage());
+        }
     }
 
     @Transactional
