@@ -119,7 +119,7 @@ public class CodigoSapReglaService {
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> guardar(int codigoSapId, List<Map<String, Object>> reglas, String usuario) {
     if (!tabla()) {
-      throw new BusinessRuleException("Falta el script 2026-10-29_parametros_wms.sql en WmsWdGeneral.");
+      throw new BusinessRuleException("Falta el script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/04_parametros.sql (esquema general).");
     }
     int cliente = cliente();
     Map<String, Regla> porCampo = new LinkedHashMap<>();

@@ -240,7 +240,7 @@ public class DocumentoPlantillaService {
 
   private void exigirTabla() {
     if (!tabla()) {
-      throw new BusinessRuleException("Documentos aún no está instalado (falta el script 2026-10-26_documentos_prealertas.sql).");
+      throw new BusinessRuleException("Documentos aún no está instalado (falta el script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/03_notificaciones_documentos.sql).");
     }
   }
 

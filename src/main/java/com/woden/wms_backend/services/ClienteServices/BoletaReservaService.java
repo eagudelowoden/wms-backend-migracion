@@ -156,7 +156,7 @@ public class BoletaReservaService {
   private void guardarFormato(String formato) {
     Integer hay = entero("SELECT CASE WHEN to_regclass('general.DocumentoPlantilla') IS NULL THEN 0 ELSE 1 END");
     if (hay == null || hay == 0) {
-      throw new BusinessRuleException("Para cambiar el formato falta el script 2026-10-26_documentos_prealertas.sql.");
+      throw new BusinessRuleException("Para cambiar el formato falta el script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/03_notificaciones_documentos.sql.");
     }
     actualizar("INSERT INTO " + G + "DocumentoPlantilla (ClienteId, Tipo, Config, Activo, Usuario, Fecha) "
         + "VALUES (?1, ?2, ?3, true, '', LOCALTIMESTAMP) "
@@ -490,7 +490,7 @@ public class BoletaReservaService {
   private void exigirTablas() {
     if (!tablas()) {
       throw new BusinessRuleException("Las boletas guardadas aún no están instaladas en la base (falta el script "
-          + "2026-10-24_boleta_reservas_consecutivo.sql).");
+          + "db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/02_boletas_y_reversa.sql).");
     }
   }
 

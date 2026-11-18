@@ -121,7 +121,7 @@ public class AutogestionAprobadorService {
   private void exigir() {
     if (!instalada()) {
       throw new BusinessRuleException(
-          "Falta instalar los aprobadores de Autogestión (script 2026-11-07_autogestion_aprobadores.sql).");
+          "Falta instalar los aprobadores de Autogestión (script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/05_autogestion_aprobadores.sql).");
     }
   }
 

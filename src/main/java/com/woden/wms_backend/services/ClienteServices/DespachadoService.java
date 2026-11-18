@@ -543,7 +543,7 @@ public class DespachadoService {
   private void exigirRespaldo() {
     if (!respaldoListo()) {
       throw new BusinessRuleException("Falta instalar el respaldo de devoluciones en la base (script "
-          + "2026-10-25_despachado_reversa.sql).");
+          + "db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/02_boletas_y_reversa.sql).");
     }
   }
 

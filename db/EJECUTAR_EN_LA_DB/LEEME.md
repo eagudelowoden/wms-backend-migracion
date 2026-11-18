@@ -15,6 +15,9 @@ El esquema `dbo` que se ve en DBeaver no se usa con estos scripts; solo `general
 Cada archivo se ejecuta **completo como script** (DBeaver: abrirlo y **Alt+X**; con Ctrl+Enter solo corre la sentencia del cursor).
 Todos se pueden repetir sin dañar nada.
 
+## Paso 0 — `00_verificar_que_existe_en_general.sql` (solo lectura)
+Comprueba que en `general` existen las tablas y columnas que usan los scripts (estado, modulo, perfil, permiso, clientevalidacion, controlcierresctes…). Todo debe decir OK antes de seguir.
+
 ## Paso 1 — `1_GENERAL_una_sola_vez/` (una vez)
 
 | Archivo | Qué crea en `general` |

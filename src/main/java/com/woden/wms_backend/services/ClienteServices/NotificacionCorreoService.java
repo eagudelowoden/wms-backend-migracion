@@ -332,7 +332,7 @@ public class NotificacionCorreoService {
   @Transactional(rollbackFor = Exception.class)
   public Map<String, Object> guardarSonidos(Map<String, Object> d, String usuario) {
     if (!tablaSonidos()) {
-      throw new BusinessRuleException("Falta instalar la configuración de sonidos (script 2026-10-25_notificaciones_correo.sql).");
+      throw new BusinessRuleException("Falta instalar la configuración de sonidos (script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/03_notificaciones_documentos.sql).");
     }
     Map<String, Object> actual = sonidos();
     String error = sonido(d.get("error"), actual.get("error"));
@@ -343,7 +343,7 @@ public class NotificacionCorreoService {
     boolean cambiaAjustes = d.containsKey("volumen") || d.containsKey("pulso") || d.containsKey("pausa");
     if (!columnasAjuste()) {
       if (cambiaAjustes) {
-        throw new BusinessRuleException("Falta instalar volumen y ritmo de los sonidos (script 2026-10-26_documentos_prealertas.sql).");
+        throw new BusinessRuleException("Falta instalar volumen y ritmo de los sonidos (script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/03_notificaciones_documentos.sql).");
       }
       actualizar("INSERT INTO " + G + "NotificacionSonido (ClienteId, SonidoError, SonidoDuplicado, SonidoFallo, SonidoOk, "
           + "Repetir, Usuario, Fecha) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, LOCALTIMESTAMP) "
@@ -370,7 +370,7 @@ public class NotificacionCorreoService {
   public Map<String, Object> activarSonidos(boolean activo) {
     Integer tipo = entero("SELECT Id FROM " + G + "ClienteValidacionTipo WHERE Codigo = ?1", SONIDO_ALERTAS);
     if (tipo == null) {
-      throw new BusinessRuleException("Falta el interruptor " + SONIDO_ALERTAS + " (script 2026-10-25_instalar_por_base.sql).");
+      throw new BusinessRuleException("Falta el interruptor " + SONIDO_ALERTAS + " (script db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/03_notificaciones_documentos.sql).");
     }
     int n = actualizar("UPDATE " + G + "ClienteValidacion SET Activo = ?3 WHERE ClienteId = ?1 AND ValidacionTipoId = ?2",
         cliente(), tipo, activo);
@@ -756,7 +756,7 @@ public class NotificacionCorreoService {
   private void exigirTablas() {
     if (!tablas()) {
       throw new BusinessRuleException("Las notificaciones aún no están instaladas en la base (falta el script "
-          + "2026-10-25_notificaciones_correo.sql).");
+          + "db/EJECUTAR_EN_LA_DB/1_GENERAL_una_sola_vez/03_notificaciones_documentos.sql).");
     }
   }
 
