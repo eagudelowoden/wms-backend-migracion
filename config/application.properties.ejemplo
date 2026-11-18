@@ -1,0 +1,25 @@
+# Configuracion LOCAL del backend (correo y datos propios de tu maquina).
+#
+# Como usarlo:
+#   1) Copia este archivo como  config/application.properties  (sin ".ejemplo").
+#   2) Escribe tus valores. Ese archivo esta en .gitignore: NO se sube al repositorio.
+#   3) Reinicia el backend. Spring Boot lee ./config/application.properties de la carpeta desde donde arrancas
+#      (la raiz del proyecto) y sus valores pisan a los de src/main/resources/application.properties.
+#
+# En un servidor, en lugar de este archivo se usan variables de entorno con los mismos nombres (SMTP_SERVER, etc.).
+
+# ---- Correo (notificaciones, documentos y enlaces de aprobacion de Autogestion) ----
+SMTP_SERVER=smtp.office365.com
+SMTP_PORT=587
+SMTP_USER=noreplyservices@woden.com.co
+SMTP_PASSWORD=
+SMTP_FROM_NAME=WMS Woden
+
+# Si prefieres, MAIL_HOST / MAIL_PORT / MAIL_USER / MAIL_PASS tambien sirven: SMTP_* los toma de ahi cuando no estan definidos.
+
+# ---- Autogestion ----
+# URL publica del frontend que va en el enlace del correo de aprobacion
+APP_FRONTEND_URL=http://localhost:4200
+
+# ---- Base de datos (si no quieres dejar la contrasena en application.properties) ----
+# spring.datasource.password=

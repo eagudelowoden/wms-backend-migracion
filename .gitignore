@@ -42,3 +42,6 @@ logs/
 **/.claude/settings.local.json
 # carpeta literal que genera una tarea de build mal configurada (aparece en produccion)
 ${project.build.directory}/
+
+# configuracion local con contrasenas (copiar de config/application.properties.ejemplo)
+config/application.properties
