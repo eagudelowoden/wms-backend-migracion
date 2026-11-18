@@ -36,6 +36,7 @@ Correr **después** del paso 1.
 | `02_autogestion.sql` | Módulo Autogestión completo (reglas SCRAP y de seriales empacados). **Reemplaza la versión anterior** |
 | `03_permisos_menus_maestros.sql` | Permisos y work flow de Despachado, menús ADNOT/ADDOC/ADVAR/PAUT, novedad de accesorios, tipos de maestro. También escribe en `general` (permisos y módulos de los perfiles ADMINISTRADOR de ese cliente) |
 | `04_funciones_modificadas.sql` | `pa_searchpalletboxdispatchpallet` (columna CAJAS) y `pa_getrepairuser` |
+| `05_calidad_funciones.sql` | Funciones de Calidad: `pa_searchqualityentryextras`, `pa_searchauditoriainsituentry`, `pa_updatequalityextrasbyserial`, `pa_updateestadocalidadbyserial` |
 | `99_verificar_cliente.sql` | Comprueba lo anterior (cada fila debe decir OK) |
 
 ### Para otro cliente
@@ -52,11 +53,10 @@ Sin Python: copia la carpeta del 85 y, en los 5 archivos, reemplaza `wmswdlegacy
 
 Requisito: el esquema del cliente debe tener ya sus tablas y funciones (para Telefónica: `db/DLLTelefonica`).
 
-## Qué NO está incluido (pendiente)
-El backend ya llama a estas cuatro funciones de Calidad, pero no existen en Postgres porque faltan sus definiciones de SQL Server. Hasta entonces solo fallan esas pantallas (extras de Calidad y auditoría in-situ):
-`pa_searchqualityentryextras`, `pa_searchauditoriainsituentry(integer)`, `pa_updatequalityextrasbyserial`, `pa_updateestadocalidadbyserial`.
-
-La tabla `depreciados` (archivo 01 del cliente) es una suposición: solo se sabe que tiene `serialnumber`. Si la real tiene más columnas, reemplázala por tu DDL.
+## Funciones de Calidad (archivo 05)
+Las definiciones de SQL Server de estas cuatro funciones no estaban en ningún archivo del repositorio, así que se **reconstruyeron** a partir de lo que
+el backend y la pantalla esperan. Dos criterios son suposiciones (están marcados `ASUMIDO` en el archivo): que el listado de auditoría in-situ son los seriales en estado
+`CALIFICADO` y que `estadoCalidadId` va en `calidad.estadofinalid`. Si en SQL Server el comportamiento es otro, pásame la definición real y se ajusta.
 
 ## Después de ejecutar
 1. Corre los dos `99_verificar_*.sql`.

@@ -10,12 +10,6 @@ SELECT item, CASE WHEN ok THEN 'OK' ELSE 'FALTA' END AS estado FROM (
     UNION ALL SELECT 'pa_insertdispatch con modeloid (33 parametros)', EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'wmswdlegacycostarica' AND p.proname = 'pa_insertdispatch' AND p.pronargs = 33)
     UNION ALL SELECT 'pa_insertcosmetica de 4 parametros', EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'wmswdlegacycostarica' AND p.proname = 'pa_insertcosmetica' AND p.pronargs = 4)
     UNION ALL SELECT 'permisos de Despachado en general.permiso', (SELECT COUNT(*) FROM general.permiso WHERE nombre IN ('Opc_Despachado','Opc_Equipos','Opc_Accesorios')) >= 3
+    UNION ALL SELECT 'calidad: 4 funciones (extras, auditoria in-situ, estado)', (SELECT COUNT(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'wmswdlegacycostarica' AND p.proname IN ('pa_searchqualityentryextras','pa_searchauditoriainsituentry','pa_updatequalityextrasbyserial','pa_updateestadocalidadbyserial')) = 4
 ) t
 ORDER BY ok, item;
-
--- PENDIENTES (aun no existen; el backend ya las llama). Se espera 'pendiente'.
-SELECT p AS funcion_pendiente,
-       CASE WHEN EXISTS (SELECT 1 FROM pg_proc x JOIN pg_namespace n ON n.oid = x.pronamespace
-                         WHERE n.nspname = 'wmswdlegacycostarica' AND x.proname = p) THEN 'existe' ELSE 'pendiente' END AS estado
-FROM (VALUES ('pa_searchqualityentryextras'), ('pa_searchauditoriainsituentry'),
-             ('pa_updatequalityextrasbyserial'), ('pa_updateestadocalidadbyserial')) v(p);
