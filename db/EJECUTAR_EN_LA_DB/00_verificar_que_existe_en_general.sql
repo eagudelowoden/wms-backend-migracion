@@ -1,6 +1,7 @@
 -- EJECUTAR PRIMERO (solo lectura). Comprueba que en el esquema `general` de esta base existen las tablas y columnas
 -- que usan los scripts y el backend. Cada fila debe decir OK; si sale FALTA, no corras los demas scripts y pasame el resultado.
 -- (En esta base el esquema se llama `general`: no hay WmsWdGeneral ni dbo para estas tablas.)
+SELECT tabla, columna, estado FROM (
 SELECT e.tabla, e.columna,
        CASE WHEN NOT EXISTS (SELECT 1 FROM information_schema.tables t WHERE t.table_schema = 'general' AND lower(t.table_name) = e.tabla) THEN 'FALTA LA TABLA'
             WHEN e.columna = '' THEN 'OK'
@@ -21,7 +22,8 @@ FROM (VALUES
     ('controlcierresctes', 'bdcliente'), ('controlcierresctes', 'fechacierre'), ('controlcierresctes', 'proyecto'), ('controlcierresctes', 'difutc'), ('controlcierresctes', 'activo'),
     ('usuariocliente', 'id'), ('usuarioclienteperfil', 'perfilid')
 ) AS e(tabla, columna)
-ORDER BY CASE WHEN estado = 'OK' THEN 1 ELSE 0 END, e.tabla, e.columna;
+) r
+ORDER BY CASE WHEN estado = 'OK' THEN 1 ELSE 0 END, tabla, columna;
 
 -- Tipo de las columnas id de modulo y de cliente (para saber si son identity o serial):
 SELECT table_name, column_name, data_type, is_identity, column_default
