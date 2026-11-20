@@ -35,7 +35,7 @@ public class PrealertaSerialService extends BaseService<PrealertaSerialModel, In
     preAlerta.setTecnicoCliente((String) obj[7]);
     preAlerta.setNovedad((String) obj[8]);
     preAlerta.setGarantia(TypeMapper.toBoolean(obj[9]));
-    preAlerta.setRecogida((Byte) obj[10]);
+    preAlerta.setRecogida(TypeMapper.toByte(obj[10]));
     preAlerta.setMac((String) obj[11]);
     preAlerta.setLoteId((Integer) obj[12]);
     return preAlerta;
@@ -68,7 +68,7 @@ public class PrealertaSerialService extends BaseService<PrealertaSerialModel, In
       preAlerta.setTecnicoCliente((String) obj[7]);
       preAlerta.setNovedad((String) obj[8]);
       preAlerta.setGarantia(TypeMapper.toBoolean(obj[9]));
-      preAlerta.setRecogida((Byte) obj[10]);
+      preAlerta.setRecogida(TypeMapper.toByte(obj[10]));
       preAlerta.setMac((String) obj[11]);
       preAlerta.setLoteId((Integer) obj[12]);
       return preAlerta;

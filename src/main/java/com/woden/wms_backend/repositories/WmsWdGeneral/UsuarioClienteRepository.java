@@ -14,25 +14,23 @@ import com.woden.wms_backend.models.WmsWdGeneral.UsuarioClienteModel;
 @Repository
 public interface UsuarioClienteRepository extends JpaRepository<UsuarioClienteModel, Integer> {
 
-    @Query(value = "EXEC pa_GetIdUserClient :usuarioId, :cliente", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer) FROM general.pa_getiduserclient(:usuarioId, :cliente) f", nativeQuery = true)
     Integer getIdUserClient(
             @Param("usuarioId") int usuarioId,
             @Param("cliente") String cliente
     );
 
-    @Query(value = "EXEC pa_SearchAvailableUserClient :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.nombre, f.dbase FROM general.pa_searchavailableuserclient(:usuarioId) f", nativeQuery = true)
     List<Object[]> searchAvailableUserClient(@Param("usuarioId") int usuarioId);
 
-    @Query(value = "EXEC pa_SearchAggregatesUserClient :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.nombre, f.dbase FROM general.pa_searchaggregatesuserclient(:usuarioId) f", nativeQuery = true)
     List<Object[]> searchAggregatesUserClient(@Param("usuarioId") int usuarioId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertUserClient :usuarioId, :clienteId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_insertuserclient(:usuarioId, :clienteId)", nativeQuery = true)
     void insertUserClient(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_DeleteUserClient :usuarioId, :clienteId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_deleteuserclient(:usuarioId, :clienteId)", nativeQuery = true)
     void deleteUserClient(@Param("usuarioId") int usuarioId, @Param("clienteId") int clienteId);
 }

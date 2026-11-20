@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "ServicioWeb", schema = "dbo")
+@Table(name = "ServicioWeb")
 public class ServicioWebModel {
     @Id
     @Column(name = "Id")

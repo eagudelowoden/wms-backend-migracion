@@ -29,6 +29,7 @@ public class EnsambleController extends BaseController<EnsambleModel, Integer> {
 
   @PostMapping("/insertAssemble")
   public ResponseEntity<Integer> insertAssemble(@RequestBody EnsambleModel ensambleModel) {
+    System.out.println("Informacion"+ensambleModel);
     try {
       Integer result = ensambleService.insertAssemble(ensambleModel.getSerialId(), ensambleModel.getSerial(),
           ensambleModel.getSerial3(), ensambleModel.getSerial4(), ensambleModel.getSerial5(), ensambleModel.getMac(),
@@ -36,8 +37,9 @@ public class EnsambleController extends BaseController<EnsambleModel, Integer> {
           ensambleModel.getTipologiaId(), ensambleModel.getNivelId(), ensambleModel.getUsuarioId(),
           ensambleModel.getUsuarioIdAsignado(), ensambleModel.getLoteId(), ensambleModel.getSmartCard());
       return ResponseEntity.ok(result);
+    }
+    catch (Exception e) {
 
-    } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.badRequest().body(0);
     }

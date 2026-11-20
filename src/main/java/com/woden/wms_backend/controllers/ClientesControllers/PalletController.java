@@ -1,5 +1,6 @@
 package com.woden.wms_backend.controllers.ClientesControllers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import com.woden.wms_backend.exception.BusinessRuleException;
 import com.woden.wms_backend.exception.EntryNotFoundException;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.services.ClienteServices.PalletService;
+import com.woden.wms_backend.services.ClienteServices.BoletaReservaService;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
 
 @RestController
@@ -43,6 +45,9 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   private PalletService palletService;
   @Autowired
   private IngresoService ingresoService;
+  // pallets en una boleta RESERVADA no se mueven hasta despacharla o cancelarla
+  @Autowired
+  private BoletaReservaService boletaReservaService;
 
   public PalletController(PalletService service) {
     super(service);
@@ -137,6 +142,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @PostMapping("/enviarPallet")
   public ResponseEntity<ApiSuccess> enviarPallet(@RequestBody EnviarPalletDTO dto) {
+    boletaReservaService.validarPalletsLibres(Collections.singletonList(dto.getPalletId()));
     palletService.enviarPallet(
         dto.getPalletId(), dto.getDestinoId(), dto.getEstadoId(),
         dto.getTipologiaId(), dto.getPosicionId(),
@@ -146,6 +152,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @PostMapping("/sendPallet")
   public ResponseEntity<ApiSuccess> sendPallet(@RequestBody SendPalletDTO dto) {
+    boletaReservaService.validarPalletsLibres(Collections.singletonList(dto.getPalletId()));
     palletService.sendPallet(dto);
     return ResponseEntity.ok(ApiSuccess.of("Pallet enviado correctamente."));
   }
@@ -154,6 +161,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
   public ResponseEntity<ApiSuccess> sendAllPallet(
       @RequestParam Integer destinoId,
       @RequestParam Integer palletId) {
+    boletaReservaService.validarPalletsLibres(Collections.singletonList(palletId));
     palletService.sendAllPallet(destinoId, palletId);
     return ResponseEntity.ok(ApiSuccess.of("Pallet enviado correctamente."));
   }
@@ -177,6 +185,7 @@ public class PalletController extends BaseController<PalletModel, Integer> {
       @PathVariable Integer palletId,
       @RequestParam(required = false, defaultValue = "") String tipoEquipo,
       @RequestParam(required = false, defaultValue = "") String tipo) {
+    boletaReservaService.validarPalletsLibres(Collections.singletonList(palletId));
     boolean eliminado = palletService.deletePallet1(palletId, tipoEquipo, tipo);
     if (!eliminado) {
       throw new BusinessRuleException("No se puede eliminar: el pallet tiene cajas o ingresos asociados.");
@@ -248,12 +257,14 @@ public class PalletController extends BaseController<PalletModel, Integer> {
 
   @PostMapping("/inactivate")
   public ResponseEntity<ApiSuccess> inactivate(@RequestBody InactivatePalletRequest request) {
+    boletaReservaService.validarPalletsLibres(Collections.singletonList(request.palletId()));
     palletService.innactivatePallet(request.palletId());
     return ResponseEntity.ok(ApiSuccess.of("Pallet inactivado correctamente."));
   }
 
   @PostMapping("/innactivatePallet")
   public ResponseEntity<ApiSuccess> innactivatePallet(@RequestParam Integer palletId) {
+    boletaReservaService.validarPalletsLibres(Collections.singletonList(palletId));
     palletService.innactivatePallet(palletId);
     return ResponseEntity.ok(ApiSuccess.of("Pallet inactivado correctamente."));
   }

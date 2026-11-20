@@ -26,14 +26,15 @@ public class CodigoSapFailureService {
 
   public Boolean getSapCodeFailureAsig(String nombre) {
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_GetSapCodeFailureAsig(?)}");
+      java.sql.PreparedStatement stmt = conn.prepareStatement(
+          "SELECT CAST(f.\"Asignacionfalla\" AS boolean) FROM pa_getsapcodefailureasig(CAST(? AS character varying)) f");
       stmt.setString(1, nombre);
 
       ResultSet rs = stmt.executeQuery();
 
       Boolean asignacionFalla = null;
       if (rs.next()) {
-        asignacionFalla = rs.getBoolean("Asignacionfalla");
+        asignacionFalla = rs.getBoolean(1);
       }
 
       rs.close();
@@ -77,13 +78,12 @@ public class CodigoSapFailureService {
   public void createFalla(Integer codigoSapId, List<Integer> fallaIds) {
     if (fallaIds == null || fallaIds.isEmpty()) return;
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_InsertCodigoSapFalla(?, ?)}");
+      java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM pa_insertcodigosapfalla(?, ?)");
       for (Integer fallaId : fallaIds) {
         stmt.setInt(1, codigoSapId);
         stmt.setInt(2, fallaId);
-        stmt.addBatch();
+        stmt.executeQuery().close();
       }
-      stmt.executeBatch();
       stmt.close();
     } catch (SQLException e) {
       System.err.println("Error createFalla: " + e.getMessage());
@@ -94,13 +94,12 @@ public class CodigoSapFailureService {
   public void deleteFalla(Integer codigoSapId, List<Integer> fallaIds) {
     if (fallaIds == null || fallaIds.isEmpty()) return;
     try (Connection conn = dataSource.getConnection()) {
-      CallableStatement stmt = conn.prepareCall("{call pa_DeleteCodigoSapFalla(?, ?)}");
+      java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM pa_deletecodigosapfalla(?, ?)");
       for (Integer fallaId : fallaIds) {
         stmt.setInt(1, codigoSapId);
         stmt.setInt(2, fallaId);
-        stmt.addBatch();
+        stmt.executeQuery().close();
       }
-      stmt.executeBatch();
       stmt.close();
     } catch (SQLException e) {
       System.err.println("Error deleteFalla: " + e.getMessage());

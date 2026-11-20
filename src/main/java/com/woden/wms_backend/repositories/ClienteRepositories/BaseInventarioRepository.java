@@ -12,6 +12,6 @@ import com.woden.wms_backend.repositories.BaseRepository;
 @Repository
 public interface BaseInventarioRepository extends BaseRepository<BaseInventarioModel, Integer> {
 
-  @Query(value = "EXEC pa_GetModelBase :base, :serial", nativeQuery = true)
+  @Query(value = "SELECT f.serial, f.\"codigoSap\", f.\"estadoSap\", f.\"estadoRR\", f.\"Lote\" FROM pa_getmodelbase(CAST(:base AS character varying), CAST(:serial AS character varying)) f", nativeQuery = true)
   List<Object[]> getModel(@Param("base") String base, @Param("serial") String serial);
 }

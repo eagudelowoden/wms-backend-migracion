@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.woden</groupId>
 	<artifactId>wms-backend</artifactId>
-	<version>2.4.0</version>
+	<version>3.0.0</version>
 	<name>wms-backend</name>
 	<description>Backend del sistema de WMS Web</description>
 	<url />
@@ -38,6 +38,12 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+		<!-- Expone /actuator/prometheus en formato que Prometheus puede scrapear -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
 		<!-- Spring Boot Starters -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -52,6 +58,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<!-- Correo (enlaces de aprobación de Autogestión) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
 		<dependency>
@@ -108,6 +120,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->
 		<dependency>
 			<groupId>com.google.api.grpc</groupId>
@@ -158,11 +176,28 @@
 			<version>2.1</version>
 		</dependency>
 
+		<!-- QR de los documentos editables (Administración > Documentos) -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+
 		<!-- Pebble: motor de plantillas (sintaxis Jinja2/Twig) para reportes HTML -->
 		<dependency>
 			<groupId>io.pebbletemplates</groupId>
 			<artifactId>pebble</artifactId>
 			<version>3.2.2</version>
+		</dependency>
+		<!-- Notificaciones por correo (SMTP noreplyservices) y adjunto Excel de movimientos -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
 		</dependency>
 
 		<!-- OpenHTMLtoPDF: convierte HTML+CSS renderizado a PDF -->

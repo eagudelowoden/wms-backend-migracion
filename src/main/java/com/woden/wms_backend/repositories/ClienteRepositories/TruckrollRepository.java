@@ -29,8 +29,8 @@ public class TruckrollRepository {
                 "BaseDestino, TablaDestino, CampoCruceDestino, CampoClienteOrigenDestino, " +
                 "CampoTruckRollDestino, CampoParametroId, CampoCodigoSapOrigen, CodigoSapIdOrigen, " +
                 "DiasGarantia, DiasTruckRoll, VentanaDias " +
-                "FROM [WmsWdGeneral].[dbo].[Parametro_TruckrollsLiberty] " +
-                "WHERE Activo = 1 AND BaseDestino = ?";
+                "FROM general.Parametro_TruckrollsLiberty " +
+                "WHERE Activo = true AND BaseDestino = ?";
 
         List<ParametroTruckrollModel> reglas = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
@@ -80,9 +80,9 @@ public class TruckrollRepository {
     public boolean tieneValidacionActiva(Integer clienteId, String codigo) {
         if (clienteId == null || codigo == null) return false;
         String sql = "SELECT cv.Activo " +
-                "FROM [WmsWdGeneral].[dbo].[ClienteValidacion] cv " +
-                "INNER JOIN [WmsWdGeneral].[dbo].[ClienteValidacionTipo] cvt ON cvt.Id = cv.ValidacionTipoId " +
-                "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = 1 AND cvt.Activo = 1";
+                "FROM general.ClienteValidacion cv " +
+                "INNER JOIN general.ClienteValidacionTipo cvt ON cvt.Id = cv.ValidacionTipoId " +
+                "WHERE cv.ClienteId = ? AND cvt.Codigo = ? AND cv.Activo = true AND cvt.Activo = true";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, clienteId);
@@ -161,7 +161,7 @@ public class TruckrollRepository {
      */
     public Integer obtenerIdAppPqrsTruckRolls(String serial) {
         if (serial == null || serial.isBlank()) return null;
-        String sql = "SELECT TOP 1 Id FROM App_PQRS_TruckRolls WHERE serial_equipo = ?";
+        String sql = "SELECT Id FROM App_PQRS_TruckRolls WHERE serial_equipo = ? LIMIT 1";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, serial);
@@ -225,7 +225,7 @@ public class TruckrollRepository {
      */
     public void limpiarDespachoOrigen(ParametroTruckrollModel regla, long despachoId) {
         String sql = String.format(
-                "UPDATE [%s].[dbo].[%s] SET [%s] = NULL, [%s] = NULL, [%s] = NULL WHERE [%s] = ?",
+                "UPDATE %s.%s SET %s = NULL, %s = NULL, %s = NULL WHERE %s = ?",
                 regla.getBaseOrigen(),
                 regla.getTablaOrigen(),
                 regla.getCampoClienteDestinoOrigen(),
@@ -250,7 +250,7 @@ public class TruckrollRepository {
      */
     public boolean isTipoOrigenAdicionalUno(Integer tipoOrigenId) {
         if (tipoOrigenId == null) return false;
-        String sql = "SELECT ISNULL(Adicional, 0) FROM Maestro WHERE Id = ?";
+        String sql = "SELECT COALESCE(Adicional, 0) FROM Maestro WHERE Id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, tipoOrigenId);
@@ -271,13 +271,13 @@ public class TruckrollRepository {
     public long[] findDespachoOrigen(ParametroTruckrollModel regla, String valorCruce) {
         // Nombres de campos son seguros — vienen de Parametro_TruckrollsLiberty (BD interna, no input del usuario)
         String sql = String.format(
-                "SELECT TOP 1 [%s], DATEDIFF(day, [%s], GETDATE()) AS Dias " +
-                "FROM [%s].[dbo].[%s] " +
-                "WHERE [%s] = ? " +
-                "AND [%s] IS NULL " +
-                "AND [%s] = ? " +
-                "AND [%s] >= DATEADD(day, -%d, GETDATE()) " +
-                "ORDER BY [%s] DESC",
+                "SELECT %s, (CURRENT_DATE - CAST(%s AS date)) AS Dias " +
+                "FROM %s.%s " +
+                "WHERE %s = ? " +
+                "AND %s IS NULL " +
+                "AND %s = ? " +
+                "AND %s >= NOW() - INTERVAL '%d days' " +
+                "ORDER BY %s DESC LIMIT 1",
                 regla.getCampoIdOrigen(),
                 regla.getCampoFechaOrigen(),
                 regla.getBaseOrigen(),
@@ -322,8 +322,8 @@ public class TruckrollRepository {
     public void updateIngresoTruckroll(ParametroTruckrollModel regla, String serial,
                                         long despachoId, Integer truckRollId) {
         String sql = String.format(
-                "UPDATE Ingreso SET [%s] = ?, [%s] = ?, [%s] = ? " +
-                "WHERE Serial = ? AND [%s] IS NULL",
+                "UPDATE Ingreso SET %s = ?, %s = ?, %s = ? " +
+                "WHERE Serial = ? AND %s IS NULL",
                 regla.getCampoTruckRollDestino(),
                 regla.getCampoClienteOrigenDestino(),
                 regla.getCampoParametroId(),
@@ -355,11 +355,11 @@ public class TruckrollRepository {
         // El subselect busca el Ingreso por serial + vínculo con este despacho (ClienteOrigenId),
         // que updateIngresoTruckroll ya dejó asignado — así también funciona cuando TruckRollId es NULL.
         String sql = String.format(
-                "UPDATE [%s].[dbo].[%s] " +
-                "SET [%s] = (SELECT TOP 1 Id FROM Ingreso WHERE Serial = ? AND [%s] = ?), " +
-                "    [%s] = ?, " +
-                "    [%s] = ? " +
-                "WHERE [%s] = ?",
+                "UPDATE %s.%s " +
+                "SET %s = (SELECT Id FROM Ingreso WHERE Serial = ? AND %s = ? LIMIT 1), " +
+                "    %s = ?, " +
+                "    %s = ? " +
+                "WHERE %s = ?",
                 regla.getBaseOrigen(),
                 regla.getTablaOrigen(),
                 regla.getCampoClienteDestinoOrigen(),

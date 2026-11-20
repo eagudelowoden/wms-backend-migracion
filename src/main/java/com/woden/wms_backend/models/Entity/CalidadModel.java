@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "Calidad", schema = "dbo")
+@Table(name = "Calidad")
 public class CalidadModel {
 
     @Id
@@ -28,10 +28,10 @@ public class CalidadModel {
     private int codigoSapId;
 
     @Column(name = "PalletId")
-    private int palletId;
+    private Integer palletId;
 
     @Column(name = "CajaEmpaqueId")
-    private int cajaEmpaqueId;
+    private Integer cajaEmpaqueId;
 
     @Column(name = "FallaCosmeticaId")
     private Integer fallaCosmeticaId;

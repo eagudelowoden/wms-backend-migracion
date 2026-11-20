@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.woden.wms_backend.config.DataSource.ClientDatabaseContext;
 import com.woden.wms_backend.dto.clientDTO.loads.UpdateNotAvailableRowDTO;
 import com.woden.wms_backend.exception.BusinessRuleException;
 
@@ -32,12 +33,48 @@ public class LoadsService {
 
   private static final Set<String> ALLOWED_BASES = Set.of(
       "BaseDespacho", "BaseEmpaque", "BaseInventario",
-      "BaseSeparacion", "BaseIngreso", "BaseEtiquetado"
+      "BaseSeparacion", "BaseIngreso", "BaseEtiquetado", "BaseAlmacen"
   );
 
   private static final Set<String> BASES_WITH_LOTE = Set.of(
-      "BaseDespacho", "BaseEmpaque", "BaseIngreso"
+      "BaseDespacho", "BaseEmpaque", "BaseIngreso", "BaseAlmacen"
   );
+
+  public static final String BASE_ALMACEN = "BaseAlmacen";
+  private static final String TABLA_ALMACEN = "general.BaseAlmacen";
+  // Alias entre comillas: el front espera las columnas con la misma capitalizacion que las demas bases.
+  private static final String ALMACEN_SELECT = "SELECT Id AS \"Id\", Serial AS \"Serial\", CodigoSap AS \"CodigoSap\", "
+      + "EstadoSap AS \"EstadoSap\", EstadoRR AS \"EstadoRR\", Lote AS \"Lote\" FROM ";
+
+  private static int cliente() {
+    Integer id = ClientDatabaseContext.getCurrentClientId();
+    if (id == null || id <= 0) {
+      throw new BusinessRuleException("No se identificó el cliente de la sesión.");
+    }
+    return id;
+  }
+
+  private void exigirTablaAlmacen() {
+    Integer n = jdbcTemplate.queryForObject("SELECT CASE WHEN to_regclass('" + TABLA_ALMACEN + "') IS NULL THEN 0 "
+        + "ELSE 1 END", Integer.class);
+    if (n == null || n == 0) {
+      throw new BusinessRuleException("Falta crear la tabla general.BaseAlmacen (ver db/produccion_nov2026_postgres.sql).");
+    }
+  }
+
+  public int contarAlmacen() {
+    exigirTablaAlmacen();
+    Integer n = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?",
+        Integer.class, cliente());
+    return n == null ? 0 : n;
+  }
+
+  public boolean enAlmacen(String serial) {
+    exigirTablaAlmacen();
+    List<Integer> r = jdbcTemplate.queryForList("SELECT 1 FROM " + TABLA_ALMACEN + " WHERE ClienteId = ? "
+        + "AND Serial = ? LIMIT 1", Integer.class, cliente(), serial == null ? "" : serial.trim());
+    return !r.isEmpty();
+  }
 
   private static final int BATCH_SIZE = 500;
 
@@ -55,49 +92,73 @@ public class LoadsService {
 
   public void deleteBase(String base) {
     validateBase(base);
-    jdbcTemplate.execute("EXEC pa_DeleteBase '" + base + "'");
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      jdbcTemplate.update("DELETE FROM " + TABLA_ALMACEN + " WHERE ClienteId = ?", cliente());
+      return;
+    }
+    jdbcTemplate.query("SELECT 1 FROM pa_deletebase(CAST(? AS character varying))",
+        ps -> ps.setString(1, base), rs -> {
+        });
+  }
+
+  /** Columnas de pa_searchbase con los tipos que espera el front (Lote solo en las bases que lo usan). */
+  private String searchBaseSelect(String base) {
+    return "SELECT CAST(f.\"Id\" AS integer) AS \"Id\", f.\"Serial\", f.\"CodigoSap\", f.\"EstadoSap\", f.\"EstadoRR\""
+        + (BASES_WITH_LOTE.contains(base) ? ", f.\"Lote\"" : "")
+        + " FROM pa_searchbase(CAST(? AS character varying)) f";
   }
 
   public List<Map<String, Object>> searchBase(String base) {
     validateBase(base);
-    return jdbcTemplate.queryForList("EXEC pa_SearchBase '" + base + "'");
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      return jdbcTemplate.queryForList(ALMACEN_SELECT + TABLA_ALMACEN
+          + " WHERE ClienteId = ? ORDER BY Id", cliente());
+    }
+    return jdbcTemplate.queryForList(searchBaseSelect(base), base);
   }
 
   public Map<String, Object> searchBasePaged(String base, int page, int size) {
     validateBase(base);
     Map<String, Object> result = new LinkedHashMap<>();
-    String tmpTable = "#tmpCargues_" + System.currentTimeMillis();
-    boolean hasLote = BASES_WITH_LOTE.contains(base);
-    String createSql = hasLote
-        ? "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255), Lote varchar(255))"
-        : "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255))";
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      result.put("data", jdbcTemplate.queryForList(ALMACEN_SELECT
+          + TABLA_ALMACEN + " WHERE ClienteId = ? ORDER BY Id LIMIT " + Math.max(1, size) + " OFFSET "
+          + Math.max(0, page * size), cliente()));
+      result.put("total", contarAlmacen());
+      result.put("page", page);
+      result.put("size", size);
+      return result;
+    }
+    String select = searchBaseSelect(base);
 
-    try (Connection conn = dataSource.getConnection();
-         Statement stmt = conn.createStatement()) {
-
-      stmt.execute(createSql);
-      stmt.execute("INSERT INTO " + tmpTable + " EXEC pa_SearchBase '" + base + "'");
-
+    try (Connection conn = dataSource.getConnection()) {
       int total = 0;
-      try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tmpTable)) {
-        if (rs.next()) total = rs.getInt(1);
-      }
-
-      List<Map<String, Object>> data = new ArrayList<>();
-      String pageSql = "SELECT * FROM " + tmpTable + " ORDER BY Id OFFSET " + (page * size) + " ROWS FETCH NEXT " + size + " ROWS ONLY";
-      try (ResultSet rs = stmt.executeQuery(pageSql)) {
-        java.sql.ResultSetMetaData meta = rs.getMetaData();
-        int cols = meta.getColumnCount();
-        while (rs.next()) {
-          Map<String, Object> row = new LinkedHashMap<>();
-          for (int i = 1; i <= cols; i++) {
-            row.put(meta.getColumnLabel(i), rs.getObject(i));
-          }
-          data.add(row);
+      try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM pa_searchbase(CAST(? AS character varying))")) {
+        ps.setString(1, base);
+        try (ResultSet rs = ps.executeQuery()) {
+          if (rs.next()) total = rs.getInt(1);
         }
       }
 
-      stmt.execute("DROP TABLE " + tmpTable);
+      List<Map<String, Object>> data = new ArrayList<>();
+      String pageSql = select + " ORDER BY 1 OFFSET " + (page * size) + " LIMIT " + size;
+      try (PreparedStatement ps = conn.prepareStatement(pageSql)) {
+        ps.setString(1, base);
+        try (ResultSet rs = ps.executeQuery()) {
+          java.sql.ResultSetMetaData meta = rs.getMetaData();
+          int cols = meta.getColumnCount();
+          while (rs.next()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            for (int i = 1; i <= cols; i++) {
+              row.put(meta.getColumnLabel(i), rs.getObject(i));
+            }
+            data.add(row);
+          }
+        }
+      }
 
       result.put("data", data);
       result.put("total", total);
@@ -111,25 +172,15 @@ public class LoadsService {
 
   public int countBase(String base) {
     validateBase(base);
-    String tmpTable = "#tmpCarguesCount_" + System.currentTimeMillis();
-    boolean hasLote = BASES_WITH_LOTE.contains(base);
-    String createSql = hasLote
-        ? "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255), Lote varchar(255))"
-        : "CREATE TABLE " + tmpTable + " (Id int, Serial varchar(255), CodigoSap varchar(255), EstadoSap varchar(255), EstadoRR varchar(255))";
-
+    if (BASE_ALMACEN.equals(base)) {
+      return contarAlmacen();
+    }
     try (Connection conn = dataSource.getConnection();
-         Statement stmt = conn.createStatement()) {
-
-      stmt.execute(createSql);
-      stmt.execute("INSERT INTO " + tmpTable + " EXEC pa_SearchBase '" + base + "'");
-
-      int total = 0;
-      try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tmpTable)) {
-        if (rs.next()) total = rs.getInt(1);
+         PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM pa_searchbase(CAST(? AS character varying))")) {
+      ps.setString(1, base);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? rs.getInt(1) : 0;
       }
-
-      stmt.execute("DROP TABLE " + tmpTable);
-      return total;
     } catch (SQLException e) {
       throw new BusinessRuleException("Error al contar registros: " + e.getMessage());
     }
@@ -171,6 +222,11 @@ public class LoadsService {
   }
 
   private String buildInsertSql(String base, boolean hasLote) {
+    if (BASE_ALMACEN.equals(base)) {
+      exigirTablaAlmacen();
+      return "INSERT INTO " + TABLA_ALMACEN + " (Serial, CodigoSap, EstadoSap, EstadoRR, Lote, ClienteId) "
+          + "VALUES (?, ?, ?, ?, ?, " + cliente() + ")";
+    }
     if (hasLote) {
       return "INSERT INTO " + base + " (Serial, CodigoSap, EstadoSap, EstadoRR, Lote) VALUES (?, ?, ?, ?, ?)";
     }
@@ -258,8 +314,9 @@ public class LoadsService {
     List<String> errores = new ArrayList<>();
 
     try (Connection conn = dataSource.getConnection();
-         CallableStatement cs = conn.prepareCall(
-             "{call pa_UpdateEntryNotAvailable(?,?,?,?,?,?,?,?,?,?,?)}")) {
+         PreparedStatement cs = conn.prepareStatement(
+             "SELECT pa_updateentrynotavailable(CAST(? AS character varying), CAST(? AS character varying), CAST(? AS integer), CAST(? AS integer), "
+                 + "CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS integer), CAST(? AS timestamp), CAST(? AS integer), CAST(NULL AS integer))")) {
 
       for (UpdateNotAvailableRowDTO row : rows) {
         try {
@@ -281,10 +338,11 @@ public class LoadsService {
           cs.setInt(8, row.getOrigenId());
           cs.setString(9, row.getFecha());
           cs.setInt(10, row.getUsuarioIdMovimiento());
-          cs.registerOutParameter(11, java.sql.Types.INTEGER);
 
-          cs.execute();
-          int filas = cs.getInt(11);
+          int filas = 0;
+          try (ResultSet rs = cs.executeQuery()) {
+            if (rs.next()) filas = rs.getInt(1);
+          }
           if (filas > 0) {
             procesados++;
           } else {

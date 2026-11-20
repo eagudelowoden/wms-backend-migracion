@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "Empaque", schema = "dbo")
+@Table(name = "Empaque")
 public class EmpaqueModel {
     @Id
     @Column(name = "Id")

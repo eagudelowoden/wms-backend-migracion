@@ -40,6 +40,9 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
   @Autowired
   private EmpaqueRepository empaqueRepository;
 
+  @Autowired
+  private EmpaqueCodigoPalletService empaqueCodigoPallet;
+
   /** Estado con el que queda una caja al ser rechazada en Calidad. */
   private static final int ESTADO_CAJA_RECHAZADA = 38;
 
@@ -187,7 +190,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
 
   @Transactional(readOnly = true)
   public List<String> getSerialesByPallet(Integer palletId) {
-    Query query = entityManager.createNativeQuery("EXEC pa_SerialesByPallet :palletId");
+    Query query = entityManager.createNativeQuery("SELECT f.serial FROM pa_serialesbypallet(CAST(:palletId AS integer)) f");
     query.setParameter("palletId", palletId);
     return query.getResultList();
   }
@@ -207,6 +210,7 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
       seriales.put("serial3", result[4] != null ? result[4].toString() : "");
       seriales.put("serial4", result[5] != null ? result[5].toString() : "");
       seriales.put("codigo", result[6] != null ? result[6].toString() : "");
+      seriales.put("codigoSap", result[6] != null ? result[6].toString() : "");
       seriales.put("descripcion", result[7] != null ? result[7].toString() : "");
       seriales.put("nivel", result[8] != null ? result[8].toString() : "");
       seriales.put("lote", result[9] != null ? result[9].toString() : "");
@@ -270,11 +274,12 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
     try {
       // ✅ Si el loteId es 0, lo mando como null
       Integer loteIdParam = (empaque.getLoteId() != 0) ? empaque.getLoteId() : null;
+      Integer codigoEmpaque = empaqueCodigoPallet.codigoSap(empaque.getCodigoSapId(), empaque.getPalletId());
       empaqueRepository.createInsert(
           empaque.getSerialId(),
           empaque.getSerial(),
           empaque.getMac(),
-          empaque.getCodigoSapId(),
+          codigoEmpaque,
           empaque.getPalletId(),
           empaque.getCajaEmpaqueId(),
           empaque.getNivelId(),
@@ -283,6 +288,8 @@ public class CajaEmpaqueService extends BaseService<CajaEmpaqueModel, Integer> {
           loteIdParam,
           empaque.getSmartCardId(),
           empaque.getSmartCard());
+      empaqueCodigoPallet.alinearIngreso(empaque.getSerialId(),
+          empaqueCodigoPallet.codigoParaIngreso(empaque.getCodigoSapId(), codigoEmpaque));
       logger.info("Guardado correctamente");
     } catch (Exception e) {
       logger.error("Error al insertar empaque: {}", e.getMessage(), e);

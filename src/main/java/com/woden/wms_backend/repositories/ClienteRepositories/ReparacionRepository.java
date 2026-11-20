@@ -15,9 +15,8 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface ReparacionRepository extends BaseRepository<ReparacionModel, Integer> {
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_UpdateRepair :estadoFinalId, :falla1Id, :falla2Id, :falla3Id, :falla4Id, :partesCambiadas, :motivoScrapId, :tecnicoReparacionId, :serial, :estadoCalidadId, :filas OUT", nativeQuery = true)
+    @Query(value = "SELECT pa_updaterepair(CAST(:estadoFinalId AS integer), CAST(:falla1Id AS integer), CAST(:falla2Id AS integer), CAST(:falla3Id AS integer), CAST(:falla4Id AS integer), CAST(:partesCambiadas AS character varying), CAST(:motivoScrapId AS integer), CAST(:tecnicoReparacionId AS integer), CAST(:serial AS character varying), CAST(:estadoCalidadId AS integer), CAST(NULL AS integer))", nativeQuery = true)
     void updateRepair(
             @Param("estadoFinalId") Integer estadoFinalId,
             @Param("falla1Id") Integer falla1Id,
@@ -31,13 +30,12 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
             @Param("estadoCalidadId") Integer estadoCalidadId,
             @Param("filas") Integer filas);
 
-    @Query(value = "EXEC pa_GetHistoricRepair :serial", nativeQuery = true)
+    @Query(value = "SELECT f.\"Serial\", f.\"Mac\", f.\"Codigo\", f.\"Descripcion\", f.\"estadoFinal\", f.falla, f.\"tecnicoReparacion\", CAST(f.\"FechaReparacion\" AS timestamp) FROM pa_gethistoricrepair(CAST(:serial AS character varying)) f", nativeQuery = true)
     List<Object[]> getHistoricRepair(
             @Param("serial") String serial);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertRepair :serialId, :serial, :mac, :codigoSapId, :estadoFinalId, :fallaDxId, :tecnicoAsignacionId, :fechaAsignacion, :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_insertrepair(CAST(:serialId AS integer), CAST(:serial AS character varying), CAST(:mac AS character varying), CAST(:codigoSapId AS integer), CAST(:estadoFinalId AS integer), CAST(:fallaDxId AS integer), CAST(:tecnicoAsignacionId AS integer), CAST(:fechaAsignacion AS timestamp without time zone), CAST(:usuarioId AS integer))", nativeQuery = true)
     void create(@Param("serialId") Integer serialId,
             @Param("serial") String serial,
             @Param("mac") String mac,
@@ -48,27 +46,26 @@ public interface ReparacionRepository extends BaseRepository<ReparacionModel, In
             @Param("fechaAsignacion") String fechaAsignacion,
             @Param("usuarioId") Integer usuarioId);
 
-    @Query(value = "EXEC pa_GetLastRepair :serial", nativeQuery = true)
+    @Query(value = "SELECT f.\"estadoFinal\", f.tecnicoreparacion, CAST(f.\"fechaReparacion\" AS timestamp) FROM pa_getlastrepair(CAST(:serial AS character varying)) f", nativeQuery = true)
     List<Object[]> getLastRepair(@Param("serial") String serial);
 
-    @Query(value = "EXEC pa_GetRepairUser :perfil, :usuarioId", nativeQuery = true)
+    @Query(value = "SELECT f.serial, f.mac, f.\"Codigo\", f.descripcion, f.nombre_usuario, CAST(f.truckrollid AS integer) FROM pa_getrepairuser(CAST(:perfil AS character varying), CAST(:usuarioId AS integer)) f", nativeQuery = true)
     List<Object[]> getRepairUser(@Param("perfil") String perfil, @Param("usuarioId") Integer usuarioId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_DeleteRepair :serial", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM pa_deleterepair(CAST(:serial AS character varying))", nativeQuery = true)
     void deleteRepair(@Param("serial") String serial);
 
-    @Query(value = "EXEC pa_SearchAssignedRepair :perfil, :tecnicoAsignacionId, :tipo", nativeQuery = true)
+    @Query(value = "SELECT f.serial, f.\"fechaAsignacion\" FROM pa_searchassignedrepair(CAST(:perfil AS character varying), CAST(:tecnicoAsignacionId AS integer), CAST(:tipo AS character varying)) f", nativeQuery = true)
     List<Object[]> searchAssignedRepair(@Param("perfil") String perfil,
             @Param("tecnicoAsignacionId") Integer tecnicoAsignacionId,
             @Param("tipo") String tipo);
 
-    @Query(value = "EXEC pa_SearchRepairedRepair :tecnicoReparacionId, :estado", nativeQuery = true)
+    @Query(value = "SELECT f.serial, f.\"fechaReparacion\" FROM pa_searchrepairedrepair(CAST(:tecnicoReparacionId AS integer), CAST(:estado AS character varying)) f", nativeQuery = true)
     List<Object[]> searchRepairedRepair(@Param("tecnicoReparacionId") Integer tecnicoReparacionId,
             @Param("estado") String estado);
 
-    @Query(value = "EXEC pa_GetAssignedTechnicianRepair :serial", nativeQuery = true)
+    @Query(value = "SELECT f.\"tecnicoAsignacion\" FROM pa_getassignedtechnicianrepair(CAST(:serial AS character varying)) f", nativeQuery = true)
     List<Object[]> getAssignedTechnicianRepair(@Param("serial") String serial);
 
     @Modifying

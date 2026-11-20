@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.woden.wms_backend.dto.clientDTO.PalletStorageDTO;
 import com.woden.wms_backend.dto.ModeloPalletDto;
 import com.woden.wms_backend.dto.SendModelsDto;
+import com.woden.wms_backend.exception.DuplicateEntryException;
 import com.woden.wms_backend.models.Entity.PalletModel;
 import com.woden.wms_backend.services.BaseService;
 import com.woden.wms_backend.util.TypeMapper;
@@ -107,7 +108,6 @@ public class PalletService extends BaseService<PalletModel, Integer> {
   // debería pasar más de 1 vez seguida, este margen es solo por seguridad.
   private static final int MAX_INTENTOS_RESERVA_PALLET = 5;
 
-  @Transactional
   public Map<String, Object> reservePallet(Integer origenId, Integer destinoId, Integer usuarioId, String zonaHoraria) {
     // En vez de ZonedDateTime, usa LocalDateTime directo en la zona horaria
     // del NAVEGADOR del usuario — a propósito: cada país mide productividad
@@ -118,9 +118,9 @@ public class PalletService extends BaseService<PalletModel, Integer> {
 
     Integer defaultCodigoSapId = codigoSapRepository.findAll(
         org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0).getId();
-    List<String> tipologias = maestroRepository.getListByTipo("tipologias");
+    List<String> tipologias = maestroRepository.getListByTipo("Tipologias");
     Integer defaultTipologiaId = (tipologias != null && !tipologias.isEmpty())
-        ? maestroRepository.getIdMaster(tipologias.get(0), "tipologias").get(0)
+        ? maestroRepository.getIdMaster(tipologias.get(0), "Tipologias").get(0)
         : 1;
 
     // Si dos usuarios (relojes/husos distintos) terminan cayendo en el mismo
@@ -133,6 +133,11 @@ public class PalletService extends BaseService<PalletModel, Integer> {
     for (int intento = 1; intento <= MAX_INTENTOS_RESERVA_PALLET; intento++) {
       String numero = palletRepository.incrementarYObtenerConsecutivo(minutoActual);
       numeroUsado = numero;
+      if (palletRepository.existsByNumero(numero)) {
+        logger.warn("[reservePallet] Numero {} ya existe en Pallet (minuto={}, zonaHoraria={}, intento {}/{}), se solicita otro",
+            numero, minutoActual, zonaHoraria, intento, MAX_INTENTOS_RESERVA_PALLET);
+        continue;
+      }
       try {
         PalletModel pallet = new PalletModel();
         pallet.setNumero(numero);
@@ -147,15 +152,15 @@ public class PalletService extends BaseService<PalletModel, Integer> {
         saved = palletRepository.save(pallet);
         break;
       } catch (org.springframework.dao.DataIntegrityViolationException e) {
-        logger.warn("[reservePallet] Número {} ya existía (intento {}/{}), reintentando con uno nuevo",
-            numero, intento, MAX_INTENTOS_RESERVA_PALLET);
+        logger.warn("[reservePallet] Numero {} rechazado por el indice unico (minuto={}, zonaHoraria={}, intento {}/{}), reintentando con uno nuevo",
+            numero, minutoActual, zonaHoraria, intento, MAX_INTENTOS_RESERVA_PALLET);
       }
     }
 
     if (saved == null) {
-      throw new IllegalStateException(
-          "No se pudo reservar un número de pallet único tras " + MAX_INTENTOS_RESERVA_PALLET
-              + " intentos (último número probado: " + numeroUsado + ")");
+      throw new DuplicateEntryException(
+          "No se pudo reservar un numero de pallet unico tras " + MAX_INTENTOS_RESERVA_PALLET
+              + " intentos (ultimo numero probado: " + numeroUsado + ")");
     }
 
     logger.info("[reservePallet] Pallet reservado: id={}, numero={}", saved.getId(), saved.getNumero());
@@ -368,10 +373,19 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setCantidad((Integer) obj[2]);
       pallet.setOrigen((String) obj[3]);
       pallet.setTipologia((String) obj[4]);
-      pallet.setCodigoSap((String) obj[5]);
-      pallet.setDescripcion((String) obj[6]);
+      mapearCodigoSap(pallet, obj, "pa_SearchReceivePallet");
       return pallet;
     }).collect(Collectors.toList());
+  }
+
+  private void mapearCodigoSap(PalletDTO pallet, Object[] obj, String sp) {
+    if (obj.length < 7) {
+      logger.warn("{} devolvio {} columnas, se esperaban 7. codigoSap y descripcion quedan null",
+              sp, obj.length);
+      return;
+    }
+    pallet.setCodigoSap((String) obj[5]);
+    pallet.setDescripcion((String) obj[6]);
   }
 
   public List<PalletDTO> searchPackingDeliveryPallet(String numero, String tipologia, String tipo) {
@@ -383,8 +397,7 @@ public class PalletService extends BaseService<PalletModel, Integer> {
       pallet.setCantidad((Integer) obj[2]);
       pallet.setOrigen((String) obj[3]);
       pallet.setTipologia((String) obj[4]);
-      pallet.setCodigoSap((String) obj[5]);
-      pallet.setDescripcion((String) obj[6]);
+      mapearCodigoSap(pallet, obj, "pa_SearchPackingDeliveryPallet");
       return pallet;
     }).collect(Collectors.toList());
   }

@@ -14,25 +14,23 @@ import com.woden.wms_backend.models.WmsWdGeneral.UsuarioClientePerfilModel;
 @Repository
 public interface UsuarioClientePerfilRepository extends CrudRepository<UsuarioClientePerfilModel, Integer> {
 
-    @Query(value = "EXEC pa_GetIdUserClientProfile :usuarioClienteId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer) FROM general.pa_getiduserclientprofile(:usuarioClienteId) f", nativeQuery = true)
     Integer getIdUsuarioClientePerfil(@Param("usuarioClienteId") Integer usuarioClienteId);
 
-    @Query(value = "EXEC pa_SearchAvailableUserClientProfile :cliente, :usuarioClienteId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchavailableuserclientprofile(:cliente, :usuarioClienteId) f", nativeQuery = true)
     List<Object[]> searchAvailableUserClientProfile(@Param("cliente") String cliente,
                                                      @Param("usuarioClienteId") Integer usuarioClienteId);
 
-    @Query(value = "EXEC pa_SearchAggregatesUserClientProfile :usuarioClienteId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.nombre FROM general.pa_searchaggregatesuserclientprofile(:usuarioClienteId) f", nativeQuery = true)
     List<Object[]> searchAggregatesUserClientProfile(@Param("usuarioClienteId") Integer usuarioClienteId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_InsertUserClientProfile :usuarioClienteId, :perfilId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_insertuserclientprofile(:usuarioClienteId, :perfilId)", nativeQuery = true)
     void insertUserClientProfile(@Param("usuarioClienteId") Integer usuarioClienteId,
                                   @Param("perfilId") Integer perfilId);
 
-    @Modifying
     @Transactional
-    @Query(value = "EXEC pa_DeleteUserClientProfile :usuarioClienteId, :perfilId", nativeQuery = true)
+    @Query(value = "SELECT 1 FROM general.pa_deleteuserclientprofile(:usuarioClienteId, :perfilId)", nativeQuery = true)
     void deleteUserClientProfile(@Param("usuarioClienteId") Integer usuarioClienteId,
                                   @Param("perfilId") Integer perfilId);
 }

@@ -49,15 +49,15 @@ public class PqrsDetalleRepository {
         // particularidad ya conocida de esta tabla: "mac" en realidad guarda el
         // serial del equipo, no una MAC). Se busca y se muestra por mac.
         // Cruce cross-DB a WmsWdGeneral para traer el nombre real de las 3 FKs.
-        String sql = "SELECT TOP 1 t.mac, t.created_at, t.observaciones, t.foto_mac_path, " +
+        String sql = "SELECT t.mac, t.created_at, t.observaciones, t.foto_mac_path, " +
                 "mc.Nombre AS contratista_nombre, " +
                 "mre.Nombre AS razon_nombre, " +
                 "mte.Nombre AS tipo_equipo_nombre " +
                 "FROM App_PQRS_Tickets t " +
-                "LEFT JOIN [WmsWdGeneral].[dbo].[App_Master_Contratista] mc ON mc.id = t.id_contratista " +
-                "LEFT JOIN [WmsWdGeneral].[dbo].[App_Master_RazonEscalamiento] mre ON mre.id = t.id_razon_escalamiento " +
-                "LEFT JOIN [WmsWdGeneral].[dbo].[App_Master_TipoEquipo] mte ON mte.id = t.id_tipo_equipo " +
-                "WHERE t.mac = ? ORDER BY t.created_at DESC";
+                "LEFT JOIN general.App_Master_Contratista mc ON mc.id = t.id_contratista " +
+                "LEFT JOIN general.App_Master_RazonEscalamiento mre ON mre.id = t.id_razon_escalamiento " +
+                "LEFT JOIN general.App_Master_TipoEquipo mte ON mte.id = t.id_tipo_equipo " +
+                "WHERE t.mac = ? ORDER BY t.created_at DESC LIMIT 1";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -84,9 +84,9 @@ public class PqrsDetalleRepository {
     }
 
     private PqrsDetalleModel buscarEnTruckrolls(String serial) {
-        String sql = "SELECT TOP 1 serial_equipo, created_at, contratista, " +
+        String sql = "SELECT serial_equipo, created_at, contratista, " +
                 "motivo_diagnostico, tipo_tt, razon_apertura " +
-                "FROM App_PQRS_Truckrolls WHERE serial_equipo = ? ORDER BY created_at DESC";
+                "FROM App_PQRS_Truckrolls WHERE serial_equipo = ? ORDER BY created_at DESC LIMIT 1";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

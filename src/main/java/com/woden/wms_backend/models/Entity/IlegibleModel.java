@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Ilegible", schema = "dbo")
+@Table(name = "Ilegible")
 public class IlegibleModel {
     @Id
     @Column(name = "Id")

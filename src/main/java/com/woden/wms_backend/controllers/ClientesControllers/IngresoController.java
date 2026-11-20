@@ -60,6 +60,7 @@ import com.woden.wms_backend.dto.clientDTO.ingreso.UpdateTipologiaRequest;
 import com.woden.wms_backend.dto.response.ApiSuccess;
 import com.woden.wms_backend.models.Entity.IngresoModel;
 import com.woden.wms_backend.services.ClienteServices.IngresoService;
+import com.woden.wms_backend.services.ClienteServices.NotificacionCorreoService;
 import com.woden.wms_backend.services.ClienteServices.ZplService;
 
 @RestController
@@ -70,6 +71,8 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
 
   @Autowired
   private IngresoService ingresoService;
+  @Autowired
+  private NotificacionCorreoService notificacionCorreoService;
 
   @Autowired
   private ZplService zplService;
@@ -151,6 +154,18 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   @GetMapping("/searchQualityEntry")
   public ResponseEntity<List<Map<String, String>>> searchQualityEntry() {
     return ResponseEntity.ok(ingresoService.searchQualityEntry());
+  }
+
+  @GetMapping("/searchQualityEntryExtras")
+  public ResponseEntity<List<Map<String, String>>> searchQualityEntryExtras(
+      @RequestParam(defaultValue = "false") boolean extras) {
+    return ResponseEntity.ok(ingresoService.searchQualityEntryExtras(extras));
+  }
+
+  @GetMapping("/searchAuditoriaInSituEntry")
+  public ResponseEntity<List<Map<String, String>>> searchAuditoriaInSituEntry(
+      @RequestParam(defaultValue = "false") boolean extras) {
+    return ResponseEntity.ok(ingresoService.searchAuditoriaInSituEntry(extras));
   }
 
   @GetMapping("/searchDiagnosticEntry")
@@ -499,10 +514,16 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   public ResponseEntity<Integer> updateNoveltyEntry(@RequestBody List<UpdateNoveltyItemRequest> items) {
     int updated = 0;
     for (UpdateNoveltyItemRequest item : items) {
-      updated += ingresoService.updateNoveltyEntry(
+      boolean serialMac = "ERROR SERIAL-MAC".equalsIgnoreCase(String.valueOf(item.tipoNovedad()).trim());
+      Map<String, String> foto = serialMac ? notificacionCorreoService.fotoSerialMac(item.id()) : null;
+      int filas = ingresoService.updateNoveltyEntry(
           item.id(), item.serial(), item.mac(), item.codigoSapId(), item.guia(),
           item.documento(), item.tipoOrigenId(), item.origenId(), item.tipologiaId(),
           item.estadoId(), item.tipoNovedad(), item.usuarioId());
+      updated += filas;
+      if (foto != null && filas > 0) {
+        notificacionCorreoService.notificarSerialMac(foto, item.usuarioId());
+      }
     }
     return ResponseEntity.ok(updated);
   }
@@ -596,7 +617,9 @@ public class IngresoController extends BaseController<IngresoModel, Integer> {
   }
 
   @GetMapping("/getUltimaTipologiaScrap")
-  public ResponseEntity<Map<String, Object>> getUltimaTipologiaScrap(@RequestParam String serial) {
-    return ResponseEntity.ok(ingresoService.validarReingresoScrap(serial));
+  public ResponseEntity<Map<String, Object>> getUltimaTipologiaScrap(
+      @RequestParam String serial,
+      @RequestParam(required = false) Integer palletId) {
+    return ResponseEntity.ok(ingresoService.validarReingresoScrap(serial, palletId));
   }
 }

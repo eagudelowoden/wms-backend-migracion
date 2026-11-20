@@ -10,7 +10,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "EtiquetaCampo", schema = "dbo")
+@Table(name = "EtiquetaCampo")
 public class EtiquetaCampoModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

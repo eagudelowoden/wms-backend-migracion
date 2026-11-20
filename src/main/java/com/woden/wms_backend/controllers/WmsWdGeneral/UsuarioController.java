@@ -275,4 +275,14 @@ public class UsuarioController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    /**
+     * Responsables de operacion del cliente (cargo JEFE DE OPERACIONES). Siempre
+     * responde 200 con la lista, vacia si el cliente no tiene ninguno: un 404
+     * dispararia el toast global de errores del frontend sin aportar informacion.
+     */
+    @GetMapping("/jefes-operacion")
+    public ResponseEntity<List<Map<String, Object>>> getJefesOperacion(@RequestParam int clienteId) {
+        return ResponseEntity.ok(usuarioService.getJefesOperacion(clienteId));
+    }
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Lista", schema = "dbo")
+@Table(name = "Lista")
 public class ListaModel {
     @Id
     @Column(name = "Id")

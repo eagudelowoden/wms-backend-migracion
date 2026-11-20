@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Cosmetica", schema = "dbo")
+@Table(name = "Cosmetica")
 public class CosmeticaModel {
   @Id
   @Column(name = "Id")
@@ -24,6 +24,7 @@ public class CosmeticaModel {
   private Integer nivelId;
   private Integer loteId;
   private Integer usuarioId;
+  private Integer usuarioAsignadoId;
   private String fecha;
   private String fechaCierre;
 }

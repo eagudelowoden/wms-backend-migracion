@@ -79,7 +79,6 @@ public class DataBaseController {
   }
 
   private String buildConnectionUrl(String dbName) {
-    return "jdbc:sqlserver://wd-wms-prd.cyeyhpu1wzr0.us-east-2.rds.amazonaws.com:14331;" +
-        "databaseName=" + dbName + ";trustServerCertificate=true";
+    return dynamicDataSourceConfig.getJdbcUrl(dbName);
   }
 }

@@ -11,6 +11,6 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface EtiquetaCampoRepository extends BaseRepository<EtiquetaCampoModel, Integer> {
-  @Query(value = "EXEC pa_GetListLabelField :etiquetaId", nativeQuery = true)
+  @Query(value = "SELECT f.nombre, f.valor FROM pa_getlistlabelfield(CAST(:etiquetaId AS integer)) f", nativeQuery = true)
   List<Object[]> getListLabelField(@Param("etiquetaId") Integer etiquetaId);
 }

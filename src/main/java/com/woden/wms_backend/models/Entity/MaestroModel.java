@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Maestro", schema = "dbo")
+@Table(name = "Maestro")
 public class MaestroModel {
 
     @Id

@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "SmartCard", schema = "dbo")
+@Table(name = "SmartCard")
 public class SmartCardModel {
     @Id
     @Column(name = "Id")

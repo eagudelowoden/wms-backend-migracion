@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "CodigoSap", schema = "dbo")
+@Table(name = "CodigoSap")
 public class CodigoSapFailureModel {
   @Id
   @Column(name = "Id")

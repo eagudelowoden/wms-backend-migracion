@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Cargo", schema = "dbo")
+@Table(name = "Cargo")
 public class CargoModel {
     @Id
     @Column(name = "Id")

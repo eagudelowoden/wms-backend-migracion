@@ -1,0 +1,143 @@
+name: Deploy BACK (servidor WMS)
+
+# Compila en GitHub y despliega por SSH al servidor Windows.
+# Secrets del repo: SSH_KEY (clave privada), SSH_HOST, SSH_USER
+# Aviso por correo: SMTP_USER, SMTP_PASSWORD, NOTIFY_TO
+# Si el despliegue falla, el script del servidor restaura la version anterior (rollback) y el job queda en rojo.
+# Variable opcional: WMS_SERVICIO (nombre de la tarea programada; por defecto WMS-Backend)
+on:
+  push:
+    branches: [production_wms]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Compilar
+        run: mvn -B clean package -DskipTests
+
+      - name: Preparar SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Script de despliegue
+        run: |
+          cat > deploy_backend.ps1 <<'PS'
+          param([string]$Servicio = 'WMS-Backend')
+          $ErrorActionPreference = 'Stop'
+          $deployDir = 'C:\WMS\Backend'
+          $backupDir = 'C:\WMS\_backups\back'
+          $puerto = 9000
+          $nssm = 'C:\nssm-2.24\win64\nssm.exe'
+          $ts = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
+
+          function Detener {
+            if (Get-Service -Name $Servicio -ErrorAction SilentlyContinue) { Stop-Service $Servicio -Force -ErrorAction SilentlyContinue }
+            elseif (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) { Stop-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue }
+            $c = Get-NetTCPConnection -LocalPort $puerto -State Listen -ErrorAction SilentlyContinue
+            if ($c) { Stop-Process -Id $c[0].OwningProcess -Force; Start-Sleep 5 }
+          }
+          function Iniciar([string]$jar) {
+            $java = (Get-Command java).Source
+            if (Get-Service -Name $Servicio -ErrorAction SilentlyContinue) {
+              & $nssm set $Servicio Application $java | Out-Null
+              & $nssm set $Servicio AppParameters "-jar `"$jar`"" | Out-Null
+              Start-Service $Servicio
+            } else {
+              $accion = New-ScheduledTaskAction -Execute $java -Argument "-jar `"$jar`"" -WorkingDirectory $deployDir
+              if (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) {
+                Set-ScheduledTask -TaskName $Servicio -Action $accion | Out-Null
+              } else {
+                Register-ScheduledTask -TaskName $Servicio -Action $accion -User 'SYSTEM' -RunLevel Highest `
+                  -Trigger (New-ScheduledTaskTrigger -AtStartup) | Out-Null
+              }
+              Start-ScheduledTask -TaskName $Servicio
+            }
+          }
+          function EstaArriba {
+            $ok = $false
+            1..24 | ForEach-Object { if (-not $ok) { Start-Sleep 5; $ok = [bool](Get-NetTCPConnection -LocalPort $puerto -State Listen -ErrorAction SilentlyContinue) } }
+            return $ok
+          }
+
+          $nuevo = Get-ChildItem 'C:\Windows\Temp' -Filter 'wms-backend-*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $nuevo) { throw 'No llego el jar a C:\Windows\Temp (no se toco nada)' }
+
+          New-Item -ItemType Directory -Force -Path $backupDir, $deployDir, "$deployDir\logs" | Out-Null
+          $anterior = Get-ChildItem $deployDir -Filter 'wms-backend-*.jar' | Select-Object -First 1
+          $respaldo = $null
+          if ($anterior) {
+            $respaldo = "$backupDir\$($anterior.BaseName)_$ts.jar"
+            Copy-Item $anterior.FullName $respaldo -Force
+          }
+
+          Detener
+          try {
+            if ($anterior) { Remove-Item $anterior.FullName -Force }
+            Move-Item $nuevo.FullName $deployDir -Force
+            $jarNuevo = Join-Path $deployDir $nuevo.Name
+            Iniciar $jarNuevo
+            if (-not (EstaArriba)) { throw "El backend nuevo no escucha en el puerto $puerto" }
+            Get-ChildItem $backupDir -Filter *.jar | Sort-Object LastWriteTime -Descending | Select-Object -Skip 5 | Remove-Item -Force
+            Write-Host "OK: backend arriba con $($nuevo.Name)"
+          }
+          catch {
+            Write-Host "FALLO: $_"
+            Write-Host 'ROLLBACK: se restaura la version anterior...'
+            Detener
+            if ($jarNuevo -and (Test-Path $jarNuevo)) { Move-Item $jarNuevo "$backupDir\fallido_$($nuevo.BaseName)_$ts.jar" -Force }
+            if ($respaldo) {
+              $jarViejo = Join-Path $deployDir $anterior.Name
+              Copy-Item $respaldo $jarViejo -Force
+              Iniciar $jarViejo
+              if (EstaArriba) { Write-Host "ROLLBACK OK: sigue corriendo $($anterior.Name)" } else { Write-Host 'ROLLBACK FALLIDO: revisar el servidor a mano' }
+            } else {
+              Write-Host 'No habia version anterior que restaurar.'
+            }
+            exit 1
+          }
+          PS
+
+      - name: Copiar y ejecutar en el servidor
+        run: |
+          OPTS="-i $HOME/.ssh/deploy_key -o BatchMode=yes"
+          T="${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
+          ssh $OPTS $T 'powershell -NoProfile -Command "Remove-Item C:\Windows\Temp\wms-backend-*.jar -Force -ErrorAction SilentlyContinue"'
+          scp $OPTS target/wms-backend-*.jar "$T:C:/Windows/Temp/"
+          scp $OPTS deploy_backend.ps1 "$T:C:/Windows/Temp/deploy_backend.ps1"
+          ssh $OPTS $T "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Windows\Temp\deploy_backend.ps1 -Servicio ${{ vars.WMS_SERVICIO || 'WMS-Backend' }}"
+
+      - name: Notificar por correo
+        if: always()
+        continue-on-error: true
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.office365.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: WMS Despliegues <${{ secrets.SMTP_USER }}>
+          to: ${{ secrets.NOTIFY_TO }}
+          subject: "[WMS] Backend: ${{ job.status == 'success' && 'DESPLEGADO OK' || 'FALLO (se hizo rollback)' }}"
+          body: |
+            Resultado: ${{ job.status }}
+            Repositorio: ${{ github.repository }}
+            Rama: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Detalle: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Limpiar clave
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

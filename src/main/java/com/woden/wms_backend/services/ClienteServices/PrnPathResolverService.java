@@ -22,20 +22,29 @@ public class PrnPathResolverService {
   @Autowired
   private DataSource dataSource;
 
+  // solo hay carpeta local en un PC de desarrollo (PRN_LOCAL_PATH); en el servidor devuelve null
+  public String rutaLocal(String tipo) {
+    if (localPrnPath == null || localPrnPath.isBlank()) {
+      return null;
+    }
+    String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
+    if ("empaque_despacho".equals(tipoLower)) {
+      tipoLower = "empaque";
+    }
+    return localPrnPath + File.separator + tipoLower;
+  }
+
   public String resolvePath(String tipo) {
-    if (localPrnPath != null && !localPrnPath.isBlank()) {
-      String tipoLower = tipo != null ? tipo.toLowerCase() : "empaque";
-      if ("empaque_despacho".equals(tipoLower)) {
-        tipoLower = "empaque";
-      }
-      return localPrnPath + File.separator + tipoLower;
+    String local = rutaLocal(tipo);
+    if (local != null) {
+      return local;
     }
 
     Integer clientId = ClientDatabaseContext.getCurrentClientId();
     if (clientId == null) return null;
 
     String columna = "ETIQUETADO".equalsIgnoreCase(tipo) ? "PrnEtiquetado" : "PrnEmpaque";
-    String sql = "SELECT " + columna + " FROM [WmsWdGeneral].[dbo].[Cliente] WHERE Id = ?";
+    String sql = "SELECT " + columna + " FROM general.Cliente WHERE Id = ?";
     try (Connection conn = dataSource.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
       ps.setInt(1, clientId);

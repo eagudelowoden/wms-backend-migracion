@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "ServicioWebHomologacion", schema = "dbo")
+@Table(name = "ServicioWebHomologacion")
 public class ServicioWebHomologacionModel {
     @Id
     @Column(name = "Id")

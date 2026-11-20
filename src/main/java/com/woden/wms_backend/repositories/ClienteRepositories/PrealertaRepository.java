@@ -12,13 +12,13 @@ import com.woden.wms_backend.repositories.BaseRepository;
 
 @Repository
 public interface PrealertaRepository extends BaseRepository<PrealertaModel, Integer> {
-    @Query(value = "EXEC pa_GetModelPrealert :nombre", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.id AS integer), f.nombre, f.\"tipoOrigen\", f.origen, f.guia, CAST(f.\"tipologiaId\" AS integer) FROM pa_getmodelprealert(CAST(:nombre AS character varying)) f", nativeQuery = true)
     List<Object[]> getPreAlertaById(@Param("nombre") String nombre);
 
     @Query(value = "SELECT Id, Nombre FROM Prealerta WHERE Estado = :estado", nativeQuery = true)
     List<Object[]> findByEstado(@Param("estado") String estado);
 
-    @Query(value = "EXEC pa_GetDifferencePrealert :prealertaId", nativeQuery = true)
+    @Query(value = "SELECT CAST(f.total AS integer) FROM pa_getdifferenceprealert(CAST(:prealertaId AS integer)) f", nativeQuery = true)
     Integer getDifferencePrealerta(@Param("prealertaId") Integer prealertaId);
 
     @Modifying
