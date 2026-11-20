@@ -44,7 +44,10 @@ jobs:
           if (-not $nuevo) { throw 'No llego el jar a C:\Windows\Temp' }
 
           # 1. Detener
-          if (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) { Stop-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue }
+          $nssm = 'C:\nssm-2.24\win64\nssm.exe'
+          $esServicio = [bool](Get-Service -Name $Servicio -ErrorAction SilentlyContinue)
+          if ($esServicio) { Stop-Service $Servicio -Force -ErrorAction SilentlyContinue }
+          elseif (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) { Stop-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue }
           $c = Get-NetTCPConnection -LocalPort $puerto -State Listen -ErrorAction SilentlyContinue
           if ($c) { Stop-Process -Id $c[0].OwningProcess -Force; Start-Sleep 5 }
 
@@ -59,16 +62,22 @@ jobs:
           Move-Item $nuevo.FullName $deployDir -Force
           $jar = Join-Path $deployDir $nuevo.Name
 
-          # 4. Tarea programada (sobrevive al cierre de la sesion SSH). Lee .\config\application.properties
+          # 4. Arrancar: servicio de Windows (NSSM) si existe; si no, tarea programada. Lee config\application.properties
           $java = (Get-Command java).Source
-          $accion = New-ScheduledTaskAction -Execute $java -Argument "-jar `"$jar`"" -WorkingDirectory $deployDir
-          if (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) {
-            Set-ScheduledTask -TaskName $Servicio -Action $accion | Out-Null
+          if ($esServicio) {
+            & $nssm set $Servicio Application $java | Out-Null
+            & $nssm set $Servicio AppParameters "-jar `"$jar`"" | Out-Null
+            Start-Service $Servicio
           } else {
-            Register-ScheduledTask -TaskName $Servicio -Action $accion -User 'SYSTEM' -RunLevel Highest `
-              -Trigger (New-ScheduledTaskTrigger -AtStartup) | Out-Null
+            $accion = New-ScheduledTaskAction -Execute $java -Argument "-jar `"$jar`"" -WorkingDirectory $deployDir
+            if (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) {
+              Set-ScheduledTask -TaskName $Servicio -Action $accion | Out-Null
+            } else {
+              Register-ScheduledTask -TaskName $Servicio -Action $accion -User 'SYSTEM' -RunLevel Highest `
+                -Trigger (New-ScheduledTaskTrigger -AtStartup) | Out-Null
+            }
+            Start-ScheduledTask -TaskName $Servicio
           }
-          Start-ScheduledTask -TaskName $Servicio
 
           # 5. Verificar
           $ok = $false
