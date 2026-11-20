@@ -1,0 +1,91 @@
+name: Deploy BACK (servidor WMS)
+
+# Compila en GitHub y despliega por SSH al servidor Windows.
+# Secrets del repo: SSH_KEY (clave privada), SSH_HOST, SSH_USER
+# Variable opcional: WMS_SERVICIO (nombre de la tarea programada; por defecto WMS-Backend)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Compilar
+        run: mvn -B clean package -DskipTests
+
+      - name: Preparar SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Script de despliegue
+        run: |
+          cat > deploy_backend.ps1 <<'PS'
+          param([string]$Servicio = 'WMS-Backend')
+          $ErrorActionPreference = 'Stop'
+          $deployDir = 'C:\WMS\Backend'
+          $backupDir = 'C:\WMS\_backups\back'
+          $puerto = 9000
+          $ts = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
+
+          $nuevo = Get-ChildItem 'C:\Windows\Temp' -Filter 'wms-backend-*.jar' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $nuevo) { throw 'No llego el jar a C:\Windows\Temp' }
+
+          # 1. Detener
+          if (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) { Stop-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue }
+          $c = Get-NetTCPConnection -LocalPort $puerto -State Listen -ErrorAction SilentlyContinue
+          if ($c) { Stop-Process -Id $c[0].OwningProcess -Force; Start-Sleep 5 }
+
+          # 2. Respaldar jar actual
+          New-Item -ItemType Directory -Force -Path $backupDir, $deployDir, "$deployDir\logs" | Out-Null
+          Get-ChildItem $deployDir -Filter 'wms-backend-*.jar' | ForEach-Object {
+            Move-Item $_.FullName "$backupDir\$($_.BaseName)_$ts.jar" -Force
+          }
+          Get-ChildItem $backupDir -Filter *.jar | Sort-Object LastWriteTime -Descending | Select-Object -Skip 5 | Remove-Item -Force
+
+          # 3. Jar nuevo
+          Move-Item $nuevo.FullName $deployDir -Force
+          $jar = Join-Path $deployDir $nuevo.Name
+
+          # 4. Tarea programada (sobrevive al cierre de la sesion SSH). Lee .\config\application.properties
+          $java = (Get-Command java).Source
+          $accion = New-ScheduledTaskAction -Execute $java -Argument "-jar `"$jar`"" -WorkingDirectory $deployDir
+          if (Get-ScheduledTask -TaskName $Servicio -ErrorAction SilentlyContinue) {
+            Set-ScheduledTask -TaskName $Servicio -Action $accion | Out-Null
+          } else {
+            Register-ScheduledTask -TaskName $Servicio -Action $accion -User 'SYSTEM' -RunLevel Highest `
+              -Trigger (New-ScheduledTaskTrigger -AtStartup) | Out-Null
+          }
+          Start-ScheduledTask -TaskName $Servicio
+
+          # 5. Verificar
+          $ok = $false
+          1..24 | ForEach-Object { if (-not $ok) { Start-Sleep 5; $ok = [bool](Get-NetTCPConnection -LocalPort $puerto -State Listen -ErrorAction SilentlyContinue) } }
+          if (-not $ok) { throw "El backend no escucha en el puerto $puerto; revisa $deployDir\logs" }
+          Write-Host "Backend arriba: $($nuevo.Name)"
+          PS
+
+      - name: Copiar y ejecutar en el servidor
+        run: |
+          OPTS="-i $HOME/.ssh/deploy_key -o BatchMode=yes"
+          T="${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
+          ssh $OPTS $T 'powershell -NoProfile -Command "Remove-Item C:\Windows\Temp\wms-backend-*.jar -Force -ErrorAction SilentlyContinue"'
+          scp $OPTS target/wms-backend-*.jar "$T:C:/Windows/Temp/"
+          scp $OPTS deploy_backend.ps1 "$T:C:/Windows/Temp/deploy_backend.ps1"
+          ssh $OPTS $T "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Windows\Temp\deploy_backend.ps1 -Servicio ${{ vars.WMS_SERVICIO || 'WMS-Backend' }}"
+
+      - name: Limpiar clave
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
