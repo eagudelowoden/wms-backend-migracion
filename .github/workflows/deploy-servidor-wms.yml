@@ -5,7 +5,7 @@ name: Deploy BACK (servidor WMS)
 # Variable opcional: WMS_SERVICIO (nombre de la tarea programada; por defecto WMS-Backend)
 on:
   push:
-    branches: [main]
+    branches: [production_wms]
   workflow_dispatch:
 
 jobs:
