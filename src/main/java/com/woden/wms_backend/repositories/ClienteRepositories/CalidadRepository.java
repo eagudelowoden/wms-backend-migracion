@@ -93,14 +93,17 @@ public interface CalidadRepository extends BaseRepository<CalidadModel, Integer>
     @Query(value = "SELECT c.Id, c.SerialId, c.Serial, c.Mac, c.CodigoSapId, c.PalletId, c.CajaEmpaqueId, " +
             "c.FallaFuncionalId, c.FallaCosmeticaId, c.UsuarioId, c.Fecha, " +
             "mf.Codigo AS FallaFuncionalCodigo, mc.Codigo AS FallaCosmeticaCodigo, " +
-            "CASE WHEN COALESCE(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo, " +
-            "c.Personal, c.Dni, c.Voltaje, c.Observaciones " +
+            "CASE WHEN COALESCE(c.EstadoFinalId, 0) = 0 THEN NULL ELSE me.Codigo END AS EstadoFinalCodigo " +
             "FROM Calidad c " +
             "LEFT JOIN Maestro mf ON mf.Id = c.FallaFuncionalId " +
             "LEFT JOIN Maestro mc ON mc.Id = c.FallaCosmeticaId " +
             "LEFT JOIN Maestro me ON me.Id = c.EstadoFinalId " +
             "WHERE c.Serial = :serial ORDER BY c.Id DESC LIMIT 1", nativeQuery = true)
     List<Object[]> findLatestBySerial(@Param("serial") String serial);
+
+    @Query(value = "SELECT c.Personal, c.Dni, c.Voltaje, c.Observaciones " +
+            "FROM Calidad c WHERE c.Serial = :serial ORDER BY c.Id DESC LIMIT 1", nativeQuery = true)
+    List<Object[]> findExtrasBySerial(@Param("serial") String serial);
 
 
 }

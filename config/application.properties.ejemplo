@@ -19,7 +19,7 @@ SMTP_FROM_NAME=WMS Woden
 
 # ---- Autogestion ----
 # URL publica del frontend que va en el enlace del correo de aprobacion
-APP_FRONTEND_URL=http://localhost:4200
+autogestion.frontend-url=http://localhost:4200
 
 # ---- Base de datos (si no quieres dejar la contrasena en application.properties) ----
 # spring.datasource.password=
